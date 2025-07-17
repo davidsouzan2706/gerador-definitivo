@@ -3349,18 +3349,14 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
         
 
 try {
-            const keyMap = { intro: 'introduction', climax: 'climax' }; // Adicionado climax para mapeamento
+            const keyMap = { intro: 'introduction', climax: 'climax' };
             const outlineKey = keyMap[sectionName] || sectionName;
             const directive = strategicOutline ? strategicOutline[outlineKey] : null;
             const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive);
 
-            // 1. Chama a API
             let rawResult = await callGroqAPI(prompt, maxTokens);
-            
-            // 2. Limpa o resultado
             let cleanedResult = removeMetaComments(rawResult.trim()); 
 
-            // 3. Processa o resultado limpo
             const paragraphs = cleanedResult.split('\n').filter(p => p.trim() !== '');
             const contentWithDivs = paragraphs.map((p, index) => 
                 `<div id="${elementId}-p-${index}">${p}</div>`
@@ -3385,6 +3381,8 @@ try {
         } finally {
             hideLoading(button);
         }
+
+
 
 
 
