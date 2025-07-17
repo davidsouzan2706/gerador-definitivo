@@ -4271,7 +4271,6 @@ ${scriptContent}
         // ==========================================================
         document.addEventListener('DOMContentLoaded', () => {
             // ---- INICIALIZAÇÃO GERAL ----
-            // (Esta parte já deve estar no seu código, mas incluída aqui para garantir)
             setupInputTabs();
             setupTabs();
             updateProgressBar();
@@ -4279,6 +4278,7 @@ ${scriptContent}
             handleConclusionStrategyChange();
             updateNarrativeStructureOptions();
             document.getElementById('importFileInput')?.addEventListener('change', importProject);
+            
             document.getElementById('darkModeToggle')?.addEventListener('click', () => {
                 document.body.classList.toggle('dark');
                 const isDarkMode = document.body.classList.contains('dark');
@@ -4286,18 +4286,20 @@ ${scriptContent}
                 document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
                 localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
             });
+
             if (localStorage.getItem('darkMode') === 'enabled') {
                 document.body.classList.add('dark');
                 document.getElementById('moonIcon')?.classList.add('hidden');
                 document.getElementById('sunIcon')?.classList.remove('hidden');
             }
+
             document.getElementById('toggleZenModeBtn')?.addEventListener('click', () => document.body.classList.toggle('zen-mode'));
             document.getElementById('exitZenModeBtn')?.addEventListener('click', () => document.body.classList.remove('zen-mode'));
             document.getElementById('imageStyleSelect')?.addEventListener('change', toggleCustomImageStyleVisibility);
+            
             document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
                 radio.addEventListener('change', handleConclusionStrategyChange);
             });
-            window.addEventListener('scroll', window.handleFloatingActionBar);
 
             // ---- LÓGICA DO CONSULTOR DE RETENÇÃO (MOUSEOVER/MOUSEOUT) ----
             let hideDetailsTimeout;
@@ -4327,6 +4329,7 @@ ${scriptContent}
                             ${buttonHtml}
                         </div>`;
                 }
+                
                 if (event.target.closest('.section-analysis-output')) {
                     clearTimeout(hideDetailsTimeout);
                 }
@@ -4343,12 +4346,12 @@ ${scriptContent}
                 }
             });
 
-            // ---- O "GERENTE DE CLIQUES" CENTRALIZADO (VERSÃO FINAL E CORRETA) ----
+            // ---- O "GERENTE DE CLIQUES" CENTRALIZADO ----
             document.addEventListener('click', function(event) {
                 const button = event.target.closest('button');
                 const header = event.target.closest('.accordion-header, .nested-accordion-header');
 
-                // PARTE 1: LÓGICA DO ACORDEÃO (SEMPRE VERIFICADA PRIMEIRO)
+                // Lógica do Acordeão
                 if (header && !event.target.closest('.header-buttons')) {
                     const body = header.nextElementSibling;
                     const arrow = header.querySelector('.accordion-arrow');
@@ -4359,12 +4362,10 @@ ${scriptContent}
                     }
                 }
 
-                // PARTE 2: LÓGICA DOS BOTÕES
-                if (!button) return; // Se o clique não foi em um botão, encerra aqui.
+                if (!button) return;
 
                 const action = button.dataset.action;
                 
-                // Lógica para 'data-action'
                 if (action) {
                     event.preventDefault();
                     switch(action) {
@@ -4393,7 +4394,6 @@ ${scriptContent}
                     return;
                 }
 
-                // Lógica para botões com ID
                 const clickActions = {
                     'analyzeStrategyBtn': analyzeAndSetStrategy,
                     'generateOutlineBtn': generateStrategicOutline,
@@ -4401,7 +4401,7 @@ ${scriptContent}
                     'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
                     'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
                     'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-                    'generateCTABtn': () => generateConclusionAndCta(), // Adicionado para cobrir o botão CTA
+                    'generateCTABtn': () => generateConclusionAndCta(),
                     'generateDescriptionBtn': generateVideoDescription,
                     'generateTitlesAndThumbnailsBtn': generateTitlesAndThumbnails,
                     'downloadPdfBtn': downloadPdf,
@@ -4425,6 +4425,24 @@ ${scriptContent}
                 }
             });
 
+            // ---- LÓGICA PARA RESETAR ROTEIRO ----
+            const strategicInputIds = [
+                'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
+                'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
+                'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect'
+            ];
+            strategicInputIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', (e) => {
+                        if (!isSettingStrategy) resetGeneratedScriptContent(e.target.id);
+                    });
+                }
+            });
+
+            // ---- EVENTO DE SCROLL ----
+            window.addEventListener('scroll', window.handleFloatingActionBar);
+        });
 
 </script>
 </body>
