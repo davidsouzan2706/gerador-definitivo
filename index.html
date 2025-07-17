@@ -4236,23 +4236,24 @@ ${scriptContent}
             const allStructures = {...narrativeStructures.storytelling, ...narrativeStructures.storyselling};
             const narrativeStructureOptions = Object.keys(allStructures).map(s => `'${s}'`);
 
-            const prompt = `Você é um Estrategista de Conteúdo de IA para o YouTube. Analise o tema e a descrição e defina a melhor estratégia completa.
+            const prompt = `Você é um Estrategista de Conteúdo de IA para o YouTube, um especialista em engenharia de narrativas virais. Sua tarefa é analisar o tema e a descrição de um vídeo e definir a melhor e mais coesa estratégia de conteúdo.
 
             **Tema do Vídeo:** "${theme}"
             **Descrição:** "${description}"
 
-            Responda APENAS com um objeto JSON válido com as seguintes 12 chaves:
-            1. "target_audience": (string) O público-alvo ideal.
-            2. "video_objective": (string) O objetivo principal. DEVE SER um valor EXATO da lista: [${videoObjectiveOptions.join(', ')}].
-            3. "narrative_goal": (string) O objetivo narrativo. Escolha entre 'storytelling' ou 'storyselling'.
-            4. "narrative_structure": (string) A melhor estrutura da lista: [${narrativeStructureOptions.join(', ')}].
-            5. "narrative_theme": (string) A "grande ideia" ou tema central da história em poucas palavras (Ex: Superação, A busca pela verdade).
-            6. "narrative_tone": (string) O tom mais apropriado. DEVE SER um valor EXATO da lista: [${narrativeToneOptions.join(', ')}].
-            7. "narrative_voice": (string) A personalidade do narrador (Ex: Sábio e experiente, Jovem e cético).
-            8. "central_question": (string) A pergunta central mais intrigante que o vídeo deve responder.
-            9. "emotional_arc": (string) O arco emocional ideal (Ex: Curiosidade -> Tensão -> Inspiração).
-            11. "image_description_engine": (string) Sugira 3-5 palavras-chave para o motor de descrição de imagem (Ex: alta resolução, detalhado, fotorrealista).
-            12. "viral_elements": (string) Sugira 2-3 elementos ou frases virais que poderiam ser encaixadas (Ex: 'plot twist inesperado', 'o segredo que ninguém conta').
+            Responda APENAS com um objeto JSON válido. Siga estritamente as regras para cada uma das seguintes 11 chaves:
+
+            1.  **"target_audience"**: (string) Descreva em uma frase o público-alvo principal mais propenso a se engajar com este conteúdo.
+            2.  **"video_objective"**: (string) Escolha o objetivo principal mais adequado. Sua resposta DEVE ser um dos seguintes valores EXATOS: [${videoObjectiveOptions.join(', ')}].
+            3.  **"narrative_goal"**: (string) Determine se a abordagem mais forte é 'storytelling' (para conectar e entreter) ou 'storyselling' (para persuadir). Sua resposta DEVE ser 'storytelling' ou 'storyselling'.
+            4.  **"narrative_structure"**: (string) Com base no 'narrative_goal' que você acabou de definir, escolha a estrutura narrativa mais poderosa. Sua resposta DEVE ser um dos seguintes valores EXATOS: [${narrativeStructureOptions.join(', ')}].
+            5.  **"narrative_theme"**: (string) Defina a "grande ideia" ou o tema universal por trás da história em poucas palavras (Ex: A jornada contra a adversidade, A busca pela verdade oculta).
+            6.  **"narrative_tone"**: (string) Escolha o tom emocional que a narração deve evocar. Sua resposta DEVE ser um dos seguintes valores EXATOS: [${narrativeToneOptions.join(', ')}].
+            7.  **"narrative_voice"**: (string) Defina a "persona" do narrador em poucas palavras (Ex: Um historiador cético, Uma testemunha emocionada, Um guia experiente).
+            8.  **"central_question"**: (string) Formule a pergunta central mais intrigante que o roteiro inteiro deverá se esforçar para responder.
+            9.  **"emotional_arc"**: (string) Descreva o arco emocional que o espectador deve sentir, usando setas (Ex: Indignação -> Empatia -> Esperança).
+            10. **"image_description_engine"**: (string) Sugira 3 a 5 palavras-chave que guiarão o estilo visual do vídeo (Ex: fotorrealista, sombrio, cinematográfico, close-up emocional).
+            11. **"viral_elements"**: (string) Liste 2 ou 3 elementos virais que podem ser incorporados na narrativa (Ex: "Fato chocante nos primeiros 10s", "Plot twist inesperado", "Loop aberto para o final").`;
             
             Seja coeso e eficaz.`;
 
