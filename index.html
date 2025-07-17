@@ -17,100 +17,65 @@
 
 
 /* ========================================================== */
-/* ======== ESTILOS PARA O CONSULTOR DE RETENÇÃO VIVO ======== */
+/* ======== ESTILOS PARA O CONSULTOR DE RETENÇÃO V3 ======== */
 /* ========================================================== */
 .retention-paragraph-live {
-    padding: 0.5rem;
-    margin: 0.25rem 0;
-    border-radius: 6px;
-    border-left-width: 4px;
-    transition: background-color 0.2s;
-    position: relative; /* Necessário para o posicionamento do botão */
+    padding: 0.25rem 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    border-left-width: 3px;
+    transition: background-color 0.2s ease-out;
+}
+.retention-paragraph-live:hover {
+    background-color: rgba(129, 140, 248, 0.1); /* Fundo sutil no hover */
+}
+.dark .retention-paragraph-live:hover {
+    background-color: rgba(129, 140, 248, 0.15);
 }
 
 /* --- Cores do Mapa de Calor --- */
-.retention-green {
-    border-left-color: #10B981; /* success-color */
-    background-color: rgba(16, 185, 129, 0.05);
-}
-.dark .retention-green {
-    background-color: rgba(16, 185, 129, 0.1);
-}
-.retention-yellow {
-    border-left-color: #FBBF24; /* Amber-400 */
-    background-color: rgba(251, 191, 36, 0.05);
-}
-.dark .retention-yellow {
-    background-color: rgba(251, 191, 36, 0.1);
-}
-.retention-red {
-    border-left-color: #EF4444; /* Red-500 */
-    background-color: rgba(239, 68, 68, 0.05);
-}
-.dark .retention-red {
-    background-color: rgba(239, 68, 68, 0.1);
-}
+.retention-green { border-left-color: #10B981; }
+.retention-yellow { border-left-color: #FBBF24; }
+.retention-red { border-left-color: #EF4444; }
 
-/* --- Tooltip da Sugestão --- */
-.retention-tooltip {
-    position: absolute;
-    bottom: 100%; /* Posiciona acima do parágrafo */
-    left: 0;
-    margin-bottom: 8px; /* Espaçamento entre o parágrafo e o tooltip */
-    width: auto; /* Largura automática */
-    max-width: 400px; /* Largura máxima para não ficar gigante */
-    background-color: #1f2937; /* Gray-800 */
-    color: #f9fafb;
-    padding: 0.75rem;
+/* --- Área de Detalhes da Sugestão (Vamos usar depois) --- */
+.retention-details-card {
+    background-color: var(--bg-light);
+    border: 1px solid var(--border-light);
+    border-left-width: 4px;
+    padding: 1rem;
     border-radius: 8px;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    z-index: 10;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
-    pointer-events: none; /* Impede que o tooltip bloqueie o mouse */
 }
-.dark .retention-tooltip {
-    background-color: #374151; /* Gray-700 */
+.dark .retention-details-card {
+    background-color: #1f2937;
+    border-color: #4b5563;
 }
-.retention-paragraph-live:hover .retention-tooltip {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-.retention-tooltip strong {
-    color: #a5b4fc; /* Indigo-300 */
+.retention-details-card strong {
     display: block;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
     margin-bottom: 0.25rem;
 }
+.retention-details-card p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-dark);
+}
+.dark .retention-details-card p {
+    color: #d1d5db; /* Cor de texto clara */
+}
+.retention-details-card button {
+    margin-top: 0.75rem;
+}
 
-/* --- Botão de Otimização --- */
-.optimize-btn-live {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
-    /* Reutilizando o estilo de botão que já temos */
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-    white-space: nowrap;
-    background-color: var(--primary-color);
-    color: #ffffff;
-    opacity: 0; /* Começa invisível */
-    visibility: hidden;
+/* E adicione esta regra para o modo escuro */
+.dark .retention-details-card p {
+    color: #d1d5db; /* Cor de texto clara */
+
 }
-.retention-paragraph-live:hover .optimize-btn-live {
-    opacity: 1;
-    visibility: visible;
-}
-.optimize-btn-live:hover {
-    background-color: var(--primary-hover);
+.retention-details-card button {
+    margin-top: 0.75rem;
 }
 
 	/* ========================================================== */
@@ -1107,7 +1072,70 @@
 .dark #outlineContent .outline-title {
     color: #FBBF24 !important; /* Amarelo (Amber-400) */
 }
+
+/* ========================================================== */
+/* ==== ESTILOS PARA O CONSULTOR DE RETENÇÃO (TOOLTIP) ==== */
+/* ========================================================== */
+.retention-paragraph-live {
+    position: relative; /* Essencial para posicionar os filhos */
+}
+.retention-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 10px;
+    margin-bottom: 8px;
+    width: auto;
+    max-width: 90%;
+    background-color: #1f2937;
+    color: #f9fafb;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+}
+.dark .retention-tooltip {
+    background-color: #374151;
+}
+.retention-paragraph-live:hover .retention-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.retention-action-btn {
+    position: absolute;
+    top: 50%;
+    right: -15px;
+    transform: translateY(-50%);
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 11;
+}
+.retention-paragraph-live:hover .retention-action-btn {
+    opacity: 1;
+    visibility: visible;
+}
+
     </style>
+
+
 </head>
 <body class="bg-gray-100 dark:bg-gray-900">
     <!-- BARRA FLUTUANTE DE VOLTA AO LUGAR CERTO -->
@@ -1816,6 +1844,239 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             return timeString.trim();
         };
 
+	// ==========================================================
+        // ==================== LÓGICA DAS ABAS =====================
+        // ==========================================================
+        const setupTabs = () => {
+            const tabButtons = document.querySelectorAll('#tabs .tab-button');
+            const tabPanes = document.querySelectorAll('#tab-content .tab-pane');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active-tab'));
+                    tabPanes.forEach(pane => pane.classList.remove('active-pane'));
+
+                    button.classList.add('active-tab');
+                    const tabId = button.getAttribute('data-tab');
+                    const activePane = document.getElementById(tabId);
+                    if (activePane) {
+                        activePane.classList.add('active-pane');
+                    }
+                });
+            });
+        };
+
+	const generateSoundtrack = async () => {
+            const fullTranscript = getTranscriptOnly();
+            if (!fullTranscript) {
+                window.showToast("Gere o roteiro completo primeiro para sugerir uma trilha sonora coerente.");
+                return;
+            }
+
+            const button = document.getElementById('generateSoundtrackBtn');
+            const outputContainer = document.getElementById('soundtrackContent');
+            
+            showLoading(button);
+            outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
+
+            const prompt = `Você é um especialista em prompts para IAs de geração de música (como Suno/Udio). Sua tarefa é analisar o roteiro completo de um vídeo e criar 3 prompts de texto distintos e detalhados que capturem a essência emocional da narrativa.
+
+            **REGRAS DE FORMATAÇÃO (NÃO NEGOCIÁVEIS):**
+            1. Sua resposta DEVE SER um array JSON válido.
+            2. O array deve conter EXATAMENTE 3 strings.
+            3. CADA string deve ser um parágrafo único, bem escrito e descritivo.
+
+            **Roteiro completo para analisar:**
+            ---
+            ${fullTranscript}
+            ---`;
+
+            try {
+                const rawResult = await callGroqAPI(prompt, 800);
+                const analysis = cleanGeneratedText(rawResult, true);
+
+                if (!analysis || !Array.isArray(analysis)) {
+                    throw new Error("A IA retornou um formato de trilha sonora inesperado.");
+                }
+
+                let suggestionsHtml = '<ul class="soundtrack-list space-y-2">';
+                analysis.forEach(suggestion => {
+                    suggestionsHtml += `<li>${suggestion}</li>`;
+                });
+                suggestionsHtml += '</ul>';
+                
+                outputContainer.innerHTML = suggestionsHtml;
+                markButtonAsCompleted(button.id);
+
+            } catch (error) {
+                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar sugestões: ${error.message}</p>`;
+            } finally {
+                hideLoading(button);
+            }
+        };
+
+
+
+	 /**
+         * Gera a Conclusão e o CTA juntos, com base na estratégia final escolhida,
+         * e formata o texto corretamente para análise posterior.
+         */
+        const generateConclusionAndCta = async () => {
+            const button = document.getElementById('generateConclusionAndCtaBtn');
+            if (!validateInputs()) return;
+            showLoading(button);
+
+            const conclusionType = document.querySelector('input[name="conclusionType"]:checked').value;
+            const conclusionSpecifics = document.getElementById('conclusionSpecifics').value.trim();
+
+            let strategyDirective = '';
+            switch (conclusionType) {
+                case 'lesson':
+                    strategyDirective = `O objetivo é reforçar uma lição ou reflexão central. Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
+                    break;
+                case 'answer':
+                    const question = elements.centralQuestion.value.trim() || 'a pergunta central do vídeo';
+                    strategyDirective = `O objetivo é responder de forma clara à pergunta central do vídeo ('${question}'). Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
+                    break;
+                case 'cliffhanger':
+                    strategyDirective = `O objetivo é criar um gancho ou mistério para o próximo vídeo. Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
+                    break;
+            }
+            
+            const baseContext = getBasePromptContext();
+            const prompt = `${baseContext}
+            Você é um mestre roteirista. Sua tarefa é escrever a **Conclusão e o Call to Action (CTA)** do vídeo, JUNTOS, em um único bloco de texto fluido.
+            **Diretiva Estratégica para o Final:** ${strategyDirective}
+            **REGRAS CRÍTICAS:** Responda APENAS com o texto final para ser falado. Sem metadados, sem labels (como "Conclusão:", "CTA:"), apenas o texto.`;
+
+            try {
+                let result = await callGroqAPI(prompt, 800);
+                result = removeMetaComments(result.trim());
+
+                const paragraphs = result.split('\n').filter(p => p.trim() !== '');
+                const contentWithSpans = paragraphs.map((p, index) => 
+                    `<div id="conclusion-p-${index}">${p}</div>`
+                ).join('');
+
+                document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão e CTA', contentWithSpans);
+                document.getElementById('ctaSection').innerHTML = ''; 
+
+                markButtonAsCompleted('conclusionBtn');
+                markButtonAsCompleted('generateCTABtn');
+
+                document.getElementById('conclusionStrategyModule').classList.add('hidden');
+                window.showToast("Conclusão e CTA gerados com sucesso!");
+                updateButtonStates();
+
+            } catch(error) {
+                window.showToast(`Falha ao gerar a conclusão: ${error.message}`);
+            } finally {
+                hideLoading(button);
+            }
+        };
+
+	// ==========================================================
+        // NOVA FUNÇÃO PARA ATUALIZAR A BARRA DE PROGRESO
+        // ==========================================================
+        const updateProgressBar = () => {
+            // Lista de todas as tarefas que contam para o progresso
+            const taskButtonIds = [
+                'generateOutlineBtn', 
+                'generateIntroBtn', 'generateDevelopmentBtn', 'climaxBtn', 
+                'conclusionBtn', 'generateCTABtn', 'generateDescriptionBtn', 
+                'generateTitlesAndThumbnailsBtn' 
+            ];
+            const totalTasks = taskButtonIds.length;
+
+            let completedTasks = 0;
+            taskButtonIds.forEach(id => {
+                const button = document.getElementById(id);
+                if (button && button.classList.contains('btn-success')) {
+                    completedTasks++;
+                }
+            });
+
+            const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+            // Atualiza a UI
+            if (elements.progressBar && elements.progressText) {
+                elements.progressBar.style.width = `${percentage}%`;
+                elements.progressText.textContent = `${percentage}%`;
+
+                if (percentage === 100) {
+                    elements.progressBar.textContent = "Projeto Pronto!"; 
+                    elements.progressBar.style.color = '#ffffff';
+                    elements.progressBar.style.textAlign = 'center';
+                    elements.progressBar.style.backgroundColor = 'var(--primary-color)';
+                } else {
+                    elements.progressBar.textContent = '';
+                    elements.progressBar.style.backgroundColor = 'var(--success-color)';
+                }
+            }
+        };
+
+        const setupInputTabs = () => {
+            const nav = document.getElementById('inputTabsNav');
+            if (!nav) return;
+
+            const tabButtons = nav.querySelectorAll('.tab-button');
+            const tabPanes = document.getElementById('inputTabContent').querySelectorAll('.tab-pane');
+
+            nav.addEventListener('click', (event) => {
+                const button = event.target.closest('.tab-button');
+                if (!button) return;
+
+                tabButtons.forEach(btn => btn.classList.remove('active-tab'));
+                tabPanes.forEach(pane => pane.classList.remove('active-pane'));
+
+                button.classList.add('active-tab');
+                const tabId = button.getAttribute('data-tab');
+                const activePane = document.getElementById(tabId);
+                if (activePane) {
+                    activePane.classList.add('active-pane');
+                }
+            });
+        };
+
+        const handleConclusionStrategyChange = () => {
+            const conclusionSpecificsContainer = document.getElementById('conclusionInputContainer');
+            const answerRadioButtonLabel = document.querySelector('input[value="answer"]').parentElement;
+            const answerRadioButton = document.querySelector('input[value="answer"]');
+
+            // 1. Lógica para desabilitar a opção "Responder Pergunta" se não houver pergunta
+            const centralQuestionText = document.getElementById('centralQuestion').value.trim();
+            if (!centralQuestionText) {
+                answerRadioButton.disabled = true;
+                answerRadioButtonLabel.classList.add('opacity-50', 'cursor-not-allowed');
+                answerRadioButtonLabel.title = "Defina a 'Pergunta Central' nos campos principais para usar esta opção.";
+                // Se a opção desabilitada estava selecionada, muda para a primeira
+                if(answerRadioButton.checked) {
+                    document.querySelector('input[value="lesson"]').checked = true;
+                }
+            } else {
+                answerRadioButton.disabled = false;
+                answerRadioButtonLabel.classList.remove('opacity-50', 'cursor-not-allowed');
+                answerRadioButtonLabel.title = "";
+            }
+            
+            const selectedValue = document.querySelector('input[name="conclusionType"]:checked').value;
+            
+            // 2. Lógica para mostrar/esconder o textarea e mudar o placeholder
+            if (conclusionSpecificsContainer) {
+                conclusionSpecificsContainer.classList.toggle('hidden', !['lesson', 'answer', 'cliffhanger'].includes(selectedValue));
+            }
+            
+            const textarea = document.getElementById('conclusionSpecifics');
+            if (textarea) {
+                const placeholders = {
+                    lesson: "Ex: A lição é que a resiliência é a nossa maior força...",
+                    answer: "Ex: A resposta é que a Arca foi levada para a Etiópia, mas o verdadeiro segredo é...",
+                    cliffhanger: "Ex: ...mas se a Arca foi encontrada, o que aconteceu com o que estava DENTRO dela?"
+                };
+                textarea.placeholder = placeholders[selectedValue] || "";
+            }
+        };
+
         /**
          * Alterna a visibilidade de um corpo de acordeão e a rotação de sua seta. (VERSÃO CORRIGIDA E ROBUSTA)
          * @param {string} bodyId - O ID do elemento do corpo do acordeão.
@@ -2041,7 +2302,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
             }
         };
     
-        /**
+         /**
          * Gera o HTML para uma seção do roteiro. (VERSÃO FINALÍSSIMA COM ACORDEÃO CORRIGIDO)
          */
         const generateSectionHtmlContent = (sectionId, title, content) => {
@@ -2064,7 +2325,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
                                 <span class="button-text">Enriquecer Texto</span>
                             </button>
                         </div>
-                        <div class="section-analysis-output mt-3"></div>
+                        <div id="analysis-output-${sectionId}" class="section-analysis-output mt-3"></div>
                     </div>
                     <div class="pt-4 border-t border-dashed border-gray-200 dark:border-gray-700">
                          <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 2: Estrutura de Narração Criativa</h5>
@@ -2076,10 +2337,20 @@ const invalidateAndClearPrompts = (sectionElement) => {
                     </div>
                 </div>
             `;
-            const regenerateBtnHtml = `<button class="regenerate-btn" onclick="event.stopPropagation(); window.regenerateSection('${sectionId}Section')" title="Re-gerar esta seção"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg></button>`;
-            const copyBtnHtml = `<button class="copy-btn" onclick="event.stopPropagation(); copyTextToClipboard(document.getElementById('${mainBodyId}').querySelector('.generated-content-wrapper').textContent); window.showCopyFeedback(this)">Copiar</button>`;
+            const regenerateBtnHtml = `<button class="regenerate-btn" data-action="regenerate" data-section-id="${sectionId}Section" title="Re-gerar esta seção"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg></button>`;
+            const copyBtnHtml = `<button class="copy-btn" data-action="copy" title="Copiar Roteiro"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg></button>`;
             const headerButtonsHtml = `${regenerateBtnHtml} ${copyBtnHtml}`;
 
+            const promptsSectionHtml = `<div class="section-prompts">
+                                            <div class="nested-accordion-header">
+                                                <h4>Recursos Visuais (Prompts)</h4>
+                                                <svg id="${promptsArrowId}" class="accordion-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+                                            </div>
+                                            <div id="${promptsBodyId}" class="accordion-body">
+                                                <div class="pt-2"><button class="btn btn-secondary btn-small" data-action="generate-prompts" data-section-id="${sectionId}Section">Gerar Prompts de Imagem</button><div class="prompt-container mt-4"></div></div>
+                                            </div>
+                                        </div>`;
+            
             return `<div class="accordion-item">
                         <div class="accordion-header main-accordion-header">
                             <div class="header-content">
@@ -2092,24 +2363,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
                         <div id="${mainBodyId}" class="accordion-body">
                             <div class="generated-content-wrapper" contenteditable="true">${content}</div>
                             ${analysisToolsHtml}
-                            <div class="section-prompts">
-                                <div class="nested-accordion-header">
-                                    <h4>Recursos Visuais (Prompts)</h4>
-                                    <svg id="${promptsArrowId}" class="accordion-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
-                                </div>
-                                <div id="${promptsBodyId}" class="accordion-body">
-                                    <div class="pt-2"><button class="btn btn-secondary btn-small" onclick="window.generatePromptsForSection('${sectionId}Section')">Gerar Prompts de Imagem</button><div class="prompt-container mt-4"></div></div>
-                                </div>
-                            </div>
-                            <div class="section-soundtrack">
-                                <div class="nested-accordion-header">
-                                    <h4>Recursos Sonoros (Trilha)</h4>
-                                    <svg id="${soundtrackArrowId}" class="accordion-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
-                                </div>
-                                <div id="${soundtrackBodyId}" class="accordion-body">
-                                    <div class="pt-2"><button class="btn btn-secondary btn-small" onclick="window.suggestSoundtrack('${sectionId}Section')">Sugerir Trilha Sonora</button><div class="soundtrack-container mt-4"></div></div>
-                                </div>
-                            </div>
+                            ${promptsSectionHtml}
                         </div>
                     </div>`;
         };
@@ -2121,7 +2375,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
          * @param {boolean} expectJson - Se true, tenta extrair e validar um JSON.
          * @returns {string|null} O texto limpo ou o JSON stringificado, ou null em caso de erro.
          */
-                const cleanGeneratedText = (text, expectJson = false) => {
+            const cleanGeneratedText = (text, expectJson = false) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
@@ -2148,13 +2402,16 @@ const invalidateAndClearPrompts = (sectionElement) => {
 
             let jsonString = cleanedText.substring(startIndex, endIndex + 1);
 
-            // 3. Tenta fazer o parse
+            // 3. Tenta corrigir erros comuns, como vírgulas extras
+            jsonString = jsonString.replace(/,\s*([}\]])/g, "$1");
+
+            // 4. Tenta fazer o parse
             try {
                 return JSON.parse(jsonString);
             } catch (e) {
                 console.error("Falha ao fazer o parse do JSON extraído:", e.message);
                 console.error("JSON problemático:", jsonString);
-                return null; // Retorna null se falhar, para ser tratado na função que chamou.
+                return null; // Retorna null se falhar
             }
         };
 
@@ -2693,144 +2950,100 @@ The final output MUST be only the JSON code, like this example:
         // ================== FUNÇÕES PRINCIPAIS ====================
         // ==========================================================
         
-        /**
-         * Analisa uma seção, traduz as sugestões e exibe um relatório visual com opção de otimização.
+      /**
+         * Analisa a seção e anexa os tooltips e botões de ação aos parágrafos.
+         * (VERSÃO TOOLTIP RESGATADA)
          */
-                window.analyzeSectionRetention = async (sectionId) => {
+        window.analyzeSectionRetention = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
-            const contentWrapper = sectionElement.querySelector('.generated-content-wrapper');
-            const outputContainer = sectionElement.querySelector('.section-analysis-output');
-            
-            // Limpa a área de relatório antiga
-            outputContainer.innerHTML = '';
+            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+            if (!contentWrapper) return;
 
-            const paragraphs = Array.from(contentWrapper.querySelectorAll('span[id]'));
+            const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]'));
             if (paragraphs.length === 0) {
-                window.showToast("Não há parágrafos para analisar nesta seção.");
+                window.showToast("Não há parágrafos para analisar.");
                 return;
             }
 
-            // Mostra um feedback de carregamento sutil
-            const originalBorder = contentWrapper.style.border;
-            contentWrapper.style.border = '2px dashed var(--primary-color)';
-
             try {
-                const paragraphsWithIds = paragraphs.map(span => ({ id: span.id, text: span.textContent.trim() }));
-                const sectionTitle = sectionElement.querySelector('h3').textContent;
-                const languageName = elements.languageSelect.options[elements.languageSelect.selectedIndex].text;
-
-                                const prompt = `You are a "Retention Editor" API. Your ONLY job is to analyze script paragraphs and return a valid JSON array.
-
-                **Analyze the following array of JSON objects:**
-                ${JSON.stringify(paragraphsWithIds, null, 2)}
-
-                **CRITICAL INSTRUCTIONS:**
-                1.  Return a new JSON array. For EACH object from the input, create a new object with EXACTLY these three keys: "paragraphId" (string), "retentionScore" (string: 'green', 'yellow', or 'red'), and "suggestion" (string in ${languageName}).
-                2.  Your entire response MUST be ONLY the raw JSON array.
-                3.  DO NOT add any introductory text, explanations, or markdown code fences like \`\`\`json.
-                4.  If you cannot perform the analysis, return an empty array: [].`;
+                const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion". Respond ONLY with the raw JSON array.
+                ${JSON.stringify(paragraphsWithIds, null, 2)}`;
 
                 const rawResult = await callGroqAPI(prompt, 2500);
                 const analysis = cleanGeneratedText(rawResult, true);
-if (!analysis || !Array.isArray(analysis)) {
-    throw new Error("A IA retornou uma análise em formato inválido.");
-}
 
-                // Limpa classes antigas antes de aplicar as novas
-                paragraphs.forEach(p => p.className = '');
+                if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
+
+                // Limpa tooltips e botões antigos antes de adicionar os novos
+                paragraphs.forEach(p => {
+                    p.classList.remove('retention-green', 'retention-yellow', 'retention-red');
+                    p.querySelector('.retention-tooltip')?.remove();
+                    p.querySelector('.retention-action-btn')?.remove();
+                });
 
                 analysis.forEach(item => {
-                    const paragraphElement = document.getElementById(item.paragraphId);
-                    if (!paragraphElement) return;
-
-                    // 1. Aplica a classe do Mapa de Calor
-                    paragraphElement.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
-
-                    // 2. Armazena a sugestão em um atributo de dados para o tooltip
-                    const scoreLabels = { green: "PONTO FORTE", yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
-                    const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
-                    paragraphElement.dataset.tooltipTitle = tooltipTitle;
-                    paragraphElement.dataset.tooltipContent = item.suggestion;
-
-                    // 3. Adiciona o botão de otimização (se necessário)
-                    if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
-                        const optimizeBtn = document.createElement('button');
-                        optimizeBtn.className = 'optimize-btn-live';
-                        optimizeBtn.title = 'Otimizar com IA';
-                        optimizeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0ZM5.5 7a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Zm-1.829-1.5a.5.5 0 0 0-.707 0L2 6.793a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L3.707 7.5H3.5a.5.5 0 0 0 0-1h.207L2.707 5.5Zm-1 .707a.5.5 0 0 0-.707-.707L.707 6.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L1.293 7.5H1.5a.5.5 0 0 0 0-1h-.207L2.293 6.207Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>`;
-                        optimizeBtn.onclick = () => window.optimizeParagraph(item.paragraphId, item.suggestion);
-                        paragraphElement.appendChild(optimizeBtn);
+                    const p = document.getElementById(item.paragraphId);
+                    if (p) {
+                        p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
+                        
+                        if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
+                            const tooltipHtml = `<div class="retention-tooltip">${item.suggestion}</div>`;
+                            const buttonHtml = `
+                                <button class="retention-action-btn" onclick="event.stopPropagation(); window.optimizeParagraph('${item.paragraphId}', '${item.suggestion.replace(/'/g, "\\'")}')" title="Otimizar com IA">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
+                                </button>`;
+                            p.insertAdjacentHTML('beforeend', tooltipHtml + buttonHtml);
+                        }
                     }
                 });
                 window.showToast("Análise de retenção concluída!");
-
             } catch (error) {
-                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao analisar a seção: ${error.message}</p>`;
-            } finally {
-                contentWrapper.style.border = originalBorder; // Restaura a borda
+                window.showToast(`Falha na análise: ${error.message}`);
             }
         };
+
+
+
     
         /**
-         * Pega o ID de um parágrafo e uma sugestão, pede para a IA reescrevê-lo,
-         * e substitui o texto do elemento span correspondente.
+         * Pega um parágrafo, otimiza com IA e substitui seu conteúdo.
+         * (VERSÃO TOOLTIP RESGATADA)
          */
-                window.optimizeParagraph = async (paragraphId, suggestion) => {
+        window.optimizeParagraph = async (paragraphId, suggestion) => {
             const paragraphElement = document.getElementById(paragraphId);
-            if (!paragraphElement) {
-                window.showToast("Erro: Parágrafo original não encontrado.");
-                return;
-            }
-            
-            const button = paragraphElement.querySelector('.optimize-btn-live');
-            const originalParagraphText = paragraphElement.firstChild.textContent.trim(); // Pega apenas o texto, ignorando o botão/tooltip
+            if (!paragraphElement) return;
 
+            const button = paragraphElement.querySelector('.retention-action-btn');
             if (button) {
-                button.innerHTML = '<div class="loading-spinner-small" style="margin: 0 auto; border-left-color: var(--primary-color);"></div>';
                 button.disabled = true;
+                button.innerHTML = `<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px;"></div>`;
             }
+
+            const originalText = paragraphElement.firstChild.textContent.trim(); // Pega apenas o texto
+            const prompt = `Rewrite the "Original Paragraph" to incorporate the "Improvement Suggestion". Keep the core message. Respond ONLY with the rewritten paragraph.\n\nOriginal Paragraph:\n"${originalText}"\n\nImprovement Suggestion:\n"${suggestion}"`;
 
             try {
-                const prompt = `Você é um mestre roteirista. Sua tarefa é reescrever o "Parágrafo Original" para incorporar a "Sugestão de Melhoria".
-
-                **Parágrafo Original:**
-                "${originalParagraphText}"
-
-                **REGRAS:**
-                - Mantenha o núcleo da mensagem intacto.
-                - A resposta deve ser APENAS o parágrafo reescrito. Sem introduções, comentários ou explicações.`;
+                const rewrittenText = await callGroqAPI(prompt, 1000);
+                paragraphElement.firstChild.textContent = removeMetaComments(rewrittenText);
                 
-                const rewrittenParagraphRaw = await callGroqAPI(prompt, 1000);
-                const rewrittenParagraph = removeMetaComments(rewrittenParagraphRaw);
-                
-                // Substitui o conteúdo de texto do parágrafo, mantendo o botão e o tooltip
-                paragraphElement.firstChild.textContent = rewrittenParagraph;
-                
-                // Feedback visual: muda a cor para verde e remove o botão
+                // Feedback visual
                 paragraphElement.classList.remove('retention-yellow', 'retention-red');
                 paragraphElement.classList.add('retention-green');
-                if (button) button.remove();
-
-                // Atualiza o tooltip para mostrar que foi otimizado
-                const tooltipDiv = paragraphElement.querySelector('.retention-tooltip');
-                if(tooltipDiv) {
-                    tooltipDiv.innerHTML = `<strong>OTIMIZADO!</strong><span>O parágrafo foi reescrito com sucesso.</span>`;
-                }
-
-                // Invalida os prompts para esta seção, pois o texto mudou
-                const sectionElement = paragraphElement.closest('.script-section');
-                invalidateAndClearPrompts(sectionElement);
-
-                window.showToast("Parágrafo otimizado com sucesso!");
-
-            } catch(error) {
+                paragraphElement.querySelector('.retention-tooltip')?.remove();
+                button?.remove();
+                
+                invalidateAndClearPrompts(paragraphElement.closest('.script-section'));
+                window.showToast("Parágrafo otimizado!");
+            } catch (error) {
                 window.showToast(`Falha ao otimizar: ${error.message}`);
-                if (button) {
-                    button.textContent = "Erro";
-                    button.disabled = false;
-                }
+                if (button) button.innerHTML = '⚠️'; // Ícone de erro
             }
         };
+
+
+
+
     
         /**
          * Pede à IA para analisar uma seção e inserir sugestões de performance.
@@ -3079,9 +3292,10 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
         result = removeMetaComments(result.trim());
 
         const paragraphs = result.split('\n').filter(p => p.trim() !== '');
-        const contentWithSpans = paragraphs.map((p, index) => 
-            `<span id="${elementId}-p-${index}">${p}</span>`
-        ).join('<br><br>');
+	const contentWithSpans = paragraphs.map((p, index) => 
+   	 // Deve ser um <div> com ID
+   	 `<div id="${elementId}-p-${index}">${p}</div>`
+	).join(''); // E o .join() deve estar vazio
         
         if (targetSectionElement) {
             const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithSpans);
@@ -4059,13 +4273,10 @@ ${scriptContent}
         };
 
 // ==========================================================
-// EVENT LISTENERS (VERSÃO FINALÍSSIMA CORRIGIDA 1)
+// EVENT LISTENER ÚNICO E CORRETO
 // ==========================================================
-
 document.addEventListener('DOMContentLoaded', () => {
-    // ==========================================================
-    // 1. INICIALIZAÇÃO GERAL
-    // ==========================================================
+    // ---- 1. INICIALIZAÇÃO GERAL ----
     setupInputTabs();
     setupTabs();
     updateProgressBar();
@@ -4073,10 +4284,9 @@ document.addEventListener('DOMContentLoaded', () => {
     handleConclusionStrategyChange();
     updateNarrativeStructureOptions();
 
-    // ==========================================================
-    // 2. EVENTOS DIRETOS EM ELEMENTOS ESPECÍFICOS
-    // ==========================================================
+    // ---- 2. EVENTOS DIRETOS EM ELEMENTOS ESPECÍFICOS ----
     document.getElementById('importFileInput')?.addEventListener('change', importProject);
+    
     document.getElementById('darkModeToggle')?.addEventListener('click', () => {
         document.body.classList.toggle('dark');
         const isDarkMode = document.body.classList.contains('dark');
@@ -4084,408 +4294,222 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
         localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
     });
+
     if (localStorage.getItem('darkMode') === 'enabled') {
         document.body.classList.add('dark');
         document.getElementById('moonIcon')?.classList.add('hidden');
         document.getElementById('sunIcon')?.classList.remove('hidden');
     }
+
     document.getElementById('toggleZenModeBtn')?.addEventListener('click', () => document.body.classList.toggle('zen-mode'));
     document.getElementById('exitZenModeBtn')?.addEventListener('click', () => document.body.classList.remove('zen-mode'));
     document.getElementById('imageStyleSelect')?.addEventListener('change', toggleCustomImageStyleVisibility);
+    
     document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
         radio.addEventListener('change', handleConclusionStrategyChange);
     });
 
 
 
-
+	// ==========================================================
+    // LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO CORRETA E FINAL)
     // ==========================================================
-    // 4. LÓGICA PARA RESETAR ROTEIRO (O SEU BLOCO)
-    // ==========================================================
-    const strategicInputIds = [
-        'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
-        'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
-        'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect'
-    ];
+    let hideDetailsTimeout; // Timer para esconder o card
 
-    strategicInputIds.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            const eventType = (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') ? 'change' : 'input';
-            element.addEventListener(eventType, (e) => {
-                if (!isSettingStrategy) {
-                    resetGeneratedScriptContent(e.target.id);
-                }
-            });
-        }
-    });
-
-    // ==========================================================
-    // 5. EVENTO DE SCROLL PARA BARRA FLUTUANTE
-    // ==========================================================
-    window.addEventListener('scroll', window.handleFloatingActionBar);
-});
-    
-        // ==========================================================
-        // NOVA FUNÇÃO PARA ATUALIZAR A BARRA DE PROGRESO
-        // ==========================================================
-        const updateProgressBar = () => {
-            // Lista de todas as tarefas que contam para o progresso
-            const taskButtonIds = [
-                'generateOutlineBtn', 
-                'generateIntroBtn', 'generateDevelopmentBtn', 'climaxBtn', 
-                'conclusionBtn', 'generateCTABtn', 'generateDescriptionBtn', 
-                'generateTitlesAndThumbnailsBtn' 
-            ];
-            const totalTasks = taskButtonIds.length;
-
-            let completedTasks = 0;
-            taskButtonIds.forEach(id => {
-                const button = document.getElementById(id);
-                if (button && button.classList.contains('btn-success')) {
-                    completedTasks++;
-                }
-            });
-
-            const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-            // Atualiza a UI
-            if (elements.progressBar && elements.progressText) {
-                elements.progressBar.style.width = `${percentage}%`;
-                elements.progressText.textContent = `${percentage}%`;
-
-                if (percentage === 100) {
-                    elements.progressBar.textContent = "Projeto Pronto!"; 
-                    elements.progressBar.style.color = '#ffffff';
-                    elements.progressBar.style.textAlign = 'center';
-                    elements.progressBar.style.backgroundColor = 'var(--primary-color)';
-                } else {
-                    elements.progressBar.textContent = '';
-                    elements.progressBar.style.backgroundColor = 'var(--success-color)';
-                }
-            }
-        };
-
-        // ==========================================================
-        // FUNÇÕES PLACEHOLDER PARA PRÓXIMOS PASSOS OU REFERÊNCIAS
-        // ==========================================================
-        /**
-         * Gera a Conclusão e o CTA juntos, com base na estratégia final escolhida,
-         * e formata o texto corretamente para análise posterior.
-         */
-        const generateConclusionAndCta = async () => {
-            const button = document.getElementById('generateConclusionAndCtaBtn');
-            if (!validateInputs()) return;
-            showLoading(button);
-
-            // Usa a versão simplificada da UI para os inputs
-            const conclusionType = document.querySelector('input[name="conclusionType"]:checked').value;
-            const conclusionSpecifics = document.getElementById('conclusionSpecifics').value.trim();
-
-            let strategyDirective = '';
-            switch (conclusionType) {
-                case 'lesson':
-                    strategyDirective = `O objetivo é reforçar uma lição ou reflexão central. Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
-                    break;
-                case 'answer':
-                    const question = elements.centralQuestion.value.trim() || 'a pergunta central do vídeo';
-                    strategyDirective = `O objetivo é responder de forma clara à pergunta central do vídeo ('${question}'). Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
-                    break;
-                case 'cliffhanger':
-                    strategyDirective = `O objetivo é criar um gancho ou mistério para o próximo vídeo. Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
-                    break;
-            }
-            
-            const baseContext = getBasePromptContext();
-            const prompt = `${baseContext}
-            Você é um mestre roteirista. Sua tarefa é escrever a **Conclusão e o Call to Action (CTA)** do vídeo, JUNTOS, em um único bloco de texto fluido.
-            **Diretiva Estratégica para o Final:** ${strategyDirective}
-            **REGRAS CRÍTICAS:** Responda APENAS com o texto final para ser falado. Sem metadados, sem labels (como "Conclusão:", "CTA:"), apenas o texto.`;
-
-            try {
-                let result = await callGroqAPI(prompt, 800);
-                result = removeMetaComments(result.trim());
-
-                // **A CORREÇÃO ESTÁ AQUI:** Adiciona os spans com IDs
-                const paragraphs = result.split('\n').filter(p => p.trim() !== '');
-                const contentWithSpans = paragraphs.map((p, index) => 
-                    `<span id="conclusion-p-${index}">${p}</span>`
-                ).join('<br><br>');
-
-                // Injeta o resultado APENAS na seção de Conclusão
-                document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão e CTA', contentWithSpans);
-                document.getElementById('ctaSection').innerHTML = ''; // Limpa a seção de CTA antiga
-
-                // Marca ambos os passos como concluídos
-                markButtonAsCompleted('conclusionBtn');
-                markButtonAsCompleted('generateCTABtn');
-
-                // Esconde o módulo de estratégia
-                document.getElementById('conclusionStrategyModule').classList.add('hidden');
-                window.showToast("Conclusão e CTA gerados com sucesso!");
-                updateButtonStates();
-
-            } catch(error) {
-                window.showToast(`Falha ao gerar a conclusão: ${error.message}`);
-            } finally {
-                hideLoading(button);
-            }
-        };
-
-
-        // Esta função será implementada no próximo passo (Ideia 5)
-        const handleConclusionStrategyChange = () => {
-    const conclusionSpecificsContainer = document.getElementById('conclusionInputContainer');
-    const radioButtons = document.querySelectorAll('input[name="conclusionType"]');
-    const answerRadioButtonLabel = document.querySelector('input[value="answer"]').parentElement;
-    const answerRadioButton = document.querySelector('input[value="answer"]');
-
-    // 1. Lógica para desabilitar a opção "Responder Pergunta"
-    const centralQuestionText = document.getElementById('centralQuestion').value.trim();
-    if (!centralQuestionText) {
-        answerRadioButton.disabled = true;
-        answerRadioButtonLabel.classList.add('opacity-50', 'cursor-not-allowed');
-        answerRadioButtonLabel.title = "Defina a 'Pergunta Central' nos campos principais para usar esta opção.";
-        // Se a opção desabilitada estava selecionada, muda para a primeira opção
-        if(answerRadioButton.checked) {
-            document.querySelector('input[value="lesson"]').checked = true;
-        }
-    } else {
-        answerRadioButton.disabled = false;
-        answerRadioButtonLabel.classList.remove('opacity-50', 'cursor-not-allowed');
-        answerRadioButtonLabel.title = "";
-    }
-
-    const selectedValue = document.querySelector('input[name="conclusionType"]:checked').value;
-    
-    // 2. Lógica para mostrar/esconder o textarea e mudar o placeholder (já existente, mas aprimorada)
-    if (selectedValue === 'lesson' || selectedValue === 'answer' || selectedValue === 'cliffhanger') {
-        conclusionSpecificsContainer.classList.remove('hidden');
-    } else {
-        conclusionSpecificsContainer.classList.add('hidden');
-    }
-    
-    const textarea = document.getElementById('conclusionSpecifics');
-    if (textarea) {
-        switch (selectedValue) {
-            case 'lesson':
-                textarea.placeholder = "Ex: A lição é que a resiliência é a nossa maior força...";
-                break;
-            case 'answer':
-                textarea.placeholder = `Ex: A resposta é que a Arca foi levada para a Etiópia, mas o verdadeiro segredo é...`;
-                break;
-            case 'cliffhanger':
-                textarea.placeholder = "Ex: ...mas se a Arca foi encontrada, o que aconteceu com o que estava DENTRO dela?";
-                break;
-        }
-    }
-};
-
-        // ==========================================================
-        // ==================== LÓGICA DAS ABAS =====================
-        // ==========================================================
-        const setupTabs = () => {
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabPanes = document.querySelectorAll('.tab-pane');
-
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    tabButtons.forEach(btn => btn.classList.remove('active-tab'));
-                    tabPanes.forEach(pane => {
-                        pane.classList.remove('active-pane');
-                        pane.classList.add('hidden');
-                    });
-
-                    button.classList.add('active-tab');
-                    const tabId = button.getAttribute('data-tab');
-                    const activePane = document.getElementById(tabId);
-                    if (activePane) {
-                        activePane.classList.remove('hidden');
-                        activePane.classList.add('active-pane');
-                    }
-                });
-            });
-        };
-
-
-// ==========================================================
-        // ===== NOVA FUNÇÃO PARA AS ABAS DE INPUTS (COLE AQUI) =====
-        // ==========================================================
-        const setupInputTabs = () => {
-            const nav = document.getElementById('inputTabsNav');
-            if (!nav) return;
-
-            const tabButtons = nav.querySelectorAll('.tab-button');
-            const tabPanes = document.getElementById('inputTabContent').querySelectorAll('.tab-pane');
-
-            nav.addEventListener('click', (event) => {
-                const button = event.target.closest('.tab-button');
-                if (!button) return;
-
-                tabButtons.forEach(btn => btn.classList.remove('active-tab'));
-                tabPanes.forEach(pane => pane.classList.remove('active-pane'));
-
-                button.classList.add('active-tab');
-                const tabId = button.getAttribute('data-tab');
-                const activePane = document.getElementById(tabId);
-                if (activePane) {
-                    activePane.classList.add('active-pane');
-                }
-            });
-        };
-
-
-
-// ==========================================================
-// EVENT LISTENERS (VERSÃO FINALÍSSIMA CORRIGIDA 2)
-// ==========================================================
-document.addEventListener('DOMContentLoaded', () => {
-    // ---- INICIALIZAÇÃO GERAL ----
-    setupInputTabs();
-    setupTabs();
-    updateProgressBar();
-    updateButtonStates();
-    handleConclusionStrategyChange();
-    updateNarrativeStructureOptions();
-
-    // ---- CONFIGURAÇÃO DOS EVENTOS PRINCIPAIS ----
-    const importFileInput = document.getElementById('importFileInput');
-    if (importFileInput) {
-        importFileInput.addEventListener('change', importProject);
-    }
-
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    if (darkModeToggle) {
-        darkModeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark');
-            const isDarkMode = document.body.classList.contains('dark');
-            document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
-            document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
-            localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
-        });
-    }
-    if (localStorage.getItem('darkMode') === 'enabled') {
-        document.body.classList.add('dark');
-        if (document.getElementById('moonIcon')) document.getElementById('moonIcon').classList.add('hidden');
-        if (document.getElementById('sunIcon')) document.getElementById('sunIcon').classList.remove('hidden');
-    }
-
-    const toggleZenModeBtn = document.getElementById('toggleZenModeBtn');
-    if (toggleZenModeBtn) {
-        toggleZenModeBtn.addEventListener('click', () => document.body.classList.toggle('zen-mode'));
-    }
-
-    const exitZenModeBtn = document.getElementById('exitZenModeBtn');
-    if (exitZenModeBtn) {
-        exitZenModeBtn.addEventListener('click', () => document.body.classList.remove('zen-mode'));
-    }
-
-    const imageStyleSelect = document.getElementById('imageStyleSelect');
-    if (imageStyleSelect) {
-        imageStyleSelect.addEventListener('change', toggleCustomImageStyleVisibility);
-    }
-
-    document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
-        radio.addEventListener('change', handleConclusionStrategyChange);
-    });
-
-    // ---- DELEGAÇÃO DE EVENTOS DE CLIQUE CENTRALIZADA (VERSÃO CORRIGIDA) ----
-    
-
-
-document.addEventListener('click', function(event) {
-        // PARTE 1: LÓGICA INTELIGENTE PARA ACORDEÕES
-        const header = event.target.closest('.main-accordion-header, .nested-accordion-header');
-        if (header) {
-            // Se for um acordeão aninhado, impede que o clique feche o acordeão principal
-            if (header.classList.contains('nested-accordion-header')) {
-                event.stopPropagation();
-            }
-
-            const body = header.nextElementSibling;
-            const arrow = header.querySelector('.accordion-arrow');
-
-            if (body && arrow) {
-                const isOpen = body.classList.toggle('open');
-                arrow.classList.toggle('open', isOpen);
-                header.classList.toggle('active', isOpen);
-            }
-            return; // Encerra o processamento aqui se foi um clique de acordeão
-        }
-
-        // PARTE 2: LÓGICA PARA TODOS OS OUTROS BOTÕES (seu código original)
-        const button = event.target.closest('button');
-        if (!button) return;
-
-        const clickActions = {
-            'analyzeStrategyBtn': analyzeAndSetStrategy,
-            'generateOutlineBtn': generateStrategicOutline,
-            'generateConclusionAndCtaBtn': generateConclusionAndCta,
-            'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
-            'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
-            'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-            'generateDescriptionBtn': generateVideoDescription,
-            'generateTitlesAndThumbnailsBtn': generateTitlesAndThumbnails,
-            'downloadPdfBtn': downloadPdf,
-            'exportProjectBtn': exportProject,
-            'importProjectBtn': () => document.getElementById('importFileInput').click(),
-            'resetScriptBtn': resetApplicationState,
-            'generateIdeasBtn': generateVideoIdeas,
-            'copyTranscriptBtn': handleCopyAndDownloadTranscript
-        };
-
-        if (clickActions[button.id]) {
-            event.preventDefault();
-            clickActions[button.id]();
-            return;
-        }
-
-        if (button.id.startsWith('float_')) {
-            event.preventDefault();
-            const originalId = button.id.replace('float_', '');
-            const originalButton = document.getElementById(originalId);
-            if (originalButton) {
-                originalButton.click();
-            }
-        }
-    });
-
-
-// ==========================================================
-    // LÓGICA PARA TOOLTIP VIVO DA ANÁLISE DE RETENÇÃO
-    // ==========================================================
-    let tooltipElement = null; // Referência para o tooltip, para que possamos removê-lo
-
+    // Listener para MOSTRAR os detalhes ao passar o mouse
     document.getElementById('scriptSectionsContainer').addEventListener('mouseover', (event) => {
-        const target = event.target.closest('.retention-paragraph-live');
-        if (!target || !target.dataset.tooltipContent) return;
+        const paragraph = event.target.closest('.retention-paragraph-live');
+        if (!paragraph || !paragraph.dataset.suggestion) return;
 
-        // Cria o elemento do tooltip se ele não existir
-        if (!tooltipElement) {
-            tooltipElement = document.createElement('div');
-            tooltipElement.className = 'absolute z-10 p-2 text-xs text-white bg-gray-900 rounded-md shadow-lg dark:bg-gray-700';
-            document.body.appendChild(tooltipElement);
+        clearTimeout(hideDetailsTimeout);
+
+        const sectionId = paragraph.closest('.script-section').id;
+        const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
+        if (!detailsArea) return;
+
+        // ==========================================================
+        // AQUI ESTÁ A LÓGICA CORRIGIDA
+        // ==========================================================
+        const score = paragraph.dataset.score;
+        const suggestion = paragraph.dataset.suggestion;
+        const scoreLabels = { green: "Ponto Forte", yellow: "Ponto de Atenção", red: "Ponto de Risco" };
+        const scoreColors = { green: "green-500", yellow: "yellow-400", red: "red-500" };
+        
+        let buttonHtml = '';
+        // Só mostra o botão de otimizar se o score for amarelo ou vermelho
+        if (score === 'yellow' || score === 'red') {
+            buttonHtml = `<button class="btn btn-secondary btn-small" data-action="optimize-paragraph" data-paragraph-id="${paragraph.id}">Otimizar com IA</button>`;
         }
 
-        // Preenche e posiciona o tooltip
-        tooltipElement.innerHTML = `<strong>${target.dataset.tooltipTitle}</strong><br>${target.dataset.tooltipContent}`;
-        const rect = target.getBoundingClientRect();
-        tooltipElement.style.left = `${rect.left}px`;
-        tooltipElement.style.top = `${rect.top - tooltipElement.offsetHeight - 5}px`; // 5px acima do parágrafo
-        tooltipElement.style.display = 'block';
+        // Esta é a linha que cria o card NOVO e CORRETO
+        detailsArea.innerHTML = `
+            <div class="retention-details-card border-l-${scoreColors[score]}">
+                <strong class="text-${scoreColors[score]}">${scoreLabels[score]}</strong>
+                <p>${suggestion}</p>
+                ${buttonHtml}
+            </div>
+        `;
+        detailsArea.classList.remove('hidden');
     });
 
+    // Listener para ESCONDER os detalhes quando o mouse sai
     document.getElementById('scriptSectionsContainer').addEventListener('mouseout', (event) => {
-        const target = event.target.closest('.retention-paragraph-live');
-        if (target && tooltipElement) {
-            tooltipElement.style.display = 'none';
+        const paragraph = event.target.closest('.retention-paragraph-live');
+        if (paragraph) {
+            const sectionId = paragraph.closest('.script-section').id;
+            const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
+            
+            if (detailsArea && !detailsArea.classList.contains('hidden')) {
+                hideDetailsTimeout = setTimeout(() => {
+                    detailsArea.classList.add('hidden');
+                    detailsArea.innerHTML = '';
+                }, 300); 
+            }
+        }
+    });
+
+    // Listener para MANTER os detalhes visíveis se o mouse entrar no card
+    document.addEventListener('mouseover', (event) => {
+        if (event.target.closest('.section-analysis-output')) {
+            clearTimeout(hideDetailsTimeout);
+        }
+    });
+
+    // Listener para MANTER os detalhes visíveis se o mouse entrar no card
+    document.addEventListener('mouseover', (event) => {
+        if (event.target.closest('.section-analysis-output')) {
+            clearTimeout(hideDetailsTimeout); // Cancela o timer de esconder
+        }
+    });
+	// ==========================================================
+	// FIM DA LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO FINAL)
+	// ==========================================================
+
+
+
+
+    // Listener para ESCONDER os detalhes
+    document.getElementById('scriptSectionsContainer').addEventListener('mouseout', (event) => {
+        const paragraph = event.target.closest('.retention-paragraph-live');
+        if (paragraph) {
+            // Se o mouse saiu de um parágrafo, programa para esconder a área de detalhes
+            const sectionId = paragraph.closest('.script-section').id;
+            const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
+            if (detailsArea && !detailsArea.classList.contains('hidden')) {
+                hideDetailsTimeout = setTimeout(() => {
+                    detailsArea.classList.add('hidden');
+                    detailsArea.innerHTML = '';
+                }, 300); // 300ms de atraso
+            }
+        }
+    });
+
+    // Listener para MANTER os detalhes visíveis se o mouse entrar na área
+    document.addEventListener('mouseover', (event) => {
+        if (event.target.closest('.section-analysis-output')) {
+            clearTimeout(hideDetailsTimeout);
+        }
+    });
+
+    // ---- 4. O "GERENTE DE CLIQUES" - VERSÃO FINAL E CORRIGIDA ----
+    document.addEventListener('click', function(event) {
+        const target = event.target;
+        const button = target.closest('button');
+
+        // PARTE 1: AÇÕES ESPECÍFICAS (JÁ ESTÁ FUNCIONANDO BEM)
+        // Se o clique foi em um botão com uma ação específica (copiar, re-gerar, etc.),
+        // a ação é executada e a função para imediatamente com 'return'.
+        if (button && button.dataset.action) {
+            event.preventDefault();
+            const action = button.dataset.action;
+
+            if (action === 'regenerate') {
+                const sectionId = button.dataset.sectionId;
+                if (sectionId) window.regenerateSection(sectionId);
+                return;
+            }
+            if (action === 'copy') {
+                const accordionItem = button.closest('.accordion-item');
+                if (accordionItem) {
+                    const contentWrapper = accordionItem.querySelector('.generated-content-wrapper');
+                    if (contentWrapper) {
+                        const textToCopy = contentWrapper.textContent;
+                        window.copyTextToClipboard(textToCopy);
+                        window.showCopyFeedback(button);
+                    }
+                }
+                return;
+            }
+            if (action === 'generate-prompts') {
+                const sectionId = button.dataset.sectionId;
+                if (sectionId) window.generatePromptsForSection(sectionId);
+                return;
+            }
+            if (action === 'optimize-paragraph') {
+                const paragraphId = button.dataset.paragraphId;
+                const detailsCard = button.closest('.retention-details-card');
+                if (detailsCard) {
+                    const suggestion = detailsCard.querySelector('p').textContent;
+                    window.optimizeParagraph(paragraphId, suggestion);
+                }
+                return;
+            }
+        }
+
+        // PARTE 2: LÓGICA DO ACORDEÃO (AGORA SIMPLIFICADA E CORRETA)
+        // Esta parte só é executada se um botão de ação específico NÃO foi clicado.
+        const header = target.closest('.accordion-header, .nested-accordion-header');
+        if (header) {
+            // A CONDIÇÃO DE OURO:
+            // SÓ ABRE O ACORDEÃO SE O CLIQUE NÃO FOI NA ÁREA DOS BOTÕES DE AÇÃO.
+            if (!target.closest('.header-buttons')) {
+                const body = header.nextElementSibling;
+                const arrow = header.querySelector('.accordion-arrow');
+                if (body && arrow) {
+                    const isOpen = body.classList.toggle('open');
+                    arrow.classList.toggle('open', isOpen);
+                    header.classList.toggle('active', isOpen);
+                }
+            }
+            // Não usamos 'return' aqui, para que o código continue e verifique os botões por ID.
+        }
+
+        // PARTE 3: LÓGICA DOS BOTÕES GERAIS POR ID (JÁ ESTAVA FUNCIONANDO)
+        if (button) {
+            const clickActions = {
+                'analyzeStrategyBtn': analyzeAndSetStrategy,
+                'generateOutlineBtn': generateStrategicOutline,
+                'generateConclusionAndCtaBtn': generateConclusionAndCta,
+                'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
+                'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
+                'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
+                'generateDescriptionBtn': generateVideoDescription,
+                'generateTitlesAndThumbnailsBtn': generateTitlesAndThumbnails,
+                'downloadPdfBtn': downloadPdf,
+                'exportProjectBtn': exportProject,
+                'importProjectBtn': () => document.getElementById('importFileInput').click(),
+                'resetScriptBtn': resetApplicationState,
+                'generateIdeasBtn': generateVideoIdeas,
+                'copyTranscriptBtn': handleCopyAndDownloadTranscript,
+                'generateSoundtrackBtn': generateSoundtrack
+            };
+
+            if (clickActions[button.id]) {
+                event.preventDefault();
+                clickActions[button.id]();
+                return;
+            }
+
+            if (button.id.startsWith('float_')) {
+                event.preventDefault();
+                const originalId = button.id.replace('float_', '');
+                document.getElementById(originalId)?.click();
+            }
         }
     });
 
 
-    // ==========================================================
-    // NOVA LÓGICA: RESETAR ROTEIRO AO MUDAR INPUTS ESTRATÉGICOS
-    // ==========================================================
+    // ---- 5. LÓGICA PARA RESETAR ROTEIRO ----
     const strategicInputIds = [
         'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
         'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
@@ -4497,7 +4521,6 @@ document.addEventListener('click', function(event) {
         if (element) {
             const eventType = (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') ? 'change' : 'input';
             element.addEventListener(eventType, (e) => {
-                // SÓ EXECUTA O RESET SE NÃO FOR A IA QUE ESTÁ MUDANDO OS VALORES
                 if (!isSettingStrategy) {
                     resetGeneratedScriptContent(e.target.id);
                 }
@@ -4505,9 +4528,10 @@ document.addEventListener('click', function(event) {
         }
     });
 
-    // ---- EVENTOS GLOBAIS DA JANELA ----
+    // ---- 6. EVENTO DE SCROLL PARA BARRA FLUTUANTE ----
     window.addEventListener('scroll', window.handleFloatingActionBar);
 });
-    </script>
+
+</script>
 </body>
 </html>
