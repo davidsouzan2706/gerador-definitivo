@@ -2988,8 +2988,13 @@ The final output MUST be only the JSON code, like this example:
 
             try {
                 const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
-                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion". Respond ONLY with the raw JSON array.
-                ${JSON.stringify(paragraphsWithIds, null, 2)}`;
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion".
+        
+        	**CRITICAL RULE: The "suggestion" MUST be written in Portuguese (Brazil).**
+
+	        Analyze this data:
+	        ${JSON.stringify(paragraphsWithIds, null, 2)}`;
+
 
                 const rawResult = await callGroqAPI(prompt, 2500);
                 const analysis = cleanGeneratedText(rawResult, true);
