@@ -4343,10 +4343,24 @@ ${scriptContent}
                 }
             });
 
-            // ---- O "GERENTE DE CLIQUES" CENTRALIZADO ----
+            // ---- O "GERENTE DE CLIQUES" CENTRALIZADO (VERSÃO FINAL E CORRETA) ----
             document.addEventListener('click', function(event) {
                 const button = event.target.closest('button');
-                if (!button) return;
+                const header = event.target.closest('.accordion-header, .nested-accordion-header');
+
+                // PARTE 1: LÓGICA DO ACORDEÃO (SEMPRE VERIFICADA PRIMEIRO)
+                if (header && !event.target.closest('.header-buttons')) {
+                    const body = header.nextElementSibling;
+                    const arrow = header.querySelector('.accordion-arrow');
+                    if (body && arrow) {
+                        body.classList.toggle('open');
+                        arrow.classList.toggle('open', body.classList.contains('open'));
+                        header.classList.toggle('active', body.classList.contains('open'));
+                    }
+                }
+
+                // PARTE 2: LÓGICA DOS BOTÕES
+                if (!button) return; // Se o clique não foi em um botão, encerra aqui.
 
                 const action = button.dataset.action;
                 
@@ -4376,7 +4390,7 @@ ${scriptContent}
                              if(button.dataset.sectionId) window.generatePromptsForSection(button.dataset.sectionId);
                              break;
                     }
-                    return; // Importante para não processar duas vezes
+                    return;
                 }
 
                 // Lógica para botões com ID
@@ -4387,6 +4401,7 @@ ${scriptContent}
                     'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
                     'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
                     'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
+                    'generateCTABtn': () => generateConclusionAndCta(), // Adicionado para cobrir o botão CTA
                     'generateDescriptionBtn': generateVideoDescription,
                     'generateTitlesAndThumbnailsBtn': generateTitlesAndThumbnails,
                     'downloadPdfBtn': downloadPdf,
@@ -4408,35 +4423,7 @@ ${scriptContent}
                     event.preventDefault();
                     document.getElementById(button.id.replace('float_', ''))?.click();
                 }
-
-                 // Lógica do Acordeão
-                const header = event.target.closest('.accordion-header, .nested-accordion-header');
-                if (header && !event.target.closest('.header-buttons')) {
-                    const body = header.nextElementSibling;
-                    const arrow = header.querySelector('.accordion-arrow');
-                    if (body && arrow) {
-                        body.classList.toggle('open');
-                        arrow.classList.toggle('open', body.classList.contains('open'));
-                        header.classList.toggle('active', body.classList.contains('open'));
-                    }
-                }
             });
-
-            // Lógica para resetar o roteiro
-            const strategicInputIds = [
-                'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
-                'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
-                'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect'
-            ];
-            strategicInputIds.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.addEventListener('change', (e) => {
-                        if (!isSettingStrategy) resetGeneratedScriptContent(e.target.id);
-                    });
-                }
-            });
-        });
 
 
 </script>
