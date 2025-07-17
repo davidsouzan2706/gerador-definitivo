@@ -3121,7 +3121,8 @@ The final output MUST be only the JSON code, like this example:
                 // ==========================================================
                 // AQUI ESTÁ A MUDANÇA CRUCIAL NO PROMPT
                 // ==========================================================
-                const prompt = `Você é um Diretor de Cena e um coach de narração para YouTubers. Sua tarefa é pegar um roteiro e prepará-lo para um narrador profissional, inserindo anotações de performance **ANTES** das frases que elas modificam e torná-lo muito mais impactante.
+
+                const prompt = `Você é um Diretor de Cena e um coach de narração para YouTubers. Sua tarefa é pegar um roteiro e prepará-lo para um narrador profissional, inserindo anotações de performance **ANTES** das frases ou palavras que elas modificam.
 
                 **Roteiro Original:**
                 ---
@@ -3130,19 +3131,25 @@ The final output MUST be only the JSON code, like this example:
 
                 **Sua Tarefa e Regras Críticas:**
                 1.  **ANTECIPE A INSTRUÇÃO:** A anotação [em colchetes] deve vir **SEMPRE ANTES** da frase ou palavra que ela afeta. O narrador precisa ler a instrução primeiro para depois executar a fala.
-                2.  **FOCO NAS EMOÇÕES:** Suas anotações devem focar em:
-                    - **Pausas:** Use [pausa dramática], [pausa curta] ou [pausa longa] para criar suspense e ritmo.
-                    - **Tom de Voz:** Sugira mudanças como [tom de voz mais baixo e misterioso], [aumentando a energia], [sussurrando], [com um tom de indignação].
-                    - **Ênfase:** Indique palavras específicas a serem enfatizadas, como [ênfase em 'impossível'].
-                    - **Ritmo:** Sugira mudanças de velocidade, como [acelerando o ritmo] ou [desacelere, com peso em cada palavra].
-                3.  **NÃO ALTERE O TEXTO:** Não mude nenhuma palavra do roteiro original. Apenas adicione suas anotações.
-                4.  **RESPOSTA DIRETA:** Responda APENAS com o texto final anotado, em ${languageName}. Sem introduções ou comentários.
+                
+                2.  **REGRA DE ÊNFASE (MUITO IMPORTANTE):** Para enfatizar uma palavra ou frase, coloque a instrução [ênfase em '...'] **imediatamente antes** dela. NÃO coloque a ênfase depois.
+                    - **Errado:** "...eles trabalham em harmonia [ênfase em 'em harmonia']..."
+                    - **Correto:** "...eles trabalham [ênfase em 'em harmonia'] em harmonia..."
+                
+                3.  **FOCO NAS EMOÇÕES:** Suas anotações devem focar em Pausas, Tom de Voz, Ênfase e Ritmo.
+                
+                4.  **NÃO ALTERE O TEXTO:** Não mude nenhuma palavra do roteiro original. Apenas adicione suas anotações.
+                
+                5.  **RESPOSTA DIRETA:** Responda APENAS com o texto final anotado, em ${languageName}. Sem introduções ou comentários.
 
-                **Exemplo de Resposta Perfeita (note o posicionamento):**
-                "E quando eles finalmente abriram o túmulo... [pausa longa, com tom de suspense] ...o que eles encontraram mudaria a história para sempre. Eles não encontraram um corpo, mas sim [ênfase em 'uma mensagem']."`;
+                **Exemplo de Resposta Perfeita (note a ênfase):**
+                "E quando eles finalmente abriram o túmulo... [pausa longa, com tom de suspense] ...o que eles encontraram mudaria a história para sempre. Eles não encontraram um corpo, mas sim [ênfase em 'uma mensagem'] uma mensagem."`;
+
                 // ==========================================================
                 // FIM DA MUDANÇA NO PROMPT
                 // ==========================================================
+
+
 
                 let performedText = await callGroqAPI(prompt, 2000);
                 performedText = removeMetaComments(performedText);
