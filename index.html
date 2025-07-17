@@ -2952,8 +2952,8 @@ The final output MUST be only the JSON code, like this example:
         // ==========================================================
         
       /**
-         * Analisa a seção e anexa os tooltips e botões de ação aos parágrafos.
-         * (VERSÃO TOOLTIP RESGATADA)
+         * Analisa a seção, anexa tooltips com título e botões de ação.
+         * (VERSÃO TOOLTIP FINAL CORRIGIDA)
          */
         window.analyzeSectionRetention = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
@@ -2984,14 +2984,11 @@ The final output MUST be only the JSON code, like this example:
                 });
 
                 analysis.forEach(item => {
-
-
                     const p = document.getElementById(item.paragraphId);
                     if (p) {
                         p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
                         
                         if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
-                            // ESTA É A PARTE CORRIGIDA
                             const scoreLabels = { green: "PONTO FORTE", yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
                             const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
 
@@ -3004,6 +3001,11 @@ The final output MUST be only the JSON code, like this example:
                         }
                     }
                 });
+                window.showToast("Análise de retenção concluída!");
+            } catch (error) {
+                window.showToast(`Falha na análise: ${error.message}`);
+            }
+        };
 
 
 
