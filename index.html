@@ -1497,6 +1497,1505 @@
     </div>
     
     <script type="module">
+        <!--Teste-->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Roteiros Virais v3.0 - O Painel do Projeto</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF para geração de PDF (ainda incluído, mas não usado para download principal) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Fontes Google - Carlito para legibilidade -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+    <style>
+
+
+/* ========================================================== */
+/* ======== ESTILOS PARA O CONSULTOR DE RETENÇÃO V3 ======== */
+/* ========================================================== */
+.retention-paragraph-live {
+    padding: 0.25rem 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    border-left-width: 3px;
+    transition: background-color 0.2s ease-out;
+}
+.retention-paragraph-live:hover {
+    background-color: rgba(129, 140, 248, 0.1); /* Fundo sutil no hover */
+}
+.dark .retention-paragraph-live:hover {
+    background-color: rgba(129, 140, 248, 0.15);
+}
+
+/* --- Cores do Mapa de Calor --- */
+.retention-green { border-left-color: #10B981; }
+.retention-yellow { border-left-color: #FBBF24; }
+.retention-red { border-left-color: #EF4444; }
+
+/* --- Área de Detalhes da Sugestão (Vamos usar depois) --- */
+.retention-details-card {
+    background-color: var(--bg-light);
+    border: 1px solid var(--border-light);
+    border-left-width: 4px;
+    padding: 1rem;
+    border-radius: 8px;
+}
+.dark .retention-details-card {
+    background-color: #1f2937;
+    border-color: #4b5563;
+}
+.retention-details-card strong {
+    display: block;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+.retention-details-card p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-dark);
+}
+.dark .retention-details-card p {
+    color: #d1d5db; /* Cor de texto clara */
+}
+.retention-details-card button {
+    margin-top: 0.75rem;
+}
+
+/* E adicione esta regra para o modo escuro */
+.dark .retention-details-card p {
+    color: #d1d5db; /* Cor de texto clara */
+
+}
+.retention-details-card button {
+    margin-top: 0.75rem;
+}
+
+	/* ========================================================== */
+	/* ========= FEEDBACK VISUAL PARA TEXTO ENRIQUECIDO ========= */
+	/* ========================================================== */
+	@keyframes highlight-fade {
+	from { background-color: rgba(255, 255, 0, 0.5); }
+	to { background-color: transparent; }
+	}
+
+	.highlight-change {
+	animation: highlight-fade 2s ease-in-out;
+	background-color: transparent; /* Estado final da animação */
+	}
+	
+        /* ========================================================== */
+        /* ==================== ESTILOS GERAIS ==================== */
+        /* ========================================================== */
+        /* Variáveis CSS para cores consistentess e fácil manutenção */
+        :root {
+            --primary-color: #4f46e5; /* Indigo-600 */
+            --primary-hover: #4338ca; /* Indigo-700 */
+            --secondary-bg: #e0e7ff; /* Indigo-100 */
+            --secondary-text: #4338ca; /* Indigo-700 */
+            --secondary-hover: #c7d2fe; /* Indigo-200 */
+            --success-color: #10B981; /* Green-500 */
+            --success-hover: #059669; /* Green-600 */
+            --text-dark: #1f2937; /* Gray-800 */
+            --text-medium: #4b5563; /* Gray-600 */
+            --text-light: #6b7280; /* Gray-500 */
+            --bg-light: #f9fafb; /* Gray-50 */
+            --border-light: #e5e7eb; /* Gray-200 */
+        }
+
+        body {
+            font-family: 'Carlito', sans-serif;
+            background-color: #f0f2f5; /* Cinza bem claro */
+            color: var(--text-dark); /* Cor de texto padrão para modo claro */
+            min-height: 100vh; /* GARANTE QUE O BODY OCUPE NO MÍNIMO TODA A TELA */
+        }
+        .dark body {
+            background-color: #111827; /* Cinza 900 */
+            color: #d1d5db; /* Cor de texto padrão para modo escuro */
+        }
+        .container {
+            max-width: 1024px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #ffffff; /* Branco */
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 120px; /* GARANTE ESPAÇO PARA O RODAPÉ FIXO NÃO COBRIR O CONTEÚDO */
+        }
+        .dark .container {
+            background-color: #1f2937; /* Cinza 800 */
+        }
+        .input-group label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        /* ========================================================== */
+        /* ======== ESTILIZAÇÃO DEFINITIVA DE INPUTS E FORMS ======== */
+        /* ========================================================== */
+        /* Classe Mestra para Fundos de Componentes */
+        .card-background {
+            background-color: #ffffff; /* Padrão (Claro) */
+            border: 1px solid var(--border-light);
+        }
+        .dark .card-background {
+            background-color: #1f2937; /* Escuro */
+            border: 1px solid #4b5563;
+        }
+
+        /* --- ESTADO PADRÃO (MODO CLARO) --- */
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            outline: none !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2) !important;
+            background-color: #ffffff !important; /* Explicitly white on focus in light mode */
+        }
+        /* --- ESTADO MODO ESCURO --- */
+        .dark .input-group input:focus,
+        .dark .input-group select:focus,
+        .dark .input-group textarea:focus {
+            border-color: #6366f1 !important; /* indigo-500 */
+            background-color: #4b5563 !important; /* gray-600 */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3) !important;
+        }
+        /* --- CORREÇÃO PARA O PLACEHOLDER --- */
+        .dark .input-group input::placeholder,
+        .dark .input-group textarea::placeholder {
+            color: #9ca3af; /* gray-400 */
+        }
+        /* Cor de texto para elementos no modo escuro */
+        .dark h1, .dark h2, .dark h3, .dark h4, .dark label {
+            color: #f3f4f6;
+        }
+        .dark .input-group input, .dark .input-group select, .dark .input-group textarea {
+            color: #f9fafb;
+        }
+
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: inline-flex; /* Para alinhar texto e spinner/ícone */
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border: none;
+            white-space: nowrap; /* Evita que o texto do botão quebre linha */
+        }
+        .btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+        .btn-secondary {
+            background-color: var(--secondary-bg);
+            color: var(--secondary-text);
+        }
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--secondary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 44px 12px rgba(79, 70, 229, 0.15);
+        }
+        .btn-success {
+            background-color: var(--success-color) !important; /* !important para sobrescrever */
+            color: #ffffff !important;
+        }
+        .btn-success:hover:not(:disabled) {
+            background-color: var(--success-hover) !important;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-left-color: #ffffff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        .btn-secondary .loading-spinner {
+            border: 4px solid rgba(67, 56, 202, 0.2);
+            border-left-color: var(--secondary-text);
+        }
+        .loading-spinner.hidden { display: none; }
+        .button-text.hidden { display: none; }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Icone de Conclusão */
+        /* REMOVIDO: .completion-icon { ... } */
+        /* REMOVIDO: .completion-icon.hidden { display: none; } */
+
+        /* ========================================================== */
+        /* ==================== UI MELHORADA ====================== */
+        /* ========================================================== */
+        .accordion-item {
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden; /* Garante que o conteúdo escondido não vaze */
+            background-color: var(--bg-light);
+        }
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            user-select: none; /* Impede seleção de texto ao clicar */
+        }
+        /* Estilo para o cabeçalho do acordeão ativo */
+        .accordion-header.active {
+            background-color: var(--secondary-bg);
+        }
+        .dark .accordion-header.active {
+            background-color: #374151; /* Gray-700 */
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 0.5rem; /* Espaçamento entre os botões de ação */
+        }
+        .accordion-header h3 {
+            margin-bottom: 0; /* Remove a margem padrão do h3 */
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .accordion-arrow {
+            transition: transform 0.3s ease-in-out;
+        }
+        .accordion-arrow.open {
+            transform: rotate(180deg);
+        }
+        .accordion-body {
+            max-height: 0; /* Escondido por padrão */
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
+            padding: 0 1.5rem; /* Padding vertical zero quando fechado */
+        }
+	.accordion-body.open {
+            max-height: 200vh; /* Um valor alto para permitir a expansão */
+            padding: 1.5rem;   /* Restaura o padding para mostrar o conteúdo */
+        }
+        /* Força o fundo correto para o corpo do acordeão */
+        .accordion-body {
+            background-color: #ffffff; /* Fundo branco padrão (Modo Claro) */
+        }
+        /* Define a cor correta para o fundo do corpo no Modo Escuro */
+        .dark .accordion-body {
+            background-color: #1f2937; /* Mesmo fundo do container (Cinza 800) */
+        }
+        /* Garante a cor de texto correta para o conteúdo gerado */
+        .generated-content-wrapper {
+            color: var(--text-dark); /* Garante texto escuro no modo claro */
+            line-height: 1.6; /* Melhora a legibilidade */
+        }
+        .dark .generated-content-wrapper {
+            color: #d1d5db; /* Garante texto claro no modo escuro (Gray-300) */
+        }
+        .accordion-body .generated-content-wrapper[contenteditable="true"] {
+            outline: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: box-shadow 0.2s, background-color 0.2s;
+        }
+        .accordion-body .generated-content-wrapper[contenteditable="true"]:focus {
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+            background-color: #eef2ff; /* Fundo levemente azulado ao editar */
+        }
+
+        /* Botões de Copiar e Re-gerar dentro das seções */
+        .copy-btn, .regenerate-btn {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: none;
+            white-space: nowrap;
+        }
+        .copy-btn {
+            background-color: var(--primary-color);
+            color: #ffffff;
+        }
+        .copy-btn:hover {
+            background-color: var(--primary-hover);
+        }
+        .regenerate-btn {
+            background-color: var(--secondary-bg);
+            color: var(--secondary-text);
+        }
+        .regenerate-btn:hover {
+            background-color: var(--secondary-hover);
+        }
+        
+        /* Seções de Prompts e Trilha Sonora */
+        .section-prompts, .section-soundtrack {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px dashed #d1d5db;
+        }
+        .btn-small {
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        .loading-spinner-small {
+            border: 3px solid rgba(67, 56, 202, 0.2);
+            border-left-color: var(--secondary-text);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+        .individual-prompt-block {
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .prompt-time {
+            font-size: 0.75rem;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+        .prompt-phrase {
+            font-size: 0.875rem;
+            color: var(--text-dark);
+            font-weight: 700;
+            line-height: 1.4;
+        }
+        .prompt-description-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-medium);
+            margin-top: 0.5rem;
+            border-top: 1px dashed var(--border-light);
+            padding-top: 0.5rem;
+        }
+        .prompt-description-content {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+        pre {
+            background-color: var(--bg-light);
+            border-radius: 4px;
+            padding: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-medium);
+            overflow-x: auto; /* Para lidar com blocos de estilo longos */
+            white-space: pre-wrap; /* Quebra linhas longas */
+            word-break: break-all; /* Quebra palavras longas */
+        }
+        .soundtrack-list {
+            list-style-type: disc;
+            padding-left: 20px;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+        .soundtrack-list li { margin-bottom: 0.5rem; }
+
+        /* Separador para Thumbnails */
+        .thumbnail-item-separator {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* Toast Notification */
+        #toastNotification {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7); color: #fff; padding: 10px 20px;
+            border-radius: 8px; font-size: 0.9rem; opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            z-index: 1001; white-space: nowrap;
+        }
+        #toastNotification.toast-visible { opacity: 1; visibility: visible; }
+
+        /* Alerta Full-Screen */
+        #fullScreenAlertOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center;
+            align-items: center; z-index: 1000; visibility: hidden; opacity: 0;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            z-index: 1000; /* Ensure it's above other content */
+        }
+        #fullScreenAlertOverlay.visible { visibility: visible; opacity: 1; }
+        #fullScreenAlertBox {
+            /* Removido background-color e border para usar .card-background */
+            padding: 2.5rem; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); text-align: center; max-width: 500px;
+            width: 90%; position: relative; transform: translateY(-20px);
+            transition: transform 0.3s ease-out;
+        }
+        #fullScreenAlertOverlay.visible #fullScreenAlertBox { transform: translateY(0); }
+        #fullScreenAlertBox p { font-size: 1.1rem; color: var(--text-dark); margin-bottom: 1.5rem; line-height: 1.6; }
+        #fullScreenAlertBox button {
+            background-color: var(--primary-color); color: #ffffff; padding: 0.75rem 1.5rem;
+            border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color 0.2s; border: none;
+        }
+        #fullScreenAlertBox button:hover { background-color: var(--primary-hover); }
+
+        /* ========================================================== */
+        /* ================= BARRA FLUTUANTE ====================== */
+        /* ========================================================== */
+        .floating-action-bar {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 999; padding: 0.75rem 0;
+            transform: translateY(-100%); opacity: 0; visibility: hidden;
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .floating-action-bar.visible { transform: translateY(0); opacity: 1; visibility: visible; }
+        .action-bar-content {
+            max-width: 1024px; margin: 0 auto; padding: 0 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .action-bar-buttons-group {
+            display: flex; align-items: center; gap: 0.75rem;
+            width: 100%; /* Garante que o grupo ocupe o espaço */
+        }
+        .action-bar-buttons-group.hidden { display: none; }
+        .action-bar-buttons-group .action-bar-title {
+            white-space: nowrap; /* Impede que o título quebre linha */
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .action-bar-buttons-group .btn-container {
+            /* Removido flex e justify-content, agora é grid */
+            /* display: flex; gap: 0.75rem; justify-content: flex-end; width: 100%; */
+        }
+        .btn-container .btn {
+            padding: 0.5rem 1rem; /* Um pouco menores */
+            font-size: 0.875rem;
+        }
+        /* Correção para o espaçamento dos botões clonados */
+        /* REMOVIDO: .action-bar-buttons-group .btn-container .btn { margin-left: 0.75rem; } */
+        /* REMOVIDO: .action-bar-buttons-group .btn-container .btn:first-child { margin-left: 0; } */
+
+        /* ========================================================== */
+        /* ======== ESTILOS PARA A BARRA DE PROGRESO ========= */
+        /* ========================================================== */
+        #progressBar {
+            transition: width 0.5s ease-in-out; /* Animação suave do crescimento da barra */
+            background-color: var(--success-color); /* Usa a nossa cor de sucesso verde! */
+        }
+
+        /* ========================================================== */
+        /* ===== CORREÇÃO DE COR DE TEXTO PARA MODO CLARO ===== */
+        /* ========================================================== */
+        /* REMOVIDO: body:not(.dark) #titlesThumbnailsSection .p-3 p { color: #374151; } */
+        /* REMOVIDO: body:not(.dark) #titlesThumbnailsSection .font-semibold { color: #1f2937; } */
+
+        /* ========================================================== */
+        /* ==================== MODO ESCURO ======================= */
+        /* ========================================================== */
+        body.dark {
+            /* background-color e color já definidos acima */
+        }
+        .dark .container, .dark .accordion-item {
+            /* background-color já definido acima */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+        .dark .accordion-item { border-color: #4b5563; }
+        .dark .floating-action-bar { background-color: rgba(31, 41, 55, 0.9); }
+        .dark .action-bar-title, .dark h3, .dark h4, .dark label, .dark p { /* color já definido acima */ }
+        .dark .text-gray-500 { color: #9ca3af; }
+        .dark .input-group label { /* color já definido acima */ }
+        /* As regras para .dark .input-group input, select, textarea já estão no bloco definitivo acima */
+        .dark .input-group input:focus,
+        .dark .input-group select:focus,
+        .dark .input-group textarea:focus {
+            border-color: #6366f1 !important; /* indigo-500 */
+            background-color: #4b5563 !important; /* gray-600 */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3) !important;
+        }
+        /* --- CORREÇÃO PARA O PLACEHOLDER --- */
+        .dark .input-group input::placeholder,
+        .dark .input-group textarea::placeholder {
+            color: #9ca3af; /* gray-400 */
+        }
+        /* Cor de texto para elementos no modo escuro */
+        .dark h1, .dark h2, .dark h3, .dark h4, .dark label {
+            color: #f3f4f6;
+        }
+        .dark .input-group input, .dark .input-group select, .dark .input-group textarea {
+            color: #f9fafb;
+        }
+
+        .dark .bg-indigo-50 { background-color: #374151 !important; }
+        .dark .border-indigo-200 { border-color: #4b5563 !important; }
+        .dark .text-indigo-800 { color: #a5b4fc !important; }
+        .dark .bg-gray-50 { background-color: #374151 !important; }
+        .dark .border-gray-200 { border-color: #4b5563 !important; }
+        .dark .accordion-body .generated-content-wrapper[contenteditable="true"]:focus {
+            background-color: #4b5563;
+        }
+        .dark .individual-prompt-block {
+            /* background-color e border já definidos por .card-background */
+        }
+        .dark .prompt-phrase { color: #f3f4f6; }
+        .dark .prompt-description-label { color: #9ca3af; }
+        .dark .prompt-description-content { color: #d1d5db; }
+        .dark pre { background-color: #374151 !important; color: #d1d5db; }
+        .dark #darkModeToggle { color: #9ca3af; }
+
+        /* Correção Específica para Modo Escuro */
+        /* Garante que o input do tema siga as regras */
+        .dark #videoTheme.card-background {
+            background-color: #374151 !important; 
+            border-color: #4b5563 !important; 
+        }
+        /* Garante que o container dos botões de geração siga as regras */
+        .dark #scriptGenerationControls.card-background {
+            background-color: rgba(31, 41, 55, 0.9) !important; /* Fundo cinza-800 com mais transparência */
+            border-top: 1px solid rgba(255, 255, 255, 0.1) !important; /* Borda superior clara e sutil */
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3) !important; /* Sombra um pouco mais forte para o modo escuro */
+        }
+
+        /* ========================================================== */
+        /* ==================== ESTILOS TOOLTIP ===================== */
+        /* ========================================================== */
+        .tooltip {
+            position: relative;
+            cursor: help;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #e0e7ff; /* Indigo-100 */
+            color: #4338ca; /* Indigo-700 */
+            font-weight: bold;
+            font-size: 0.8rem;
+            /* Removido border para usar .card-background, mas manteremos o border-color para a borda específica do tooltip */
+            border-color: #c7d2fe;
+        }
+        .dark .tooltip {
+            background-color: #4b5563; /* Gray-600 */
+            color: #e5e7eb; /* Gray-200 */
+            border-color: #374151; /* Gray-700 */
+        }
+        /* Esconde o tooltip por padrão */
+        .tooltip::before, .tooltip::after {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+            position: absolute;
+            bottom: 150%; /* Posiciona acima do (?) */
+            left: 50%;
+            transform: translateX(-50%) translateY(10px); /* Começa um pouco abaixo */
+            z-index: 10;
+        }
+        /* Mostra o tooltip no hover */
+        .tooltip:hover::before, .tooltip:hover::after {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0); /* Sube para a posição final */
+        }
+        /* Estilo da caixa de texto do tooltip */
+        .tooltip::before {
+            content: attr(data-tooltip); /* Pega o texto do atributo! */
+            background-color: #1f2937; /* Gray-800 */
+            color: #f9fafb; /* Gray-50 */
+            padding: 0.75rem;
+            border-radius: 8px;
+            width: 300px; /* Largura do tooltip */
+            text-align: left;
+            white-space: pre-wrap; /* Respeita as quebras de linha do atributo */
+            font-size: 0.85rem;
+            line-height: 1.5;
+            font-weight: normal;
+        }
+        .dark .tooltip::before {
+            background-color: #374151; /* Gray-700 */
+        }
+        /* Estilo da setinha do tooltip */
+        .tooltip::after {
+            content: '';
+            border-width: 6px;
+            border-style: solid;
+            border-color: #1f2937 transparent transparent transparent; /* Seta aponta para baixo */
+            margin-left: -6px; /* Centraliza a seta */
+        }
+        .dark .tooltip::after {
+            border-color: #374151 transparent transparent transparent;
+        }
+        .dark .section-prompts, .dark .section-soundtrack { border-top-color: #4b5563; }
+        .dark .soundtrack-list { color: #d1d5db; }
+
+        /* Animação para surgimento suave das seções */
+        @keyframes fadeInSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in {
+            animation: fadeInSlideUp 0.5s ease-out forwards;
+        }
+
+        /* ========================================================== */
+        /* ============ ESTILOS MODO FOCO - VERSÃO FINAL ============ */
+        /* ========================================================== */
+        /* Quando o modo foco está ativo... */
+        /* 1. Esconde os elementos que não queremos ver */
+        body.zen-mode .floating-action-bar,
+        body.zen-mode #mainInputsGrid,
+        body.zen-mode #progressBarContainer,
+        body.zen-mode #assetsColumn,
+        body.zen-mode .absolute.top-4.right-4, /* Esconde os botões do canto */
+        body.zen-mode .container > h1,
+        body.zen-mode .container > p {
+            display: none !important;
+        }
+
+        /* 2. Ajusta o container e o grid principal */
+        body.zen-mode .container {
+            max-width: 100%;
+            padding: 1rem;
+        }
+
+        body.zen-mode #projectDashboard .grid {
+            display: block; /* Faz o grid se comportar como um bloco normal */
+        }
+
+        /* 3. Expande a coluna do roteiro para ocupar todo o espaço */
+        body.zen-mode #scriptColumn {
+            max-height: none; 
+            grid-column: auto; /* Reseta as regras de coluna do grid */
+        }
+        /* Mostra o botão de sair apenas no Modo Foco */
+        body.zen-mode #exitZenModeBtn {
+            display: inline-flex;
+        }
+        
+        /* ========================================================== */
+        /* DELETADAS AS REGRAS CONFLITANTES DE #scriptColumn, #scriptSectionsContainer, #strategicOutlineCard */
+        /* ========================================================== */
+        
+        /* ========================================================== */
+        /* ====== PAINEL DE BOTÕES FIXO NO RODAPÉ DA TELA ===== */
+        /* ========================================================== */
+        #scriptGenerationControls {
+            position: fixed; /* MUDANÇA CRUCIAL: Fixo na tela */
+            bottom: 0;
+            left: 0;
+            width: 100%; /* Ocupa a largura total da tela */
+            z-index: 50; /* Aumenta o z-index para garantir que fique sobre tudo */
+            
+            /* Mantém o design de vidro */
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+
+            /* AJUSTE AQUI: Um padding vertical menor fica mais elegante */
+            padding: 0.75rem 1rem;
+        }
+        .dark #scriptGenerationControls {
+            background-color: rgba(31, 41, 55, 0.9);
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+        }
+        /* Removido o estilo para #scriptGenerationControls > div pois agora o flex está no div pai */
+        /* #scriptGenerationControls > div { 
+            max-width: 1024px;
+            margin: 0 auto;
+        } */
+
+        /* Ajuste fino no título "Gerar Seções do Roteiro" dentro do painel */
+        #scriptGenerationControls h3 {
+            color: var(--text-dark) !important;
+        }
+        .dark #scriptGenerationControls h3 {
+            color: #f3f4f6 !important;
+        }
+
+        /* ========================================================== */
+        /* =============== ESTILOS DE IMPRESSÃO (PDF) =============== */
+        /* ========================================================== */
+        @media print {
+            /* Esconde tudo que não está no nosso container de impressão */
+            body > *:not(#print-container) {
+                display: none !important;
+            }
+
+            /* Regras para o container de impressão */
+            #print-container, #print-container * {
+                visibility: visible; /* Garante que ele e TODOS os seus filhos sejam visíveis */
+                color: #000 !important; /* FORÇA tudo dentro dele a ser preto */
+                background-color: #fff !important; /* Garante fundo branco */
+            }
+
+            #print-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 1.5cm; /* Margens de documento */
+                font-size: 11pt;
+            }
+
+            .print-section-title {
+                font-size: 16pt;
+                font-weight: bold;
+                margin-top: 24px;
+                margin-bottom: 12px;
+                border-bottom: 1px solid #ccc;
+                padding-bottom: 4px;
+            }
+
+            .print-section-content {
+                line-height: 1.6;
+                white-space: pre-wrap; /* Respeita as quebras de linha */
+            }
+        }
+
+        /* ========================================================== */
+        /* ========= CORREÇÕES FINAIS PARA MODO ESCURO ========== */
+        /* ========================================================== */
+        /* Garante que o input focado no modo escuro tenha o fundo correto */
+        .dark .input-group input:focus {
+            background-color: #4b5563 !important; /* gray-600 */
+        }
+        /* Garante que os blocos de prompt individuais fiquem escuros */
+        .dark .individual-prompt-block {
+            background-color: #1f2937 !important; /* gray-800 */
+            border-color: #4b5563 !important; /* gray-600 */
+        }
+        /* Garante que o texto dentro dos prompts fique claro */
+        .dark .prompt-phrase,
+        .dark .prompt-description-content {
+            color: #d1d5db !important; /* gray-300 */
+        }
+        /* Garante que o fundo do <pre> também fique escuro */
+        .dark .individual-prompt-block pre {
+            background-color: #374151 !important; /* gray-700 */
+        }
+
+        /* ========================================================== */
+        /* ========= CORREÇÕES FINAIS PARA MODO CLARO ========== */
+        /* ========================================================== */
+        /* Define a cor padrão (Modo Claro) para os títulos do dashboard */
+        #projectDashboard h2,
+        #projectDashboard h3 {
+            color: var(--text-dark) !important;
+        }
+        /* Define a cor para o Modo Escuro, garantindo que ela sobrescreva o padrão */
+        .dark #projectDashboard h2,
+        .dark #projectDashboard h3 {
+            color: #f3f4f6 !important; /* Cor de texto clara */
+        }
+
+        /* ========================================================== */
+        /* ========= BLINDAGEM DE ESTILO PARA PROMPTS ========== */
+        /* ========================================================== */
+        /* Estilo para o <pre> em MODO CLARO dentro do prompt */
+        .individual-prompt-block pre {
+            background-color: var(--bg-light) !important; /* Ex: #f9fafb (cinza 50) */
+            color: var(--text-medium) !important; /* Ex: #4b5563 (cinza 600) */
+        }
+        /* Estilo para o <pre> em MODO ESCURO dentro do prompt */
+        .dark .individual-prompt-block pre {
+            background-color: #374151 !important; /* Cinza 700 */
+            color: #d1d5db !important; /* Cinza 300 */
+        }
+
+        /* ========================================================== */
+        /* ==== BLINDAGEM FINAL DE TEXTOS PARA O PAINEL (AMBAS COLUNAS) - CORRIGIDO ==== */
+        /* ========================================================== */
+        /* Define a cor de texto padrão (MODO CLARO) para o conteúdo dos painéis */
+        /* MODIFICADO: Adicionamos os IDs dos containers de conteúdo gerado */
+        #projectDashboard #videoDescriptionContent,
+        #projectDashboard #titlesThumbnailsContent,
+        #projectDashboard .card-background p,
+        #projectDashboard .card-background li, /* Added specific rule for li inside card-background */
+        #projectDashboard .card-background strong,
+        #projectDashboard .asset-card-placeholder,
+        #projectDashboard .list-disc {
+            color: var(--text-dark) !important;
+        }
+
+        /* Define a cor de texto (MODO ESCURO) para o conteúdo dos painéis */
+        /* MODIFICADO: Adicionamos os IDs dos containers de conteúdo gerado */
+        .dark #projectDashboard #videoDescriptionContent,
+        .dark #projectDashboard #titlesThumbnailsContent,
+        .dark #projectDashboard .card-background p,
+        .dark #projectDashboard .card-background li, /* Added specific rule for li inside card-background */
+        .dark #projectDashboard #titlesThumbnailsContent strong,
+        .dark #projectDashboard .asset-card-placeholder,
+        .dark #projectDashboard .list-disc {
+            color: #d1d5db !important;
+        }
+
+        /* Ajuste específico para os títulos H3 e H4 dentro do painel */
+        #projectDashboard h3, #projectDashboard h4 {
+            color: var(--text-dark) !important;
+        }
+        .dark #projectDashboard h3, .dark #projectDashboard h4 {
+            color: #f3f4f6 !important;
+        }
+        /* ========================================================== */
+        /* === CORREÇÃO FINAL - FUNDO DO ACORDEÃO NO MODO ESCURO ==== */
+        /* ========================================================== */
+        /* Esta regra garante que o item do acordeão (e por herança, seu
+           cabeçalho inativo) tenha o fundo escuro correto no Modo Escuro,
+           sobrescrevendo a regra geral do modo claro. */
+        .dark .accordion-item {
+            background-color: #1f2937; /* Cinza 800 - o mesmo do container */
+        }
+        /* ========================================================== */
+        /* === ESTILOS PARA ACORDEÃO ANINHADO (PROMPTS E TRILHA) ==== */
+        /* ========================================================== */
+        .nested-accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            margin-top: 1.5rem;
+            padding: 0.75rem 1rem; /* Ajustado para um padding mais compacto */
+            border-top: 1px dashed var(--border-light);
+            transition: background-color 0.2s;
+            border-radius: 6px;
+        }
+
+        .dark .nested-accordion-header {
+            border-top-color: #4b5563;
+        }
+        
+        .nested-accordion-header:hover, .nested-accordion-header.active {
+            background-color: var(--bg-light);
+        }
+
+        .dark .nested-accordion-header:hover, .dark .nested-accordion-header.active {
+             background-color: #374151; /* Gray-700 */
+        }
+
+        .nested-accordion-header h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-medium);
+        }
+        
+        .dark .nested-accordion-header h4 {
+            color: #9ca3af;
+        }
+        /* ========================================================== */
+        /* ======== ESTILOS PARA O CONSULTOR DE RETENÇÃO ======== */
+        /* ========================================================== */
+        .retention-paragraph {
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border-left-width: 4px;
+            transition: background-color 0.2s;
+            color: var(--text-medium); /* Aplica a cor de texto padrão */
+        }
+        .dark .retention-paragraph {
+            color: #d1d5db; /* Cor de texto padrão para o modo escuro */
+        }
+
+        .retention-paragraph strong {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- Cores do Mapa de Calor --- */
+        .retention-green {
+            border-left-color: #10B981; /* success-color */
+            background-color: rgba(16, 185, 129, 0.05);
+        }
+        .dark .retention-green {
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+        .retention-yellow {
+            border-left-color: #FBBF24; /* Amber-400 */
+            background-color: rgba(251, 191, 36, 0.05);
+        }
+        .dark .retention-yellow {
+            background-color: rgba(251, 191, 36, 0.1);
+        }
+        .retention-red {
+            border-left-color: #EF4444; /* Red-500 */
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+        .dark .retention-red {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        /* ========================================================== */
+        /* ====== CORREÇÃO DE COR PARA INPUTS EM CARDS ESPECIAIS ===== */
+        /* ========================================================== */
+        /* Garante que os labels dentro de cards com fundo cinza fiquem escuros no modo claro */
+        .bg-gray-50 label {
+            color: var(--text-dark); /* Cor de texto escura padrão */
+        }
+        /* Garante que eles voltem a ser claros no modo escuro */
+        .dark .bg-gray-50 label {
+            color: #f3f4f6; /* Cor de texto clara padrão */
+        }
+
+        /* ========================================================== */
+        /* ============== ESTILOS PARA INTERFACE DE ABAS ============ */
+        /* ========================================================== */
+        .tab-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid transparent;
+            border-bottom: 2px solid transparent;
+            font-weight: 600;
+            color: var(--text-light);
+            transition: all 0.2s ease-in-out;
+        }
+        .dark .tab-button {
+            color: var(--text-light);
+        }
+        .tab-button:hover {
+            color: var(--text-dark);
+            border-bottom-color: var(--border-light);
+        }
+        .dark .tab-button:hover {
+            color: #e5e7eb; /* Gray-200 */
+            border-bottom-color: #4b5563; /* Gray-600 */
+        }
+        /* Estilo da aba ativa */
+        .tab-button.active-tab {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .dark .tab-button.active-tab {
+            color: #a5b4fc; /* Indigo-300 */
+            border-bottom-color: #a5b4fc;
+        }
+        .tab-pane {
+            /* Escondido por padrão */
+            display: none;
+        }
+        .tab-pane.active-pane {
+            /* Mostra o painel ativo */
+            display: block;
+            animation: fadeInSlideUp 0.4s ease-out forwards;
+        }
+	/* ========================================================== */
+/* === ESTILO PARA LISTA DO ESBOÇO ESTRATÉGICO (v5 - FINAL) === */
+/* ========================================================== */
+#outlineContent ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Define o layout GRID para o item da lista */
+#outlineContent ul li {
+    display: grid;
+    /* Coluna do marcador (15px) e coluna do texto (restante) */
+    grid-template-columns: 15px 1fr;
+    /* Distância entre o marcador e o texto */
+    gap: 10px;
+    align-items: start;
+    margin-bottom: 0.75rem;
+}
+
+/* Estiliza o marcador (a bolinha) */
+#outlineContent ul li::before {
+    content: '•';
+    color: #a5b4fc; /* Azul/lilás */
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+/* ESTA É A REGRA FINAL QUE VAI FUNCIONAR */
+#outlineContent .outline-title {
+    /* Cor para o MODO CLARO (se necessário) */
+    color: #92400E; /* Um amarelo-escuro/marrom para contraste no branco */
+    font-weight: 700;
+    margin-right: 0.5rem;
+}
+
+/* REGRA ESPECÍFICA E MAIS FORTE PARA O MODO ESCURO */
+.dark #outlineContent .outline-title {
+    color: #FBBF24 !important; /* Amarelo (Amber-400) */
+}
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+    <!-- BARRA FLUTUANTE DE VOLTA AO LUGAR CERTO -->
+    <div id="floatingActionBar" class="floating-action-bar">
+        <div class="action-bar-content">
+            <!-- Grupo de Ações Principais -->
+            <div id="mainActions" class="action-bar-buttons-group">
+                <span class="action-bar-title">Passo 1:</span>
+                <!-- A MUDANÇA ESTÁ AQUI -->
+                <div class="btn-container grid grid-cols-5 w-full gap-3">
+                    <button id="float_generateIntroBtn" class="btn btn-primary">Introdução</button>
+                    <button id="float_generateDevelopmentBtn" class="btn btn-primary">Desenvolvimento</button>
+                    <button id="float_climaxBtn" class="btn btn-primary">Clímax</button>
+                    <button id="float_conclusionBtn" class="btn btn-primary">Conclusão</button>
+                    <button id="float_generateCTABtn" class="btn btn-primary">CTA</button>
+                </div>
+            </div>
+            <!-- Grupo de Ações Rápidas -->
+            <div id="quickActions" class="action-bar-buttons-group hidden">
+                <span class="action-bar-title">Ações Rápidas:</span>
+                <!-- E A MUDANÇA ESTÁ AQUI -->
+                <div class="btn-container grid grid-cols-4 w-full gap-3">
+                    <button id="float_generateDescriptionBtn" class="btn btn-secondary">Descrição</button>
+                    <button id="float_generateTitlesAndThumbnailsBtn" class="btn btn-secondary">Títulos</button>
+                    <button id="float_downloadPdfBtn" class="btn btn-secondary">PDF</button>
+                    <button id="float_resetScriptBtn" class="btn btn-secondary">Novo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container relative">
+        <!-- ========================================================== -->
+        <!-- ===== NOVO MÓDULO: GERADOR E VALIDADOR DE IDEIAS ===== -->
+        <!-- ========================================================== -->
+        <div id="ideaGeneratorSection" class="mb-12 p-6 card-background rounded-lg border-2 border-dashed border-indigo-300 dark:border-indigo-800">
+            <h2 class="text-2xl font-bold text-center mb-2 text-gray-800 dark:text-gray-200">Precisa de Inspiração?</h2>
+            <p class="text-center text-gray-500 dark:text-gray-400 mb-6">Comece por aqui. Descreva o nicho ou os temas gerais do seu canal e deixe a IA sugerir vídeos com alto potencial.</p>
+
+            <div class="input-group">
+                <label for="nicheDescription">Nicho do Canal ou Temas de Interesse:</label>
+                <textarea id="nicheDescription" rows="3" class="card-background" placeholder="Ex: Arqueologia Bíblica e mistérios não resolvidos; Finanças pessoais para jovens cristãos; Análise de sermões e teologia prática..."></textarea>
+            </div>
+
+            <div class="flex justify-center mt-4">
+                <button id="generateIdeasBtn" class="btn btn-primary w-full md:w-1/2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a7 7 0 0 1 7 7c0 1.503-.473 2.883-1.283 4.043-.16.185-.33.364-.504.536l.328.328a.5.5 0 0 1 0 .707l-.707.707a.5.5 0 0 1-.707 0l-1.92-1.92a.5.5 0 0 1 0-.707l.328-.328c-.172-.174-.35-.355-.536-.504A6.98 6.98 0 0 1 1 8a7 7 0 0 1 7-7zm0 1a6 6 0 1 0 0 12A6 6 0 0 0 8 2z"/><path d="M8 4.25a.75.75 0 0 1 .75.75v1.25a.75.75 0 0 1-1.5 0V5a.75.75 0 0 1 .75-.75zM8.5 8a.5.5 0 0 0-1 0v2.5a.5.5 0 0 0 1 0V8z"/></svg>
+                    <span class="button-text">Gerar Ideias de Vídeo</span>
+                    <div class="loading-spinner hidden"></div>
+                </button>
+            </div>
+
+            <!-- Área de Saída para as Ideias Geradas -->
+            <div id="ideasOutput" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Os cartões de ideia serão injetados aqui -->
+            </div>
+        </div>
+        <!-- Divisória para separar as seções -->
+        <div class="relative flex py-5 items-center">
+            <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+            <span class="flex-shrink mx-4 text-gray-400 dark:text-gray-500 font-semibold">OU COMECE DIRETAMENTE AQUI</span>
+            <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+        </div>
+        
+        <div class="absolute top-4 right-4 flex items-center gap-2 z-[1001]">
+            <button id="toggleZenModeBtn" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-gray-500 dark:text-gray-400" title="Modo Foco">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/><path d="M3 14.5a1.5 1.5 0 0 1-1.5-1.5V3a1.5 1.5 0 0 1 1.5-1.5h10A1.5 1.5 0 0 1 14.5 3v10a1.5 1.5 0 0 1-1.5 1.5H3zM4 3v10h8V3H4z"/></svg>
+            </button>
+            <button id="darkModeToggle" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-gray-500 dark:text-gray-400" title="Modo Escuro">
+                <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-14.66l-.707.707M4.04 19.96l-.707.707M21 12h-1M4 12H3m16.66-7.96l-.707-.707M4.04 4.04l-.707-.707m11.314 0l-1.414 1.414M5.464 18.536l-1.414 1.414m12.728-1.414l-1.414-1.414m-9.9-9.9l-1.414-1.414M12 6a6 6 0 100 12 6 6 0 000-12z" /></svg>
+            </button>
+        </div>
+        
+        <h1 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 text-center mb-2">Gerador de Roteiros Virais v3.0</h1>
+        <p class="text-center text-gray-500 dark:text-gray-400 mb-8">O seu painel de controle para conteúdo de alto impacto.</p>
+        
+        <!-- Seção de Inputs da Aplicação -->
+
+  <!-- NOVA ESTRUTURA DE ABAS PARA OS INPUTS -->
+
+<div id="mainInputsTabs" class="mb-8">
+    <!-- 1. Navegação das Abas -->
+    <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
+        <nav id="inputTabsNav" class="-mb-px flex space-x-6" aria-label="Tabs">
+            <button data-tab="input-tab-basico" class="tab-button active-tab">
+                <span class="text-lg mr-2">1</span> Básico
+            </button>
+            <button data-tab="input-tab-estrategia" class="tab-button">
+                <span class="text-lg mr-2">2</span> Estratégia Narrativa
+            </button>
+            <button data-tab="input-tab-tecnicos" class="tab-button">
+                <span class="text-lg mr-2">3</span> Detalhes Técnicos
+            </button>
+        </nav>
+    </div>
+
+    <!-- 2. Conteúdo das Abas -->
+    <div id="inputTabContent">
+        <!-- Aba 1: Básico -->
+        <div id="input-tab-basico" class="tab-pane active-pane">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="input-group">
+                    <label for="channelName">Nome do Canal:</label>
+                    <input type="text" id="channelName" class="card-background" placeholder="Ex: The Biblical Unveiling" value="The Biblical Unveiling">
+                </div>
+                <div class="input-group">
+                    <label for="videoTheme">Tema do Vídeo:</label>
+                    <input type="text" id="videoTheme" class="card-background" placeholder="Ex: A Arca da Aliança Foi Encontrada?">
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="videoDescription">Descrição do Vídeo (para inspiração):</label>
+                    <textarea id="videoDescription" rows="4" class="card-background" placeholder="Cole uma breve descrição do vídeo aqui para que a IA possa usar como inspiração para o roteiro."></textarea>
+                </div>
+                <div class="md:col-span-2 my-4 flex justify-center">
+                    <button id="analyzeStrategyBtn" class="btn btn-primary w-full md:w-1/2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0ZM5.5 7a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Zm-1.829-1.5a.5.5 0 0 0-.707 0L2 6.793a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L3.707 7.5H3.5a.5.5 0 0 0 0-1h.207L2.707 5.5Zm-1 .707a.5.5 0 0 0-.707-.707L.707 6.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L1.293 7.5H1.5a.5.5 0 0 0 0-1h-.207L2.293 6.207Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
+                        <span class="button-text">Definir Estratégia com IA</span>
+                        <div class="loading-spinner hidden"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aba 2: Estratégia Narrativa -->
+        <div id="input-tab-estrategia" class="tab-pane">
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="input-group md:col-span-2">
+                    <label for="targetAudience">Público-Alvo:</label>
+                    <input type="text" id="targetAudience" class="card-background" value="Pessoas Interessadas em Arqueologia Bíblica e História Antiga, Cristãos e Pessoas de Fé, Entusiastas de Ciência e Ceticismo (com mente aberta), Curiosos em Geral e Amantes de Mistérios." readonly>
+                </div>
+                <div class="input-group">
+                    <label for="narrativeGoal">1. Objetivo da Narrativa:</label>
+                    <select id="narrativeGoal" class="card-background">
+                        <option value="storytelling">Conectar e Entreter (Storytelling)</option>
+                        <option value="storyselling">Persuadir e Vender (Storyselling)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <div class="flex items-center gap-2">
+                        <label for="narrativeStructure">2. Estrutura Específica:</label>
+                        <span id="narrativeStructureTooltip" class="tooltip card-background" data-tooltip="Selecione um objetivo primeiro.">(?)</span>
+                    </div>
+                    <select id="narrativeStructure" class="card-background"></select>
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="narrativeTheme">3. Tema Principal (a grande ideia):</label>
+                    <input type="text" id="narrativeTheme" class="card-background" placeholder="Ex: Superação, Luta contra injustiça, Inovação, A busca pela verdade...">
+                </div>
+                <div class="input-group">
+                    <label for="narrativeTone">4. Tom da Narração (a sensação):</label>
+                    <select id="narrativeTone" class="card-background">
+                        <option value="inspirador" selected>Inspirador / Motivacional</option>
+                        <option value="serio">Sério / Factual</option>
+                        <option value="emocional">Emocional / Vulnerável</option>
+                        <option value="desafiador">Desafiador / Provocativo</option>
+                        <option value="sombrio">Sombrio / Misterioso</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="narrativeVoice">5. Voz do Narrador (a personalidade):</label>
+                    <input type="text" id="narrativeVoice" class="card-background" placeholder="Ex: Sábio e experiente, Jovem e cético, Apaixonado e enérgico...">
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="centralQuestion">Pergunta Central (Opcional):</label>
+                    <textarea id="centralQuestion" rows="2" class="card-background" placeholder="Ex: Por que as mulheres negras são mais afetadas pela violência doméstica no Brasil?"></textarea>
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="emotionalArc">Arco Emocional Desejado (Opcional):</label>
+                    <textarea id="emotionalArc" rows="2" class="card-background" placeholder="Ex: Indignação -> Empatia -> Determinação"></textarea>
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):</label>
+                    <input type="text" id="shockingEndingHook" class="card-background" placeholder="Ex: ...e foi por isso que a Arca da Aliança nunca deveria ser encontrada.">
+                </div>
+             </div>
+        </div>
+        
+        <!-- Aba 3: Detalhes Técnicos -->
+        <div id="input-tab-tecnicos" class="tab-pane">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="input-group">
+                    <label for="languageSelect">Idioma do Roteiro:</label>
+                    <select id="languageSelect" class="card-background">
+                        <option value="pt-br">Português (Brasil)</option>
+                        <option value="pt-pt">Português (Portugal)</option>
+                        <option value="en" selected>English</option>
+                        <option value="es">Españão</option>
+                    </select>
+                </div>
+                 <div class="input-group">
+                    <label for="languageStyle">Estilo de Linguagem:</label>
+                    <select id="languageStyle" class="card-background">
+                        <option value="formal">Formal</option>
+                        <option value="informal">Informar</option>
+                        <option value="emocional">Emocional</option>
+                        <option value="tecnico">Técnico</option>
+                        <option value="inspirador" selected>Inspirador</option>
+                        <option value="humoristico">Humorístico</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="videoObjective">Objetivo do Vídeo:</label>
+                    <select id="videoObjective" class="card-background">
+                        <option value="informar" selected>Informar</option>
+                        <option value="emocionar">Emocionar</option>
+                        <option value="evangelizar">Evangelizar (criar defensores)</option>
+                        <option value="vender">Vender</option>
+                        <option value="entreter">Entreter</option>
+                    </select>
+                </div>
+                 <div class="input-group">
+                    <label for="videoDuration">Duração Desejada:</label>
+                    <select id="videoDuration" class="card-background">
+                        <option value="">-- Selecione a Duração --</option>
+                        <option value="short">Curto (~1-3 min)</option>
+                        <option value="medium">Médio (~4-7 min)</option>
+                        <option value="long">Longo (~8-12 min)</option>
+                    </select>
+                </div>
+                 <div class="input-group">
+                    <label for="speakingPace">Ritmo de Fala:</label>
+                    <select id="speakingPace" class="card-background">
+                        <option value="moderate" selected>Moderado</option>
+                        <option value="slow">Lento</option>
+                        <option value="fast">Rápido</option>
+                    </select>
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="imageDescriptionEngine">Motor de Descrição de Imagem:</label>
+                    <textarea id="imageDescriptionEngine" rows="2" class="card-background" placeholder="Ex: 'fotografias reais', 'imagens fortes', 'rostos de mulheres negras'"></textarea>
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="imageStyleSelect">Motor de Qualidade de Imagem:</label>
+                    <select id="imageStyleSelect" class="card-background">
+                        <option value="cinematic" selected>Cinematográfico</option>
+                        <option value="custom">Personalizado</option>
+                        <option value="none">Nenhum</option>
+                    </select>
+                </div>
+                <div class="input-group md:col-span-2" id="customImageStyleContainer" style="display: none;">
+                    <label for="customImageStyle">Estilo Visual Personalizado:</label>
+                    <textarea id="customImageStyle" rows="5" class="card-background" placeholder="Cole aqui o seu bloco de estilo personalizado (ex: para cartoon, anime, etc.)."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+        <!-- ========================================================== -->
+        <!-- ========= NOVA BARRA DE PROGRESO VISUAL ============= -->
+        <!-- ========================================================== -->
+        <div id="progressBarContainer" class="progress-bar-container mb-8">
+            <div class="flex justify-between mb-1">
+                <span class="text-base font-medium text-gray-700 dark:text-gray-300">Progresso do Projeto</span>
+                <span id="progressText" class="text-sm font-medium text-gray-700 dark:text-gray-300">0%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                <div id="progressBar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+            </div>
+        </div>
+        <!-- ========================================================== -->
+    
+        <!-- ========================================================== -->
+        <!-- ===== NOVA ÁREA DE SAÍDA: O PAINEL DO PROJETO ======== -->
+        <!-- ========================================================== -->
+        <div id="projectDashboard" class="hidden mt-12">
+            <!-- ========================================================== -->
+            <!-- ============= NOVA ESTRUTURA DE ABAS (TABS) ============ -->
+            <!-- ========================================================== -->
+            <div>
+                <!-- 1. NAVEGAÇÃO DAS ABAS -->
+                <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
+                    <nav id="tabs" class="-mb-px flex space-x-6" aria-label="Tabs">
+                        <!-- As abas serão geradas pelo JavaScript, mas aqui está um exemplo de como elas serão -->
+                        <button data-tab="tab-roteiro" class="tab-button active-tab">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4.5 2A1.5 1.5 0 0 1 6 3.5v9A1.5 1.5 0 0 1 4.5 14h-1A1.5 1.5 0 0 1 2 12.5v-9A1.5 1.5 0 0 1 3.5 2h1zM6 3a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-10zM12.5 2A1.5 1.5 0 0 1 14 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-1A1.5 1.5 0 0 1 10 12.5v-9A1.5 1.5 0 0 1 11.5 2h1zm-1 1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-10z"/></svg>
+                            <span>Roteiro</span>
+                        </button>
+                        <button data-tab="tab-recursos" class="tab-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zM3.5 4.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2zm0 5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2z"/></svg>
+                            <span>Recursos</span>
+                        </button>
+                        <button data-tab="tab-exportar" class="tab-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L6.354 8.146a.5.5 0 1 0-.708.708l2 2z"/></svg>
+                            <span>Exportar</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- 2. CONTEÚDO DAS ABAS -->
+                <div id="tab-content">
+                    <!-- Painel da Aba Roteiro -->
+                    <div id="tab-roteiro" class="tab-pane active-pane">
+                        <div id="scriptColumn">
+                            <!-- Esboço Estratégico (agora aqui) -->
+                            <div id="strategicOutlineCard" class="card-background p-4 rounded-lg shadow-md mb-6">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200">Esboço Estratégico</h3>
+                                    <button id="generateOutlineBtn" class="btn btn-secondary btn-small">Criar Esboço</button>
+                                </div>
+                                <div id="outlineContent"><div class="asset-card-placeholder">Clique em 'Criar Esboço' para a IA planejar a estrutura do roteiro.</div></div>
+                            </div>
+
+                            <!-- Módulo de Estratégia de Conclusão (agora aqui) -->
+                            <div id="conclusionStrategyModule" class="hidden my-8 p-6 card-background rounded-lg border-2 border-dashed border-purple-300 dark:border-purple-800 animate-fade-in">
+                                <h3 class="text-xl font-bold text-center mb-4">Qual é o objetivo final do seu vídeo?</h3>
+                                <div class="flex flex-col md:flex-row justify-center gap-4 mb-6">
+                                    <label class="flex items-center p-3 card-background rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        <input type="radio" name="conclusionType" value="lesson" class="form-radio h-4 w-4 text-purple-600 focus:ring-purple-500" checked>
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Deixar uma Lição / Reflexão</span>
+                                    </label>
+                                    <label class="flex items-center p-3 card-background rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        <input type="radio" name="conclusionType" value="answer" class="form-radio h-4 w-4 text-purple-600 focus:ring-purple-500">
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Responder uma Pergunta Central</span>
+                                    </label>
+                                    <label class="flex items-center p-3 card-background rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        <input type="radio" name="conclusionType" value="cliffhanger" class="form-radio h-4 w-4 text-purple-600 focus:ring-purple-500">
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Criar um Gancho / Mistério Contínuo</span>
+                                    </label>
+                                </div>
+                                <div id="conclusionInputContainer" class="input-group mb-6 hidden">
+                                    <label for="conclusionSpecifics">Detalhes para a Conclusão:</label>
+                                    <textarea id="conclusionSpecifics" rows="3" class="card-background" placeholder="Ex: 'Foque na importância da fé inabalável'; 'A resposta está na antiga profecia de Isaías'; 'Deixe claro que a busca continua e o mistério se aprofunda.'"></textarea>
+                                </div>
+                                <div class="flex justify-center">
+                                    <button id="generateConclusionAndCtaBtn" class="btn btn-primary w-full md:w-1/2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8 1a7 7 0 0 1 7 7c0 1.503-.473 2.883-1.283 4.043-.16.185-.33.364-.504.536l.328.328a.5.5 0 0 1 0 .707l-.707.707a.5.5 0 0 1-.707 0l-1.92-1.92a.5.5 0 0 1 0-.707l.328-.328c-.172-.174-.35-.355-.536-.504A6.98 6.98 0 0 1 1 8a7 7 0 0 1 7-7zm0 1a6 6 0 1 0 0 12A6 6 0 0 0 8 2z"/><path d="M8 4.25a.75.75 0 0 1 .75.75v1.25a.75.75 0 0 1-1.5 0V5a.75.75 0 0 1 .75-.75zM8.5 8a.5.5 0 0 0-1 0v2.5a.5.5 0 0 0 1 0V8z"/></svg>
+                                        <span class="button-text">Gerar Conclusão + CTA</span>
+                                        <div class="loading-spinner hidden"></div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Seções do Roteiro (agora aqui) -->
+                            <div id="scriptSectionsContainer" class="space-y-4">
+                                <div id="introSection" class="script-section"></div>
+                                <div id="developmentSection" class="script-section"></div>
+                                <div id="climaxSection" class="script-section"></div>
+                                <div id="conclusionSection" class="script-section"></div>
+                                <!-- CTA Section will be merged into conclusionSection via JS -->
+                                <div id="ctaSection" class="script-section hidden"></div> 
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Painel da Aba Recursos -->
+                    <div id="tab-recursos" class="tab-pane hidden">
+                        <div>
+                            <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">⚙️ Metadados do Vídeo</h3>
+                            <div id="metadataContainer" class="space-y-6">
+                                <!-- Cartão: Descrição e Hashtags -->
+                                <div class="card-background p-4 rounded-lg shadow-md">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h4 class="font-bold text-lg text-gray-800 dark:text-gray-200">Descrição & Hashtags</h4>
+                                        <button id="generateDescriptionBtn" class="btn btn-secondary btn-small">Gerar</button>
+                                    </div>
+                                    <div id="videoDescriptionContent">
+                                        <div class="asset-card-placeholder">Clique em 'Gerar' para ver a descrição</div>
+                                    </div>
+                                </div>
+
+                                <!-- Cartão: Títulos e Thumbnails -->
+                                <div class="card-background p-4 rounded-lg shadow-md">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <h4 class="font-bold text-lg text-gray-800 dark:text-gray-200">Títulos & Thumbnails</h4>
+                                        <button id="generateTitlesAndThumbnailsBtn" class="btn btn-secondary btn-small">Gerar</button>
+                                    </div>
+                                    <div id="titlesThumbnailsContent">
+                                        <div class="asset-card-placeholder">Clique em 'Gerar' para ver as sugestões</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Painel da Aba Exportar -->
+                    <div id="tab-exportar" class="tab-pane hidden">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">🚀 Finalizar e Exportar Projeto</h3>
+                        <div id="exportContainer" class="card-background p-6 rounded-lg">
+                            <h3 class="font-bold text-lg text-gray-800 dark:text-gray-200 mb-3">Opções de Exportação</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                <button id="exportProjectBtn" class="btn btn-secondary">Exportar Projeto (JSON)</button>
+                                <button id="importProjectBtn" class="btn btn-secondary">Importar Projeto</button>
+                                <input type="file" id="importFileInput" class="hidden" accept=".json">
+                                <button id="downloadPdfBtn" class="btn btn-secondary">Download PDF</button>
+                                <button id="resetScriptBtn" class="btn btn-secondary">Novo Roteiro</button>
+                                <button id="copyTranscriptBtn" class="btn btn-secondary col-span-2 sm:col-span-1">Copiar Transcrição</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controles de Geração, agora fixos no final da tela -->
+    <div id="scriptGenerationControls">
+        <div class="grid grid-cols-5 gap-3 max-w-4xl mx-auto">
+            <button id="generateIntroBtn" class="btn btn-primary btn-small">Introdução</button>
+            <button id="generateDevelopmentBtn" class="btn btn-primary btn-small">Desenvolvimento</button>
+            <button id="climaxBtn" class="btn btn-primary btn-small">Clímax</button>
+            <button id="conclusionBtn" class="btn btn-primary btn-small">Conclusão</button>
+            <button id="generateCTABtn" class="btn btn-primary btn-small">CTA</button>
+        </div>
+    </div>
+
+    <!-- Botão para Sair do Modo Foco (começa escondido) -->
+    <button id="exitZenModeBtn" class="hidden fixed top-5 right-5 z-[2001] bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M1.5 1a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0v-4A1.5 1.5 0 0 1 1.5 0h4a.5.5 0 0 1 0 1h-4zM10 .5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 16 1.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5zM.5 10a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 0 14.5v-4a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v4a1.5 1.5 0 0 1-1.5 1.5h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5z"/><path d="M3 14.5a1.5 1.5 0 0 1-1.5-1.5V3a1.5 1.5 0 0 1 1.5-1.5h10A1.5 1.5 0 0 1 14.5 3v10a1.5 1.5 0 0 1-1.5 1.5H3zM4 3v10h8V3H4z"/></svg>
+            </button>
+    
+    <!-- Elementos de Feedback (Toast e Alerta) -->
+    <div id="toastNotification" class="toast-notification"></div>
+    <div id="fullScreenAlertOverlay">
+        <div id="fullScreenAlertBox" class="card-background">
+            <p id="fullScreenAlertMessage"></p>
+            <button id="fullScreenAlertCloseBtn">Entendi</button>
+        </div>
+    </div>
+    
+    <script type="module">
         // ==========================================================
         // ==================== SETUP INICIAL =======================
         // ==========================================================
@@ -4450,5 +5949,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---- 6. EVENTO DE SCROLL PARA BARRA FLUTUANTE ----
     window.addEventListener('scroll', window.handleFloatingActionBar);
 });</script>
+</body>
+</html>
+
+
+</script>
 </body>
 </html>
