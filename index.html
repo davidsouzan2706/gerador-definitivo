@@ -3426,7 +3426,7 @@ ${scriptContent}
                 throw new Error("A IA retornou uma resposta vazia ou irreconhecível.");
             }
 
-            const parsedData = JSON.parse(cleanedResult);
+            const parsedData = cleanedResult;
 
             // --- VALIDAÇÃO DE DADOS (CAMADA 1) ---
             if (validatePromptsArray(parsedData)) {
