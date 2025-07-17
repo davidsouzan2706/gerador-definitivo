@@ -38,7 +38,7 @@
 .retention-yellow { border-left-color: #FBBF24; }
 .retention-red { border-left-color: #EF4444; }
 
-/* --- Área de Detalhes da Sugestão (Vamos usar depois) --- */
+/* --- Área de Detalhes da Sugestão --- */
 .retention-details-card {
     background-color: var(--bg-light);
     border: 1px solid var(--border-light);
@@ -60,13 +60,7 @@
 .retention-details-card p {
     font-size: 0.9rem;
     line-height: 1.5;
-    color: var(--text-dark);
-}
-.dark .retention-details-card p {
-    color: #d1d5db; /* Cor de texto clara */
-}
-.retention-details-card button {
-    margin-top: 0.75rem;
+    color: var(--text-dark); /* <-- ADICIONE ESTA LINHA */
 }
 
 /* E adicione esta regra para o modo escuro */
@@ -2888,157 +2882,135 @@ The final output MUST be only the JSON code, like this example:
         // ==========================================================
         
         /**
- * Analisa uma seção, aplica o mapa de calor e prepara os dados para a interação.
- * (VERSÃO V3 FINAL - APENAS MAPA DE CALOR)
- */
-window.analyzeSectionRetention = async (sectionId) => {
-
-console.log("--- EXECUTANDO A NOVA analyzeSectionRetention (VERSÃO V3 FINAL) ---"); // <-- ADICIONE AQUI
-
-    const sectionElement = document.getElementById(sectionId);
-    const contentWrapper = sectionElement.querySelector('.generated-content-wrapper');
-    
-    // Limpa a área de detalhes, esvaziando nosso "palco" para o novo card.
-    const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
-    if (detailsArea) detailsArea.innerHTML = '';
-
-    const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]'));
-    if (paragraphs.length === 0) {
-        window.showToast("Não há parágrafos para analisar nesta seção.");
-        return;
-    }
-
-    // Feedback visual durante a análise
-    const originalBorder = contentWrapper.style.border;
-    contentWrapper.style.border = '2px dashed var(--primary-color)';
-
-    try {
-        // Prepara os dados para a IA
-        const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
-        const languageName = elements.languageSelect.options[elements.languageSelect.selectedIndex].text;
-
-        const prompt = `You are a "Retention Editor" API. Your ONLY job is to analyze script paragraphs and return a valid JSON array.
-
-        **Analyze the following array of JSON objects:**
-        ${JSON.stringify(paragraphsWithIds, null, 2)}
-
-        **CRITICAL INSTRUCTIONS:**
-        1.  Return a new JSON array. For EACH object from the input, create a new object with EXACTLY these three keys: "paragraphId" (string), "retentionScore" (string: 'green', 'yellow', or 'red'), and "suggestion" (string in ${languageName}).
-        2.  Your entire response MUST be ONLY the raw JSON array.
-        3.  DO NOT add any introductory text, explanations, or markdown code fences like \`\`\`json.`;
-
-        const rawResult = await callGroqAPI(prompt, 2500);
-        const analysis = cleanGeneratedText(rawResult, true);
-
-        if (!analysis || !Array.isArray(analysis)) {
-            throw new Error("A IA retornou uma análise em formato inválido.");
-        }
-
-        // Limpa classes e dados antigos de TODOS os parágrafos antes de aplicar os novos
-        paragraphs.forEach(p => {
-            p.className = ''; // Remove todas as classes de retenção antigas
-            p.removeAttribute('data-suggestion');
-            p.removeAttribute('data-score');
-        });
-
-        // APLICA O MAPA DE CALOR E GUARDA OS DADOS PARA O MOUSEOVER
-        analysis.forEach(item => {
-            const paragraphElement = document.getElementById(item.paragraphId);
-            if (!paragraphElement) return;
-
-            // Aplica a classe do Mapa de Calor
-            paragraphElement.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
+         * Analisa uma seção, aplica o mapa de calor e prepara os dados para a interação.
+         */
+        window.analyzeSectionRetention = async (sectionId) => {
+            const sectionElement = document.getElementById(sectionId);
+            const contentWrapper = sectionElement.querySelector('.generated-content-wrapper');
             
-            // Armazena a sugestão e o score no próprio elemento para ser usada pelo listener de 'mouseover'
-            paragraphElement.dataset.suggestion = item.suggestion;
-            paragraphElement.dataset.score = item.retentionScore;
-        });
-        
-        // ==========================================================
-        // PARTE CRÍTICA: O CÓDIGO QUE GERAVA O RELATÓRIO ANTIGO FOI REMOVIDO!
-        // Agora esta função APENAS aplica as cores e armazena os dados.
-        // ==========================================================
-        
-        window.showToast("Análise de retenção concluída!");
+            // Limpa a área de detalhes antiga, se houver
+            const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
+            if (detailsArea) detailsArea.innerHTML = '';
 
-    } catch (error) {
-        window.showToast(`Falha ao analisar a seção: ${error.message}`);
-    } finally {
-        // Restaura a borda original
-        contentWrapper.style.border = originalBorder;
-    }
-};
+            const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]'));
+            if (paragraphs.length === 0) {
+                window.showToast("Não há parágrafos para analisar nesta seção.");
+                return;
+            }
 
+            const originalBorder = contentWrapper.style.border;
+            contentWrapper.style.border = '2px dashed var(--primary-color)';
 
+            try {
+                const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
+                const sectionTitle = sectionElement.querySelector('h3').textContent;
+                const languageName = elements.languageSelect.options[elements.languageSelect.selectedIndex].text;
 
+                const prompt = `You are a "Retention Editor" API. Your ONLY job is to analyze script paragraphs and return a valid JSON array.
+
+                **Analyze the following array of JSON objects:**
+                ${JSON.stringify(paragraphsWithIds, null, 2)}
+
+                **CRITICAL INSTRUCTIONS:**
+                1.  Return a new JSON array. For EACH object from the input, create a new object with EXACTLY these three keys: "paragraphId" (string), "retentionScore" (string: 'green', 'yellow', or 'red'), and "suggestion" (string in ${languageName}).
+                2.  Your entire response MUST be ONLY the raw JSON array.
+                3.  DO NOT add any introductory text, explanations, or markdown code fences like \`\`\`json.
+                4.  If you cannot perform the analysis, return an empty array: [].`;
+
+                const rawResult = await callGroqAPI(prompt, 2500);
+                const analysis = cleanGeneratedText(rawResult, true);
+
+                if (!analysis || !Array.isArray(analysis)) {
+                    throw new Error("A IA retornou uma análise em formato inválido.");
+                }
+
+                // Limpa classes e dados antigos antes de aplicar os novos
+                paragraphs.forEach(p => {
+                    p.className = '';
+                    p.removeAttribute('data-suggestion');
+                    p.removeAttribute('data-score');
+                });
+
+                analysis.forEach(item => {
+                    const paragraphElement = document.getElementById(item.paragraphId);
+                    if (!paragraphElement) return;
+
+                    // Aplica a classe do Mapa de Calor
+                    paragraphElement.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
+                    
+                    // Armazena a sugestão no próprio elemento para ser usada pelo listener de 'mouseover'
+                    paragraphElement.dataset.suggestion = item.suggestion;
+                    paragraphElement.dataset.score = item.retentionScore;
+                });
+                window.showToast("Análise de retenção concluída!");
+
+            } catch (error) {
+                window.showToast(`Falha ao analisar a seção: ${error.message}`);
+            } finally {
+                contentWrapper.style.border = originalBorder;
+            }
+        };
     
         /**
- * Pega o ID de um parágrafo e uma sugestão, pede para a IA reescrevê-lo,
- * e substitui o texto do elemento span correspondente.
- * (VERSÃO V3 - CONTEXTUAL)
- */
-window.optimizeParagraph = async (paragraphId, suggestion) => {
-    const paragraphElement = document.getElementById(paragraphId);
-    if (!paragraphElement) {
-        window.showToast("Erro: Parágrafo original não encontrado.");
-        return;
-    }
-    
-    const button = document.querySelector(`button[data-paragraph-id="${paragraphId}"]`);
-    const originalParagraphText = paragraphElement.textContent.trim();
+         * Pega o ID de um parágrafo e uma sugestão, pede para a IA reescrevê-lo,
+         * e substitui o texto do elemento span correspondente.
+         */
+                window.optimizeParagraph = async (paragraphId, suggestion) => {
+            const paragraphElement = document.getElementById(paragraphId);
+            if (!paragraphElement) {
+                window.showToast("Erro: Parágrafo original não encontrado.");
+                return;
+            }
+            
+            const button = paragraphElement.querySelector('.optimize-btn-live');
+            const originalParagraphText = paragraphElement.firstChild.textContent.trim(); // Pega apenas o texto, ignorando o botão/tooltip
 
-    if (button) {
-        button.innerHTML = '<div class="loading-spinner-small" style="margin: 0 auto; border-left-color: var(--primary-color);"></div>';
-        button.disabled = true;
-    }
+            if (button) {
+                button.innerHTML = '<div class="loading-spinner-small" style="margin: 0 auto; border-left-color: var(--primary-color);"></div>';
+                button.disabled = true;
+            }
 
-    try {
-        const prompt = `Você é um mestre roteirista. Sua tarefa é reescrever o "Parágrafo Original" para incorporar a "Sugestão de Melhoria".
+            try {
+                const prompt = `Você é um mestre roteirista. Sua tarefa é reescrever o "Parágrafo Original" para incorporar a "Sugestão de Melhoria".
 
-        **Parágrafo Original:**
-        "${originalParagraphText}"
-        
-        **Sugestão de Melhoria:**
-        "${suggestion}"
+                **Parágrafo Original:**
+                "${originalParagraphText}"
 
-        **REGRAS:**
-        - Mantenha o núcleo da mensagem intacto.
-        - A resposta deve ser APENAS o parágrafo reescrito. Sem introduções, comentários ou explicações.`;
-        
-        const rewrittenParagraphRaw = await callGroqAPI(prompt, 1000);
-        const rewrittenParagraph = removeMetaComments(rewrittenParagraphRaw);
-        
-        // Substitui o conteúdo de texto do parágrafo
-        paragraphElement.textContent = rewrittenParagraph;
-        
-        // Feedback visual: muda a cor para verde e esconde o card
-        paragraphElement.classList.remove('retention-yellow', 'retention-red');
-        paragraphElement.classList.add('retention-green');
+                **REGRAS:**
+                - Mantenha o núcleo da mensagem intacto.
+                - A resposta deve ser APENAS o parágrafo reescrito. Sem introduções, comentários ou explicações.`;
+                
+                const rewrittenParagraphRaw = await callGroqAPI(prompt, 1000);
+                const rewrittenParagraph = removeMetaComments(rewrittenParagraphRaw);
+                
+                // Substitui o conteúdo de texto do parágrafo, mantendo o botão e o tooltip
+                paragraphElement.firstChild.textContent = rewrittenParagraph;
+                
+                // Feedback visual: muda a cor para verde e remove o botão
+                paragraphElement.classList.remove('retention-yellow', 'retention-red');
+                paragraphElement.classList.add('retention-green');
+                if (button) button.remove();
 
-        // Esconde o card de detalhes
-        const detailsCard = button.closest('.retention-details-card');
-        if (detailsCard) {
-            detailsCard.parentElement.innerHTML = ''; // Limpa a área de detalhes
-        }
+                // Atualiza o tooltip para mostrar que foi otimizado
+                const tooltipDiv = paragraphElement.querySelector('.retention-tooltip');
+                if(tooltipDiv) {
+                    tooltipDiv.innerHTML = `<strong>OTIMIZADO!</strong><span>O parágrafo foi reescrito com sucesso.</span>`;
+                }
 
-        // Invalida os prompts para esta seção, pois o texto mudou
-        const sectionElement = paragraphElement.closest('.script-section');
-        invalidateAndClearPrompts(sectionElement);
+                // Invalida os prompts para esta seção, pois o texto mudou
+                const sectionElement = paragraphElement.closest('.script-section');
+                invalidateAndClearPrompts(sectionElement);
 
-        window.showToast("Parágrafo otimizado com sucesso!");
+                window.showToast("Parágrafo otimizado com sucesso!");
 
-    } catch(error) {
-        window.showToast(`Falha ao otimizar: ${error.message}`);
-        if (button) {
-            button.textContent = "Erro";
-            button.disabled = false;
-        }
-    }
-};
-
-
-
-
+            } catch(error) {
+                window.showToast(`Falha ao otimizar: ${error.message}`);
+                if (button) {
+                    button.textContent = "Erro";
+                    button.disabled = false;
+                }
+            }
+        };
     
         /**
          * Pede à IA para analisar uma seção e inserir sugestões de performance.
@@ -4304,39 +4276,34 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', handleConclusionStrategyChange);
     });
 
-
-
-	// ==========================================================
-    // LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO CORRETA E FINAL)
     // ==========================================================
-    let hideDetailsTimeout; // Timer para esconder o card
+    // LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO FINAL)
+    // ==========================================================
+    let hideDetailsTimeout; // Renomeado para clareza
 
-    // Listener para MOSTRAR os detalhes ao passar o mouse
+    // Listener para MOSTRAR os detalhes
     document.getElementById('scriptSectionsContainer').addEventListener('mouseover', (event) => {
         const paragraph = event.target.closest('.retention-paragraph-live');
         if (!paragraph || !paragraph.dataset.suggestion) return;
 
+        // Se houver um timer para esconder, cancele-o
         clearTimeout(hideDetailsTimeout);
 
         const sectionId = paragraph.closest('.script-section').id;
         const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
         if (!detailsArea) return;
 
-        // ==========================================================
-        // AQUI ESTÁ A LÓGICA CORRIGIDA
-        // ==========================================================
+        // Preenche a área de detalhes com as informações do parágrafo atual
         const score = paragraph.dataset.score;
         const suggestion = paragraph.dataset.suggestion;
         const scoreLabels = { green: "Ponto Forte", yellow: "Ponto de Atenção", red: "Ponto de Risco" };
         const scoreColors = { green: "green-500", yellow: "yellow-400", red: "red-500" };
         
         let buttonHtml = '';
-        // Só mostra o botão de otimizar se o score for amarelo ou vermelho
         if (score === 'yellow' || score === 'red') {
             buttonHtml = `<button class="btn btn-secondary btn-small" data-action="optimize-paragraph" data-paragraph-id="${paragraph.id}">Otimizar com IA</button>`;
         }
 
-        // Esta é a linha que cria o card NOVO e CORRETO
         detailsArea.innerHTML = `
             <div class="retention-details-card border-l-${scoreColors[score]}">
                 <strong class="text-${scoreColors[score]}">${scoreLabels[score]}</strong>
@@ -4346,42 +4313,6 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         detailsArea.classList.remove('hidden');
     });
-
-    // Listener para ESCONDER os detalhes quando o mouse sai
-    document.getElementById('scriptSectionsContainer').addEventListener('mouseout', (event) => {
-        const paragraph = event.target.closest('.retention-paragraph-live');
-        if (paragraph) {
-            const sectionId = paragraph.closest('.script-section').id;
-            const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
-            
-            if (detailsArea && !detailsArea.classList.contains('hidden')) {
-                hideDetailsTimeout = setTimeout(() => {
-                    detailsArea.classList.add('hidden');
-                    detailsArea.innerHTML = '';
-                }, 300); 
-            }
-        }
-    });
-
-    // Listener para MANTER os detalhes visíveis se o mouse entrar no card
-    document.addEventListener('mouseover', (event) => {
-        if (event.target.closest('.section-analysis-output')) {
-            clearTimeout(hideDetailsTimeout);
-        }
-    });
-
-    // Listener para MANTER os detalhes visíveis se o mouse entrar no card
-    document.addEventListener('mouseover', (event) => {
-        if (event.target.closest('.section-analysis-output')) {
-            clearTimeout(hideDetailsTimeout); // Cancela o timer de esconder
-        }
-    });
-	// ==========================================================
-	// FIM DA LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO FINAL)
-	// ==========================================================
-
-
-
 
     // Listener para ESCONDER os detalhes
     document.getElementById('scriptSectionsContainer').addEventListener('mouseout', (event) => {
