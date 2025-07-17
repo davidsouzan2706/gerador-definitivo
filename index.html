@@ -2888,15 +2888,13 @@ The final output MUST be only the JSON code, like this example:
         // ==========================================================
         
         /**
- /**
-         * Analisa uma seção, aplica o mapa de calor e prepara os dados para a interação.
-         * (VERSÃO V3 FINAL - COM ARMAZENAMENTO DE DADOS)
+         * Analisa uma seção, aplica o mapa de calor e armazena os dados nos parágrafos.
          */
         window.analyzeSectionRetention = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
-            const contentWrapper = sectionElement.querySelector('.generated-content-wrapper');
+            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+            if (!contentWrapper) return;
             
-            // Limpa a área de detalhes, preparando para o novo card dinâmico.
             const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
             if (detailsArea) detailsArea.innerHTML = '';
 
@@ -2906,54 +2904,66 @@ The final output MUST be only the JSON code, like this example:
                 return;
             }
 
-            // Feedback visual durante a análise
-            const originalBorder = contentWrapper.style.border;
-            contentWrapper.style.border = '2px dashed var(--primary-color)';
-
             try {
                 const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
-                const languageName = elements.languageSelect.options[elements.languageSelect.selectedIndex].text;
-
-                const prompt = `You are a "Retention Editor" API. Your ONLY job is to analyze script paragraphs and return a valid JSON array.
-                Analyze the following array of JSON objects:
-                ${JSON.stringify(paragraphsWithIds, null, 2)}
-                CRITICAL INSTRUCTIONS:
-                1.  Return a new JSON array. For EACH object from the input, create a new object with EXACTLY these three keys: "paragraphId" (string), "retentionScore" (string: 'green', 'yellow', or 'red'), and "suggestion" (string in ${languageName}).
-                2.  Your entire response MUST be ONLY the raw JSON array. NO introductory text or markdown.`;
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each paragraph, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a "suggestion". Respond ONLY with the raw JSON array.
+                ${JSON.stringify(paragraphsWithIds, null, 2)}`;
 
                 const rawResult = await callGroqAPI(prompt, 2500);
                 const analysis = cleanGeneratedText(rawResult, true);
 
-                if (!analysis || !Array.isArray(analysis)) {
-                    throw new Error("A IA retornou uma análise em formato inválido.");
-                }
+                if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
-                // Limpa classes antigas de TODOS os parágrafos
                 paragraphs.forEach(p => {
                     p.className = '';
                     p.removeAttribute('data-suggestion');
                     p.removeAttribute('data-score');
                 });
 
-                // APLICA O MAPA DE CALOR E GUARDA OS DADOS PARA O MOUSEOVER
                 analysis.forEach(item => {
-                    const paragraphElement = document.getElementById(item.paragraphId);
-                    if (!paragraphElement) return;
-
-                    // Aplica a classe do Mapa de Calor
-                    paragraphElement.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
-                    
-                    // Armazena a sugestão e o score no próprio elemento para ser usada depois
-                    paragraphElement.dataset.suggestion = item.suggestion;
-                    paragraphElement.dataset.score = item.retentionScore;
+                    const p = document.getElementById(item.paragraphId);
+                    if (p) {
+                        p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
+                        p.dataset.suggestion = item.suggestion;
+                        p.dataset.score = item.retentionScore;
+                    }
                 });
-                
                 window.showToast("Análise de retenção concluída!");
-
             } catch (error) {
-                window.showToast(`Falha ao analisar a seção: ${error.message}`);
-            } finally {
-                contentWrapper.style.border = originalBorder;
+                window.showToast(`Falha na análise: ${error.message}`);
+            }
+        };
+
+        /**
+         * Pega um parágrafo, otimiza com IA e substitui seu conteúdo.
+         */
+        window.optimizeParagraph = async (paragraphId, suggestion) => {
+            const paragraphElement = document.getElementById(paragraphId);
+            if (!paragraphElement) return;
+
+            const button = document.querySelector(`button[data-paragraph-id="${paragraphId}"]`);
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = '<div class="loading-spinner-small" style="border-left-color: var(--primary-color); margin: auto;"></div>';
+            }
+
+            const originalText = paragraphElement.textContent.trim();
+            const prompt = `Rewrite the "Original Paragraph" to incorporate the "Improvement Suggestion". Keep the core message. Respond ONLY with the rewritten paragraph.\n\nOriginal Paragraph:\n"${originalText}"\n\nImprovement Suggestion:\n"${suggestion}"`;
+
+            try {
+                const rewrittenText = await callGroqAPI(prompt, 1000);
+                paragraphElement.textContent = removeMetaComments(rewrittenText);
+                paragraphElement.classList.remove('retention-yellow', 'retention-red');
+                paragraphElement.classList.add('retention-green');
+
+                const detailsCard = button?.closest('.retention-details-card');
+                if (detailsCard) detailsCard.parentElement.innerHTML = '';
+                
+                invalidateAndClearPrompts(paragraphElement.closest('.script-section'));
+                window.showToast("Parágrafo otimizado!");
+            } catch (error) {
+                window.showToast(`Falha ao otimizar: ${error.message}`);
+                if (button) button.textContent = "Erro";
             }
         };
 
@@ -4255,21 +4265,20 @@ ${scriptContent}
             }
         };
 
+
 // ==========================================================
         // EVENT LISTENER ÚNICO E CORRETO
         // ==========================================================
         document.addEventListener('DOMContentLoaded', () => {
-            // ---- 1. INICIALIZAÇÃO GERAL ----
+            // ---- INICIALIZAÇÃO GERAL ----
+            // (Esta parte já deve estar no seu código, mas incluída aqui para garantir)
             setupInputTabs();
             setupTabs();
             updateProgressBar();
             updateButtonStates();
             handleConclusionStrategyChange();
             updateNarrativeStructureOptions();
-
-            // ---- 2. EVENTOS DIRETOS EM ELEMENTOS ESPECÍFICOS ----
             document.getElementById('importFileInput')?.addEventListener('change', importProject);
-            
             document.getElementById('darkModeToggle')?.addEventListener('click', () => {
                 document.body.classList.toggle('dark');
                 const isDarkMode = document.body.classList.contains('dark');
@@ -4277,181 +4286,143 @@ ${scriptContent}
                 document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
                 localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
             });
-
             if (localStorage.getItem('darkMode') === 'enabled') {
                 document.body.classList.add('dark');
                 document.getElementById('moonIcon')?.classList.add('hidden');
                 document.getElementById('sunIcon')?.classList.remove('hidden');
             }
-
             document.getElementById('toggleZenModeBtn')?.addEventListener('click', () => document.body.classList.toggle('zen-mode'));
             document.getElementById('exitZenModeBtn')?.addEventListener('click', () => document.body.classList.remove('zen-mode'));
             document.getElementById('imageStyleSelect')?.addEventListener('change', toggleCustomImageStyleVisibility);
-            
             document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
                 radio.addEventListener('change', handleConclusionStrategyChange);
             });
+            window.addEventListener('scroll', window.handleFloatingActionBar);
 
+            // ---- LÓGICA DO CONSULTOR DE RETENÇÃO (MOUSEOVER/MOUSEOUT) ----
+            let hideDetailsTimeout;
+            const scriptContainer = document.getElementById('scriptSectionsContainer');
 
-           // ==========================================================
-            // LÓGICA DO CONSULTOR DE RETENÇÃO (VERSÃO FINAL COM TIMER)
-            // ==========================================================
-            let hideDetailsTimeout; // Timer para esconder o card
-
-            // Listener para MOSTRAR os detalhes ao passar o mouse no parágrafo
-            document.getElementById('scriptSectionsContainer').addEventListener('mouseover', (event) => {
+            scriptContainer.addEventListener('mouseover', (event) => {
                 const paragraph = event.target.closest('.retention-paragraph-live');
-                if (!paragraph || !paragraph.dataset.suggestion) return;
+                if (paragraph?.dataset.suggestion) {
+                    clearTimeout(hideDetailsTimeout);
+                    const sectionId = paragraph.closest('.script-section').id;
+                    const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
+                    if (!detailsArea) return;
 
-                // Cancela qualquer timer de "esconder" que esteja pendente
-                clearTimeout(hideDetailsTimeout);
+                    const score = paragraph.dataset.score;
+                    const suggestion = paragraph.dataset.suggestion;
+                    const scoreLabels = { green: "Ponto Forte", yellow: "Ponto de Atenção", red: "Ponto de Risco" };
+                    const scoreColors = { green: "green-500", yellow: "yellow-400", red: "red-500" };
+                    
+                    let buttonHtml = (score === 'yellow' || score === 'red') 
+                        ? `<div class="mt-3"><button class="btn btn-secondary btn-small" data-action="optimize-paragraph" data-paragraph-id="${paragraph.id}">Otimizar com IA</button></div>` 
+                        : '';
 
-                const sectionId = paragraph.closest('.script-section').id;
-                const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
-                if (!detailsArea) return;
-
-                const score = paragraph.dataset.score;
-                const suggestion = paragraph.dataset.suggestion;
-                const scoreLabels = { green: "Ponto Forte", yellow: "Ponto de Atenção", red: "Ponto de Risco" };
-                const scoreColors = { green: "green-500", yellow: "yellow-400", red: "red-500" };
-                
-                let buttonHtml = '';
-                if (score === 'yellow' || score === 'red') {
-                    buttonHtml = `<button class="btn btn-secondary btn-small" data-action="optimize-paragraph" data-paragraph-id="${paragraph.id}">Otimizar com IA</button>`;
+                    detailsArea.innerHTML = `
+                        <div class="retention-details-card border-l-4 border-${scoreColors[score]}">
+                            <strong class="text-sm uppercase font-bold text-${scoreColors[score]}">${scoreLabels[score]}</strong>
+                            <p class="mt-1 text-sm">${suggestion}</p>
+                            ${buttonHtml}
+                        </div>`;
                 }
-
-                detailsArea.innerHTML = `
-                    <div class="retention-details-card border-l-4 border-${scoreColors[score]}">
-                        <strong class="text-sm uppercase font-bold text-${scoreColors[score]}">${scoreLabels[score]}</strong>
-                        <p class="mt-1 text-sm">${suggestion}</p>
-                        ${buttonHtml ? `<div class="mt-3">${buttonHtml}</div>` : ''}
-                    </div>
-                `;
-                detailsArea.classList.remove('hidden');
+                if (event.target.closest('.section-analysis-output')) {
+                    clearTimeout(hideDetailsTimeout);
+                }
             });
 
-            // Listener para ESCONDER os detalhes (AGORA MAIS INTELIGENTE)
-            document.getElementById('scriptSectionsContainer').addEventListener('mouseout', (event) => {
+            scriptContainer.addEventListener('mouseout', (event) => {
                 const paragraph = event.target.closest('.retention-paragraph-live');
                 if (paragraph) {
                     const sectionId = paragraph.closest('.script-section').id;
                     const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
-                    
-                    // Inicia um timer para esconder o card. Se o mouse entrar no card, este timer será cancelado.
-                    if (detailsArea && !detailsArea.classList.contains('hidden')) {
-                        hideDetailsTimeout = setTimeout(() => {
-                            detailsArea.classList.add('hidden');
-                            detailsArea.innerHTML = '';
-                        }, 300); // 300ms de tolerância
-                    }
+                    hideDetailsTimeout = setTimeout(() => {
+                        if (detailsArea) detailsArea.innerHTML = '';
+                    }, 300);
                 }
             });
 
-            // Listener para MANTER os detalhes visíveis se o mouse entrar no card
-            document.addEventListener('mouseover', (event) => {
-                // Se o mouse está sobre a área de output, cancela o timer que iria escondê-la.
-                if (event.target.closest('.section-analysis-output')) {
-                    clearTimeout(hideDetailsTimeout);
-                }
-            });
-
-            // Listener para MANTER os detalhes visíveis se o mouse entrar no próprio card
-            document.addEventListener('mouseover', (event) => {
-                if (event.target.closest('.section-analysis-output')) {
-                    clearTimeout(hideDetailsTimeout);
-                }
-            });
-            // ==========================================================
-            // FIM DA CIRURGIA 2
-            // ==========================================================
-
-            // ---- "GERENTE DE CLIQUES" GERAL (JÁ EXISTENTE) ----
+            // ---- O "GERENTE DE CLIQUES" CENTRALIZADO ----
             document.addEventListener('click', function(event) {
-                const target = event.target;
-                const button = target.closest('button');
+                const button = event.target.closest('button');
+                if (!button) return;
 
-                if (button && button.dataset.action) {
-                    event.preventDefault();
-                    const action = button.dataset.action;
-
-                    if (action === 'regenerate') {
-                        const sectionId = button.dataset.sectionId;
-                        if (sectionId) window.regenerateSection(sectionId);
-                        return;
-                    }
-                    if (action === 'copy') {
-                        const accordionItem = button.closest('.accordion-item');
-                        if (accordionItem) {
-                            const contentWrapper = accordionItem.querySelector('.generated-content-wrapper');
-                            if (contentWrapper) {
-                                window.copyTextToClipboard(contentWrapper.textContent);
-                                window.showCopyFeedback(button);
-                            }
-                        }
-                        return;
-                    }
-                    if (action === 'generate-prompts') {
-                        const sectionId = button.dataset.sectionId;
-                        if (sectionId) window.generatePromptsForSection(sectionId);
-                        return;
-                    }
-                    if (action === 'optimize-paragraph') {
-                        const paragraphId = button.dataset.paragraphId;
-                        const detailsCard = button.closest('.retention-details-card');
-                        if (detailsCard) {
-                            const suggestion = detailsCard.querySelector('p').textContent;
-                            window.optimizeParagraph(paragraphId, suggestion);
-                        }
-                        return;
-                    }
-                }
-
-                const header = target.closest('.accordion-header, .nested-accordion-header');
-                if (header) {
-                    if (!target.closest('.header-buttons')) {
-                        const body = header.nextElementSibling;
-                        const arrow = header.querySelector('.accordion-arrow');
-                        if (body && arrow) {
-                            const isOpen = body.classList.toggle('open');
-                            arrow.classList.toggle('open', isOpen);
-                            header.classList.toggle('active', isOpen);
-                        }
-                    }
-                }
+                const action = button.dataset.action;
                 
-                if (button) {
-                    const clickActions = {
-                        'analyzeStrategyBtn': analyzeAndSetStrategy,
-                        'generateOutlineBtn': generateStrategicOutline,
-                        'generateConclusionAndCtaBtn': generateConclusionAndCta,
-                        'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
-                        'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
-                        'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-                        'generateDescriptionBtn': generateVideoDescription,
-                        'generateTitlesAndThumbnailsBtn': generateTitlesAndThumbnails,
-                        'downloadPdfBtn': downloadPdf,
-                        'exportProjectBtn': exportProject,
-                        'importProjectBtn': () => document.getElementById('importFileInput').click(),
-                        'resetScriptBtn': resetApplicationState,
-                        'generateIdeasBtn': generateVideoIdeas,
-                        'copyTranscriptBtn': handleCopyAndDownloadTranscript,
-                        'generateSoundtrackBtn': generateSoundtrack
-                    };
-                    if (clickActions[button.id]) {
-                        event.preventDefault();
-                        clickActions[button.id]();
-                        return;
+                // Lógica para 'data-action'
+                if (action) {
+                    event.preventDefault();
+                    switch(action) {
+                        case 'analyze-retention':
+                            window.analyzeSectionRetention(button.dataset.sectionId);
+                            break;
+                        case 'optimize-paragraph':
+                            const paragraphId = button.dataset.paragraphId;
+                            const suggestion = button.closest('.retention-details-card')?.querySelector('p')?.textContent;
+                            if(paragraphId && suggestion) window.optimizeParagraph(paragraphId, suggestion);
+                            break;
+                        case 'regenerate':
+                            if(button.dataset.sectionId) window.regenerateSection(button.dataset.sectionId);
+                            break;
+                        case 'copy':
+                             const content = button.closest('.accordion-item')?.querySelector('.generated-content-wrapper')?.textContent;
+                             if(content) {
+                                 window.copyTextToClipboard(content);
+                                 window.showCopyFeedback(button);
+                             }
+                             break;
+                        case 'generate-prompts':
+                             if(button.dataset.sectionId) window.generatePromptsForSection(button.dataset.sectionId);
+                             break;
                     }
-                    if (button.id.startsWith('float_')) {
-                        event.preventDefault();
-                        const originalId = button.id.replace('float_', '');
-                        document.getElementById(originalId)?.click();
+                    return; // Importante para não processar duas vezes
+                }
+
+                // Lógica para botões com ID
+                const clickActions = {
+                    'analyzeStrategyBtn': analyzeAndSetStrategy,
+                    'generateOutlineBtn': generateStrategicOutline,
+                    'generateConclusionAndCtaBtn': generateConclusionAndCta,
+                    'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
+                    'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
+                    'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
+                    'generateDescriptionBtn': generateVideoDescription,
+                    'generateTitlesAndThumbnailsBtn': generateTitlesAndThumbnails,
+                    'downloadPdfBtn': downloadPdf,
+                    'exportProjectBtn': exportProject,
+                    'importProjectBtn': () => document.getElementById('importFileInput').click(),
+                    'resetScriptBtn': resetApplicationState,
+                    'generateIdeasBtn': generateVideoIdeas,
+                    'copyTranscriptBtn': handleCopyAndDownloadTranscript,
+                    'generateSoundtrackBtn': generateSoundtrack
+                };
+
+                if (clickActions[button.id]) {
+                    event.preventDefault();
+                    clickActions[button.id]();
+                    return;
+                }
+
+                if (button.id.startsWith('float_')) {
+                    event.preventDefault();
+                    document.getElementById(button.id.replace('float_', ''))?.click();
+                }
+
+                 // Lógica do Acordeão
+                const header = event.target.closest('.accordion-header, .nested-accordion-header');
+                if (header && !event.target.closest('.header-buttons')) {
+                    const body = header.nextElementSibling;
+                    const arrow = header.querySelector('.accordion-arrow');
+                    if (body && arrow) {
+                        body.classList.toggle('open');
+                        arrow.classList.toggle('open', body.classList.contains('open'));
+                        header.classList.toggle('active', body.classList.contains('open'));
                     }
                 }
             });
 
-
-            // ---- LÓGICA PARA RESETAR ROTEIRO (JÁ EXISTENTE) ----
+            // Lógica para resetar o roteiro
             const strategicInputIds = [
                 'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
                 'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
@@ -4460,17 +4431,14 @@ ${scriptContent}
             strategicInputIds.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
-                    const eventType = (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') ? 'change' : 'input';
-                    element.addEventListener(eventType, (e) => {
-                        if (!isSettingStrategy) {
-                            resetGeneratedScriptContent(e.target.id);
-                        }
+                    element.addEventListener('change', (e) => {
+                        if (!isSettingStrategy) resetGeneratedScriptContent(e.target.id);
                     });
                 }
             });
+        });
 
-            // ---- EVENTO DE SCROLL (JÁ EXISTENTE) ----
-            window.addEventListener('scroll', window.handleFloatingActionBar);
-        });</script>
+
+</script>
 </body>
 </html>
