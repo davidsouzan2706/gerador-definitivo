@@ -38,7 +38,7 @@
 .retention-yellow { border-left-color: #FBBF24; }
 .retention-red { border-left-color: #EF4444; }
 
-/* --- Área de Detalhes da Sugestão --- */
+/* --- Área de Detalhes da Sugestão (Vamos usar depois) --- */
 .retention-details-card {
     background-color: var(--bg-light);
     border: 1px solid var(--border-light);
@@ -60,7 +60,13 @@
 .retention-details-card p {
     font-size: 0.9rem;
     line-height: 1.5;
-    color: var(--text-dark); /* <-- ADICIONE ESTA LINHA */
+    color: var(--text-dark);
+}
+.dark .retention-details-card p {
+    color: #d1d5db; /* Cor de texto clara */
+}
+.retention-details-card button {
+    margin-top: 0.75rem;
 }
 
 /* E adicione esta regra para o modo escuro */
@@ -1066,7 +1072,71 @@
 .dark #outlineContent .outline-title {
     color: #FBBF24 !important; /* Amarelo (Amber-400) */
 }
+
+/* ========================================================== */
+/* ==== ESTILOS PARA O CONSULTOR DE RETENÇÃO (TOOLTIP) ==== */
+/* ========================================================== */
+.retention-paragraph-live {
+    position: relative; /* Essencial para posicionar os filhos */
+}
+.retention-tooltip {
+    position: absolute;
+    top: 100%;
+    bottom: auto;
+    left: 10px;
+    margin-top: 8px;
+    width: auto;
+    max-width: 90%;
+    background-color: #1f2937;
+    color: #f9fafb;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+}
+.dark .retention-tooltip {
+    background-color: #374151;
+}
+.retention-paragraph-live:hover .retention-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.retention-action-btn {
+    position: absolute;
+    top: 50%;
+    right: -15px;
+    transform: translateY(-50%);
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, transform 0.2s;
+    z-index: 11;
+}
+.retention-paragraph-live:hover .retention-action-btn {
+    opacity: 1;
+    visibility: visible;
+}
+
     </style>
+
+
 </head>
 <body class="bg-gray-100 dark:bg-gray-900">
     <!-- BARRA FLUTUANTE DE VOLTA AO LUGAR CERTO -->
@@ -2881,136 +2951,103 @@ The final output MUST be only the JSON code, like this example:
         // ================== FUNÇÕES PRINCIPAIS ====================
         // ==========================================================
         
-        /**
-         * Analisa uma seção, aplica o mapa de calor e prepara os dados para a interação.
+      /**
+         * Analisa a seção, anexa tooltips com título e botões de ação.
+         * (VERSÃO TOOLTIP FINAL CORRIGIDA)
          */
         window.analyzeSectionRetention = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
-            const contentWrapper = sectionElement.querySelector('.generated-content-wrapper');
-            
-            // Limpa a área de detalhes antiga, se houver
-            const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
-            if (detailsArea) detailsArea.innerHTML = '';
+            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+            if (!contentWrapper) return;
 
             const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]'));
             if (paragraphs.length === 0) {
-                window.showToast("Não há parágrafos para analisar nesta seção.");
+                window.showToast("Não há parágrafos para analisar.");
                 return;
             }
 
-            const originalBorder = contentWrapper.style.border;
-            contentWrapper.style.border = '2px dashed var(--primary-color)';
-
             try {
                 const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
-                const sectionTitle = sectionElement.querySelector('h3').textContent;
-                const languageName = elements.languageSelect.options[elements.languageSelect.selectedIndex].text;
-
-                const prompt = `You are a "Retention Editor" API. Your ONLY job is to analyze script paragraphs and return a valid JSON array.
-
-                **Analyze the following array of JSON objects:**
-                ${JSON.stringify(paragraphsWithIds, null, 2)}
-
-                **CRITICAL INSTRUCTIONS:**
-                1.  Return a new JSON array. For EACH object from the input, create a new object with EXACTLY these three keys: "paragraphId" (string), "retentionScore" (string: 'green', 'yellow', or 'red'), and "suggestion" (string in ${languageName}).
-                2.  Your entire response MUST be ONLY the raw JSON array.
-                3.  DO NOT add any introductory text, explanations, or markdown code fences like \`\`\`json.
-                4.  If you cannot perform the analysis, return an empty array: [].`;
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion". Respond ONLY with the raw JSON array.
+                ${JSON.stringify(paragraphsWithIds, null, 2)}`;
 
                 const rawResult = await callGroqAPI(prompt, 2500);
                 const analysis = cleanGeneratedText(rawResult, true);
 
-                if (!analysis || !Array.isArray(analysis)) {
-                    throw new Error("A IA retornou uma análise em formato inválido.");
-                }
+                if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
-                // Limpa classes e dados antigos antes de aplicar os novos
+                // Limpa tooltips e botões antigos antes de adicionar os novos
                 paragraphs.forEach(p => {
-                    p.className = '';
-                    p.removeAttribute('data-suggestion');
-                    p.removeAttribute('data-score');
+                    p.classList.remove('retention-green', 'retention-yellow', 'retention-red');
+                    p.querySelector('.retention-tooltip')?.remove();
+                    p.querySelector('.retention-action-btn')?.remove();
                 });
 
                 analysis.forEach(item => {
-                    const paragraphElement = document.getElementById(item.paragraphId);
-                    if (!paragraphElement) return;
+                    const p = document.getElementById(item.paragraphId);
+                    if (p) {
+                        p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
+                        
+                        if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
+                            const scoreLabels = { green: "PONTO FORTE", yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
+                            const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
 
-                    // Aplica a classe do Mapa de Calor
-                    paragraphElement.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
-                    
-                    // Armazena a sugestão no próprio elemento para ser usada pelo listener de 'mouseover'
-                    paragraphElement.dataset.suggestion = item.suggestion;
-                    paragraphElement.dataset.score = item.retentionScore;
+                            const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}</div>`;
+                            const buttonHtml = `
+                                <button class="retention-action-btn" onclick="event.stopPropagation(); window.optimizeParagraph('${item.paragraphId}', '${item.suggestion.replace(/'/g, "\\'")}')" title="Otimizar com IA">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
+                                </button>`;
+                            p.insertAdjacentHTML('beforeend', tooltipHtml + buttonHtml);
+                        }
+                    }
                 });
                 window.showToast("Análise de retenção concluída!");
-
             } catch (error) {
-                window.showToast(`Falha ao analisar a seção: ${error.message}`);
-            } finally {
-                contentWrapper.style.border = originalBorder;
+                window.showToast(`Falha na análise: ${error.message}`);
             }
         };
+
+
+
     
         /**
-         * Pega o ID de um parágrafo e uma sugestão, pede para a IA reescrevê-lo,
-         * e substitui o texto do elemento span correspondente.
+         * Pega um parágrafo, otimiza com IA e substitui seu conteúdo.
+         * (VERSÃO TOOLTIP RESGATADA)
          */
-                window.optimizeParagraph = async (paragraphId, suggestion) => {
+        window.optimizeParagraph = async (paragraphId, suggestion) => {
             const paragraphElement = document.getElementById(paragraphId);
-            if (!paragraphElement) {
-                window.showToast("Erro: Parágrafo original não encontrado.");
-                return;
-            }
-            
-            const button = paragraphElement.querySelector('.optimize-btn-live');
-            const originalParagraphText = paragraphElement.firstChild.textContent.trim(); // Pega apenas o texto, ignorando o botão/tooltip
+            if (!paragraphElement) return;
 
+            const button = paragraphElement.querySelector('.retention-action-btn');
             if (button) {
-                button.innerHTML = '<div class="loading-spinner-small" style="margin: 0 auto; border-left-color: var(--primary-color);"></div>';
                 button.disabled = true;
+                button.innerHTML = `<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px;"></div>`;
             }
+
+            const originalText = paragraphElement.firstChild.textContent.trim(); // Pega apenas o texto
+            const prompt = `Rewrite the "Original Paragraph" to incorporate the "Improvement Suggestion". Keep the core message. Respond ONLY with the rewritten paragraph.\n\nOriginal Paragraph:\n"${originalText}"\n\nImprovement Suggestion:\n"${suggestion}"`;
 
             try {
-                const prompt = `Você é um mestre roteirista. Sua tarefa é reescrever o "Parágrafo Original" para incorporar a "Sugestão de Melhoria".
-
-                **Parágrafo Original:**
-                "${originalParagraphText}"
-
-                **REGRAS:**
-                - Mantenha o núcleo da mensagem intacto.
-                - A resposta deve ser APENAS o parágrafo reescrito. Sem introduções, comentários ou explicações.`;
+                const rewrittenText = await callGroqAPI(prompt, 1000);
+                paragraphElement.firstChild.textContent = removeMetaComments(rewrittenText);
                 
-                const rewrittenParagraphRaw = await callGroqAPI(prompt, 1000);
-                const rewrittenParagraph = removeMetaComments(rewrittenParagraphRaw);
-                
-                // Substitui o conteúdo de texto do parágrafo, mantendo o botão e o tooltip
-                paragraphElement.firstChild.textContent = rewrittenParagraph;
-                
-                // Feedback visual: muda a cor para verde e remove o botão
+                // Feedback visual
                 paragraphElement.classList.remove('retention-yellow', 'retention-red');
                 paragraphElement.classList.add('retention-green');
-                if (button) button.remove();
-
-                // Atualiza o tooltip para mostrar que foi otimizado
-                const tooltipDiv = paragraphElement.querySelector('.retention-tooltip');
-                if(tooltipDiv) {
-                    tooltipDiv.innerHTML = `<strong>OTIMIZADO!</strong><span>O parágrafo foi reescrito com sucesso.</span>`;
-                }
-
-                // Invalida os prompts para esta seção, pois o texto mudou
-                const sectionElement = paragraphElement.closest('.script-section');
-                invalidateAndClearPrompts(sectionElement);
-
-                window.showToast("Parágrafo otimizado com sucesso!");
-
-            } catch(error) {
+                paragraphElement.querySelector('.retention-tooltip')?.remove();
+                button?.remove();
+                
+                invalidateAndClearPrompts(paragraphElement.closest('.script-section'));
+                window.showToast("Parágrafo otimizado!");
+            } catch (error) {
                 window.showToast(`Falha ao otimizar: ${error.message}`);
-                if (button) {
-                    button.textContent = "Erro";
-                    button.disabled = false;
-                }
+                if (button) button.innerHTML = '⚠️'; // Ícone de erro
             }
         };
+
+
+
+
     
         /**
          * Pede à IA para analisar uma seção e inserir sugestões de performance.
@@ -3389,7 +3426,7 @@ ${scriptContent}
                 throw new Error("A IA retornou uma resposta vazia ou irreconhecível.");
             }
 
-            const parsedData = JSON.parse(cleanedResult);
+            const parsedData = cleanedResult;
 
             // --- VALIDAÇÃO DE DADOS (CAMADA 1) ---
             if (validatePromptsArray(parsedData)) {
@@ -4276,34 +4313,39 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', handleConclusionStrategyChange);
     });
 
-    // ==========================================================
-    // LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO FINAL)
-    // ==========================================================
-    let hideDetailsTimeout; // Renomeado para clareza
 
-    // Listener para MOSTRAR os detalhes
+
+	// ==========================================================
+    // LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO CORRETA E FINAL)
+    // ==========================================================
+    let hideDetailsTimeout; // Timer para esconder o card
+
+    // Listener para MOSTRAR os detalhes ao passar o mouse
     document.getElementById('scriptSectionsContainer').addEventListener('mouseover', (event) => {
         const paragraph = event.target.closest('.retention-paragraph-live');
         if (!paragraph || !paragraph.dataset.suggestion) return;
 
-        // Se houver um timer para esconder, cancele-o
         clearTimeout(hideDetailsTimeout);
 
         const sectionId = paragraph.closest('.script-section').id;
         const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
         if (!detailsArea) return;
 
-        // Preenche a área de detalhes com as informações do parágrafo atual
+        // ==========================================================
+        // AQUI ESTÁ A LÓGICA CORRIGIDA
+        // ==========================================================
         const score = paragraph.dataset.score;
         const suggestion = paragraph.dataset.suggestion;
         const scoreLabels = { green: "Ponto Forte", yellow: "Ponto de Atenção", red: "Ponto de Risco" };
         const scoreColors = { green: "green-500", yellow: "yellow-400", red: "red-500" };
         
         let buttonHtml = '';
+        // Só mostra o botão de otimizar se o score for amarelo ou vermelho
         if (score === 'yellow' || score === 'red') {
             buttonHtml = `<button class="btn btn-secondary btn-small" data-action="optimize-paragraph" data-paragraph-id="${paragraph.id}">Otimizar com IA</button>`;
         }
 
+        // Esta é a linha que cria o card NOVO e CORRETO
         detailsArea.innerHTML = `
             <div class="retention-details-card border-l-${scoreColors[score]}">
                 <strong class="text-${scoreColors[score]}">${scoreLabels[score]}</strong>
@@ -4313,6 +4355,42 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         detailsArea.classList.remove('hidden');
     });
+
+    // Listener para ESCONDER os detalhes quando o mouse sai
+    document.getElementById('scriptSectionsContainer').addEventListener('mouseout', (event) => {
+        const paragraph = event.target.closest('.retention-paragraph-live');
+        if (paragraph) {
+            const sectionId = paragraph.closest('.script-section').id;
+            const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
+            
+            if (detailsArea && !detailsArea.classList.contains('hidden')) {
+                hideDetailsTimeout = setTimeout(() => {
+                    detailsArea.classList.add('hidden');
+                    detailsArea.innerHTML = '';
+                }, 300); 
+            }
+        }
+    });
+
+    // Listener para MANTER os detalhes visíveis se o mouse entrar no card
+    document.addEventListener('mouseover', (event) => {
+        if (event.target.closest('.section-analysis-output')) {
+            clearTimeout(hideDetailsTimeout);
+        }
+    });
+
+    // Listener para MANTER os detalhes visíveis se o mouse entrar no card
+    document.addEventListener('mouseover', (event) => {
+        if (event.target.closest('.section-analysis-output')) {
+            clearTimeout(hideDetailsTimeout); // Cancela o timer de esconder
+        }
+    });
+	// ==========================================================
+	// FIM DA LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO FINAL)
+	// ==========================================================
+
+
+
 
     // Listener para ESCONDER os detalhes
     document.getElementById('scriptSectionsContainer').addEventListener('mouseout', (event) => {
@@ -4457,6 +4535,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---- 6. EVENTO DE SCROLL PARA BARRA FLUTUANTE ----
     window.addEventListener('scroll', window.handleFloatingActionBar);
 });
+
 </script>
 </body>
 </html>
