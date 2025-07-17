@@ -1510,6 +1510,18 @@
                                         <div class="asset-card-placeholder">Clique em 'Gerar' para ver as sugestões</div>
                                     </div>
                                 </div>
+
+				<!-- ADICIONE O BLOCO ABAIXO -->
+				    <div class="card-background p-4 rounded-lg shadow-md">
+				        <div class="flex justify-between items-center mb-3">
+				            <h4 class="font-bold text-lg text-gray-800 dark:text-gray-200">Recursos Sonoros (Trilha)</h4>
+				            <button id="generateSoundtrackBtn" class="btn btn-secondary btn-small">Gerar Sugestões</button>
+				        </div>
+				        <div id="soundtrackContent">
+			            <div class="asset-card-placeholder">Clique em 'Gerar' para criar sugestões de trilha para o roteiro completo.</div>
+			        </div>
+				</div>
+
                             </div>
                         </div>
                     </div>
@@ -1866,6 +1878,12 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 });
             });
         };
+
+
+	 /**
+         * Gera sugestões de trilha sonora para a transcrição completa do roteiro.
+         * (VERSÃO GLOBAL - NA ABA RECURSOS)
+         */
 
 	const generateSoundtrack = async () => {
             const fullTranscript = getTranscriptOnly();
