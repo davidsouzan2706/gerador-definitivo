@@ -3343,9 +3343,31 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
 	const directive = strategicOutline[outlineKey]; 
         const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive);
         
-	let result = await callGroqAPI(prompt, maxTokens);
-                result = removeMetaComments(result.trim()); // Limpa preâmbulos como "Aqui está o roteiro:"
-        
+	  // ==================================================================
+          // Remove comentários meta da IA do texto gerado. (VERSÃO APRIMORADA)
+          // ==================================================================
+        const removeMetaComments = (text) => {
+            if (!text) return "";
+            
+            // Padrão para remover "Aqui está o/a [qualquer coisa]:" e variações
+            const introPattern = /^(aqui está|aqui vai|claro, aqui está|certo, aqui está|eis o|sure, here is|here's|here are|below is|certainly, here is) .*?:\s*\n?/im;
+            let cleanedText = text.replace(introPattern, '');
+
+            // Remove outras frases comuns de preâmbulo
+            cleanedText = cleanedText.replace(/^introdução:\s*\n?/im, '');
+            cleanedText = cleanedText.replace(/^desenvolvimento:\s*\n?/im, '');
+            cleanedText = cleanedText.replace(/^clímax:\s*\n?/im, '');
+            cleanedText = cleanedText.replace(/^conclusão:\s*\n?/im, '');
+            
+            // Remove aspas do início e do fim, se a IA as adicionar ao redor de todo o texto
+            if (cleanedText.startsWith('"') && cleanedText.endsWith('"')) {
+                cleanedText = cleanedText.substring(1, cleanedText.length - 1);
+            }
+
+            return cleanedText.trim();
+        };
+       	  // ==================================================================
+
 	result = removeMetaComments(result.trim());
 
         const paragraphs = result.split('\n').filter(p => p.trim() !== '');
