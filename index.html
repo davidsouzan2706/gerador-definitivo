@@ -3045,7 +3045,18 @@ The final output MUST be only the JSON code, like this example:
             }
 
             const originalText = paragraphElement.firstChild.textContent.trim(); // Pega apenas o texto
-            const prompt = `Rewrite the "Original Paragraph" to incorporate the "Improvement Suggestion". Keep the core message. Respond ONLY with the rewritten paragraph.\n\nOriginal Paragraph:\n"${originalText}"\n\nImprovement Suggestion:\n"${suggestion}"`;
+            const languageName = document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text;
+        	const prompt = `You are an expert copywriter. Rewrite the "Original Paragraph" below based on the "Improvement Suggestion".
+        
+        	**CRITICAL RULE: You MUST respond in ${languageName}.** Do not change the language.
+
+       		 **Original Paragraph:**
+       		 "${originalText}"
+
+      		  **Improvement Suggestion:**
+     		   "${suggestion}"
+
+     	   Respond ONLY with the rewritten paragraph, in ${languageName}.`;
 
             try {
                 const rewrittenText = await callGroqAPI(prompt, 1000);
