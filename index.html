@@ -1081,9 +1081,10 @@
 }
 .retention-tooltip {
     position: absolute;
-    bottom: 100%;
+    top: 100%;
+    bottom: auto;
     left: 10px;
-    margin-bottom: 8px;
+    margin-top: 8px;
     width: auto;
     max-width: 90%;
     background-color: #1f2937;
@@ -2983,12 +2984,18 @@ The final output MUST be only the JSON code, like this example:
                 });
 
                 analysis.forEach(item => {
+
+
                     const p = document.getElementById(item.paragraphId);
                     if (p) {
                         p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
                         
                         if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
-                            const tooltipHtml = `<div class="retention-tooltip">${item.suggestion}</div>`;
+                            // ESTA É A PARTE CORRIGIDA
+                            const scoreLabels = { green: "PONTO FORTE", yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
+                            const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
+
+                            const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}</div>`;
                             const buttonHtml = `
                                 <button class="retention-action-btn" onclick="event.stopPropagation(); window.optimizeParagraph('${item.paragraphId}', '${item.suggestion.replace(/'/g, "\\'")}')" title="Otimizar com IA">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
@@ -2997,11 +3004,6 @@ The final output MUST be only the JSON code, like this example:
                         }
                     }
                 });
-                window.showToast("Análise de retenção concluída!");
-            } catch (error) {
-                window.showToast(`Falha na análise: ${error.message}`);
-            }
-        };
 
 
 
