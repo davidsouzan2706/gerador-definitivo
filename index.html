@@ -1515,7 +1515,7 @@
 				    <div class="card-background p-4 rounded-lg shadow-md">
 				        <div class="flex justify-between items-center mb-3">
 				            <h4 class="font-bold text-lg text-gray-800 dark:text-gray-200">Recursos Sonoros (Trilha)</h4>
-				            <button id="generateSoundtrackBtn" class="btn btn-secondary btn-small">Gerar Sugestões</button>
+				            <button id="generateSoundtrackBtn" class="btn btn-secondary btn-small">Gerar</button>
 				        </div>
 				        <div id="soundtrackContent">
 			            <div class="asset-card-placeholder">Clique em 'Gerar' para criar sugestões de trilha para o roteiro completo.</div>
@@ -3610,7 +3610,7 @@ ${scriptContent}
                     throw new Error("A IA não retornou um JSON válido.");
                 }
                 
-                const parsedContent = JSON.parse(cleanedResult);
+                const parsedContent = cleanedResult;
                 generatedTitlesAndThumbnails = parsedContent;
 
                 const targetContentElement = document.getElementById('titlesThumbnailsContent');
