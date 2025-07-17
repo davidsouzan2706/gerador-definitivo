@@ -4358,7 +4358,26 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', handleConclusionStrategyChange);
     });
 
+// ==========================================================
+        // CIRURGIA: INVALIDAÇÃO DE PROMPTS AO DIGITAR MANUALMENTE
+        // ==========================================================
+        document.addEventListener('input', (event) => {
+            // Usamos "event delegation" para observar eventos de input no documento inteiro.
+            
+            // Verificamos se o evento aconteceu em um de nossos campos de roteiro editáveis.
+            if (event.target.matches('.generated-content-wrapper[contenteditable="true"]')) {
+                
+                console.log("Modificação manual detectada no roteiro."); // Log para depuração
 
+                // Encontra a seção-pai (ex: #introSection) do texto que foi modificado.
+                const sectionElement = event.target.closest('.script-section');
+                
+                if (sectionElement) {
+                    // Chama a nossa função já existente para invalidar os prompts daquela seção.
+                    invalidateAndClearPrompts(sectionElement);
+                }
+            }
+        });
 
 	// ==========================================================
     // LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO CORRETA E FINAL)
