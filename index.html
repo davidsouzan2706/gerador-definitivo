@@ -3115,12 +3115,15 @@ The final output MUST be only the JSON code, like this example:
             const originalText = contentWrapper.textContent.trim();
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
 
-            try {
-                const languageName = elements.languageSelect.options[elements.languageSelect.selectedIndex].text;
-
                 // ==========================================================
                 // AQUI ESTÁ A MUDANÇA CRUCIAL NO PROMPT
                 // ==========================================================
+
+
+            try {
+                const languageName = elements.languageSelect.options[elements.languageSelect.selectedIndex].text;
+
+
 
                 const prompt = `Você é um Diretor de Cena e um coach de narração para YouTubers. Sua tarefa é pegar um roteiro e prepará-lo para um narrador profissional, inserindo anotações de performance **ANTES** das frases ou palavras que elas modificam.
 
@@ -3153,6 +3156,15 @@ The final output MUST be only the JSON code, like this example:
 
                 let performedText = await callGroqAPI(prompt, 2000);
                 performedText = removeMetaComments(performedText);
+
+		// ==========================================================
+                // O ROBÔ CORRETOR DE ÊNFASE ENTRA EM AÇÃO
+                // ==========================================================
+                const emphasisRegex = /(\s*)(\S+)(\s*)(\[ênfase em.*?\])/g;
+                performedText = performedText.replace(emphasisRegex, (match, preSpace, word, postSpace, tag) => {
+                    return `${preSpace}${tag}${postSpace}${word}`;
+                });
+
 
                 const highlightedText = performedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
                 
