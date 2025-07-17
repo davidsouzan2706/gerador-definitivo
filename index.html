@@ -1530,16 +1530,23 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         // ================== FUNÇÕES DE UTILIDADE ==================
         // ==========================================================
         /**
-         * Exibe uma notificação toast na parte inferior da tela.
-         * @param {string} message - A mensagem a ser exibida.
+         * Alterna a visibilidade de um corpo de acordeão e a rotação de sua seta.
+         * @param {HTMLElement} headerElement - O elemento do cabeçalho do acordeão que foi clicado.
          */
-        window.showToast = (message) => {
-            elements.toastNotification.textContent = message;
-            elements.toastNotification.classList.add('toast-visible');
-            setTimeout(() => {
-                elements.toastNotification.classList.remove('toast-visible');
-                setTimeout(() => { elements.toastNotification.textContent = ''; }, 300);
-            }, 3000);
+        window.toggleAccordion = (headerElement) => {
+            // Verifica se o clique foi dentro da área dos botões de ação
+            if (event.target.closest('.header-buttons')) {
+                return; // Se foi, não faz nada (deixa a ação do botão acontecer)
+            }
+        
+            const body = headerElement.nextElementSibling;
+            const arrow = headerElement.querySelector('.accordion-arrow');
+
+            if (body && arrow) {
+                const isOpen = body.classList.toggle('open');
+                arrow.classList.toggle('open', isOpen);
+                headerElement.classList.toggle('active', isOpen);
+            }
         };
 
         /**
@@ -4338,13 +4345,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ---- 4. O "GERENTE DE CLIQUES" GERAL ----
+    // ---- 4. O "GERENTE DE CLIQUES" - VERSÃO FINAL E CORRETA ----
     document.addEventListener('click', function(event) {
         const target = event.target;
-        const button = target.closest('button');
-        if (!button) return; // Se não for um botão, para aqui
+        
+        // PARTE 1: LÓGICA DO ACORDEÃO (AGORA PRIORITÁRIA E CORRETA)
+        const header = target.closest('.accordion-header, .nested-accordion-header');
+        if (header) {
+            // Chama a nossa nova função dedicada
+            window.toggleAccordion(header);
+        }
 
-        // PARTE 1: Ações baseadas em 'data-action'
+        // PARTE 2: LÓGICA GERAL DOS BOTÕES
+        const button = target.closest('button');
+        if (!button) return; // Se o clique não foi em um botão (ou dentro de um), encerra.
+
+        // Ações baseadas em 'data-action'
         if (button.dataset.action) {
             event.preventDefault();
             const action = button.dataset.action;
@@ -4356,13 +4372,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (action === 'copy') {
                 const accordionItem = button.closest('.accordion-item');
-                if (accordionItem) {
-                    const contentWrapper = accordionItem.querySelector('.generated-content-wrapper');
-                    if (contentWrapper) {
-                        const textToCopy = contentWrapper.textContent;
-                        window.copyTextToClipboard(textToCopy);
-                        window.showCopyFeedback(button);
-                    }
+                const contentWrapper = accordionItem?.querySelector('.generated-content-wrapper');
+                if (contentWrapper) {
+                    window.copyTextToClipboard(contentWrapper.textContent);
+                    window.showCopyFeedback(button);
                 }
                 return;
             }
@@ -4374,27 +4387,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (action === 'optimize-paragraph') {
                 const paragraphId = button.dataset.paragraphId;
                 const detailsCard = button.closest('.retention-details-card');
-                if (detailsCard) {
-                    const suggestion = detailsCard.querySelector('p').textContent;
+                const suggestion = detailsCard?.querySelector('p')?.textContent;
+                if (paragraphId && suggestion) {
                     window.optimizeParagraph(paragraphId, suggestion);
                 }
                 return;
             }
         }
 
-        // PARTE 2: Lógica do Acordeão
-        const header = target.closest('.accordion-header, .nested-accordion-header');
-        if (header && !target.closest('.header-buttons')) {
-            const body = header.nextElementSibling;
-            const arrow = header.querySelector('.accordion-arrow');
-            if (body && arrow) {
-                const isOpen = body.classList.toggle('open');
-                arrow.classList.toggle('open', isOpen);
-                header.classList.toggle('active', isOpen);
-            }
-        }
-
-        // PARTE 3: Ações baseadas em ID
+        // Ações baseadas em ID
         const clickActions = {
             'analyzeStrategyBtn': analyzeAndSetStrategy,
             'generateOutlineBtn': generateStrategicOutline,
@@ -4419,6 +4420,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Ações para botões flutuantes
         if (button.id.startsWith('float_')) {
             event.preventDefault();
             const originalId = button.id.replace('float_', '');
