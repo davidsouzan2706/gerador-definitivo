@@ -1780,11 +1780,27 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 
             const conclusionModule = document.getElementById('conclusionStrategyModule');
             if (conclusionModule) { // Adicionada verificação de segurança aqui também
+                if (conclusionModule) {
                 if (mainSectionsDone && conclusionModule.classList.contains('hidden')) { 
+                    
+                    // ==========================================================
+                    // A MÁGICA ACONTECE AQUI
+                    // ==========================================================
+                    const climaxSection = document.getElementById('climaxSection');
+                    if (climaxSection) {
+                        // Move o módulo para ficar logo depois da seção Clímax
+                        climaxSection.parentNode.insertBefore(conclusionModule, climaxSection.nextSibling);
+                    }
+                    // ==========================================================
+                    
                     conclusionModule.classList.remove('hidden');
                     conclusionModule.classList.add('animate-fade-in');
                     handleConclusionStrategyChange();
                     conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Mostra um "toast" para guiar o usuário
+                    window.showToast("Último passo: Defina o objetivo da sua conclusão!");
+
                 } else if (!mainSectionsDone && !conclusionModule.classList.contains('hidden')) {
                     conclusionModule.classList.add('hidden');
                 }
