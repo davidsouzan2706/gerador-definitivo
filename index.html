@@ -3346,31 +3346,48 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
 	  // ==================================================================
           // Remove comentários meta da IA do texto gerado. (VERSÃO APRIMORADA)
           // ==================================================================
-        const removeMetaComments = (text) => {
-            if (!text) return "";
-            
-            // Padrão para remover "Aqui está o/a [qualquer coisa]:" e variações
-            const introPattern = /^(aqui está|aqui vai|claro, aqui está|certo, aqui está|eis o|sure, here is|here's|here are|below is|certainly, here is) .*?:\s*\n?/im;
-            let cleanedText = text.replace(introPattern, '');
+        
 
-            // Remove outras frases comuns de preâmbulo
-            cleanedText = cleanedText.replace(/^introdução:\s*\n?/im, '');
-            cleanedText = cleanedText.replace(/^desenvolvimento:\s*\n?/im, '');
-            cleanedText = cleanedText.replace(/^clímax:\s*\n?/im, '');
-            cleanedText = cleanedText.replace(/^conclusão:\s*\n?/im, '');
+try {
+            const keyMap = { intro: 'introduction', climax: 'climax' }; // Adicionado climax para mapeamento
+            const outlineKey = keyMap[sectionName] || sectionName;
+            const directive = strategicOutline ? strategicOutline[outlineKey] : null;
+            const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive);
+
+            // 1. Chama a API
+            let rawResult = await callGroqAPI(prompt, maxTokens);
             
-            // Remove aspas do início e do fim, se a IA as adicionar ao redor de todo o texto
-            if (cleanedText.startsWith('"') && cleanedText.endsWith('"')) {
-                cleanedText = cleanedText.substring(1, cleanedText.length - 1);
+            // 2. Limpa o resultado
+            let cleanedResult = removeMetaComments(rawResult.trim()); 
+
+            // 3. Processa o resultado limpo
+            const paragraphs = cleanedResult.split('\n').filter(p => p.trim() !== '');
+            const contentWithDivs = paragraphs.map((p, index) => 
+                `<div id="${elementId}-p-${index}">${p}</div>`
+            ).join('');
+            
+            if (targetSectionElement) {
+                const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
+                targetSectionElement.innerHTML = sectionHtml;
+                targetSectionElement.querySelector('.accordion-item')?.classList.add('animate-fade-in');
+            } else {
+                console.error(`Elemento alvo com ID '${elementId}Section' não encontrado.`);
+                window.showToast("Erro interno: Seção do roteiro não encontrada.");
+                return;
             }
+            
+            markButtonAsCompleted(button.id);
+            updateButtonStates();
 
-            return cleanedText.trim();
-        };
-       	  // ==================================================================
+        } catch (error) {
+            window.showToast(`Falha ao gerar ${sectionTitle}: ${error.message}`);
+            console.error(`Erro ao gerar ${sectionTitle}.`, error);
+        } finally {
+            hideLoading(button);
+        }
 
-	result = removeMetaComments(result.trim());
 
-        const paragraphs = result.split('\n').filter(p => p.trim() !== '');
+
 	const contentWithSpans = paragraphs.map((p, index) => 
    	 // Deve ser um <div> com ID
    	 `<div id="${elementId}-p-${index}">${p}</div>`
@@ -3821,6 +3838,7 @@ ${scriptContent}
         const generateVideoDescription = async () => {
             if (!validateInputs()) return;
             showLoading(buttons.generateDescriptionBtn);
+
             try {
                 let result = await callGroqAPI(constructScriptPrompt('description').prompt, constructScriptPrompt('description').maxTokens);
                 result = cleanGeneratedText(result, false);
