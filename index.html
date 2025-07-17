@@ -3069,6 +3069,7 @@ The final output MUST be only the JSON code, like this example:
     
         /**
          * Pede à IA para analisar uma seção e inserir sugestões de performance.
+         * (VERSÃO COM PROMPT REFINADO)
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
@@ -3088,35 +3089,37 @@ The final output MUST be only the JSON code, like this example:
             try {
                 const languageName = elements.languageSelect.options[elements.languageSelect.selectedIndex].text;
 
-                const prompt = `Você é um Diretor de Cena e um coach de narração para YouTubers. Sua tarefa é analisar o parágrafo de roteiro abaixo e torná-lo muito mais impactante, sem alterar as palavras originais.
+                // ==========================================================
+                // AQUI ESTÁ A MUDANÇA CRUCIAL NO PROMPT
+                // ==========================================================
+                const prompt = `Você é um Diretor de Cena e um coach de narração para YouTubers. Sua tarefa é pegar um roteiro e prepará-lo para um narrador profissional, inserindo anotações de performance **ANTES** das frases que elas modificam e torná-lo muito mais impactante.
 
                 **Roteiro Original:**
                 ---
                 ${originalText}
                 ---
 
-                **Sua Tarefa:**
-                Reescreva o texto inserindo sugestões de performance diretamente nele, usando colchetes [ ]. Foque em:
-                - **Pausas:** Use [pausa], [pausa curta] ou [pausa longa] para criar suspense e ritmo.
-                - **Tom de Voz:** Sugira mudanças como [tom de voz mais baixo e misterioso], [aumentando a energia], [sussurrando], [com um tone de espanto].
-                - **Ênfase:** Indique palavras específicas a serem enfatizadas, como [ênfase em 'impossível'].
-                - **Ritmo:** Sugira mudanças de velocidade, como [fale mais rápido aqui] ou [desacelere, com peso em cada palavra].
-                - **Gestos/Expressões (opcional):** Se for muito relevante, pode sugerir algo como [olhe diretamente para a câmera] ou [faça um gesto de negação].
+                **Sua Tarefa e Regras Críticas:**
+                1.  **ANTECIPE A INSTRUÇÃO:** A anotação [em colchetes] deve vir **SEMPRE ANTES** da frase ou palavra que ela afeta. O narrador precisa ler a instrução primeiro para depois executar a fala.
+                2.  **FOCO NAS EMOÇÕES:** Suas anotações devem focar em:
+                    - **Pausas:** Use [pausa dramática], [pausa curta] ou [pausa longa] para criar suspense e ritmo.
+                    - **Tom de Voz:** Sugira mudanças como [tom de voz mais baixo e misterioso], [aumentando a energia], [sussurrando], [com um tom de indignação].
+                    - **Ênfase:** Indique palavras específicas a serem enfatizadas, como [ênfase em 'impossível'].
+                    - **Ritmo:** Sugira mudanças de velocidade, como [acelerando o ritmo] ou [desacelere, com peso em cada palavra].
+                3.  **NÃO ALTERE O TEXTO:** Não mude nenhuma palavra do roteiro original. Apenas adicione suas anotações.
+                4.  **RESPOSTA DIRETA:** Responda APENAS com o texto final anotado, em ${languageName}. Sem introduções ou comentários.
 
-                **REGRAS CRÍTICAS:**
-                1.  NÃO altere as palavras do roteiro original. Apenas adicione suas anotações em colchetes.
-                2.  Responda APENAS com o texto final anotado, em ${languageName}. Sem introduções ou comentários.
-
-                **Exemplo de Resposta Perfeita:**
-                "E quando eles finalmente abriram o túmulo... [pausa longa, com tom de suspense] ...o que eles encontraram mudaria a história para sempre. [ênfase em 'para sempre']"`;
+                **Exemplo de Resposta Perfeita (note o posicionamento):**
+                "E quando eles finalmente abriram o túmulo... [pausa longa, com tom de suspense] ...o que eles encontraram mudaria a história para sempre. Eles não encontraram um corpo, mas sim [ênfase em 'uma mensagem']."`;
+                // ==========================================================
+                // FIM DA MUDANÇA NO PROMPT
+                // ==========================================================
 
                 let performedText = await callGroqAPI(prompt, 2000);
                 performedText = removeMetaComments(performedText);
 
-                // Para destacar as sugestões, vamos usar um regex para envolvê-las em uma tag <span> com estilo.
                 const highlightedText = performedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
                 
-                // Exibe o resultado em um formato de "bloco de citação"
                 outputContainer.innerHTML = `
                     <div class="card-background p-4 mt-2 rounded-lg border-l-4 border-indigo-500">
                         <h5 class="font-bold text-sm mb-2 text-gray-700 dark:text-gray-200">Sugestão de Performance:</h5>
