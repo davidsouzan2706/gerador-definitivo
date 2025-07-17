@@ -3342,8 +3342,11 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
 	const outlineKey = keyMap[sectionName] || sectionName; // Usa 'introduction' para 'intro', ou o próprio nome para os outros ('development', 'climax')
 	const directive = strategicOutline[outlineKey]; 
         const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive);
-        let result = await callGroqAPI(prompt, maxTokens);
-        result = removeMetaComments(result.trim());
+        
+	let result = await callGroqAPI(prompt, maxTokens);
+                result = removeMetaComments(result.trim()); // Limpa preâmbulos como "Aqui está o roteiro:"
+        
+	result = removeMetaComments(result.trim());
 
         const paragraphs = result.split('\n').filter(p => p.trim() !== '');
 	const contentWithSpans = paragraphs.map((p, index) => 
