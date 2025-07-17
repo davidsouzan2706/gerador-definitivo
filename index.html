@@ -3226,74 +3226,68 @@ The final output MUST be only the JSON code, like this example:
 
     
         /**
-         * Pede à IA para analisar uma seção e inserir sugestões de performance.
-         * (VERSÃO COM PROMPT REFINADO)
+         * Pede à IA para inserir sugestões de performance, usando o Mapa Emocional como guia.
+         * (VERSÃO CONECTADA AO MAPA EMOCIONAL)
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
-            if (!sectionElement) return;
+            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+            const outputContainer = sectionElement?.querySelector('.section-performance-output');
 
-            const contentWrapper = sectionElement.querySelector('.generated-content-wrapper');
-            const outputContainer = sectionElement.querySelector('.section-performance-output');
-            
-            if (!contentWrapper || !contentWrapper.textContent.trim()) {
+            if (!contentWrapper || !contentWrapper.textContent.trim() || !outputContainer) {
                 window.showToast("Gere o roteiro desta seção primeiro.");
                 return;
             }
 
-            const originalText = contentWrapper.textContent.trim();
+if (!window.emotionalMap || window.emotionalMap.length === 0) {
+        window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para guiar a performance.");
+        return;
+    }
+
+
+            // VERIFICAÇÃO OBRIGATÓRIA
+            if (!window.emotionalMap || window.emotionalMap.length === 0) {
+                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para guiar a performance.");
+                return;
+            }
+
+
+
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
+            const originalText = contentWrapper.textContent;
+            
+            // Encontra o contexto emocional para esta seção específica
+            const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
+    const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
+    const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
+    const emotionalContext = window.emotionalMap[baseIndex] || { emotion: 'Neutro', pace: 'Normal' };
+    
+    const prompt = `Você é um Diretor de Cena e coach de narração. Prepare o roteiro abaixo para um narrador, inserindo anotações [em colchetes] para guiar a performance.
 
-                // ==========================================================
-                // AQUI ESTÁ A MUDANÇA CRUCIAL NO PROMPT
-                // ==========================================================
+    **Contexto da Cena:**
+    - **Emoção Principal a ser Evocada:** ${emotionalContext.emotion}
+    - **Ritmo da Narração:** ${emotionalContext.pace}
 
+    **Roteiro Original:**
+    ---
+    ${originalText}
+    ---
+
+    **Regras Críticas:**
+    1.  Suas anotações [em colchetes] devem refletir o contexto da cena (emoção e ritmo).
+    2.  As anotações devem vir **ANTES** da frase ou palavra que afetam.
+    3.  Não altere nenhuma palavra do roteiro original.
+    4.  Responda APENAS com o texto final anotado.`;
 
             try {
-                const languageName = elements.languageSelect.options[elements.languageSelect.selectedIndex].text;
-
-
-
-                const prompt = `Você é um Diretor de Cena e um coach de narração para YouTubers. Sua tarefa é pegar um roteiro e prepará-lo para um narrador profissional, inserindo anotações de performance **ANTES** das frases ou palavras que elas modificam.
-
-                **Roteiro Original:**
-                ---
-                ${originalText}
-                ---
-
-                **Sua Tarefa e Regras Críticas:**
-                1.  **ANTECIPE A INSTRUÇÃO:** A anotação [em colchetes] deve vir **SEMPRE ANTES** da frase ou palavra que ela afeta. O narrador precisa ler a instrução primeiro para depois executar a fala.
-                
-                2.  **REGRA DE ÊNFASE (MUITO IMPORTANTE):** Para enfatizar uma palavra ou frase, coloque a instrução [ênfase em '...'] **imediatamente antes** dela. NÃO coloque a ênfase depois.
-                    - **Errado:** "...eles trabalham em harmonia [ênfase em 'em harmonia']..."
-                    - **Correto:** "...eles trabalham [ênfase em 'em harmonia'] em harmonia..."
-                
-                3.  **FOCO NAS EMOÇÕES:** Suas anotações devem focar em Pausas, Tom de Voz, Ênfase e Ritmo.
-                
-                4.  **NÃO ALTERE O TEXTO:** Não mude nenhuma palavra do roteiro original. Apenas adicione suas anotações.
-                
-                5.  **RESPOSTA DIRETA:** Responda APENAS com o texto final anotado, em ${languageName}. Sem introduções ou comentários.
-
-                **Exemplo de Resposta Perfeita (note a ênfase):**
-                "E quando eles finalmente abriram o túmulo... [pausa longa, com tom de suspense] ...o que eles encontraram mudaria a história para sempre. Eles não encontraram um corpo, mas sim [ênfase em 'uma mensagem'] uma mensagem."`;
-
-                // ==========================================================
-                // FIM DA MUDANÇA NO PROMPT
-                // ==========================================================
-
-
-
                 let performedText = await callGroqAPI(prompt, 2000);
                 performedText = removeMetaComments(performedText);
-
-		// ==========================================================
-                // O ROBÔ CORRETOR DE ÊNFASE ENTRA EM AÇÃO
-                // ==========================================================
+                
+                // Aplicamos nosso "robô corretor" para garantir
                 const emphasisRegex = /(\s*)(\S+)(\s*)(\[ênfase em.*?\])/g;
                 performedText = performedText.replace(emphasisRegex, (match, preSpace, word, postSpace, tag) => {
                     return `${preSpace}${tag}${postSpace}${word}`;
                 });
-
 
                 const highlightedText = performedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
                 
@@ -3303,11 +3297,13 @@ The final output MUST be only the JSON code, like this example:
                         <p class="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">${highlightedText}</p>
                     </div>
                 `;
-
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
             }
         };
+
+
+
     
         /**
          * Pega o texto selecionado pelo usuário, pede para a IA reescrevê-lo com uma analogia/metáfora,
