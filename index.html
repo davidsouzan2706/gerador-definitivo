@@ -3234,7 +3234,7 @@ The final output MUST be only the JSON code, like this example:
 
                 const rawResult = await callGroqAPI(prompt, 4000);
                 const cleanedResult = cleanGeneratedText(rawResult, true);
-                const ideas = JSON.parse(cleanedResult);
+                const ideas = cleanedResult;
 
                 outputContainer.innerHTML = ''; 
 
