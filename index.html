@@ -4280,103 +4280,72 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', handleConclusionStrategyChange);
     });
 
+    // ---- 3. LÓGICA DO CONSULTOR DE RETENÇÃO (TOOLTIP INTELIGENTE) - VERSÃO FINAL ----
+    let hideDetailsTimeout; 
+    
+    // Listener para MOSTRAR o card de detalhes
+    document.getElementById('scriptSectionsContainer').addEventListener('mouseover', (event) => {
+        const paragraph = event.target.closest('.retention-paragraph-live');
+        if (!paragraph || !paragraph.dataset.suggestion) return;
 
+        clearTimeout(hideDetailsTimeout);
 
-	// ---- 3. LÓGICA DO CONSULTOR DE RETENÇÃO (TOOLTIP INTELIGENTE) - VERSÃO FINAL CORRIGIDA ----
-            let hideDetailsTimeout; 
-            
-            // Listener para MOSTRAR o card de detalhes
-            document.getElementById('scriptSectionsContainer').addEventListener('mouseover', (event) => {
-                const paragraph = event.target.closest('.retention-paragraph-live');
-                if (!paragraph || !paragraph.dataset.suggestion) return;
+        const sectionId = paragraph.closest('.script-section').id;
+        const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
+        if (!detailsArea) return;
 
-                clearTimeout(hideDetailsTimeout);
+        // Desenha o card de detalhes dinamicamente
+        const score = paragraph.dataset.score;
+        const suggestion = paragraph.dataset.suggestion;
+        const scoreLabels = { green: "Ponto Forte", yellow: "Ponto de Atenção", red: "Ponto de Risco" };
+        const scoreColors = { green: "green-500", yellow: "yellow-400", red: "red-500" };
+        
+        let buttonHtml = '';
+        if (score === 'yellow' || score === 'red') {
+            buttonHtml = `<button class="btn btn-secondary btn-small mt-3" data-action="optimize-paragraph" data-paragraph-id="${paragraph.id}">Otimizar com IA</button>`;
+        }
 
-                const sectionId = paragraph.closest('.script-section').id;
-                const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
-                if (!detailsArea) return;
+        detailsArea.innerHTML = `
+            <div class="retention-details-card border-l-4 border-${scoreColors[score]} animate-fade-in">
+                <strong class="text-sm uppercase font-bold text-${scoreColors[score]}">${scoreLabels[score]}</strong>
+                <p class="text-sm mt-1">${suggestion}</p>
+                ${buttonHtml}
+            </div>
+        `;
+        detailsArea.classList.remove('hidden');
+    });
 
-                // --- AQUI ESTÁ A LÓGICA CORRETA QUE DESENHA O CARD ---
-                const score = paragraph.dataset.score;
-                const suggestion = paragraph.dataset.suggestion;
-                const scoreLabels = { green: "Ponto Forte", yellow: "Ponto de Atenção", red: "Ponto de Risco" };
-                const scoreColors = { green: "green-500", yellow: "yellow-400", red: "red-500" };
-                
-                let buttonHtml = '';
-                // Apenas adiciona o botão se o score for de atenção ou risco
-                if (score === 'yellow' || score === 'red') {
-                    buttonHtml = `<button class="btn btn-secondary btn-small" data-action="optimize-paragraph" data-paragraph-id="${paragraph.id}">Otimizar com IA</button>`;
-                }
-
-                // Esta é a linha que cria o NOVO e CORRETO card de detalhes
-                detailsArea.innerHTML = `
-                    <div class="retention-details-card border-l-${scoreColors[score]}">
-                        <strong class="text-${scoreColors[score]}">${scoreLabels[score]}</strong>
-                        <p>${suggestion}</p>
-                        ${buttonHtml}
-                    </div>
-                `;
-                detailsArea.classList.remove('hidden');
-            });
-
-            // Listener para ESCONDER o card de detalhes
-            document.getElementById('scriptSectionsContainer').addEventListener('mouseout', (event) => {
-                const paragraph = event.target.closest('.retention-paragraph-live');
-                if (paragraph) {
-                    const sectionId = paragraph.closest('.script-section').id;
-                    const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
-                    
-                    if (detailsArea && !detailsArea.classList.contains('hidden')) {
-                        hideDetailsTimeout = setTimeout(() => {
-                            detailsArea.classList.add('hidden');
-                            detailsArea.innerHTML = '';
-                        }, 300); 
-                    }
-                }
-            });
-
-            // Listener para MANTER o card visível se o mouse entrar nele
-            document.addEventListener('mouseover', (event) => {
-                if (event.target.closest('.section-analysis-output')) {
-                    clearTimeout(hideDetailsTimeout);
-                }
-            });
-
-
-
-	// ==========================================================
-	// FIM DA LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO FINAL)
-	// ==========================================================
-
-
-
-
-    // Listener para ESCONDER os detalhes
+    // Listener para ESCONDER o card de detalhes
     document.getElementById('scriptSectionsContainer').addEventListener('mouseout', (event) => {
         const paragraph = event.target.closest('.retention-paragraph-live');
         if (paragraph) {
-            // Se o mouse saiu de um parágrafo, programa para esconder a área de detalhes
             const sectionId = paragraph.closest('.script-section').id;
             const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
+            
             if (detailsArea && !detailsArea.classList.contains('hidden')) {
                 hideDetailsTimeout = setTimeout(() => {
                     detailsArea.classList.add('hidden');
                     detailsArea.innerHTML = '';
-                }, 300); // 300ms de atraso
+                }, 300); 
             }
         }
     });
 
+    // Listener para MANTER o card visível se o mouse entrar na área de detalhes
+    document.addEventListener('mouseover', (event) => {
+        if (event.target.closest('.section-analysis-output')) {
+            clearTimeout(hideDetailsTimeout);
+        }
+    });
 
-    // ---- 4. O "GERENTE DE CLIQUES" - VERSÃO FINAL E CORRIGIDA ----
+    // ---- 4. O "GERENTE DE CLIQUES" GERAL ----
     document.addEventListener('click', function(event) {
         const target = event.target;
         const button = target.closest('button');
+        if (!button) return; // Se não for um botão, para aqui
 
-        // PARTE 1: AÇÕES ESPECÍFICAS (JÁ ESTÁ FUNCIONANDO BEM)
-        // Se o clique foi em um botão com uma ação específica (copiar, re-gerar, etc.),
-        // a ação é executada e a função para imediatamente com 'return'.
-        if (button && button.dataset.action) {
+        // PARTE 1: Ações baseadas em 'data-action'
+        if (button.dataset.action) {
             event.preventDefault();
             const action = button.dataset.action;
 
@@ -4413,58 +4382,49 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // PARTE 2: LÓGICA DO ACORDEÃO (AGORA SIMPLIFICADA E CORRETA)
-        // Esta parte só é executada se um botão de ação específico NÃO foi clicado.
+        // PARTE 2: Lógica do Acordeão
         const header = target.closest('.accordion-header, .nested-accordion-header');
-        if (header) {
-            // A CONDIÇÃO DE OURO:
-            // SÓ ABRE O ACORDEÃO SE O CLIQUE NÃO FOI NA ÁREA DOS BOTÕES DE AÇÃO.
-            if (!target.closest('.header-buttons')) {
-                const body = header.nextElementSibling;
-                const arrow = header.querySelector('.accordion-arrow');
-                if (body && arrow) {
-                    const isOpen = body.classList.toggle('open');
-                    arrow.classList.toggle('open', isOpen);
-                    header.classList.toggle('active', isOpen);
-                }
+        if (header && !target.closest('.header-buttons')) {
+            const body = header.nextElementSibling;
+            const arrow = header.querySelector('.accordion-arrow');
+            if (body && arrow) {
+                const isOpen = body.classList.toggle('open');
+                arrow.classList.toggle('open', isOpen);
+                header.classList.toggle('active', isOpen);
             }
-            // Não usamos 'return' aqui, para que o código continue e verifique os botões por ID.
         }
 
-        // PARTE 3: LÓGICA DOS BOTÕES GERAIS POR ID (JÁ ESTAVA FUNCIONANDO)
-        if (button) {
-            const clickActions = {
-                'analyzeStrategyBtn': analyzeAndSetStrategy,
-                'generateOutlineBtn': generateStrategicOutline,
-                'generateConclusionAndCtaBtn': generateConclusionAndCta,
-                'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
-                'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
-                'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-                'generateDescriptionBtn': generateVideoDescription,
-                'generateTitlesAndThumbnailsBtn': generateTitlesAndThumbnails,
-                'downloadPdfBtn': downloadPdf,
-                'exportProjectBtn': exportProject,
-                'importProjectBtn': () => document.getElementById('importFileInput').click(),
-                'resetScriptBtn': resetApplicationState,
-                'generateIdeasBtn': generateVideoIdeas,
-                'copyTranscriptBtn': handleCopyAndDownloadTranscript,
-                'generateSoundtrackBtn': generateSoundtrack
-            };
+        // PARTE 3: Ações baseadas em ID
+        const clickActions = {
+            'analyzeStrategyBtn': analyzeAndSetStrategy,
+            'generateOutlineBtn': generateStrategicOutline,
+            'generateConclusionAndCtaBtn': generateConclusionAndCta,
+            'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
+            'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
+            'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
+            'generateDescriptionBtn': generateVideoDescription,
+            'generateTitlesAndThumbnailsBtn': generateTitlesAndThumbnails,
+            'downloadPdfBtn': downloadPdf,
+            'exportProjectBtn': exportProject,
+            'importProjectBtn': () => document.getElementById('importFileInput').click(),
+            'resetScriptBtn': resetApplicationState,
+            'generateIdeasBtn': generateVideoIdeas,
+            'copyTranscriptBtn': handleCopyAndDownloadTranscript,
+            'generateSoundtrackBtn': generateSoundtrack
+        };
 
-            if (clickActions[button.id]) {
-                event.preventDefault();
-                clickActions[button.id]();
-                return;
-            }
+        if (clickActions[button.id]) {
+            event.preventDefault();
+            clickActions[button.id]();
+            return;
+        }
 
-            if (button.id.startsWith('float_')) {
-                event.preventDefault();
-                const originalId = button.id.replace('float_', '');
-                document.getElementById(originalId)?.click();
-            }
+        if (button.id.startsWith('float_')) {
+            event.preventDefault();
+            const originalId = button.id.replace('float_', '');
+            document.getElementById(originalId)?.click();
         }
     });
-
 
     // ---- 5. LÓGICA PARA RESETAR ROTEIRO ----
     const strategicInputIds = [
@@ -4487,7 +4447,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- 6. EVENTO DE SCROLL PARA BARRA FLUTUANTE ----
     window.addEventListener('scroll', window.handleFloatingActionBar);
-});
-</script>
+});</script>
 </body>
 </html>
