@@ -2888,19 +2888,22 @@ The final output MUST be only the JSON code, like this example:
         // ==========================================================
         
         /**
-         * Analisa uma seção, aplica o mapa de calor e armazena os dados nos parágrafos.
+         * Analisa a seção, aplica o mapa de calor e mostra o ponto mais fraco.
+         * (VERSÃO 1 - REIMPLANTAÇÃO ESTÁVEL)
          */
         window.analyzeSectionRetention = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
             const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-            if (!contentWrapper) return;
-            
             const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
-            if (detailsArea) detailsArea.innerHTML = '';
+
+            if (!contentWrapper || !detailsArea) return;
+
+            detailsArea.innerHTML = `<div class="loading-spinner-small mx-auto"></div>`; // Mostra carregando
 
             const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]'));
             if (paragraphs.length === 0) {
-                window.showToast("Não há parágrafos para analisar nesta seção.");
+                window.showToast("Não há parágrafos para analisar.");
+                detailsArea.innerHTML = '';
                 return;
             }
 
@@ -2914,56 +2917,40 @@ The final output MUST be only the JSON code, like this example:
 
                 if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
-                paragraphs.forEach(p => {
-                    p.className = '';
-                    p.removeAttribute('data-suggestion');
-                    p.removeAttribute('data-score');
-                });
+                let weakestPoint = { scoreValue: 0, suggestion: "Todos os parágrafos estão bons!" };
+                const scoreValues = { "red": 2, "yellow": 1, "green": 0 };
 
                 analysis.forEach(item => {
                     const p = document.getElementById(item.paragraphId);
                     if (p) {
-                        p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
-                        p.dataset.suggestion = item.suggestion;
-                        p.dataset.score = item.retentionScore;
+                        // Limpa classes antigas e aplica a nova
+                        p.classList.remove('retention-green', 'retention-yellow', 'retention-red');
+                        p.classList.add(`retention-${item.retentionScore}`);
+                    }
+                    
+                    // Encontra o ponto mais fraco para o relatório
+                    const currentScoreValue = scoreValues[item.retentionScore];
+                    if (currentScoreValue > weakestPoint.scoreValue) {
+                        weakestPoint = { scoreValue: currentScoreValue, suggestion: item.suggestion };
                     }
                 });
+
+                // GERA O RELATÓRIO SIMPLES (LÓGICA DA VERSÃO 1)
+                const scoreLabels = { 2: "PONTO DE RISCO", 1: "PONTO DE ATENÇÃO", 0: "PONTO FORTE" };
+                const scoreColors = { 2: "red-500", 1: "yellow-400", 0: "green-500" };
+                const finalScore = weakestPoint.scoreValue;
+
+                detailsArea.innerHTML = `
+                    <div class="retention-details-card border-l-4 border-${scoreColors[finalScore]}">
+                        <strong class="text-sm uppercase font-bold text-${scoreColors[finalScore]}">${scoreLabels[finalScore]}</strong>
+                        <p class="mt-1 text-sm">${weakestPoint.suggestion}</p>
+                    </div>
+                `;
+
                 window.showToast("Análise de retenção concluída!");
             } catch (error) {
                 window.showToast(`Falha na análise: ${error.message}`);
-            }
-        };
-
-        /**
-         * Pega um parágrafo, otimiza com IA e substitui seu conteúdo.
-         */
-        window.optimizeParagraph = async (paragraphId, suggestion) => {
-            const paragraphElement = document.getElementById(paragraphId);
-            if (!paragraphElement) return;
-
-            const button = document.querySelector(`button[data-paragraph-id="${paragraphId}"]`);
-            if (button) {
-                button.disabled = true;
-                button.innerHTML = '<div class="loading-spinner-small" style="border-left-color: var(--primary-color); margin: auto;"></div>';
-            }
-
-            const originalText = paragraphElement.textContent.trim();
-            const prompt = `Rewrite the "Original Paragraph" to incorporate the "Improvement Suggestion". Keep the core message. Respond ONLY with the rewritten paragraph.\n\nOriginal Paragraph:\n"${originalText}"\n\nImprovement Suggestion:\n"${suggestion}"`;
-
-            try {
-                const rewrittenText = await callGroqAPI(prompt, 1000);
-                paragraphElement.textContent = removeMetaComments(rewrittenText);
-                paragraphElement.classList.remove('retention-yellow', 'retention-red');
-                paragraphElement.classList.add('retention-green');
-
-                const detailsCard = button?.closest('.retention-details-card');
-                if (detailsCard) detailsCard.parentElement.innerHTML = '';
-                
-                invalidateAndClearPrompts(paragraphElement.closest('.script-section'));
-                window.showToast("Parágrafo otimizado!");
-            } catch (error) {
-                window.showToast(`Falha ao otimizar: ${error.message}`);
-                if (button) button.textContent = "Erro";
+                detailsArea.innerHTML = `<p class="text-red-500">Erro ao analisar. Tente novamente.</p>`;
             }
         };
 
