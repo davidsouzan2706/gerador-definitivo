@@ -3354,16 +3354,21 @@ try {
             const directive = strategicOutline ? strategicOutline[outlineKey] : null;
             const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive);
 
+            // 1. Chama a API
             let rawResult = await callGroqAPI(prompt, maxTokens);
+            
+            // 2. Limpa o resultado
             let cleanedResult = removeMetaComments(rawResult.trim()); 
 
+            // 3. Processa o resultado limpo em parágrafos e depois em divs
             const paragraphs = cleanedResult.split('\n').filter(p => p.trim() !== '');
             const contentWithDivs = paragraphs.map((p, index) => 
                 `<div id="${elementId}-p-${index}">${p}</div>`
             ).join('');
             
+            // 4. Gera e insere o HTML
             if (targetSectionElement) {
-                const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
+                const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs); // Usa a variável correta 'contentWithDivs'
                 targetSectionElement.innerHTML = sectionHtml;
                 targetSectionElement.querySelector('.accordion-item')?.classList.add('animate-fade-in');
             } else {
