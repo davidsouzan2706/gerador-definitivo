@@ -1821,6 +1821,12 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 if (originalBtn) originalBtn.disabled = !allMainScriptGenerated;
                 if (floatBtn) floatBtn.disabled = !allMainScriptGenerated;
             });
+
+		['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'].forEach(id => { // <-- ADICIONE 'mapEmotionsBtn' AQUI
+            const originalBtn = document.getElementById(id);
+            if (originalBtn) originalBtn.disabled = !allMainScriptGenerated;
+	 
+	     });
             
             const resetBtn = document.getElementById('resetScriptBtn');
             const floatResetBtn = document.getElementById('float_resetScriptBtn');
@@ -3264,20 +3270,21 @@ if (!window.emotionalMap || window.emotionalMap.length === 0) {
     
     const prompt = `Você é um Diretor de Cena e coach de narração. Prepare o roteiro abaixo para um narrador, inserindo anotações [em colchetes] para guiar a performance.
 
-    **Contexto da Cena:**
-    - **Emoção Principal a ser Evocada:** ${emotionalContext.emotion}
-    - **Ritmo da Narração:** ${emotionalContext.pace}
+        **Contexto da Cena (Obrigatório):**
+        - **Emoção Principal a ser Evocada:** ${emotionalContext.emotion}
+        - **Ritmo da Narração:** ${emotionalContext.pace}
 
-    **Roteiro Original:**
-    ---
-    ${originalText}
-    ---
+        **Roteiro Original:**
+        ---
+        ${originalText}
+        ---
 
-    **Regras Críticas:**
-    1.  Suas anotações [em colchetes] devem refletir o contexto da cena (emoção e ritmo).
-    2.  As anotações devem vir **ANTES** da frase ou palavra que afetam.
-    3.  Não altere nenhuma palavra do roteiro original.
-    4.  Responda APENAS com o texto final anotado.`;
+        **Regras Críticas:**
+        1.  Suas anotações [em colchetes] devem refletir o contexto da cena.
+        2.  **Adicione também ênfases específicas em palavras ou frases curtas** quando fizer sentido para aumentar o impacto, usando o formato [ênfase em 'palavra-chave'].
+        3.  As anotações devem vir **ANTES** da frase ou palavra que afetam.
+        4.  Não altere nenhuma palavra do roteiro original.
+        5.  Responda APENAS com o texto final anotado.`;
 
             try {
                 let performedText = await callGroqAPI(prompt, 2000);
