@@ -4558,7 +4558,35 @@ document.addEventListener('DOMContentLoaded', () => {
             const clickActions = {
                 'analyzeStrategyBtn': analyzeAndSetStrategy,
                 'generateOutlineBtn': generateStrategicOutline,
-                'generateConclusionAndCtaBtn': generateConclusionAndCta,
+
+
+	// ==========================================================
+
+	'generateConclusionAndCtaBtn': generateConclusionAndCta,
+        	'conclusionBtn': () => {
+           	 const conclusionModule = document.getElementById('conclusionStrategyModule');
+           	 // Verifica se o módulo de estratégia da conclusão já está visível na tela
+          	  if (conclusionModule && !conclusionModule.classList.contains('hidden')) {
+              	  // Se estiver visível, guia o usuário até ele
+              	  conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                	window.showToast("Ação necessária: Clique em 'Gerar Conclusão + CTA'");
+                	// Adiciona um "flash" visual para chamar a atenção
+                	conclusionModule.style.transition = 'all 0.2s';
+                	conclusionModule.style.boxShadow = '0 0 0 3px var(--primary-color)';
+                	setTimeout(() => { conclusionModule.style.boxShadow = ''; }, 1500);
+            	} else {
+                	// Se não estiver visível, significa que as seções anteriores não foram geradas
+                	window.showToast("Por favor, gere a Introdução, Desenvolvimento e Clímax primeiro.");
+            	}
+        	},
+        	'generateCTABtn': () => {
+            	// O botão CTA agora faz exatamente a mesma coisa que o botão Conclusão
+            	// Encontra o botão de conclusão e simula um clique nele.
+            	document.getElementById('conclusionBtn')?.click();
+       	 },
+	// ==========================================================
+
+
                 'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
                 'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
                 'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
