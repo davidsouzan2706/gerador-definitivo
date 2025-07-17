@@ -3680,7 +3680,7 @@ ${scriptContent}
             try {
                 const rawResult = await callGroqAPI(prompt, 2000);
                 const cleanedResult = cleanGeneratedText(rawResult, true);
-                const analysis = JSON.parse(cleanedResult);
+                const analysis = cleanedResult;
 
                 let analysisHtml = '<div class="space-y-4">';
                 analysis.forEach(item => {
@@ -3692,7 +3692,14 @@ ${scriptContent}
                             <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><strong>Sugestão:</strong> ${item.sugestao_melhora}</p>
                         </div>
                     `;
+
+
+		    // --------------------------------------
                     // --- FIM DA CORREÇÃO NA RENDERIZAÇÃO ---
+		    // --------------------------------------
+
+
+
                 });
                 analysisHtml += '</div>';
                 resultContainer.innerHTML = analysisHtml;
@@ -3730,7 +3737,7 @@ ${scriptContent}
             try {
                 const rawResult = await callGroqAPI(prompt, 2500);
                 const cleanedResult = cleanGeneratedText(rawResult, true);
-                const analysis = JSON.parse(cleanedResult);
+                const analysis = cleanedResult;
 
                 let analysisHtml = '<div class="space-y-4">';
                 analysis.forEach(item => {
