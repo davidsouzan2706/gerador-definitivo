@@ -4293,8 +4293,8 @@ ${scriptContent}
             });
 
 
-            // ==========================================================
-            // CIRURGIA 2: LÓGICA DO CONSULTOR DE RETENÇÃO (TOOLTIP INTELIGENTE)
+           // ==========================================================
+            // LÓGICA DO CONSULTOR DE RETENÇÃO (VERSÃO FINAL COM TIMER)
             // ==========================================================
             let hideDetailsTimeout; // Timer para esconder o card
 
@@ -4303,6 +4303,7 @@ ${scriptContent}
                 const paragraph = event.target.closest('.retention-paragraph-live');
                 if (!paragraph || !paragraph.dataset.suggestion) return;
 
+                // Cancela qualquer timer de "esconder" que esteja pendente
                 clearTimeout(hideDetailsTimeout);
 
                 const sectionId = paragraph.closest('.script-section').id;
@@ -4319,7 +4320,6 @@ ${scriptContent}
                     buttonHtml = `<button class="btn btn-secondary btn-small" data-action="optimize-paragraph" data-paragraph-id="${paragraph.id}">Otimizar com IA</button>`;
                 }
 
-                // Cria o card de detalhes dinamicamente
                 detailsArea.innerHTML = `
                     <div class="retention-details-card border-l-4 border-${scoreColors[score]}">
                         <strong class="text-sm uppercase font-bold text-${scoreColors[score]}">${scoreLabels[score]}</strong>
@@ -4330,19 +4330,28 @@ ${scriptContent}
                 detailsArea.classList.remove('hidden');
             });
 
-            // Listener para ESCONDER os detalhes quando o mouse sai do parágrafo
+            // Listener para ESCONDER os detalhes (AGORA MAIS INTELIGENTE)
             document.getElementById('scriptSectionsContainer').addEventListener('mouseout', (event) => {
                 const paragraph = event.target.closest('.retention-paragraph-live');
                 if (paragraph) {
                     const sectionId = paragraph.closest('.script-section').id;
                     const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
                     
+                    // Inicia um timer para esconder o card. Se o mouse entrar no card, este timer será cancelado.
                     if (detailsArea && !detailsArea.classList.contains('hidden')) {
                         hideDetailsTimeout = setTimeout(() => {
                             detailsArea.classList.add('hidden');
                             detailsArea.innerHTML = '';
-                        }, 300); 
+                        }, 300); // 300ms de tolerância
                     }
+                }
+            });
+
+            // Listener para MANTER os detalhes visíveis se o mouse entrar no card
+            document.addEventListener('mouseover', (event) => {
+                // Se o mouse está sobre a área de output, cancela o timer que iria escondê-la.
+                if (event.target.closest('.section-analysis-output')) {
+                    clearTimeout(hideDetailsTimeout);
                 }
             });
 
