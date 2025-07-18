@@ -3604,13 +3604,45 @@ window.regenerateSection = (fullSectionId) => {
  	 /**
          * Gera prompts de imagem e depois aplica um filtro de curadoria para garantir
          * um ritmo visual adequado para a produção de vídeo.
-         * (VERSÃO CURADOR DE CENAS)
+         * (VERSÃO CURADOR DE CENAS - CORRIGIDA)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
-            // ... (o início da sua função, com as verificações, continua igual)
+            const scriptContentElement = sectionElement?.querySelector('.generated-content-wrapper');
+            const promptContainer = sectionElement?.querySelector('.prompt-container');
             
-            // ...
+            if (!scriptContentElement || !scriptContentElement.textContent.trim() || !promptContainer) {
+                window.showToast("Gere o conteúdo do roteiro desta seção primeiro.");
+                return;
+            }
+
+            if (!window.emotionalMap || window.emotionalMap.length === 0) {
+                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para criar prompts contextuais.");
+                return;
+            }
+
+            promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
+            const scriptContent = scriptContentElement.textContent;
+            
+            const firstParagraphId = scriptContentElement.querySelector('div[id]')?.id;
+            const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
+            const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
+            
+            let initialPrompt = `Você é um Diretor de Fotografia. Analise o roteiro e o CONTEXTO EMOCIONAL abaixo para criar um storyboard granular, com uma cena para cada momento importante.
+
+            REGRAS: Sua resposta DEVE ser um array JSON. Cada objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration".
+            
+            ROTEIRO E CONTEXTO EMOCIONAL:
+            ---
+            `;
+            const paragraphs = scriptContent.split('\n\n').filter(p => p.trim() !== '');
+            paragraphs.forEach((p, index) => {
+                const mapIndex = baseIndex + index;
+                const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
+                initialPrompt += `Parágrafo ${index}: "${p}"\nContexto (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})\n\n`;
+            });
+            initialPrompt += `---
+            Gere o array JSON para os parágrafos acima.`;
 
             try {
                 // ETAPA 1: A IA GERA MUITAS IDEIAS
@@ -3621,42 +3653,40 @@ window.regenerateSection = (fullSectionId) => {
                     throw new Error("A IA retornou prompts em formato inválido.");
                 }
 
-                // ==========================================================
                 // ETAPA 2: O NOSSO CÓDIGO FAZ A CURADORIA
-                // ==========================================================
                 const desiredSecondsPerScene = 22;
                 let curatedPrompts = [];
                 let secondsAccumulator = 0;
                 let currentScenePhrase = "";
 
                 allGeneratedPrompts.forEach((prompt, index) => {
-                    const duration = parseInt(prompt.estimated_duration, 10) || 5; // Pega a duração ou assume 5s
+                    const duration = parseInt(prompt.estimated_duration, 10) || 5;
                     
-                    // Adiciona a frase do prompt atual à frase da cena que estamos montando
                     currentScenePhrase += prompt.scriptPhrase + " ";
                     secondsAccumulator += duration;
                     
-                    // Se atingimos nosso "orçamento" de tempo, ou se é o último prompt da lista
                     if (secondsAccumulator >= desiredSecondsPerScene || index === allGeneratedPrompts.length - 1) {
-                        // Finalizamos a cena atual
-                        let finalPrompt = { ...prompt }; // Copia o último prompt como base
-                        finalPrompt.scriptPhrase = currentScenePhrase.trim(); // Usa a frase agrupada
-                        finalPrompt.estimated_duration = secondsAccumulator; // Usa a duração somada
+                        let finalPrompt = { ...prompt };
+                        finalPrompt.scriptPhrase = currentScenePhrase.trim();
+                        finalPrompt.estimated_duration = secondsAccumulator;
                         
                         curatedPrompts.push(finalPrompt);
                         
-                        // Reseta para a próxima cena
                         currentScenePhrase = "";
                         secondsAccumulator = 0;
                     }
                 });
-                // ==========================================================
                 
-                // Agora usamos a lista CURADA para o resto do processo
+                // Agora usamos a lista CURADA
                 allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
                 promptPaginationState[sectionElementId] = 0;
                 
-                promptContainer.innerHTML = `...`; // Seu código de renderização continua igual
+                promptContainer.innerHTML = `
+                    <div class="prompt-pagination-wrapper space-y-4">
+                        <div class="prompt-nav-container flex items-center justify-center gap-4"></div>
+                        <div class="prompt-items-container space-y-4"></div>
+                    </div>
+                `;
                 renderPaginatedPrompts(sectionElementId);
 
             } catch (error) {
