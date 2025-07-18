@@ -2805,15 +2805,14 @@ const invalidateAndClearPrompts = (sectionElement) => {
 
             let prompt = `${baseContext}
 
-You are a master screenwriter, a true virtuoso of words. Your task is to write the **${sectionTitle}** section of the script.
+Você é um mestre roteiro de YouTube. Sua tarefa é escrever o texto para a seção **"${sectionTitle}"** do roteiro.
 
-**Your writing must be magnetic and professional. Follow these core principles:**
-1.  **Dynamic Rhythm and Pacing:** Write with a natural, captivating cadence. Use a mix of short, punchy sentences for impact and longer, flowing sentences for description and atmosphere. Avoid monotony at all costs.
-2.  **"Show, Don't Tell" on a Deeper Level:** Don't just state facts. Use vivid, sensory language to paint a picture in the viewer's mind. Evoke emotions and create a tangible experience through your words.
-3.  **Human Connection:** Weave the information into a narrative that connects with the viewer on a personal level. Use "you" to speak directly to them. Ground abstract concepts in relatable human experiences and emotions.
-4.  **Rhetorical Techniques:** Intelligently use rhetorical questions, powerful analogies, and striking metaphors to make the content more memorable and thought-provoking.
-5.  **Hook Reinforcement:** If there is a central question, subtly remind the viewer of the mystery or the promise made in the introduction to keep them hooked and eager for the resolution.
-`;
+**REGRAS CRÍTICAS E INEGOCIÁVEIS:**
+1.  **FOCO TOTAL:** Sua resposta deve ser APENAS e SOMENTE o texto para a seção **"${sectionTitle}"**.
+2.  **SEM EXTRAS:** É estritamente proibido incluir preâmbulos (como "Aqui está a introdução:"), resumos, traduções ou qualquer outro texto que não seja o próprio roteiro. A violação desta regra resultará em falha.
+3.  **FORMATO LIMPO:** Não inclua rótulos de cena, de áudio ou de narrador (como [CENA], (Música sobe), Narrador:). Apenas o texto a ser falado.
+
+Siga estas regras e gere o roteiro para a seção "${sectionTitle}" agora.`;
             let maxTokens = 2000;
 
             if (outlineDirective) {
