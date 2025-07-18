@@ -3274,8 +3274,8 @@ The final output MUST be only the JSON code, like this example:
 
     
         /**
-         * Pede à IA para inserir sugestões de performance, usando o Mapa Emocional e um Auditor de Consistência.
-         * (VERSÃO FINAL COM AUDITOR)
+         * Gera anotações de performance em duas etapas para garantir 100% de consistência do texto.
+         * (VERSÃO "ANOTADOR EM DUAS ETAPAS")
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
@@ -3286,73 +3286,87 @@ The final output MUST be only the JSON code, like this example:
                 window.showToast("Gere o roteiro desta seção primeiro.");
                 return;
             }
-
-            if (!window.emotionalMap || window.emotionalMap.length === 0) {
-                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para guiar a performance.");
+            if (!window.emotionalMap) {
+                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos'.");
                 return;
             }
 
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-            const originalText = contentWrapper.textContent.trim();
             
+            const originalParagraphs = contentWrapper.textContent.trim().split('\n\n');
             const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
             const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
             const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-            const emotionalContext = window.emotionalMap[baseIndex] || { emotion: 'Neutro', pace: 'Normal' };
             const languageName = document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text;
             
-            const prompt = `Você está no modo "Processador de Texto". Sua única função é receber um roteiro e adicionar anotações de performance [em colchetes].
-
-            **Contexto da Cena (Obrigatório):**
-            - **Emoção Principal:** ${emotionalContext.emotion}
-            - **Ritmo da Narração:** ${emotionalContext.pace}
-
-            **Tarefa Principal:** Modifique o "Roteiro Original" abaixo inserindo anotações.
-
-            ---
-            **Roteiro Original:**
-            ${originalText}
-            ---
-
-            **REGRAS INEGOCIÁVEIS QUE VOCÊ DEVE SEGUIR:**
-            1.  **PROIBIDO ALTERAR O ROTEIRO:** Você está estritamente proibido de adicionar, remover ou alterar qualquer palavra do "Roteiro Original". Sua única tarefa permitida é inserir as anotações [em colchetes]. A violação desta regra resultará em falha.
-            2.  **POSICIONAMENTO OBRIGATÓRIO:** Todas as anotações [em colchetes] devem vir ANTES da frase ou palavra que elas afetam.
-            3.  **SAÍDA FINAL:** Sua resposta deve ser APENAS e SOMENTE o texto final anotado, sem nenhuma outra palavra, comentário ou introdução.`;
-
             try {
-                let performedText = await callGroqAPI(prompt, 2000);
-                performedText = removeMetaComments(performedText);
-
-                // PASSO DE AUDITORIA
-                const { isValid, cleanTextFromAI } = auditGeneratedText(originalText, performedText);
-
-                if (!isValid) {
-                    outputContainer.innerHTML = `
-                        <div class="p-3 bg-red-100 dark:bg-red-900/20 rounded-md border-l-4 border-red-500">
-                            <p class="text-sm text-red-800 dark:text-red-300 font-semibold">Falha na Consistência da IA</p>
-                            <p class="text-xs text-red-700 dark:text-red-400 mt-2">A IA modificou o texto original. Por favor, tente novamente.</p>
-                        </div>`;
-                    console.error("Auditoria falhou!", { original: originalText, fromAI: cleanTextFromAI });
-                    return;
-                }
-                
-                // Robô Corretor de Ênfase
-                const emphasisRegex = /([\w\s.,?!'"]+?)(\s*)(\[ênfase em.*?\])/g;
-                performedText = performedText.replace(emphasisRegex, (match, phrase, postSpace, tag) => {
-                    return `${tag}${postSpace}${phrase}`;
+                // ==========================================================
+                // ETAPA 1: PEDIR APENAS AS ANOTAÇÕES PARA A IA
+                // ==========================================================
+                let promptContext = '';
+                originalParagraphs.forEach((p, index) => {
+                    const mapIndex = baseIndex + index;
+                    const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
+                    promptContext += `Parágrafo ${index} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
                 });
 
-                const highlightedText = performedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
+                const prompt = `Você é um Diretor de Cena. Analise os parágrafos abaixo e seu contexto emocional.
+                
+                **TAREFA:** Para CADA um dos ${originalParagraphs.length} parágrafos, crie uma única anotação de performance [em colchetes]. A anotação deve incluir o tom de voz e sugestões de ênfase ou pausa.
+                
+                **REGRAS CRÍTICAS:**
+                1.  Sua resposta DEVE ser um array JSON.
+                2.  O array deve conter EXATAMENTE ${originalParagraphs.length} strings.
+                3.  Cada string no array deve ser APENAS a anotação (ex: "[Tom de curiosidade, com ênfase em 'segredo']").
+
+                **ROTEIRO PARA ANÁLISE:**
+                ${promptContext}
+
+                Responda apenas com o array JSON de anotações.`;
+
+                const rawResult = await callGroqAPI(prompt, 2000);
+                const annotations = cleanGeneratedText(rawResult, true);
+
+                if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) {
+                    throw new Error("A IA não retornou o número correto de anotações.");
+                }
+
+                // ==========================================================
+                // ETAPA 2: O JAVASCRIPT MONTA O ROTEIRO FINAL
+                // ==========================================================
+                
+                let finalAnnotatedText = "";
+                originalParagraphs.forEach((p, index) => {
+                    finalAnnotatedText += `${annotations[index]}\n${p}\n\n`;
+                });
+                finalAnnotatedText = finalAnnotatedText.trim(); // Garante que não haja espaços extras
+
+                // ==========================================================
+                // ETAPA 3 (EXTRA): AUDITOR DE CONSISTÊNCIA FINAL
+                // ==========================================================
+                const { isValid } = auditGeneratedText(originalText, finalAnnotatedText);
+
+                if (!isValid) {
+                    // Este erro NUNCA deveria acontecer com esta nova lógica.
+                    // Se acontecer, é um sinal de um bug sério no nosso código de montagem.
+                    throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem.");
+                }
+                // ==========================================================
+                
+                // Se a auditoria passou (como esperado), exibe o resultado
+                const highlightedText = finalAnnotatedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
                 
                 outputContainer.innerHTML = `
                     <div class="card-background p-4 mt-2 rounded-lg border-l-4 border-indigo-500">
                         <h5 class="font-bold text-sm mb-2 text-gray-700 dark:text-gray-200">Sugestão de Performance:</h5>
                         <p class="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">${highlightedText}</p>
-                    </div>`;
+                    </div>
+                `;
 
                 if (sectionElement) {
                     invalidateAndClearPrompts(sectionElement);
                 }
+
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
             }
