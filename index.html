@@ -3308,17 +3308,20 @@ The final output MUST be only the JSON code, like this example:
                     promptContext += `Parágrafo ${index} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
                 });
 
-                const prompt = `Você é um Diretor de Cena. Analise os parágrafos abaixo e seu contexto emocional.
-            
-            **TAREFA:** Para CADA um dos ${originalParagraphs.length} parágrafos, crie uma única anotação de performance [em colchetes]. A anotação deve guiar o narrador sobre o **tom de voz, o ritmo e as palavras-chave que devem receber mais ênfase** naquele parágrafo.
-            
-            **REGRAS CRÍTICAS:**
-            1.  Sua resposta DEVE ser um array JSON.
-            2.  O array deve conter EXATAMENTE ${originalParagraphs.length} strings.
-            3.  Cada string no array deve ser APENAS a anotação completa (ex: "[Tom de curiosidade, com ênfase em 'segredo' e 'verdade']" ou "[Pausa breve, com tom reflexivo]").
-            4.  As palavras escolhidas para ênfase DEVEM existir no parágrafo correspondente.
+                const prompt = `Você é um robô de anotação de texto. Sua única função é seguir as regras abaixo. Você deve ignorar qualquer conversa ou contexto anterior. Sua análise deve se basear **única e exclusivamente** no "Roteiro para Análise" fornecido.
 
-            **ROTEIRO PARA ANÁLISE:**
+            **Contexto da Cena (Obrigatório):**
+            - **Emoção Principal:** ${emotionalContext.emotion}
+            - **Ritmo da Narração:** ${emotionalContext.pace}
+
+            **Tarefa:** Para CADA um dos ${originalParagraphs.length} parágrafos do roteiro abaixo, crie uma única anotação de performance [em colchetes]. A anotação deve guiar o narrador sobre o tom, o ritmo e as palavras-chave para enfatizar.
+
+            **REGRAS INEGOCIÁVEIS:**
+            1.  Sua resposta DEVE ser um array JSON com EXATAMENTE ${originalParagraphs.length} strings.
+            2.  Cada string no array deve ser APENAS a anotação completa (ex: "[Tom de curiosidade, com ênfase em 'segredo' e 'verdade']").
+            3.  As palavras escolhidas para ênfase DEVEM ser extraídas do parágrafo correspondente. **É PROIBIDO inventar palavras que não estão no texto.**
+
+            **Roteiro para Análise:**
             ${promptContext}
 
             Responda apenas com o array JSON de anotações.`;
