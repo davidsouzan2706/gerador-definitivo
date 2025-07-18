@@ -1134,57 +1134,6 @@
     visibility: visible;
 }
 
-/* ========================================================== */
-/* ==== ESTILOS PARA O MAPA EMOCIONAL ==== */
-/* ========================================================== */
-.emotional-map-item {
-    padding: 0.75rem;
-    border-bottom: 1px dashed var(--border-light);
-}
-.dark .emotional-map-item {
-    border-bottom-color: #4b5563;
-}
-.emotional-map-item:last-child {
-    border-bottom: none;
-}
-.emotional-map-item p {
-    font-size: 0.9rem;
-    line-height: 1.6;
-}
-.emotional-map-item .paragraph-preview {
-    font-style: italic;
-    color: var(--text-light);
-    border-left: 2px solid var(--primary-color);
-    padding-left: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-.emotional-map-item .analysis-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-}
-.emotional-map-item .tag {
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.2rem 0.6rem;
-    border-radius: 9999px;
-    text-transform: uppercase;
-}
-.tag-emotion {
-    background-color: var(--secondary-bg);
-    color: var(--secondary-text);
-}
-.tag-pace {
-    background-color: #FEF3C7; /* yellow-100 */
-    color: #92400E; /* yellow-800 */
-}
-.dark .tag-pace {
-    background-color: #4A3A19;
-    color: #FBBF24;
-}
-
-
     </style>
 
 
@@ -1540,15 +1489,6 @@
                         <div>
                             <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">⚙️ Metadados do Vídeo</h3>
                             <div id="metadataContainer" class="space-y-6">
-				<div class="card-background p-4 rounded-lg shadow-md border-l-4 border-purple-500">
-				        <div class="flex justify-between items-center mb-3">
-				            <h4 class="font-bold text-lg text-gray-800 dark:text-gray-200">Direção de Cena (Mapa Emocional)</h4>
-				            <button id="mapEmotionsBtn" class="btn btn-secondary btn-small">Mapear Emoções</button>
-				        </div>
-				        <div id="emotionalMapContent">
-				            <div class="asset-card-placeholder">Clique em 'Mapear' para a IA analisar a jornada emocional do roteiro.</div>
-				        </div>
-				    </div>
                                 <!-- Cartão: Descrição e Hashtags -->
                                 <div class="card-background p-4 rounded-lg shadow-md">
                                     <div class="flex justify-between items-center mb-3">
@@ -1821,12 +1761,6 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 if (originalBtn) originalBtn.disabled = !allMainScriptGenerated;
                 if (floatBtn) floatBtn.disabled = !allMainScriptGenerated;
             });
-
-		['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'].forEach(id => { // <-- ADICIONE 'mapEmotionsBtn' AQUI
-            const originalBtn = document.getElementById(id);
-            if (originalBtn) originalBtn.disabled = !allMainScriptGenerated;
-	 
-	     });
             
             const resetBtn = document.getElementById('resetScriptBtn');
             const floatResetBtn = document.getElementById('float_resetScriptBtn');
@@ -1846,25 +1780,14 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 
             const conclusionModule = document.getElementById('conclusionStrategyModule');
             if (conclusionModule) { // Adicionada verificação de segurança aqui também
-                if (conclusionModule) { // <-- DELETE ESTA LINHA
-                    if (mainSectionsDone && conclusionModule.classList.contains('hidden')) { 
-                        
-                        const climaxSection = document.getElementById('climaxSection');
-                        if (climaxSection) {
-                            climaxSection.parentNode.insertBefore(conclusionModule, climaxSection.nextSibling);
-                        }
-                        
-                        conclusionModule.classList.remove('hidden');
-                        conclusionModule.classList.add('animate-fade-in');
-                        handleConclusionStrategyChange();
-                        conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        
-                        window.showToast("Último passo: Defina o objetivo da sua conclusão!");
-
-                    } else if (!mainSectionsDone && !conclusionModule.classList.contains('hidden')) {
-                        conclusionModule.classList.add('hidden');
-                    }
-                } // <-- DELETE ESTA LINHA
+                if (mainSectionsDone && conclusionModule.classList.contains('hidden')) { 
+                    conclusionModule.classList.remove('hidden');
+                    conclusionModule.classList.add('animate-fade-in');
+                    handleConclusionStrategyChange();
+                    conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (!mainSectionsDone && !conclusionModule.classList.contains('hidden')) {
+                    conclusionModule.classList.add('hidden');
+                }
             }
         };
 
@@ -1961,75 +1884,6 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
          * Gera sugestões de trilha sonora para a transcrição completa do roteiro.
          * (VERSÃO GLOBAL - NA ABA RECURSOS)
          */
-
-
-	 /**
-         * Analisa o roteiro completo para criar um "mapa emocional" para guiar a produção.
-         */
-        const mapEmotionsAndPacing = async () => {
-            const fullTranscript = getTranscriptOnly();
-            if (!fullTranscript) {
-                showToast("Gere o roteiro completo primeiro para criar o mapa emocional.");
-                return;
-            }
-
-            const button = document.getElementById('mapEmotionsBtn');
-            const outputContainer = document.getElementById('emotionalMapContent');
-            
-            showLoading(button);
-            outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-
-            const paragraphs = fullTranscript.split('\n\n').filter(p => p.trim() !== '');
-
-            const prompt = `Você é um Diretor de Cena. Sua tarefa é analisar um roteiro e criar um "beat sheet" emocional. Para cada parágrafo, defina a 'emoção' chave e o 'ritmo' da narração.
-            
-            **REGRAS CRÍTICAS:**
-            1.  Sua resposta DEVE ser um array JSON.
-            2.  O array deve ter um objeto para CADA um dos ${paragraphs.length} parágrafos do roteiro.
-            3.  Cada objeto deve ter TRÊS chaves: "paragraph_index" (o número do índice, começando em 0), "emotion" (string, ex: "Curiosidade Intensa", "Empatia Profunda"), e "pace" (string, ex: "Rápido e Incisivo", "Lento e Reflexivo").
-
-            **ROTEIRO PARA ANALISAR:**
-            ${JSON.stringify(paragraphs)}
-
-            Responda apenas com o array JSON.`;
-
-            try {
-                const rawResult = await callGroqAPI(prompt, 3000);
-                const analysis = cleanGeneratedText(rawResult, true);
-
-                if (!analysis || !Array.isArray(analysis) || analysis.length !== paragraphs.length) {
-                    throw new Error("A IA retornou um mapa emocional em formato inválido ou incompleto.");
-                }
-
-                // Armazena o mapa em uma variável global para que outras funções possam usá-lo
-                window.emotionalMap = analysis; // Usando window para garantir acesso global no escopo do módulo
-                
-                let mapHtml = '<div class="space-y-2">';
-                analysis.forEach(item => {
-                    mapHtml += `
-                        <div class="emotional-map-item">
-                            <p class="paragraph-preview">"${paragraphs[item.paragraph_index].substring(0, 80)}..."</p>
-                            <div class="analysis-tags">
-                                <span class="tag tag-emotion">${item.emotion}</span>
-                                <span class="tag tag-pace">${item.pace}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                mapHtml += '</div>';
-                
-                outputContainer.innerHTML = mapHtml;
-                markButtonAsCompleted(button.id);
-
-            } catch (error) {
-                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar o mapa emocional: ${error.message}</p>`;
-            } finally {
-                hideLoading(button);
-            }
-        };
-
-
-
 
 	const generateSoundtrack = async () => {
             const fullTranscript = getTranscriptOnly();
@@ -2307,9 +2161,7 @@ const renderPaginatedPrompts = (sectionElementId) => {
             <div class="individual-prompt-block card-background animate-fade-in" data-duration="${promptData.estimated_duration || 18}">
                 <div class="flex items-center justify-between mb-2">
                     <p class="prompt-time">${timestamp} - Cena ${String(currentSceneNumber).padStart(2, '0')}</p> 
-                    <button class="copy-btn" onclick="copyTextToClipboard(document.getElementById('prompt-content-${sectionElementId}-${globalIndex}')?.textContent + ' ' + document.getElementById('style-block-${sectionElementId}-${globalIndex}')?.textContent); window.showCopyFeedback(this)" title="Copiar Prompt">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
-</button>
+                    <button class="copy-btn" onclick="copyTextToClipboard(document.getElementById('prompt-content-${sectionElementId}-${globalIndex}')?.textContent + ' ' + document.getElementById('style-block-${sectionElementId}-${globalIndex}')?.textContent); window.showCopyFeedback(this)">Copiar</button>
                 </div>
                 <p class="prompt-phrase">${promptData.scriptPhrase}</p>
                 <div class="pt-2 border-t border-dashed border-gray-300 dark:border-gray-600 mt-2">
@@ -3067,7 +2919,7 @@ The final output MUST be only the JSON code, like this example:
         window.handleFloatingActionBar = () => {
             const bar = document.getElementById('floatingActionBar');
             // O gatilho para a barra aparecer será a grade de inputs principais
-            const triggerElement = document.getElementById('mainInputsTabs'); 
+            const triggerElement = document.getElementById('mainInputsGrid'); 
 
             if (!bar || !triggerElement) {
                 return; // Sai da função se os elementos não existirem
@@ -3134,13 +2986,8 @@ The final output MUST be only the JSON code, like this example:
 
             try {
                 const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
-                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion".
-        
-        	**CRITICAL RULE: The "suggestion" MUST be written in Portuguese (Brazil).**
-
-	        Analyze this data:
-	        ${JSON.stringify(paragraphsWithIds, null, 2)}`;
-
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion". Respond ONLY with the raw JSON array.
+                ${JSON.stringify(paragraphsWithIds, null, 2)}`;
 
                 const rawResult = await callGroqAPI(prompt, 2500);
                 const analysis = cleanGeneratedText(rawResult, true);
@@ -3196,18 +3043,7 @@ The final output MUST be only the JSON code, like this example:
             }
 
             const originalText = paragraphElement.firstChild.textContent.trim(); // Pega apenas o texto
-            const languageName = document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text;
-        	const prompt = `You are an expert copywriter. Rewrite the "Original Paragraph" below based on the "Improvement Suggestion".
-        
-        	**CRITICAL RULE: You MUST respond in ${languageName}.** Do not change the language.
-
-       		 **Original Paragraph:**
-       		 "${originalText}"
-
-      		  **Improvement Suggestion:**
-     		   "${suggestion}"
-
-     	   Respond ONLY with the rewritten paragraph, in ${languageName}.`;
+            const prompt = `Rewrite the "Original Paragraph" to incorporate the "Improvement Suggestion". Keep the core message. Respond ONLY with the rewritten paragraph.\n\nOriginal Paragraph:\n"${originalText}"\n\nImprovement Suggestion:\n"${suggestion}"`;
 
             try {
                 const rewrittenText = await callGroqAPI(prompt, 1000);
@@ -3232,85 +3068,66 @@ The final output MUST be only the JSON code, like this example:
 
     
         /**
-         * Pede à IA para inserir sugestões de performance, usando o Mapa Emocional como guia.
-         * (VERSÃO CONECTADA AO MAPA EMOCIONAL)
+         * Pede à IA para analisar uma seção e inserir sugestões de performance.
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
-            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-            const outputContainer = sectionElement?.querySelector('.section-performance-output');
+            if (!sectionElement) return;
 
-            if (!contentWrapper || !contentWrapper.textContent.trim() || !outputContainer) {
+            const contentWrapper = sectionElement.querySelector('.generated-content-wrapper');
+            const outputContainer = sectionElement.querySelector('.section-performance-output');
+            
+            if (!contentWrapper || !contentWrapper.textContent.trim()) {
                 window.showToast("Gere o roteiro desta seção primeiro.");
                 return;
             }
 
-if (!window.emotionalMap || window.emotionalMap.length === 0) {
-        window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para guiar a performance.");
-        return;
-    }
-
-
-            // VERIFICAÇÃO OBRIGATÓRIA
-            if (!window.emotionalMap || window.emotionalMap.length === 0) {
-                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para guiar a performance.");
-                return;
-            }
-
-
-
+            const originalText = contentWrapper.textContent.trim();
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-            const originalText = contentWrapper.textContent;
-            
-            // Encontra o contexto emocional para esta seção específica
-            const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
-    const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
-    const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-    const emotionalContext = window.emotionalMap[baseIndex] || { emotion: 'Neutro', pace: 'Normal' };
-    
-    const prompt = `Você é um Diretor de Cena e coach de narração. Prepare o roteiro abaixo para um narrador, inserindo anotações [em colchetes] para guiar a performance.
-
-        **Contexto da Cena (Obrigatório):**
-        - **Emoção Principal a ser Evocada:** ${emotionalContext.emotion}
-        - **Ritmo da Narração:** ${emotionalContext.pace}
-
-        **Roteiro Original:**
-        ---
-        ${originalText}
-        ---
-
-        **Regras Críticas:**
-        1.  Suas anotações [em colchetes] devem refletir o contexto da cena.
-        2.  **Adicione também ênfases específicas em palavras ou frases curtas** quando fizer sentido para aumentar o impacto, usando o formato [ênfase em 'palavra-chave'].
-        3.  As anotações devem vir **ANTES** da frase ou palavra que afetam.
-        4.  Não altere nenhuma palavra do roteiro original.
-        5.  Responda APENAS com o texto final anotado.`;
 
             try {
+                const languageName = elements.languageSelect.options[elements.languageSelect.selectedIndex].text;
+
+                const prompt = `Você é um Diretor de Cena e um coach de narração para YouTubers. Sua tarefa é analisar o parágrafo de roteiro abaixo e torná-lo muito mais impactante, sem alterar as palavras originais.
+
+                **Roteiro Original:**
+                ---
+                ${originalText}
+                ---
+
+                **Sua Tarefa:**
+                Reescreva o texto inserindo sugestões de performance diretamente nele, usando colchetes [ ]. Foque em:
+                - **Pausas:** Use [pausa], [pausa curta] ou [pausa longa] para criar suspense e ritmo.
+                - **Tom de Voz:** Sugira mudanças como [tom de voz mais baixo e misterioso], [aumentando a energia], [sussurrando], [com um tone de espanto].
+                - **Ênfase:** Indique palavras específicas a serem enfatizadas, como [ênfase em 'impossível'].
+                - **Ritmo:** Sugira mudanças de velocidade, como [fale mais rápido aqui] ou [desacelere, com peso em cada palavra].
+                - **Gestos/Expressões (opcional):** Se for muito relevante, pode sugerir algo como [olhe diretamente para a câmera] ou [faça um gesto de negação].
+
+                **REGRAS CRÍTICAS:**
+                1.  NÃO altere as palavras do roteiro original. Apenas adicione suas anotações em colchetes.
+                2.  Responda APENAS com o texto final anotado, em ${languageName}. Sem introduções ou comentários.
+
+                **Exemplo de Resposta Perfeita:**
+                "E quando eles finalmente abriram o túmulo... [pausa longa, com tom de suspense] ...o que eles encontraram mudaria a história para sempre. [ênfase em 'para sempre']"`;
+
                 let performedText = await callGroqAPI(prompt, 2000);
                 performedText = removeMetaComments(performedText);
-                
-                // Aplicamos nosso "robô corretor" para garantir
-                const emphasisRegex = /(\s*)(\S+)(\s*)(\[ênfase em.*?\])/g;
-                performedText = performedText.replace(emphasisRegex, (match, preSpace, word, postSpace, tag) => {
-                    return `${preSpace}${tag}${postSpace}${word}`;
-                });
 
+                // Para destacar as sugestões, vamos usar um regex para envolvê-las em uma tag <span> com estilo.
                 const highlightedText = performedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
                 
+                // Exibe o resultado em um formato de "bloco de citação"
                 outputContainer.innerHTML = `
                     <div class="card-background p-4 mt-2 rounded-lg border-l-4 border-indigo-500">
                         <h5 class="font-bold text-sm mb-2 text-gray-700 dark:text-gray-200">Sugestão de Performance:</h5>
                         <p class="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">${highlightedText}</p>
                     </div>
                 `;
+
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
             }
         };
-
-
-
     
         /**
          * Pega o texto selecionado pelo usuário, pede para a IA reescrevê-lo com uma analogia/metáfora,
@@ -3412,7 +3229,7 @@ if (!window.emotionalMap || window.emotionalMap.length === 0) {
 
                 const rawResult = await callGroqAPI(prompt, 4000);
                 const cleanedResult = cleanGeneratedText(rawResult, true);
-                const ideas = cleanedResult;
+                const ideas = JSON.parse(cleanedResult);
 
                 outputContainer.innerHTML = ''; 
 
@@ -3454,7 +3271,7 @@ if (!window.emotionalMap || window.emotionalMap.length === 0) {
             elements.targetAudience.value = idea.targetAudience;
 
             // Rola suavemente para o painel principal
-            document.getElementById('mainInputsTabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('mainInputsGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
             
             window.showToast("Ideia selecionada! Agora defina a estratégia completa.");
         };
@@ -3469,63 +3286,60 @@ if (!window.emotionalMap || window.emotionalMap.length === 0) {
         // ==========================================================
 // FUNÇÃO handleGenerateSection CORRIGIDA E COMPLETA
 // ==========================================================
-
-
 const handleGenerateSection = async (button, sectionName, sectionTitle, elementId) => {
-            if (!validateInputs()) return;
-            if (!strategicOutline) {
-                window.showToast("Crie o Esboço Estratégico primeiro!");
-                return;
-            }
-            showLoading(button);
-            
-            const targetSectionElement = document.getElementById(`${elementId}Section`);
+    if (!validateInputs()) return;
+    if (!strategicOutline) {
+        window.showToast("Crie o Esboço Estratégico primeiro!");
+        return;
+    }
+    showLoading(button);
+    
+    // Declara a variável aqui para ser usada em todo o escopo da função
+    const targetSectionElement = document.getElementById(`${elementId}Section`);
 
-            if (targetSectionElement) {
-                const analysisOutput = targetSectionElement.querySelector('.section-analysis-output');
-                const performanceOutput = targetSectionElement.querySelector('.section-performance-output');
-                if (analysisOutput) analysisOutput.innerHTML = '';
-                if (performanceOutput) performanceOutput.innerHTML = '';
-            }
+    // Limpa os resultados de análise anteriores ANTES de gerar novo conteúdo
+    if (targetSectionElement) {
+        const analysisOutput = targetSectionElement.querySelector('.section-analysis-output');
+        const performanceOutput = targetSectionElement.querySelector('.section-performance-output');
+        if (analysisOutput) analysisOutput.innerHTML = '';
+        if (performanceOutput) performanceOutput.innerHTML = '';
+    }
 
-            try {
-                const keyMap = { intro: 'introduction' };
-                const outlineKey = keyMap[sectionName] || sectionName;
-                const directive = strategicOutline[outlineKey];
-                const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive);
-                
-                let rawResult = await callGroqAPI(prompt, maxTokens);
-                let cleanedResult = removeMetaComments(rawResult.trim());
+    try {
+        const keyMap = { intro: 'introduction' };
+	const outlineKey = keyMap[sectionName] || sectionName; // Usa 'introduction' para 'intro', ou o próprio nome para os outros ('development', 'climax')
+	const directive = strategicOutline[outlineKey]; 
+        const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive);
+        let result = await callGroqAPI(prompt, maxTokens);
+        result = removeMetaComments(result.trim());
 
-                const paragraphs = cleanedResult.split('\n').filter(p => p.trim() !== '');
-                const contentWithDivs = paragraphs.map((p, index) => 
-                    `<div id="${elementId}-p-${index}">${p}</div>`
-                ).join('');
-                
-                if (targetSectionElement) {
-                    const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
-                    targetSectionElement.innerHTML = sectionHtml;
-                    targetSectionElement.querySelector('.accordion-item')?.classList.add('animate-fade-in');
-                } else {
-                    console.error(`Elemento alvo com ID '${elementId}Section' não encontrado.`);
-                    window.showToast("Erro interno: Seção do roteiro não encontrada.");
-                    return;
-                }
-                
-                markButtonAsCompleted(button.id);
-                updateButtonStates();
+        const paragraphs = result.split('\n').filter(p => p.trim() !== '');
+	const contentWithSpans = paragraphs.map((p, index) => 
+   	 // Deve ser um <div> com ID
+   	 `<div id="${elementId}-p-${index}">${p}</div>`
+	).join(''); // E o .join() deve estar vazio
+        
+        if (targetSectionElement) {
+            const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithSpans);
+            targetSectionElement.innerHTML = sectionHtml;
+            const accordionItem = targetSectionElement.querySelector('.accordion-item');
+            if(accordionItem) accordionItem.classList.add('animate-fade-in');
+        } else {
+            console.error(`Target section element with ID '${elementId}Section' not found.`);
+            window.showToast("Erro interno: Seção do roteiro não encontrada.");
+            return;
+        }
+        
+        markButtonAsCompleted(button.id);
+        updateButtonStates();
 
-            } catch (error) {
-                window.showToast(`Falha ao gerar ${sectionTitle}: ${error.message}`);
-                console.error(`Error generating ${sectionTitle}.`, error);
-            } finally {
-                hideLoading(button);
-            }
-        };
-
-
-
-
+    } catch (error) {
+        window.showToast(`Falha ao gerar ${sectionTitle}: ${error.message}`);
+        console.error(`Error generating ${sectionTitle}.`, error);
+    } finally {
+        hideLoading(button);
+    }
+};
 
         /**
          * Re-gera o conteúdo de uma secção específica do roteiro.
@@ -3568,80 +3382,115 @@ window.regenerateSection = (fullSectionId) => {
     }
 };
 
+        /**
+ * Gera prompts de imagem para uma seção específica do roteiro. (VERSÃO BLINDADA)
+ */
+window.generatePromptsForSection = async (sectionElementId) => {
+    const sectionElement = document.getElementById(sectionElementId);
+    const scriptContentElement = sectionElement.querySelector('.generated-content-wrapper');
+    const promptContainer = sectionElement.querySelector('.prompt-container');
+    
+    if (!scriptContentElement || !scriptContentElement.textContent.trim()) {
+        window.showToast("Por favor, gere o conteúdo do roteiro desta seção primeiro.");
+        return;
+    }
 
+    promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
+    const scriptContent = scriptContentElement.textContent;
+    const imageDescriptionEngine = elements.imageDescriptionEngine.value.trim();
+    const imageStyleSelect = elements.imageStyleSelect.value;
+    const customImageStyle = elements.customImageStyle.value.trim();
+    let selectedStyleBlock = '';
 
- 	 /**
-         * Gera prompts de imagem para uma seção, usando o Mapa Emocional como contexto.
-         * (VERSÃO FINAL CONECTADA AO MAPA EMOCIONAL)
-         */
-        window.generatePromptsForSection = async (sectionElementId) => {
-            const sectionElement = document.getElementById(sectionElementId);
-            const scriptContentElement = sectionElement?.querySelector('.generated-content-wrapper');
-            const promptContainer = sectionElement?.querySelector('.prompt-container');
-            
-            if (!scriptContentElement || !scriptContentElement.textContent.trim() || !promptContainer) {
-                window.showToast("Gere o conteúdo do roteiro desta seção primeiro.");
-                return;
+    // --- PROMPT MELHORADO (CAMADA 3) ---
+    let initialPrompt = `Você é um Diretor de Arte e Roteirista de Storyboard. Sua tarefa é analisar o trecho de roteiro abaixo e criar um storyboard visual com ritmo dinâmico.
+    
+**REGRAS INEGOCIÁVEIS:**
+- Sua resposta DEVE SER um array JSON válido.
+- Cada objeto no array DEVE ter **exatamente** três chaves: \`scriptPhrase\` (string), \`imageDescription\` (string), e \`estimated_duration\` (número).
+- Se o roteiro de entrada for vazio, sem sentido, ou você não conseguir gerar prompts, sua ÚNICA resposta deve ser um array vazio: \`[]\`.
+- NÃO inclua nenhuma explicação ou texto fora do array JSON.
+
+Agora, analise o seguinte trecho e gere o JSON:
+---
+${scriptContent}
+---`;
+    
+    if (imageDescriptionEngine) {
+        initialPrompt += `\n\nInstruções de Qualidade da Imagem: "${imageDescriptionEngine}"`;
+    }
+    if (imageStyleSelect === 'cinematic') {
+        initialPrompt += `\n\nEstilo Visual a ser aplicado: ${CINEMATIC_STYLE_BLOCK}`;
+        selectedStyleBlock = CINEMATIC_STYLE_BLOCK;
+    } else if (imageStyleSelect === 'custom' && customImageStyle) {
+        initialPrompt += `\n\nEstilo Visual Personalizado: ${customImageStyle}`;
+        selectedStyleBlock = customImageStyle;
+    }
+
+    // --- LÓGICA DE TENTATIVA AUTOMÁTICA (CAMADA 2) ---
+    const MAX_RETRIES = 2; // Tentativa inicial + 1 retry
+    let prompts = null;
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            if (attempt > 1) {
+                window.showToast(`A IA falhou. Tentando novamente... (Tentativa ${attempt})`);
             }
 
-            // VERIFICAÇÃO ÚNICA E OBRIGATÓRIA
-            if (!window.emotionalMap || window.emotionalMap.length === 0) {
-                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para criar prompts contextuais.");
-                document.getElementById('mapEmotionsBtn')?.focus();
-                return;
+            const rawResult = await callGroqAPI(initialPrompt, 4000);
+            const cleanedResult = cleanGeneratedText(rawResult, true);
+            if (!cleanedResult) {
+                throw new Error("A IA retornou uma resposta vazia ou irreconhecível.");
             }
 
-            promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-            const scriptContent = scriptContentElement.textContent;
-            
-            const firstParagraphId = scriptContentElement.querySelector('div[id]')?.id;
-            const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
-            const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-            
-            let initialPrompt = `Você é um Diretor de Fotografia. Analise o roteiro e o CONTEXTO EMOCIONAL abaixo para criar um storyboard.
-            
-            REGRAS: Sua resposta DEVE ser um array JSON. Cada objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration". As descrições DEVEM refletir a emoção e o ritmo do contexto.
+            const parsedData = cleanedResult;
 
-            ROTEIRO E CONTEXTO EMOCIONAL:
-            ---
-            `;
-
-            const paragraphs = scriptContent.split('\n\n').filter(p => p.trim() !== '');
-            paragraphs.forEach((p, index) => {
-                const mapIndex = baseIndex + index;
-                const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
-                initialPrompt += `Parágrafo ${index}: "${p}"\nContexto (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})\n\n`;
-            });
-
-            initialPrompt += `---
-            Gere o array JSON para os parágrafos acima.`;
-            
-            try {
-                const rawResult = await callGroqAPI(initialPrompt, 4000);
-                const prompts = cleanGeneratedText(rawResult, true);
-
-                if (!validatePromptsArray(prompts)) {
-                    throw new Error("A IA retornou prompts em formato inválido.");
-                }
-
-                allImagePrompts[sectionElementId] = prompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
-                promptPaginationState[sectionElementId] = 0;
-                
-                promptContainer.innerHTML = `
-                    <div class="prompt-pagination-wrapper space-y-4">
-                        <div class="prompt-nav-container flex items-center justify-center gap-4"></div>
-                        <div class="prompt-items-container space-y-4"></div>
-                    </div>
-                `;
-                renderPaginatedPrompts(sectionElementId);
-
-            } catch (error) {
-                 promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
+            // --- VALIDAÇÃO DE DADOS (CAMADA 1) ---
+            if (validatePromptsArray(parsedData)) {
+                prompts = parsedData; // Sucesso!
+                break; // Sai do loop de tentativas
+            } else if (Array.isArray(parsedData) && parsedData.length === 0) {
+                prompts = []; // Resposta válida (array vazio)
+                break;
+            } else {
+                // O JSON é sintaticamente válido, mas a estrutura interna está errada.
+                throw new Error("O formato dos dados da IA está incorreto (chaves faltando).");
             }
-        };
+        } catch (error) {
+            console.warn(`Tentativa ${attempt} de gerar prompts falhou:`, error.message);
+            lastError = error;
+            if (attempt < MAX_RETRIES) {
+                await new Promise(res => setTimeout(res, 500)); // Pequena pausa antes de tentar de novo
+            }
+        }
+    }
 
+    // Após o loop, verifica se conseguimos um resultado válido.
+    if (prompts === null) {
+        promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts após ${MAX_RETRIES} tentativas. Erro final: ${lastError.message}</p>`;
+        console.error("Falha final ao gerar prompts.", lastError);
+        return;
+    }
 
-
+    // Salva e renderiza os prompts (se houver)
+    allImagePrompts[sectionElementId] = prompts.map((p) => ({ ...p, styleBlock: selectedStyleBlock }));
+    promptPaginationState[sectionElementId] = 0;
+    
+    if (prompts.length > 0) {
+        promptContainer.innerHTML = `
+            <div class="prompt-pagination-wrapper space-y-4">
+                <div class="prompt-nav-container flex items-center justify-center gap-4"></div>
+                <div class="prompt-items-container space-y-4"></div>
+            </div>
+        `;
+        renderPaginatedPrompts(sectionElementId);
+    } else {
+        promptContainer.innerHTML = '<p class="text-gray-500 text-sm">Nenhum prompt de imagem foi gerado para esta seção.</p>';
+    }
+    
+    updateButtonStates();
+};
     
         /**
          * Sugere trilhas sonoras para uma secção específica do roteiro.
@@ -3831,7 +3680,7 @@ ${scriptContent}
             try {
                 const rawResult = await callGroqAPI(prompt, 2000);
                 const cleanedResult = cleanGeneratedText(rawResult, true);
-                const analysis = cleanedResult;
+                const analysis = JSON.parse(cleanedResult);
 
                 let analysisHtml = '<div class="space-y-4">';
                 analysis.forEach(item => {
@@ -3843,14 +3692,7 @@ ${scriptContent}
                             <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><strong>Sugestão:</strong> ${item.sugestao_melhora}</p>
                         </div>
                     `;
-
-
-		    // --------------------------------------
                     // --- FIM DA CORREÇÃO NA RENDERIZAÇÃO ---
-		    // --------------------------------------
-
-
-
                 });
                 analysisHtml += '</div>';
                 resultContainer.innerHTML = analysisHtml;
@@ -3888,7 +3730,7 @@ ${scriptContent}
             try {
                 const rawResult = await callGroqAPI(prompt, 2500);
                 const cleanedResult = cleanGeneratedText(rawResult, true);
-                const analysis = cleanedResult;
+                const analysis = JSON.parse(cleanedResult);
 
                 let analysisHtml = '<div class="space-y-4">';
                 analysis.forEach(item => {
@@ -3915,7 +3757,6 @@ ${scriptContent}
         const generateVideoDescription = async () => {
             if (!validateInputs()) return;
             showLoading(buttons.generateDescriptionBtn);
-
             try {
                 let result = await callGroqAPI(constructScriptPrompt('description').prompt, constructScriptPrompt('description').maxTokens);
                 result = cleanGeneratedText(result, false);
@@ -4372,24 +4213,24 @@ ${scriptContent}
             const allStructures = {...narrativeStructures.storytelling, ...narrativeStructures.storyselling};
             const narrativeStructureOptions = Object.keys(allStructures).map(s => `'${s}'`);
 
-            const prompt = `Você é um Estrategista de Conteúdo de IA para o YouTube, um especialista em engenharia de narrativas virais. Sua tarefa é analisar o tema e a descrição de um vídeo e definir a melhor e mais coesa estratégia de conteúdo.
+            const prompt = `Você é um Estrategista de Conteúdo de IA para o YouTube. Analise o tema e a descrição e defina a melhor estratégia completa.
 
             **Tema do Vídeo:** "${theme}"
             **Descrição:** "${description}"
 
-            Responda APENAS com um objeto JSON válido. Siga estritamente as regras para cada uma das seguintes 11 chaves:
-
-            1.  **"target_audience"**: (string) Descreva em uma frase o público-alvo principal mais propenso a se engajar com este conteúdo.
-            2.  **"video_objective"**: (string) Escolha o objetivo principal mais adequado. Sua resposta DEVE ser um dos seguintes valores EXATOS: [${videoObjectiveOptions.join(', ')}].
-            3.  **"narrative_goal"**: (string) Determine se a abordagem mais forte é 'storytelling' (para conectar e entreter) ou 'storyselling' (para persuadir). Sua resposta DEVE ser 'storytelling' ou 'storyselling'.
-            4.  **"narrative_structure"**: (string) Escolha a estrutura narrativa mais poderosa da lista fornecida. **GUIA DE MAPEAMENTO OBRIGATÓRIO:** Se o 'narrative_goal' for 'storytelling', escolha entre ['documentary', 'heros_journey', 'pixar_spine', 'mystery_loop', 'twist']. Se for 'storyselling', escolha entre ['underdog_victory', 'discovery_mentor', 'if_not_found_create', 'pas', 'bab']. Sua resposta DEVE ser um valor EXATO deste guia.
-            5.  **"narrative_theme"**: (string) Defina a "grande ideia" ou o tema universal por trás da história em poucas palavras (Ex: A jornada contra a adversidade, A busca pela verdade oculta).
-            6.  **"narrative_tone"**: (string) Escolha o tom emocional que a narração deve evocar. Sua resposta DEVE ser um dos seguintes valores EXATOS: [${narrativeToneOptions.join(', ')}].
-            7.  **"narrative_voice"**: (string) Defina a "persona" do narrador em poucas palavras (Ex: Um historiador cético, Uma testemunha emocionada, Um guia experiente).
-            8.  **"central_question"**: (string) Formule a pergunta central mais intrigante que o roteiro inteiro deverá se esforçar para responder.
-            9.  **"emotional_arc"**: (string) Descreva o arco emocional que o espectador deve sentir, usando setas (Ex: Indignação -> Empatia -> Esperança).
-            10. **"image_description_engine"**: (string) Sugira 3 a 5 palavras-chave que guiarão o estilo visual do vídeo (Ex: fotorrealista, sombrio, cinematográfico, close-up emocional).
-            11. **"viral_elements"**: (string) Liste 2 ou 3 elementos virais que podem ser incorporados na narrativa (Ex: "Fato chocante nos primeiros 10s", "Plot twist inesperado", "Loop aberto para o final").
+            Responda APENAS com um objeto JSON válido com as seguintes 12 chaves:
+            1. "target_audience": (string) O público-alvo ideal.
+            2. "video_objective": (string) O objetivo principal. DEVE SER um valor EXATO da lista: [${videoObjectiveOptions.join(', ')}].
+            3. "narrative_goal": (string) O objetivo narrativo. Escolha entre 'storytelling' ou 'storyselling'.
+            4. "narrative_structure": (string) A melhor estrutura da lista: [${narrativeStructureOptions.join(', ')}].
+            5. "narrative_theme": (string) A "grande ideia" ou tema central da história em poucas palavras (Ex: Superação, A busca pela verdade).
+            6. "narrative_tone": (string) O tom mais apropriado. DEVE SER um valor EXATO da lista: [${narrativeToneOptions.join(', ')}].
+            7. "narrative_voice": (string) A personalidade do narrador (Ex: Sábio e experiente, Jovem e cético).
+            8. "central_question": (string) A pergunta central mais intrigante que o vídeo deve responder.
+            9. "emotional_arc": (string) O arco emocional ideal (Ex: Curiosidade -> Tensão -> Inspiração).
+            10. "shocking_ending_hook": (string) Uma sugestão de "frase de desfecho" para usar como gancho de loop aberto.
+            11. "image_description_engine": (string) Sugira 3-5 palavras-chave para o motor de descrição de imagem (Ex: alta resolução, detalhado, fotorrealista).
+            12. "viral_elements": (string) Sugira 2-3 elementos ou frases virais que poderiam ser encaixadas (Ex: 'plot twist inesperado', 'o segredo que ninguém conta').
             
             Seja coeso e eficaz.`;
 
@@ -4430,6 +4271,7 @@ ${scriptContent}
                 if(strategy.narrative_voice) document.getElementById('narrativeVoice').value = strategy.narrative_voice;
                 if(strategy.central_question) elements.centralQuestion.value = strategy.central_question;
                 if(strategy.emotional_arc) elements.emotionalArc.value = strategy.emotional_arc;
+                if(strategy.shocking_ending_hook) elements.shockingEndingHook.value = strategy.shocking_ending_hook;
                 if(strategy.image_description_engine) elements.imageDescriptionEngine.value = strategy.image_description_engine;
                 if(strategy.languageSelect) elements.languageSelect.value = strategy.languageSelect;
                 if(strategy.languageStyle) elements.languageStyle.value = strategy.languageStyle;
@@ -4489,26 +4331,7 @@ document.addEventListener('DOMContentLoaded', () => {
         radio.addEventListener('change', handleConclusionStrategyChange);
     });
 
-// ==========================================================
-        // CIRURGIA: INVALIDAÇÃO DE PROMPTS AO DIGITAR MANUALMENTE
-        // ==========================================================
-        document.addEventListener('input', (event) => {
-            // Usamos "event delegation" para observar eventos de input no documento inteiro.
-            
-            // Verificamos se o evento aconteceu em um de nossos campos de roteiro editáveis.
-            if (event.target.matches('.generated-content-wrapper[contenteditable="true"]')) {
-                
-                console.log("Modificação manual detectada no roteiro."); // Log para depuração
 
-                // Encontra a seção-pai (ex: #introSection) do texto que foi modificado.
-                const sectionElement = event.target.closest('.script-section');
-                
-                if (sectionElement) {
-                    // Chama a nossa função já existente para invalidar os prompts daquela seção.
-                    invalidateAndClearPrompts(sectionElement);
-                }
-            }
-        });
 
 	// ==========================================================
     // LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO CORRETA E FINAL)
@@ -4676,38 +4499,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // PARTE 3: LÓGICA DOS BOTÕES GERAIS POR ID (JÁ ESTAVA FUNCIONANDO)
         if (button) {
             const clickActions = {
-		'mapEmotionsBtn': mapEmotionsAndPacing,
                 'analyzeStrategyBtn': analyzeAndSetStrategy,
                 'generateOutlineBtn': generateStrategicOutline,
-
-
-	// ==========================================================
-
-	'generateConclusionAndCtaBtn': generateConclusionAndCta,
-        	'conclusionBtn': () => {
-           	 const conclusionModule = document.getElementById('conclusionStrategyModule');
-           	 // Verifica se o módulo de estratégia da conclusão já está visível na tela
-          	  if (conclusionModule && !conclusionModule.classList.contains('hidden')) {
-              	  // Se estiver visível, guia o usuário até ele
-              	  conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                	window.showToast("Ação necessária: Clique em 'Gerar Conclusão + CTA'");
-                	// Adiciona um "flash" visual para chamar a atenção
-                	conclusionModule.style.transition = 'all 0.2s';
-                	conclusionModule.style.boxShadow = '0 0 0 3px var(--primary-color)';
-                	setTimeout(() => { conclusionModule.style.boxShadow = ''; }, 1500);
-            	} else {
-                	// Se não estiver visível, significa que as seções anteriores não foram geradas
-                	window.showToast("Por favor, gere a Introdução, Desenvolvimento e Clímax primeiro.");
-            	}
-        	},
-        	'generateCTABtn': () => {
-            	// O botão CTA agora faz exatamente a mesma coisa que o botão Conclusão
-            	// Encontra o botão de conclusão e simula um clique nele.
-            	document.getElementById('conclusionBtn')?.click();
-       	 },
-	// ==========================================================
-
-
+                'generateConclusionAndCtaBtn': generateConclusionAndCta,
                 'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
                 'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
                 'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
