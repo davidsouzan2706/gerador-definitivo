@@ -3275,7 +3275,7 @@ The final output MUST be only the JSON code, like this example:
     
         /**
          * Gera anotações de performance em duas etapas para garantir 100% de consistência do texto.
-         * (VERSÃO "ANOTADOR EM DUAS ETAPAS")
+         * (VERSÃO "ANOTADOR EM DUAS ETAPAS" COM AUDITOR)
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
@@ -3286,18 +3286,18 @@ The final output MUST be only the JSON code, like this example:
                 window.showToast("Gere o roteiro desta seção primeiro.");
                 return;
             }
-            if (!window.emotionalMap) {
+            if (!window.emotionalMap || window.emotionalMap.length === 0) {
                 window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos'.");
                 return;
             }
 
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
-            const originalParagraphs = contentWrapper.textContent.trim().split('\n\n');
+            const originalTextContent = contentWrapper.textContent.trim();
+            const originalParagraphs = originalTextContent.split('\n\n').filter(p => p.trim() !== '');
             const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
             const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
             const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-            const languageName = document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text;
             
             try {
                 // ETAPA 1: PEDIR APENAS AS ANOTAÇÕES PARA A IA
@@ -3308,7 +3308,19 @@ The final output MUST be only the JSON code, like this example:
                     promptContext += `Parágrafo ${index} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
                 });
 
-                const prompt = `Você é um Diretor de Cena... (seu prompt completo vai aqui)`; // Seu prompt existente
+                const prompt = `Você é um Diretor de Cena. Analise os parágrafos abaixo e seu contexto emocional.
+                
+                TAREFA: Para CADA um dos ${originalParagraphs.length} parágrafos, crie uma única anotação de performance [em colchetes]. A anotação deve incluir o tom de voz e sugestões de ênfase ou pausa.
+                
+                REGRAS CRÍTICAS:
+                1. Sua resposta DEVE ser um array JSON.
+                2. O array deve conter EXATAMENTE ${originalParagraphs.length} strings.
+                3. Cada string no array deve ser APENAS a anotação (ex: "[Tom de curiosidade, com ênfase em 'segredo']").
+
+                ROTEIRO PARA ANÁLISE:
+                ${promptContext}
+
+                Responda apenas com o array JSON de anotações.`;
 
                 const rawResult = await callGroqAPI(prompt, 2000);
                 const annotations = cleanGeneratedText(rawResult, true);
@@ -3320,13 +3332,12 @@ The final output MUST be only the JSON code, like this example:
                 // ETAPA 2: O JAVASCRIPT MONTA O ROTEIRO FINAL
                 let finalAnnotatedText = "";
                 originalParagraphs.forEach((p, index) => {
-                    finalAnnotatedText += `${annotations[index]}\n${p}\n\n`;
+                    finalAnnotatedText += `${annotations[index] || ''}\n${p}\n\n`;
                 });
                 finalAnnotatedText = finalAnnotatedText.trim();
 
-                // ETAPA 3 (EXTRA): AUDITOR DE CONSISTÊNCIA FINAL
-                const originalTextForAudit = originalParagraphs.join('\n\n');
-                const { isValid } = auditGeneratedText(originalTextForAudit, finalAnnotatedText);
+                // ETAPA 3: AUDITOR DE CONSISTÊNCIA FINAL
+                const { isValid } = auditGeneratedText(originalTextContent, finalAnnotatedText);
 
                 if (!isValid) {
                     throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem.");
