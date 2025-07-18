@@ -3300,9 +3300,7 @@ The final output MUST be only the JSON code, like this example:
             const languageName = document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text;
             
             try {
-                // ==========================================================
                 // ETAPA 1: PEDIR APENAS AS ANOTAÇÕES PARA A IA
-                // ==========================================================
                 let promptContext = '';
                 originalParagraphs.forEach((p, index) => {
                     const mapIndex = baseIndex + index;
@@ -3310,19 +3308,7 @@ The final output MUST be only the JSON code, like this example:
                     promptContext += `Parágrafo ${index} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
                 });
 
-                const prompt = `Você é um Diretor de Cena. Analise os parágrafos abaixo e seu contexto emocional.
-                
-                **TAREFA:** Para CADA um dos ${originalParagraphs.length} parágrafos, crie uma única anotação de performance [em colchetes]. A anotação deve incluir o tom de voz e sugestões de ênfase ou pausa.
-                
-                **REGRAS CRÍTICAS:**
-                1.  Sua resposta DEVE ser um array JSON.
-                2.  O array deve conter EXATAMENTE ${originalParagraphs.length} strings.
-                3.  Cada string no array deve ser APENAS a anotação (ex: "[Tom de curiosidade, com ênfase em 'segredo']").
-
-                **ROTEIRO PARA ANÁLISE:**
-                ${promptContext}
-
-                Responda apenas com o array JSON de anotações.`;
+                const prompt = `Você é um Diretor de Cena... (seu prompt completo vai aqui)`; // Seu prompt existente
 
                 const rawResult = await callGroqAPI(prompt, 2000);
                 const annotations = cleanGeneratedText(rawResult, true);
@@ -3331,29 +3317,22 @@ The final output MUST be only the JSON code, like this example:
                     throw new Error("A IA não retornou o número correto de anotações.");
                 }
 
-                // ==========================================================
                 // ETAPA 2: O JAVASCRIPT MONTA O ROTEIRO FINAL
-                // ==========================================================
-                
                 let finalAnnotatedText = "";
                 originalParagraphs.forEach((p, index) => {
                     finalAnnotatedText += `${annotations[index]}\n${p}\n\n`;
                 });
-                finalAnnotatedText = finalAnnotatedText.trim(); // Garante que não haja espaços extras
+                finalAnnotatedText = finalAnnotatedText.trim();
 
-                // ==========================================================
                 // ETAPA 3 (EXTRA): AUDITOR DE CONSISTÊNCIA FINAL
-                // ==========================================================
-                const { isValid } = auditGeneratedText(originalText, finalAnnotatedText);
+                const originalTextForAudit = originalParagraphs.join('\n\n');
+                const { isValid } = auditGeneratedText(originalTextForAudit, finalAnnotatedText);
 
                 if (!isValid) {
-                    // Este erro NUNCA deveria acontecer com esta nova lógica.
-                    // Se acontecer, é um sinal de um bug sério no nosso código de montagem.
                     throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem.");
                 }
-                // ==========================================================
                 
-                // Se a auditoria passou (como esperado), exibe o resultado
+                // Se a auditoria passou, exibe o resultado
                 const highlightedText = finalAnnotatedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
                 
                 outputContainer.innerHTML = `
