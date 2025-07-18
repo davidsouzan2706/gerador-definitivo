@@ -2010,10 +2010,10 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             2.  O array deve ter um objeto para CADA um dos ${paragraphs.length} parágrafos do roteiro.
             3.  Cada objeto deve ter TRÊS chaves: "paragraph_index" (o número do índice, começando em 0), "emotion" (string, ex: "Curiosidade Intensa", "Empatia Profunda"), e "pace" (string, ex: "Rápido e Incisivo", "Lento e Reflexivo").
 
-            **ROTEIRO PARA ANALISAR:**
-            ${JSON.stringify(paragraphs)}
+            **ROTEIRO PARA ANALISAR (PARÁGRAFO POR PARÁGRAFO):**
+            ${paragraphs.map((p, index) => `PARAGRAFO ${index}: "${p}"`).join('\n\n')}
 
-            Responda apenas com o array JSON.`;
+            Responda apenas com o array JSON, garantindo um objeto para cada parágrafo de 0 a ${paragraphs.length - 1}.`;
 
             try {
                 const rawResult = await callGroqAPI(prompt, 3000);
@@ -3272,8 +3272,6 @@ The final output MUST be only the JSON code, like this example:
         };
 
 
-
-
     
         /**
          * Pede à IA para inserir sugestões de performance, usando o Mapa Emocional e um Auditor de Consistência.
@@ -3295,7 +3293,7 @@ The final output MUST be only the JSON code, like this example:
             }
 
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-            const originalText = contentWrapper.textContent;
+            const originalText = contentWrapper.textContent.trim();
             
             const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
             const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
@@ -3303,7 +3301,23 @@ The final output MUST be only the JSON code, like this example:
             const emotionalContext = window.emotionalMap[baseIndex] || { emotion: 'Neutro', pace: 'Normal' };
             const languageName = document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text;
             
-            const prompt = `Você é um Diretor de Cena... (seu prompt completo vai aqui, como já estava)`; // O prompt que já aprimoramos
+            const prompt = `Você está no modo "Processador de Texto". Sua única função é receber um roteiro e adicionar anotações de performance [em colchetes].
+
+            **Contexto da Cena (Obrigatório):**
+            - **Emoção Principal:** ${emotionalContext.emotion}
+            - **Ritmo da Narração:** ${emotionalContext.pace}
+
+            **Tarefa Principal:** Modifique o "Roteiro Original" abaixo inserindo anotações.
+
+            ---
+            **Roteiro Original:**
+            ${originalText}
+            ---
+
+            **REGRAS INEGOCIÁVEIS QUE VOCÊ DEVE SEGUIR:**
+            1.  **PROIBIDO ALTERAR O ROTEIRO:** Você está estritamente proibido de adicionar, remover ou alterar qualquer palavra do "Roteiro Original". Sua única tarefa permitida é inserir as anotações [em colchetes]. A violação desta regra resultará em falha.
+            2.  **POSICIONAMENTO OBRIGATÓRIO:** Todas as anotações [em colchetes] devem vir ANTES da frase ou palavra que elas afetam.
+            3.  **SAÍDA FINAL:** Sua resposta deve ser APENAS e SOMENTE o texto final anotado, sem nenhuma outra palavra, comentário ou introdução.`;
 
             try {
                 let performedText = await callGroqAPI(prompt, 2000);
@@ -3336,14 +3350,13 @@ The final output MUST be only the JSON code, like this example:
                         <p class="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">${highlightedText}</p>
                     </div>`;
 
-                // Invalida os prompts pois o texto "visual" mudou (com anotações)
                 if (sectionElement) {
                     invalidateAndClearPrompts(sectionElement);
                 }
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
             }
-        }; // FIM DA FUNÇÃO
+        };
 
 
     
@@ -3721,18 +3734,19 @@ window.regenerateSection = (fullSectionId) => {
 
             const prompt = `Você é um especialista em prompts para IAs de geração de música (como Suno/Udio). Sua tarefa é analisar o seguinte trecho de roteiro e criar 3 prompts de texto distintos e detalhados.
 
-**REGRAS DE FORMATAÇÃO (NÃO NEGOCIÁVEIS):**1.  Sua resposta DEVE SER um array JSON válido.2.  O array deve conter EXATAMENTE 3 strings.3.  CADA string deve ser um parágrafo único, bem escrito e descritivo, pronto para ser colado em uma IA de música. NÃO use chaves, colchetes ou qualquer outra sintaxe de objeto DENTRO da string do prompt.
+            **REGRAS DE FORMATAÇÃO (NÃO NEGOCIÁVEIS):**1.  Sua resposta DEVE SER um array JSON válido.2.  O array deve conter EXATAMENTE 3 strings.3.  CADA string deve ser um parágrafo único, bem escrito e descritivo, pronto para ser colado em uma IA de música. NÃO use chaves, colchetes ou qualquer outra sintaxe de objeto DENTRO da string do prompt.
 
-**EXEMPLO DE RESPOSTA PERFEITA:**
-["Generate an epic, cinematic orchestral piece in the style of Hans Zimmer... No vocals or percussion, focus on the emotional intensity of the strings and piano.","Create a contemplative, melancholic ambient track with a slow, mournful tempo... No bright or cheerful notes, focus on the darker, more introspective tones.","Craft an uplifting, inspirational electronic piece with a moderate tempo... avoid any jarring or harsh sounds, focusing on the soaring, inspirational quality of the melody."
-]
+            **EXEMPLO DE RESPOSTA PERFEITA:**
+            ["Generate an epic, cinematic orchestral piece in the style of Hans Zimmer... No vocals or percussion, focus on the emotional intensity of the strings and piano.","Create a contemplative, melancholic ambient track with a slow, mournful tempo... No bright or cheerful notes, focus on the darker, more introspective tones.","Craft an uplifting, inspirational electronic piece with a moderate tempo... avoid any jarring or harsh sounds, focusing on the soaring, inspirational quality of the melody."
+            ]
 
-Agora, use o roteiro abaixo como inspiração para criar 3 prompts seguindo EXATAMENTE este formato.
+                Agora, use o roteiro abaixo como inspiração para criar 3 prompts seguindo EXATAMENTE este formato.
 
-Trecho do roteiro para analisar:
----
-${scriptContent}
----`;
+            Trecho do roteiro para analisar:
+                    ---
+                ${scriptContent}
+
+                ---`;
             
             try {
                 const rawResult = await callGroqAPI(prompt, 500);
