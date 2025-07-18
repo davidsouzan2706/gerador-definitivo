@@ -1694,6 +1694,57 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
 
 
+/**
+         * Limpa apenas os outputs gerados do projeto, mantendo os inputs principais.
+         */
+        const resetProjectOutputs = () => {
+            console.log("Resetando outputs do projeto para nova estratégia...");
+
+            // Limpa variáveis de estado
+            strategicOutline = null;
+            allImagePrompts = {};
+            generatedTitlesAndThumbnails = null;
+            totalScriptSeconds = 0;
+            promptPaginationState = {};
+            window.emotionalMap = null;
+
+            // Limpa a UI dos outputs
+            const contentContainers = [
+                'scriptSectionsContainer', 'outlineContent', 'titlesThumbnailsContent', 
+                'videoDescriptionContent', 'soundtrackContent', 'emotionalMapContent'
+            ];
+            
+            contentContainers.forEach(id => {
+                const container = document.getElementById(id);
+                if (container) {
+                    if (id === 'scriptSectionsContainer') {
+                        container.innerHTML = `
+                            <div id="introSection" class="script-section"></div>
+                            <div id="developmentSection" class="script-section"></div>
+                            <div id="climaxSection" class="script-section"></div>
+                            <div id="conclusionSection" class="script-section"></div>
+                            <div id="ctaSection" class="script-section hidden"></div>`;
+                    } else {
+                        // Recria o placeholder se ele existir
+                        const placeholderText = {
+                            'outlineContent': "Clique em 'Criar Esboço' para a IA planejar a estrutura do roteiro.",
+                            'titlesThumbnailsContent': "Clique em 'Gerar' para ver as sugestões",
+                            'videoDescriptionContent': "Clique em 'Gerar' para ver a descrição",
+                            'soundtrackContent': "Clique em 'Gerar' para criar sugestões de trilha para o roteiro completo.",
+                            'emotionalMapContent': "Clique em 'Mapear' para a IA analisar a jornada emocional do roteiro."
+                        };
+                        container.innerHTML = `<div class="asset-card-placeholder">${placeholderText[id] || ''}</div>`;
+                    }
+                }
+            });
+
+            resetCompletionIcons();
+            updateProgressBar();
+            
+            document.getElementById('conclusionStrategyModule')?.classList.add('hidden');
+        };
+
+
         /**
          * Exibe uma caixa de diálogo de confirmação e aguarda a resposta do usuário.
          * @param {string} title - O título da caixa de diálogo.
