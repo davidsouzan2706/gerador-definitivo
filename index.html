@@ -1678,6 +1678,28 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
 
         /**
+         * Compara um texto gerado pela IA (com anotações) com o texto original
+         * para garantir que o conteúdo não foi alterado.
+         * @param {string} originalText - O texto base.
+         * @param {string} annotatedText - O texto com anotações gerado pela IA.
+         * @returns {{isValid: boolean, cleanTextFromAI: string}} - Retorna se é válido e o texto da IA sem anotações.
+         */
+        const auditGeneratedText = (originalText, annotatedText) => {
+            // Remove todas as anotações [em colchetes] do texto da IA
+            const cleanTextFromAI = annotatedText.replace(/\[.*?\]/g, '').trim();
+            
+            // Remove múltiplos espaços e quebras de linha para uma comparação mais justa
+            const normalizedOriginal = originalText.replace(/\s+/g, ' ').trim();
+            const normalizedCleanAI = cleanTextFromAI.replace(/\s+/g, ' ').trim();
+
+            // Compara os dois textos normalizados
+            const isValid = normalizedOriginal === normalizedCleanAI;
+            
+            return { isValid, cleanTextFromAI };
+        };
+
+
+        /**
          * Copia um texto para a área de transferência.
          * @param {string} text - O texto a ser copiado.
          */
@@ -3301,18 +3323,40 @@ if (!window.emotionalMap || window.emotionalMap.length === 0) {
         ${originalText}
         ---
 
-        **Regras Críticas:**
-        1.  Suas anotações [em colchetes] devem refletir o contexto da cena.
-        2.  **Adicione também ênfases específicas em palavras ou frases curtas** quando fizer sentido para aumentar o impacto, usando o formato [ênfase em 'palavra-chave'].
-        3.  As anotações devem vir **ANTES** da frase ou palavra que afetam.
-        4.  Não altere nenhuma palavra do roteiro original.
-        5.  Responda APENAS com o texto final anotado.`;
+        **Regras Críticas INEGOCIÁVEIS:**
+        1.  **NÃO ALTERE, REMOVA OU ADICIONE NENHUMA PALAVRA DO ROTEIRO ORIGINAL.** Sua única tarefa é inserir anotações [em colchetes]. Qualquer alteração no texto original resultará em falha total.
+        2.  Suas anotações [em colchetes] devem refletir o contexto da cena (emoção e ritmo).
+        3.  Adicione também ênfases específicas [ênfase em '...'] quando fizer sentido.
+        4.  As anotações devem vir **ANTES** da frase ou palavra que afetam.
+        5.  Responda APENAS com o texto final anotado.
 
             try {
                 let performedText = await callGroqAPI(prompt, 2000);
                 performedText = removeMetaComments(performedText);
+
+                // PASSO DE AUDITORIA
+                const { isValid, cleanTextFromAI } = auditGeneratedText(originalText, performedText);
+
+                if (!isValid) {
+                    // Se a auditoria falhar, mostra um erro claro
+                    outputContainer.innerHTML = `
+                        <div class="p-3 bg-red-100 dark:bg-red-900/20 rounded-md border-l-4 border-red-500">
+                            <p class="text-sm text-red-800 dark:text-red-300 font-semibold">
+                                Falha na Consistência da IA
+                            </p>
+                            <p class="text-xs text-red-700 dark:text-red-400 mt-2">
+                                A IA modificou o texto original ao adicionar as anotações. Por favor, tente gerar a performance novamente.
+                            </p>
+                        </div>
+                    `;
+                    console.error("Auditoria falhou! Texto original vs. Texto limpo da IA:", {
+                        original: originalText,
+                        fromAI: cleanTextFromAI
+                    });
+                    return; // Interrompe a execução
+                }
                 
-                // Aplicamos nosso "robô corretor" para garantir
+                // Se a auditoria passou, continua com o código antigo
                 const emphasisRegex = /(\s*)(\S+)(\s*)(\[ênfase em.*?\])/g;
                 performedText = performedText.replace(emphasisRegex, (match, preSpace, word, postSpace, tag) => {
                     return `${preSpace}${tag}${postSpace}${word}`;
@@ -3328,16 +3372,13 @@ if (!window.emotionalMap || window.emotionalMap.length === 0) {
                 `;
 
                 const sectionElement = outputContainer.closest('.script-section');
-                    if (sectionElement) {
-                        invalidateAndClearPrompts(sectionElement);
-                    }
-
+                if (sectionElement) {
+                    invalidateAndClearPrompts(sectionElement);
+                }
 
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
             }
-        };
-
 
 
     
