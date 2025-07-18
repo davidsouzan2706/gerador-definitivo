@@ -3304,6 +3304,13 @@ if (!window.emotionalMap || window.emotionalMap.length === 0) {
                         <p class="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">${highlightedText}</p>
                     </div>
                 `;
+
+                const sectionElement = outputContainer.closest('.script-section');
+                    if (sectionElement) {
+                        invalidateAndClearPrompts(sectionElement);
+                    }
+
+
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
             }
