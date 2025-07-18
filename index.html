@@ -3220,6 +3220,15 @@ The final output MUST be only the JSON code, like this example:
                 button?.remove();
                 
                 invalidateAndClearPrompts(paragraphElement.closest('.script-section'));
+
+
+            const performanceOutput = paragraphElement.closest('.accordion-item')?.querySelector('.section-performance-output');
+                if (performanceOutput) {
+                performanceOutput.innerHTML = ''; // Limpa a sugestão de performance antiga
+            }
+
+
+
                 window.showToast("Parágrafo otimizado!");
             } catch (error) {
                 window.showToast(`Falha ao otimizar: ${error.message}`);
