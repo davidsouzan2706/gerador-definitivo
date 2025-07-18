@@ -3602,8 +3602,9 @@ window.regenerateSection = (fullSectionId) => {
 
 
  	 /**
-         * Gera prompts de imagem para uma seção, usando o Mapa Emocional como contexto.
-         * (VERSÃO FINAL CONECTADA AO MAPA EMOCIONAL)
+         * Gera prompts de imagem para uma seção, usando um "orçamento de cenas" calculado
+         * para garantir um ritmo visual adequado para produção de vídeo.
+         * (VERSÃO DIRETOR COM ORÇAMENTO)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
@@ -3615,32 +3616,48 @@ window.regenerateSection = (fullSectionId) => {
                 return;
             }
 
-            // VERIFICAÇÃO ÚNICA E OBRIGATÓRIA
             if (!window.emotionalMap || window.emotionalMap.length === 0) {
                 window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para criar prompts contextuais.");
-                document.getElementById('mapEmotionsBtn')?.focus();
                 return;
             }
 
             promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             const scriptContent = scriptContentElement.textContent;
             
+            // ==========================================================
+            // ETAPA 1: CALCULAR O "ORÇAMENTO" DE CENAS (A MÁGICA DO JAVASCRIPT)
+            // ==========================================================
+            const wordsPerMinute = 150; // Média de narração
+            const desiredSecondsPerScene = 22; // Nosso alvo: entre 20-25 segundos
+            const wordCount = scriptContent.split(/\s+/).length;
+            const estimatedTotalSeconds = (wordCount / wordsPerMinute) * 60;
+            
+            // Calcula o número máximo de cenas permitido para manter o ritmo
+            // Garante no mínimo 2 cenas para não ficar vazio
+            const maxScenes = Math.max(2, Math.ceil(estimatedTotalSeconds / desiredSecondsPerScene));
+            // ==========================================================
+
             const firstParagraphId = scriptContentElement.querySelector('div[id]')?.id;
             const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
             const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
             
-            let initialPrompt = `Você é um Diretor de Cinema e Storyboard. Sua tarefa é analisar o roteiro abaixo e criar um storyboard visual impactante, mas com um ritmo ponderado.
+            let initialPrompt = `Você é um Diretor de Cinema experiente com um orçamento limitado. Sua tarefa é analisar o roteiro e criar um storyboard de ALTO IMPACTO, com POUCAS cenas.
+            
+            **OBJETIVO PRINCIPAL:** O objetivo é criar no máximo ${maxScenes} cenas para este trecho de roteiro. Cada cena será transformada em um VÍDEO, por isso a economia é crucial.
+
+            **SUA TAREFA EM 3 PASSOS:**
+            1.  Leia o roteiro completo e o contexto emocional fornecido.
+            2.  Identifique os **${maxScenes} momentos mais importantes e visualmente impactantes**. Ignore o resto.
+            3.  Para CADA um desses momentos chave, crie um objeto JSON com "scriptPhrase", "imageDescription", e "estimated_duration".
 
             **REGRAS CRÍTICAS:**
-            1.  **RITMO VISUAL:** NÃO crie uma imagem para cada frase. O ritmo ideal é aproximadamente **uma nova cena a cada 15 a 25 segundos**. Analise o roteiro e escolha APENAS os momentos mais visualmente e emocionalmente importantes para criar uma cena. Agrupe frases relacionadas em uma única cena quando fizer sentido.
-            2.  **DURAÇÃO DA CENA:** Para cada cena que você criar, defina a "estimated_duration" em segundos. Cenas mais importantes ou descritivas podem durar mais (ex: 7-10 segundos), enquanto transições podem ser mais curtas (ex: 3-5 segundos).
-            3.  **FORMATO JSON OBRIGATÓRIO:** Sua resposta DEVE ser um array JSON válido. Cada objeto no array deve ter TRÊS chaves: "scriptPhrase" (o trecho principal do roteiro para aquela cena), "imageDescription" (a descrição visual), e "estimated_duration" (o número de segundos).
-            4.  **CONTEXTO É REI:** As descrições de imagem DEVEM refletir a emoção e o ritmo do contexto fornecido para cada parágrafo.
+            -   **NÃO ULTRAPASSE ${maxScenes} CENAS.** Este é um requisito não negociável.
+            -   As descrições de imagem DEVEM ser ricas e refletir a emoção e o ritmo do contexto.
+            -   Sua resposta DEVE ser um array JSON válido.
 
             **ROTEIRO E CONTEXTO EMOCIONAL PARA ANÁLISE:**
             ---
             `;
-
 
             const paragraphs = scriptContent.split('\n\n').filter(p => p.trim() !== '');
             paragraphs.forEach((p, index) => {
@@ -3650,7 +3667,7 @@ window.regenerateSection = (fullSectionId) => {
             });
 
             initialPrompt += `---
-            Gere o array JSON para os parágrafos acima.`;
+            Gere o array JSON com no máximo ${maxScenes} objetos.`;
             
             try {
                 const rawResult = await callGroqAPI(initialPrompt, 4000);
