@@ -3309,18 +3309,19 @@ The final output MUST be only the JSON code, like this example:
                 });
 
                 const prompt = `Você é um Diretor de Cena. Analise os parágrafos abaixo e seu contexto emocional.
-                
-                TAREFA: Para CADA um dos ${originalParagraphs.length} parágrafos, crie uma única anotação de performance [em colchetes]. A anotação deve incluir o tom de voz e sugestões de ênfase ou pausa.
-                
-                REGRAS CRÍTICAS:
-                1. Sua resposta DEVE ser um array JSON.
-                2. O array deve conter EXATAMENTE ${originalParagraphs.length} strings.
-                3. Cada string no array deve ser APENAS a anotação (ex: "[Tom de curiosidade, com ênfase em 'segredo']").
+            
+            **TAREFA:** Para CADA um dos ${originalParagraphs.length} parágrafos, crie uma única anotação de performance [em colchetes]. A anotação deve guiar o narrador sobre o **tom de voz, o ritmo e as palavras-chave que devem receber mais ênfase** naquele parágrafo.
+            
+            **REGRAS CRÍTICAS:**
+            1.  Sua resposta DEVE ser um array JSON.
+            2.  O array deve conter EXATAMENTE ${originalParagraphs.length} strings.
+            3.  Cada string no array deve ser APENAS a anotação completa (ex: "[Tom de curiosidade, com ênfase em 'segredo' e 'verdade']" ou "[Pausa breve, com tom reflexivo]").
+            4.  As palavras escolhidas para ênfase DEVEM existir no parágrafo correspondente.
 
-                ROTEIRO PARA ANÁLISE:
-                ${promptContext}
+            **ROTEIRO PARA ANÁLISE:**
+            ${promptContext}
 
-                Responda apenas com o array JSON de anotações.`;
+            Responda apenas com o array JSON de anotações.`;
 
                 const rawResult = await callGroqAPI(prompt, 2000);
                 const annotations = cleanGeneratedText(rawResult, true);
