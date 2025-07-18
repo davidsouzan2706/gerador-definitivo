@@ -1632,6 +1632,20 @@
             <button id="fullScreenAlertCloseBtn">Entendi</button>
         </div>
     </div>
+
+    <!-- ========================================================== -->
+    <!-- CAIXA DE DIÁLOGO DE CONFIRMAÇÃO (NOVO) -->
+    <!-- ========================================================== -->
+    <div id="confirmationDialogOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-[1002]" style="display: none;">
+        <div id="confirmationDialogBox" class="card-background p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+            <h3 id="confirmationTitle" class="text-lg font-bold mb-2">Confirmar Ação</h3>
+            <p id="confirmationMessage" class="text-sm text-gray-600 dark:text-gray-300 mb-6"></p>
+            <div class="flex justify-center gap-4">
+                <button id="confirmBtnYes" class="btn btn-primary">Sim, continuar</button>
+                <button id="confirmBtnNo" class="btn btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
     
     <script type="module">
         // ==========================================================
@@ -1677,6 +1691,38 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 elements.toastNotification.classList.remove('toast-visible');
                 setTimeout(() => { elements.toastNotification.textContent = ''; }, 300);
             }, 7000);
+        };
+
+
+        /**
+         * Exibe uma caixa de diálogo de confirmação e aguarda a resposta do usuário.
+         * @param {string} title - O título da caixa de diálogo.
+         * @param {string} message - A mensagem de confirmação.
+         * @returns {Promise<boolean>} - Retorna true se o usuário clicar "Sim", false caso contrário.
+         */
+        const showConfirmationDialog = (title, message) => {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('confirmationDialogOverlay');
+                const titleEl = document.getElementById('confirmationTitle');
+                const messageEl = document.getElementById('confirmationMessage');
+                const btnYes = document.getElementById('confirmBtnYes');
+                const btnNo = document.getElementById('confirmBtnNo');
+
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                overlay.style.display = 'flex';
+
+                const closeDialog = (result) => {
+                    overlay.style.display = 'none';
+                    // Remove os event listeners para evitar múltiplas chamadas
+                    btnYes.replaceWith(btnYes.cloneNode(true));
+                    btnNo.replaceWith(btnNo.cloneNode(true));
+                    resolve(result);
+                };
+
+                btnYes.onclick = () => closeDialog(true);
+                btnNo.onclick = () => closeDialog(false);
+            });
         };
 
         /**
@@ -4449,6 +4495,24 @@ window.regenerateSection = (fullSectionId) => {
 	     * Analisa o tema e a descrição do vídeo para definir a estratégia de conteúdo. (VERSÃO CORRIGIDA PARA ABAS)
          */
                 const analyzeAndSetStrategy = async () => {
+            // ==========================================================
+            // VERIFICAÇÃO DE PROJETO EM ANDAMENTO
+            // ==========================================================
+            const hasExistingWork = document.querySelector('#scriptSectionsContainer .accordion-item');
+            if (hasExistingWork) {
+                const userConfirmed = await showConfirmationDialog(
+                    "Redefinir Estratégia?",
+                    "Isso limpará todo o roteiro e recursos gerados para criar uma nova estratégia do zero. Deseja continuar?"
+                );
+                if (!userConfirmed) {
+                    return; // Usuário cancelou, a função para aqui.
+                }
+            }
+            // ==========================================================
+
+            // Se não havia trabalho ou se o usuário confirmou, a função continua...
+            resetProjectOutputs(); 
+
             const theme = elements.videoTheme.value.trim();
             const description = elements.videoDescription.value.trim();
             if (!theme || !description) {
