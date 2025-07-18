@@ -3602,90 +3602,61 @@ window.regenerateSection = (fullSectionId) => {
 
 
  	 /**
-         * Gera prompts de imagem para uma seção, usando um "orçamento de cenas" calculado
-         * para garantir um ritmo visual adequado para produção de vídeo.
-         * (VERSÃO DIRETOR COM ORÇAMENTO)
+         * Gera prompts de imagem e depois aplica um filtro de curadoria para garantir
+         * um ritmo visual adequado para a produção de vídeo.
+         * (VERSÃO CURADOR DE CENAS)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
-            const scriptContentElement = sectionElement?.querySelector('.generated-content-wrapper');
-            const promptContainer = sectionElement?.querySelector('.prompt-container');
+            // ... (o início da sua função, com as verificações, continua igual)
             
-            if (!scriptContentElement || !scriptContentElement.textContent.trim() || !promptContainer) {
-                window.showToast("Gere o conteúdo do roteiro desta seção primeiro.");
-                return;
-            }
+            // ...
 
-            if (!window.emotionalMap || window.emotionalMap.length === 0) {
-                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para criar prompts contextuais.");
-                return;
-            }
-
-            promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-            const scriptContent = scriptContentElement.textContent;
-            
-            // ==========================================================
-            // ETAPA 1: CALCULAR O "ORÇAMENTO" DE CENAS (A MÁGICA DO JAVASCRIPT)
-            // ==========================================================
-            const wordsPerMinute = 150; // Média de narração
-            const desiredSecondsPerScene = 22; // Nosso alvo: entre 20-25 segundos
-            const wordCount = scriptContent.split(/\s+/).length;
-            const estimatedTotalSeconds = (wordCount / wordsPerMinute) * 60;
-            
-            // Calcula o número máximo de cenas permitido para manter o ritmo
-            // Garante no mínimo 2 cenas para não ficar vazio
-            const maxScenes = Math.max(2, Math.ceil(estimatedTotalSeconds / desiredSecondsPerScene));
-            // ==========================================================
-
-            const firstParagraphId = scriptContentElement.querySelector('div[id]')?.id;
-            const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
-            const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-            
-            let initialPrompt = `Você é um Diretor de Cinema experiente com um orçamento limitado. Sua tarefa é analisar o roteiro e criar um storyboard de ALTO IMPACTO, com POUCAS cenas.
-            
-            **OBJETIVO PRINCIPAL:** O objetivo é criar no máximo ${maxScenes} cenas para este trecho de roteiro. Cada cena será transformada em um VÍDEO, por isso a economia é crucial.
-
-            **SUA TAREFA EM 3 PASSOS:**
-            1.  Leia o roteiro completo e o contexto emocional fornecido.
-            2.  Identifique os **${maxScenes} momentos mais importantes e visualmente impactantes**. Ignore o resto.
-            3.  Para CADA um desses momentos chave, crie um objeto JSON com "scriptPhrase", "imageDescription", e "estimated_duration".
-
-            **REGRAS CRÍTICAS:**
-            -   **NÃO ULTRAPASSE ${maxScenes} CENAS.** Este é um requisito não negociável.
-            -   As descrições de imagem DEVEM ser ricas e refletir a emoção e o ritmo do contexto.
-            -   Sua resposta DEVE ser um array JSON válido.
-
-            **ROTEIRO E CONTEXTO EMOCIONAL PARA ANÁLISE:**
-            ---
-            `;
-
-            const paragraphs = scriptContent.split('\n\n').filter(p => p.trim() !== '');
-            paragraphs.forEach((p, index) => {
-                const mapIndex = baseIndex + index;
-                const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
-                initialPrompt += `Parágrafo ${index}: "${p}"\nContexto (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})\n\n`;
-            });
-
-            initialPrompt += `---
-            Gere o array JSON com no máximo ${maxScenes} objetos.`;
-            
             try {
+                // ETAPA 1: A IA GERA MUITAS IDEIAS
                 const rawResult = await callGroqAPI(initialPrompt, 4000);
-                const prompts = cleanGeneratedText(rawResult, true);
+                const allGeneratedPrompts = cleanGeneratedText(rawResult, true);
 
-                if (!validatePromptsArray(prompts)) {
+                if (!validatePromptsArray(allGeneratedPrompts)) {
                     throw new Error("A IA retornou prompts em formato inválido.");
                 }
 
-                allImagePrompts[sectionElementId] = prompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
+                // ==========================================================
+                // ETAPA 2: O NOSSO CÓDIGO FAZ A CURADORIA
+                // ==========================================================
+                const desiredSecondsPerScene = 22;
+                let curatedPrompts = [];
+                let secondsAccumulator = 0;
+                let currentScenePhrase = "";
+
+                allGeneratedPrompts.forEach((prompt, index) => {
+                    const duration = parseInt(prompt.estimated_duration, 10) || 5; // Pega a duração ou assume 5s
+                    
+                    // Adiciona a frase do prompt atual à frase da cena que estamos montando
+                    currentScenePhrase += prompt.scriptPhrase + " ";
+                    secondsAccumulator += duration;
+                    
+                    // Se atingimos nosso "orçamento" de tempo, ou se é o último prompt da lista
+                    if (secondsAccumulator >= desiredSecondsPerScene || index === allGeneratedPrompts.length - 1) {
+                        // Finalizamos a cena atual
+                        let finalPrompt = { ...prompt }; // Copia o último prompt como base
+                        finalPrompt.scriptPhrase = currentScenePhrase.trim(); // Usa a frase agrupada
+                        finalPrompt.estimated_duration = secondsAccumulator; // Usa a duração somada
+                        
+                        curatedPrompts.push(finalPrompt);
+                        
+                        // Reseta para a próxima cena
+                        currentScenePhrase = "";
+                        secondsAccumulator = 0;
+                    }
+                });
+                // ==========================================================
+                
+                // Agora usamos a lista CURADA para o resto do processo
+                allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
                 promptPaginationState[sectionElementId] = 0;
                 
-                promptContainer.innerHTML = `
-                    <div class="prompt-pagination-wrapper space-y-4">
-                        <div class="prompt-nav-container flex items-center justify-center gap-4"></div>
-                        <div class="prompt-items-container space-y-4"></div>
-                    </div>
-                `;
+                promptContainer.innerHTML = `...`; // Seu código de renderização continua igual
                 renderPaginatedPrompts(sectionElementId);
 
             } catch (error) {
