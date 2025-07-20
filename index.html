@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Roteiros Virais v3.0 - O Painel do Projeto</title>
+    <title>Gerador de Roteiros Virais v3.1 - O Painel do Projeto</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF para geração de PDF (ainda incluído, mas não usado para download principal) -->
@@ -1262,7 +1262,7 @@
             </button>
         </div>
         
-        <h1 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 text-center mb-2">Gerador de Roteiros Virais v3.0</h1>
+        <h1 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 text-center mb-2">Gerador de Roteiros Virais v3.1</h1>
         <p class="text-center text-gray-500 dark:text-gray-400 mb-8">O seu painel de controle para conteúdo de alto impacto.</p>
         
         <!-- Seção de Inputs da Aplicação -->
@@ -2677,17 +2677,15 @@ const invalidateAndClearPrompts = (sectionElement) => {
                             ${promptsSectionHtml}
                         </div>
                     </div>`;
-        };
-    
         /**
-         * Limpa o texto gerado pela IA, tentando corrigir erros comuns de JSON.
-         * (VERSÃO "À PROVA DE BALAS")
+         * Limpa o texto gerado pela IA, tentando corrigir erros comuns de JSON,
+         * incluindo o problema de aspas duplas não escapadas.
+         * (VERSÃO "À PROVA DE BALAS" v2)
          */
         const cleanGeneratedText = (text, expectJson = false) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
-            // 1. Tenta encontrar o início e o fim do JSON ([...], ou {...})
             let jsonString = text;
             const firstBracket = text.indexOf('[');
             const lastBracket = text.lastIndexOf(']');
@@ -2700,58 +2698,29 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 jsonString = text.substring(firstBrace, lastBrace + 1);
             }
 
-            // 2. Remove "lixo" comum, como markdown e texto introdutório.
             jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
 
-            // 3. Tenta corrigir erros comuns de sintaxe antes do parse.
             try {
-                // Remove vírgulas extras no final de arrays e objetos (ex: [1, 2,])
+                // ==========================================================
+                // ROBÔ CORRETOR DE ASPAS (A MÁGICA ACONTECE AQUI)
+                // ==========================================================
+                // Esta Regex procura por aspas duplas que NÃO são precedidas por uma barra invertida
+                // e que estão dentro do valor de uma chave (entre os dois pontos e a vírgula/chave de fechamento).
+                jsonString = jsonString.replace(/:\s*"(.*?[^\\])"/g, (match, content) => {
+                    // Dentro do conteúdo encontrado, substitui todas as aspas duplas por aspas escapadas
+                    const escapedContent = content.replace(/"/g, '\\"');
+                    return `: "${escapedContent}"`;
+                });
+                // ==========================================================
+
+                // Remove vírgulas extras no final
                 jsonString = jsonString.replace(/,\s*([}\]])/g, "$1");
                 
-                // Tenta fazer o parse. Se funcionar, ótimo!
                 return JSON.parse(jsonString);
             } catch (e) {
-                // Se falhar, o erro original é mais útil para depuração.
                 console.error("Falha ao fazer o parse do JSON extraído:", e.message);
-                console.error("JSON problemático:", jsonString); // Mostra a string que tentamos corrigir
-                // Lança o erro para que a função que chamou possa tratá-lo.
+                console.error("JSON problemático:", text); // Loga o texto original da IA
                 throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
-            }
-        };
-
-        /**
-         * Remove comentários meta da IA do texto gerado.
-         * @param {string} text - O texto gerado pela IA.
-         * @returns {string} O texto sem os comentários meta.
-         */
-        const removeMetaComments = (text) => {
-            if (!text) return text;
-            // Padrão para remover "Here is/are..." ou "Sure, here is..." etc.
-            const introPattern = /^(Sure, |Of course, )?(here is|here's|here are|below is|certainly, here is) .*?:\s*\n?/im;
-            let cleanedText = text.replace(introPattern, '');
-            
-            // Remove linhas que começam com "Description:" ou "Hashtags:" se a IA as adicionar
-            cleanedText = cleanedText.replace(/^(Description:|Hashtags:)\s*\n?/gim, '');
-
-            return cleanedText.trim();
-        };
-
-        // --- INÍCIO DO NOVO MÓDULO DE NARRATIVA ---
-
-        const narrativeStructures = {
-            storytelling: {
-                documentary: "Documentário (Factual e Investigativo)",
-                heros_journey: "Jornada do Herói (Estrutura Épica)",
-                pixar_spine: "Espinha Dorsal - Pixar (Estrutura Emocional)",
-                mystery_loop: "Mistério (com Loop Aberto)",
-                twist: "Narrativa com Virada (Twist)"
-            },
-            storyselling: {
-                underdog_victory: "Vitória do Vira-lata (Conexão e Superação)",
-                discovery_mentor: "A Grande Descobrir / Mentor Secreto",
-                if_not_found_create: "Não Encontrei, Então Criei (História de Origem)",
-                pas: "Problema-Agitação-Solução (PAS)",
-                bab: "Antes-Depois-Ponte (BAB)"
             }
         };
 
