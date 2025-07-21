@@ -78,19 +78,19 @@
     margin-top: 0.75rem;
 }
 
-	/* ========================================================== */
-	/* ========= FEEDBACK VISUAL PARA TEXTO ENRIQUECIDO ========= */
-	/* ========================================================== */
-	@keyframes highlight-fade {
-	from { background-color: rgba(255, 255, 0, 0.5); }
-	to { background-color: transparent; }
-	}
+    /* ========================================================== */
+    /* ========= FEEDBACK VISUAL PARA TEXTO ENRIQUECIDO ========= */
+    /* ========================================================== */
+    @keyframes highlight-fade {
+    from { background-color: rgba(255, 255, 0, 0.5); }
+    to { background-color: transparent; }
+    }
 
-	.highlight-change {
-	animation: highlight-fade 2s ease-in-out;
-	background-color: transparent; /* Estado final da animação */
-	}
-	
+    .highlight-change {
+    animation: highlight-fade 2s ease-in-out;
+    background-color: transparent; /* Estado final da animação */
+    }
+    
         /* ========================================================== */
         /* ==================== ESTILOS GERAIS ==================== */
         /* ========================================================== */
@@ -312,7 +312,7 @@
             transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out;
             padding: 0 1.5rem; /* Padding vertical zero quando fechado */
         }
-	.accordion-body.open {
+    .accordion-body.open {
             max-height: 200vh; /* Um valor alto para permitir a expansão */
             padding: 1.5rem;   /* Restaura o padding para mostrar o conteúdo */
         }
@@ -1032,7 +1032,7 @@
             display: block;
             animation: fadeInSlideUp 0.4s ease-out forwards;
         }
-	/* ========================================================== */
+    /* ========================================================== */
 /* === ESTILO PARA LISTA DO ESBOÇO ESTRATÉGICO (v5 - FINAL) === */
 /* ========================================================== */
 #outlineContent ul {
@@ -1542,15 +1542,15 @@
                         <div>
                             <h3 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">⚙️ Metadados do Vídeo</h3>
                             <div id="metadataContainer" class="space-y-6">
-				<div class="card-background p-4 rounded-lg shadow-md border-l-4 border-purple-500">
-				        <div class="flex justify-between items-center mb-3">
-				            <h4 class="font-bold text-lg text-gray-800 dark:text-gray-200">Direção de Cena (Mapa Emocional)</h4>
-				            <button id="mapEmotionsBtn" class="btn btn-secondary btn-small">Mapear Emoções</button>
-				        </div>
-				        <div id="emotionalMapContent">
-				            <div class="asset-card-placeholder">Clique em 'Mapear' para a IA analisar a jornada emocional do roteiro.</div>
-				        </div>
-				    </div>
+                <div class="card-background p-4 rounded-lg shadow-md border-l-4 border-purple-500">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-bold text-lg text-gray-800 dark:text-gray-200">Direção de Cena (Mapa Emocional)</h4>
+                            <button id="mapEmotionsBtn" class="btn btn-secondary btn-small">Mapear Emoções</button>
+                        </div>
+                        <div id="emotionalMapContent">
+                            <div class="asset-card-placeholder">Clique em 'Mapear' para a IA analisar a jornada emocional do roteiro.</div>
+                        </div>
+                    </div>
                                 <!-- Cartão: Descrição e Hashtags -->
                                 <div class="card-background p-4 rounded-lg shadow-md">
                                     <div class="flex justify-between items-center mb-3">
@@ -1573,16 +1573,16 @@
                                     </div>
                                 </div>
 
-				<!-- ADICIONE O BLOCO ABAIXO -->
-				    <div class="card-background p-4 rounded-lg shadow-md">
-				        <div class="flex justify-between items-center mb-3">
-				            <h4 class="font-bold text-lg text-gray-800 dark:text-gray-200">Recursos Sonoros (Trilha)</h4>
-				            <button id="generateSoundtrackBtn" class="btn btn-secondary btn-small">Gerar</button>
-				        </div>
-				        <div id="soundtrackContent">
-			            <div class="asset-card-placeholder">Clique em 'Gerar' para criar sugestões de trilha para o roteiro completo.</div>
-			        </div>
-				</div>
+                <!-- ADICIONE O BLOCO ABAIXO -->
+                    <div class="card-background p-4 rounded-lg shadow-md">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-bold text-lg text-gray-800 dark:text-gray-200">Recursos Sonoros (Trilha)</h4>
+                            <button id="generateSoundtrackBtn" class="btn btn-secondary btn-small">Gerar</button>
+                        </div>
+                        <div id="soundtrackContent">
+                        <div class="asset-card-placeholder">Clique em 'Gerar' para criar sugestões de trilha para o roteiro completo.</div>
+                    </div>
+                </div>
 
                             </div>
                         </div>
@@ -1657,7 +1657,7 @@
         let strategicOutline = null;
         let totalScriptSeconds = 0;
         let promptPaginationState = {};
-	let isSettingStrategy = false; // <-- NOSSO NOVO SINALIZADOR
+    let isSettingStrategy = false; // <-- NOSSO NOVO SINALIZADOR
     
         // Bloco de estilo cinematográfico para prompts de imagem
         const CINEMATIC_STYLE_BLOCK = `
@@ -1943,11 +1943,11 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 if (floatBtn) floatBtn.disabled = !allMainScriptGenerated;
             });
 
-		['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'].forEach(id => { // <-- ADICIONE 'mapEmotionsBtn' AQUI
+        ['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'].forEach(id => { // <-- ADICIONE 'mapEmotionsBtn' AQUI
             const originalBtn = document.getElementById(id);
             if (originalBtn) originalBtn.disabled = !allMainScriptGenerated;
-	 
-	     });
+     
+         });
             
             const resetBtn = document.getElementById('resetScriptBtn');
             const floatResetBtn = document.getElementById('float_resetScriptBtn');
@@ -2055,7 +2055,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             return timeString.trim();
         };
 
-	// ==========================================================
+    // ==========================================================
         // ==================== LÓGICA DAS ABAS =====================
         // ==========================================================
         const setupTabs = () => {
@@ -2078,13 +2078,13 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
 
 
-	 /**
+     /**
          * Gera sugestões de trilha sonora para a transcrição completa do roteiro.
          * (VERSÃO GLOBAL - NA ABA RECURSOS)
          */
 
 
-	 /**
+     /**
          * Analisa o roteiro completo para criar um "mapa emocional" para guiar a produção.
          */
         const mapEmotionsAndPacing = async () => {
@@ -2152,7 +2152,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 
 
 
-	const generateSoundtrack = async () => {
+    const generateSoundtrack = async () => {
             const fullTranscript = getTranscriptOnly();
             if (!fullTranscript) {
                 window.showToast("Gere o roteiro completo primeiro para sugerir uma trilha sonora coerente.");
@@ -2203,7 +2203,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 
 
 
-	 /**
+     /**
          * Gera a Conclusão e o CTA juntos, com base na estratégia final escolhida,
          * e formata o texto corretamente para análise posterior.
          */
@@ -2261,7 +2261,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             }
         };
 
-	// ==========================================================
+    // ==========================================================
         // NOVA FUNÇÃO PARA ATUALIZAR A BARRA DE PROGRESO
         // ==========================================================
         const updateProgressBar = () => {
@@ -2576,25 +2576,22 @@ const invalidateAndClearPrompts = (sectionElement) => {
                   * @param {HTMLElement} sectionElement - O elemento da seção (ex: #introSection).
                   */
                     const invalidateAndClearPerformance = (sectionElement) => {
-            if (!sectionElement) return;
+                    if (!sectionElement) return;
 
-            // Encontra o container da performance DENTRO da seção correta
-            const performanceContainer = sectionElement.querySelector('.section-performance-output');
-            
-            // Verifica se o container existe E se ele já tem algum conteúdo (para não mostrar o aviso à toa)
-            if (performanceContainer && performanceContainer.innerHTML.trim() !== '') {
-                performanceContainer.innerHTML = `
-                    <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
-                        <p class="text-sm text-yellow-700 dark:text-yellow-300 font-semibold">
-                            Atenção: O roteiro foi modificado.
-                        </p>
-                        <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                            Por favor, clique em "Sugerir Performance" novamente para criar novas anotações com base no texto atualizado.
-                        </p>
-                    </div>
-                `;
-            }
-        };
+                        const performanceContainer = sectionElement.querySelector('.section-performance-output');
+                        if (performanceContainer && performanceContainer.innerHTML.trim() !== '') {
+                            performanceContainer.innerHTML = `
+                                <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
+                                    <p class="text-sm text-yellow-700 dark:text-yellow-300 font-semibold">
+                                    Atenção: O roteiro foi modificado.
+                                    </p>
+                                    <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                                    Por favor, clique em "Sugerir Performance" novamente para criar novas anotações com base no texto atualizado.
+                                    </p>
+                                </div>
+                                `;
+                            }
+                        };
 
         /**
          * Lida com os cliques nas setas de navegação dos prompts.
@@ -2680,14 +2677,17 @@ const invalidateAndClearPrompts = (sectionElement) => {
                             ${promptsSectionHtml}
                         </div>
                     </div>`;
+        };
+    
         /**
          * Limpa o texto gerado pela IA, tentando corrigir erros comuns de JSON.
-         * (VERSÃO "À PROVA DE BALAS" v2 - SINTAXE CORRIGIDA)
+         * (VERSÃO "À PROVA DE BALAS")
          */
         const cleanGeneratedText = (text, expectJson = false) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
+            // 1. Tenta encontrar o início e o fim do JSON ([...], ou {...})
             let jsonString = text;
             const firstBracket = text.indexOf('[');
             const lastBracket = text.lastIndexOf(']');
@@ -2700,25 +2700,60 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 jsonString = text.substring(firstBrace, lastBrace + 1);
             }
 
+            // 2. Remove "lixo" comum, como markdown e texto introdutório.
             jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
 
+            // 3. Tenta corrigir erros comuns de sintaxe antes do parse.
             try {
-                // ROBÔ CORRETOR DE ASPAS
-                jsonString = jsonString.replace(/:\s*"(.*?[^\\])"/g, (match, content) => {
-                    const escapedContent = content.replace(/"/g, '\\"');
-                    return `: "${escapedContent}"`;
-                });
-
-                // Remove vírgulas extras no final
+                // Remove vírgulas extras no final de arrays e objetos (ex: [1, 2,])
                 jsonString = jsonString.replace(/,\s*([}\]])/g, "$1");
                 
+                // Tenta fazer o parse. Se funcionar, ótimo!
                 return JSON.parse(jsonString);
             } catch (e) {
+                // Se falhar, o erro original é mais útil para depuração.
                 console.error("Falha ao fazer o parse do JSON extraído:", e.message);
-                console.error("JSON problemático:", text); // Loga o texto original da IA
+                console.error("JSON problemático:", jsonString); // Mostra a string que tentamos corrigir
+                // Lança o erro para que a função que chamou possa tratá-lo.
                 throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
             }
-        }; // <--- CHAVE DE FECHAMENTO CORRETA
+        };
+
+        /**
+         * Remove comentários meta da IA do texto gerado.
+         * @param {string} text - O texto gerado pela IA.
+         * @returns {string} O texto sem os comentários meta.
+         */
+        const removeMetaComments = (text) => {
+            if (!text) return text;
+            // Padrão para remover "Here is/are..." ou "Sure, here is..." etc.
+            const introPattern = /^(Sure, |Of course, )?(here is|here's|here are|below is|certainly, here is) .*?:\s*\n?/im;
+            let cleanedText = text.replace(introPattern, '');
+            
+            // Remove linhas que começam com "Description:" ou "Hashtags:" se a IA as adicionar
+            cleanedText = cleanedText.replace(/^(Description:|Hashtags:)\s*\n?/gim, '');
+
+            return cleanedText.trim();
+        };
+
+        // --- INÍCIO DO NOVO MÓDULO DE NARRATIVA ---
+
+        const narrativeStructures = {
+            storytelling: {
+                documentary: "Documentário (Factual e Investigativo)",
+                heros_journey: "Jornada do Herói (Estrutura Épica)",
+                pixar_spine: "Espinha Dorsal - Pixar (Estrutura Emocional)",
+                mystery_loop: "Mistério (com Loop Aberto)",
+                twist: "Narrativa com Virada (Twist)"
+            },
+            storyselling: {
+                underdog_victory: "Vitória do Vira-lata (Conexão e Superação)",
+                discovery_mentor: "A Grande Descobrir / Mentor Secreto",
+                if_not_found_create: "Não Encontrei, Então Criei (História de Origem)",
+                pas: "Problema-Agitação-Solução (PAS)",
+                bab: "Antes-Depois-Ponte (BAB)"
+            }
+        };
 
         const narrativeTooltips = {
             documentary: "Constrói um argumento com fatos, evidências e uma narração autoritária. Perfeito para vídeos expositivos.",
@@ -3237,10 +3272,10 @@ The final output MUST be only the JSON code, like this example:
                 const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
                 const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion".
         
-        	**CRITICAL RULE: The "suggestion" MUST be written in Portuguese (Brazil).**
+            **CRITICAL RULE: The "suggestion" MUST be written in Portuguese (Brazil).**
 
-	        Analyze this data:
-	        ${JSON.stringify(paragraphsWithIds, null, 2)}`;
+            Analyze this data:
+            ${JSON.stringify(paragraphsWithIds, null, 2)}`;
 
 
                 const rawResult = await callGroqAPI(prompt, 2500);
@@ -3298,17 +3333,17 @@ The final output MUST be only the JSON code, like this example:
 
             const originalText = paragraphElement.firstChild.textContent.trim(); // Pega apenas o texto
             const languageName = document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text;
-        	const prompt = `You are an expert copywriter. Rewrite the "Original Paragraph" below based on the "Improvement Suggestion".
+            const prompt = `You are an expert copywriter. Rewrite the "Original Paragraph" below based on the "Improvement Suggestion".
         
-        	**CRITICAL RULE: You MUST respond in ${languageName}.** Do not change the language.
+            **CRITICAL RULE: You MUST respond in ${languageName}.** Do not change the language.
 
-       		 **Original Paragraph:**
-       		 "${originalText}"
+             **Original Paragraph:**
+             "${originalText}"
 
-      		  **Improvement Suggestion:**
-     		   "${suggestion}"
+              **Improvement Suggestion:**
+               "${suggestion}"
 
-     	   Respond ONLY with the rewritten paragraph, in ${languageName}.`;
+           Respond ONLY with the rewritten paragraph, in ${languageName}.`;
 
             try {
                 const rewrittenText = await callGroqAPI(prompt, 1000);
@@ -3706,7 +3741,7 @@ window.regenerateSection = (fullSectionId) => {
 
 
 
- 	 /**
+     /**
          * Gera prompts de imagem e depois aplica um filtro de curadoria para garantir
          * um ritmo visual adequado para a produção de vídeo.
          * (VERSÃO CURADOR DE CENAS - CORRIGIDA)
@@ -4005,9 +4040,9 @@ window.regenerateSection = (fullSectionId) => {
                     `;
 
 
-		    // --------------------------------------
+            // --------------------------------------
                     // --- FIM DA CORREÇÃO NA RENDERIZAÇÃO ---
-		    // --------------------------------------
+            // --------------------------------------
 
 
 
@@ -4508,7 +4543,7 @@ window.regenerateSection = (fullSectionId) => {
         };
 
         /**
-	     * Analisa o tema e a descrição do vídeo para definir a estratégia de conteúdo. (VERSÃO CORRIGIDA PARA ABAS)
+         * Analisa o tema e a descrição do vídeo para definir a estratégia de conteúdo. (VERSÃO CORRIGIDA PARA ABAS)
          */
                 const analyzeAndSetStrategy = async () => {
             // ==========================================================
@@ -4702,7 +4737,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-	// ==========================================================
+    // ==========================================================
     // LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO CORRETA E FINAL)
     // ==========================================================
     let hideDetailsTimeout; // Timer para esconder o card
@@ -4772,9 +4807,9 @@ document.addEventListener('DOMContentLoaded', () => {
             clearTimeout(hideDetailsTimeout); // Cancela o timer de esconder
         }
     });
-	// ==========================================================
-	// FIM DA LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO FINAL)
-	// ==========================================================
+    // ==========================================================
+    // FIM DA LÓGICA PARA DESTAQUE E DETALHE FIXO (VERSÃO FINAL)
+    // ==========================================================
 
 
 
@@ -4868,36 +4903,36 @@ document.addEventListener('DOMContentLoaded', () => {
         // PARTE 3: LÓGICA DOS BOTÕES GERAIS POR ID (JÁ ESTAVA FUNCIONANDO)
         if (button) {
             const clickActions = {
-		'mapEmotionsBtn': mapEmotionsAndPacing,
+        'mapEmotionsBtn': mapEmotionsAndPacing,
                 'analyzeStrategyBtn': analyzeAndSetStrategy,
                 'generateOutlineBtn': generateStrategicOutline,
 
 
-	// ==========================================================
+    // ==========================================================
 
-	'generateConclusionAndCtaBtn': generateConclusionAndCta,
-        	'conclusionBtn': () => {
-           	 const conclusionModule = document.getElementById('conclusionStrategyModule');
-           	 // Verifica se o módulo de estratégia da conclusão já está visível na tela
-          	  if (conclusionModule && !conclusionModule.classList.contains('hidden')) {
-              	  // Se estiver visível, guia o usuário até ele
-              	  conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                	window.showToast("Ação necessária: Clique em 'Gerar Conclusão + CTA'");
-                	// Adiciona um "flash" visual para chamar a atenção
-                	conclusionModule.style.transition = 'all 0.2s';
-                	conclusionModule.style.boxShadow = '0 0 0 3px var(--primary-color)';
-                	setTimeout(() => { conclusionModule.style.boxShadow = ''; }, 1500);
-            	} else {
-                	// Se não estiver visível, significa que as seções anteriores não foram geradas
-                	window.showToast("Por favor, gere a Introdução, Desenvolvimento e Clímax primeiro.");
-            	}
-        	},
-        	'generateCTABtn': () => {
-            	// O botão CTA agora faz exatamente a mesma coisa que o botão Conclusão
-            	// Encontra o botão de conclusão e simula um clique nele.
-            	document.getElementById('conclusionBtn')?.click();
-       	 },
-	// ==========================================================
+    'generateConclusionAndCtaBtn': generateConclusionAndCta,
+            'conclusionBtn': () => {
+             const conclusionModule = document.getElementById('conclusionStrategyModule');
+             // Verifica se o módulo de estratégia da conclusão já está visível na tela
+              if (conclusionModule && !conclusionModule.classList.contains('hidden')) {
+                  // Se estiver visível, guia o usuário até ele
+                  conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    window.showToast("Ação necessária: Clique em 'Gerar Conclusão + CTA'");
+                    // Adiciona um "flash" visual para chamar a atenção
+                    conclusionModule.style.transition = 'all 0.2s';
+                    conclusionModule.style.boxShadow = '0 0 0 3px var(--primary-color)';
+                    setTimeout(() => { conclusionModule.style.boxShadow = ''; }, 1500);
+                } else {
+                    // Se não estiver visível, significa que as seções anteriores não foram geradas
+                    window.showToast("Por favor, gere a Introdução, Desenvolvimento e Clímax primeiro.");
+                }
+            },
+            'generateCTABtn': () => {
+                // O botão CTA agora faz exatamente a mesma coisa que o botão Conclusão
+                // Encontra o botão de conclusão e simula um clique nele.
+                document.getElementById('conclusionBtn')?.click();
+         },
+    // ==========================================================
 
 
                 'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
