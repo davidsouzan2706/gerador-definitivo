@@ -1891,30 +1891,36 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
 
         /**
-         * Reseta os ícones de conclusão de todos os botões (original e flutuante) para suas cores padrão.
+         * Reseta os ícones de conclusão de todos os botões para suas cores padrão.
+         * (VERSÃO COMPLETA E CORRIGIDA)
          */
         const resetCompletionIcons = () => {
-            const passo1_buttons_ids = ['generateIntroBtn', 'generateDevelopmentBtn', 'climaxBtn', 'conclusionBtn', 'generateCTABtn'];
-            
-            for (const buttonId in buttons) { // Iterar sobre todos os botões
-                const isPasso1 = passo1_buttons_ids.includes(buttonId);
-                const originalButton = document.getElementById(buttonId);
-                const floatButton = document.getElementById(`float_${buttonId}`);
+            const allButtons = document.querySelectorAll('.btn'); // Pega todos os botões com a classe .btn
 
-                // Remove a classe de sucesso e adiciona a classe correta (primary/secondary)
-                [originalButton, floatButton].forEach(btn => {
-                    if (btn) {
-                        btn.classList.remove('btn-success');
-                        if (isPasso1) {
-                            btn.classList.remove('btn-secondary');
-                            btn.classList.add('btn-primary');
-                        } else {
-                            btn.classList.remove('btn-primary');
-                            btn.classList.add('btn-secondary');
-                        }
-                    }
-                });
-            }
+            allButtons.forEach(btn => {
+                // Remove a classe de sucesso, se existir
+                btn.classList.remove('btn-success');
+
+                // Define a classe correta (primary ou secondary) com base no ID
+                const secondaryButtons = [
+                    'generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateOutlineBtn',
+                    'mapEmotionsBtn', 'generateSoundtrackBtn', 'exportProjectBtn', 'importProjectBtn',
+                    'downloadPdfBtn', 'resetScriptBtn'
+                ];
+                
+                // Inclui as versões flutuantes na verificação
+                const isSecondary = secondaryButtons.includes(btn.id) || 
+                                    secondaryButtons.includes(btn.id.replace('float_', ''));
+
+                if (isSecondary) {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-secondary');
+                } else {
+                    // Se não for secundário, é primário (botões de geração de seção)
+                    btn.classList.remove('btn-secondary');
+                    btn.classList.add('btn-primary');
+                }
+            });
         };
         
         /**
