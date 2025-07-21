@@ -1,3 +1,4 @@
+<!--Teste-->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -1917,6 +1918,17 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             }
         };
         
+        /**
+         * Verifica se as seções principais do roteiro foram geradas.
+         * @returns {boolean} True se todas as seções principais foram geradas, caso contrário, false.
+         */
+        const isScriptComplete = () => {
+            return ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection'].every(id => { // CTA is now part of conclusionSection
+                const section = document.getElementById(id);
+                return section && !section.classList.contains('hidden') && section.querySelector('.generated-content-wrapper')?.textContent.trim() !== '';
+            });
+        };
+
         /**
          * Atualiza o estado de habilitação dos botões e o fluxo da UI.
          * (VERSÃO FINAL E COMPLETA COM BLOQUEIO DO MAPA EMOCIONAL)
