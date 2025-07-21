@@ -2571,27 +2571,25 @@ const invalidateAndClearPrompts = (sectionElement) => {
 };
 
 
-/**
-                  * Invalida e limpa a sugestão de performance, exibindo um aviso.
-                  * @param {HTMLElement} sectionElement - O elemento da seção (ex: #introSection).
-                  */
-                    const invalidateAndClearPerformance = (sectionElement) => {
-                    if (!sectionElement) return;
-
-                        const performanceContainer = sectionElement.querySelector('.section-performance-output');
-                        if (performanceContainer && performanceContainer.innerHTML.trim() !== '') {
-                            performanceContainer.innerHTML = `
-                                <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
-                                    <p class="text-sm text-yellow-700 dark:text-yellow-300 font-semibold">
-                                    Atenção: O roteiro foi modificado.
-                                    </p>
-                                    <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                                    Por favor, clique em "Sugerir Performance" novamente para criar novas anotações com base no texto atualizado.
-                                    </p>
-                                </div>
-                                `;
-                            }
-                        };
+        /**
+         * Invalida e limpa a sugestão de performance, exibindo um aviso.
+         */
+        const invalidateAndClearPerformance = (sectionElement) => {
+            if (!sectionElement) return;
+            const performanceContainer = sectionElement.querySelector('.section-performance-output');
+            if (performanceContainer && performanceContainer.innerHTML.trim() !== '') {
+                performanceContainer.innerHTML = `
+                    <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
+                        <p class="text-sm text-yellow-700 dark:text-yellow-300 font-semibold">
+                            Atenção: O roteiro foi modificado.
+                        </p>
+                        <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                            Por favor, clique em "Sugerir Performance" novamente para criar novas anotações com base no texto atualizado.
+                        </p>
+                    </div>
+                `;
+            }
+        };
 
         /**
          * Lida com os cliques nas setas de navegação dos prompts.
