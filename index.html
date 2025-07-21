@@ -1918,41 +1918,36 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
         
         /**
-         * Verifica se as seções principais do roteiro foram geradas.
-         * @returns {boolean} True se todas as seções principais foram geradas, caso contrário, false.
-         */
-        const isScriptComplete = () => {
-            return ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection'].every(id => { // CTA is now part of conclusionSection
-                const section = document.getElementById(id);
-                return section && !section.classList.contains('hidden') && section.querySelector('.generated-content-wrapper')?.textContent.trim() !== '';
-            });
-        };
-
-        /**
          * Atualiza o estado de habilitação dos botões e o fluxo da UI.
-         * (VERSÃO FINAL E COMPLETA)
+         * (VERSÃO FINAL E COMPLETA COM BLOQUEIO DO MAPA EMOCIONAL)
          */
         const updateButtonStates = () => {
             const allMainScriptGenerated = isScriptComplete();
 
-            // Botões de recursos principais e flutuantes que dependem da conclusão do roteiro
-            const resourceButtons = [
-                'generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 
-                'generateSoundtrackBtn', 'mapEmotionsBtn'
+            // Botões de recursos que dependem da conclusão do roteiro principal
+            const resourceButtonsIds = [
+                'generateDescriptionBtn', 
+                'generateTitlesAndThumbnailsBtn', 
+                'generateSoundtrackBtn', 
+                'mapEmotionsBtn' // Botão do Mapa agora está na lista
             ];
 
-            resourceButtons.forEach(id => {
-                const originalBtn = document.getElementById(id);
-                const floatBtn = document.getElementById(`float_${id}`);
-                
-                if (originalBtn) originalBtn.disabled = !allMainScriptGenerated;
-                if (floatBtn) floatBtn.disabled = !allMainScriptGenerated;
+            resourceButtonsIds.forEach(id => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.disabled = !allMainScriptGenerated;
+                }
+                // Lógica para botões flutuantes, se existirem
+                const floatButton = document.getElementById(`float_${id}`);
+                if (floatButton) {
+                    floatButton.disabled = !allMainScriptGenerated;
+                }
             });
             
-            // Lógica específica para o botão de reset
+            // Lógica específica para o botão de reset (não depende do roteiro)
             const resetBtn = document.getElementById('resetScriptBtn');
-            const floatResetBtn = document.getElementById('float_resetScriptBtn');
             if (resetBtn) resetBtn.disabled = false; 
+            const floatResetBtn = document.getElementById('float_resetScriptBtn');
             if (floatResetBtn) floatResetBtn.disabled = false;
 
             // Lógica para mostrar/esconder e mover o módulo de conclusão
@@ -1977,7 +1972,6 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                     conclusionModule.classList.add('animate-fade-in');
                     handleConclusionStrategyChange();
                     conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
                     window.showToast("Último passo: Defina o objetivo da sua conclusão!");
 
                 } else if (!mainSectionsDone && !conclusionModule.classList.contains('hidden')) {
