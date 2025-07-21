@@ -2678,9 +2678,8 @@ const invalidateAndClearPrompts = (sectionElement) => {
                         </div>
                     </div>`;
         /**
-         * Limpa o texto gerado pela IA, tentando corrigir erros comuns de JSON,
-         * incluindo o problema de aspas duplas não escapadas.
-         * (VERSÃO "À PROVA DE BALAS" v2)
+         * Limpa o texto gerado pela IA, tentando corrigir erros comuns de JSON.
+         * (VERSÃO "À PROVA DE BALAS" v2 - SINTAXE CORRIGIDA)
          */
         const cleanGeneratedText = (text, expectJson = false) => {
             if (!text) return null;
@@ -2701,17 +2700,11 @@ const invalidateAndClearPrompts = (sectionElement) => {
             jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
 
             try {
-                // ==========================================================
-                // ROBÔ CORRETOR DE ASPAS (A MÁGICA ACONTECE AQUI)
-                // ==========================================================
-                // Esta Regex procura por aspas duplas que NÃO são precedidas por uma barra invertida
-                // e que estão dentro do valor de uma chave (entre os dois pontos e a vírgula/chave de fechamento).
+                // ROBÔ CORRETOR DE ASPAS
                 jsonString = jsonString.replace(/:\s*"(.*?[^\\])"/g, (match, content) => {
-                    // Dentro do conteúdo encontrado, substitui todas as aspas duplas por aspas escapadas
                     const escapedContent = content.replace(/"/g, '\\"');
                     return `: "${escapedContent}"`;
                 });
-                // ==========================================================
 
                 // Remove vírgulas extras no final
                 jsonString = jsonString.replace(/,\s*([}\]])/g, "$1");
@@ -2722,7 +2715,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 console.error("JSON problemático:", text); // Loga o texto original da IA
                 throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
             }
-        };
+        }; // <--- CHAVE DE FECHAMENTO CORRETA
 
         const narrativeTooltips = {
             documentary: "Constrói um argumento com fatos, evidências e uma narração autoritária. Perfeito para vídeos expositivos.",
