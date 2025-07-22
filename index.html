@@ -3268,11 +3268,7 @@ The final output MUST be only the JSON code, like this example:
            }
         };
 
-       /**
-/**
- * Valida os inputs obrigatórios.
- * @returns {boolean} True se todos os obrigatórios estão preenchidos.
- */
+// ====== FUNÇÕES FINAIS (SEM DUPLICATAS) ======
 const validateInputs = () => {
   const requiredFields = [
     'videoTheme',
@@ -3294,12 +3290,42 @@ const validateInputs = () => {
   return true;
 };
 
-        /**
-         * Itera sobre todas as seções do roteiro na ordem correta,
-         * renumera globalmente todas as cenas E recalcula o timestamp
-         * com base na duração estimada pela IA para cada cena.
-         */
-        
+const updateButtonStates = () => {
+  const mapEmotionsBtn = document.getElementById('mapEmotionsBtn');
+  const generateIntroBtn = document.getElementById('generateIntroBtn');
+  const generateDevelopmentBtn = document.getElementById('generateDevelopmentBtn');
+  const climaxBtn = document.getElementById('climaxBtn');
+  const generateConclusionAndCtaBtn = document.getElementById('generateConclusionAndCtaBtn');
+
+  // Verifica se o esboço estratégico foi criado
+  const hasOutline = !!window.strategicOutline;
+
+  // Habilita/desabilita o botão "Mapear Emoções"
+  if (mapEmotionsBtn) {
+    mapEmotionsBtn.disabled = !hasOutline;
+  }
+
+  // Habilita/desabilita os botões de geração de seções
+  [generateIntroBtn, generateDevelopmentBtn, climaxBtn, generateConclusionAndCtaBtn].forEach(btn => {
+    if (btn) btn.disabled = !hasOutline;
+  });
+
+  // Verifica se todas as seções principais foram geradas
+  const allMainScriptGenerated = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection']
+    .every(id => {
+      const section = document.getElementById(id);
+      return section && section.querySelector('.generated-content-wrapper')?.textContent.trim() !== '';
+    });
+
+  // Habilita/desabilita botões que dependem do roteiro completo
+  const generateDescriptionBtn = document.getElementById('generateDescriptionBtn');
+  const generateTitlesAndThumbnailsBtn = document.getElementById('generateTitlesAndThumbnailsBtn');
+  const generateSoundtrackBtn = document.getElementById('generateSoundtrackBtn');
+
+  if (generateDescriptionBtn) generateDescriptionBtn.disabled = !allMainScriptGenerated;
+  if (generateTitlesAndThumbnailsBtn) generateTitlesAndThumbnailsBtn.disabled = !allMainScriptGenerated;
+  if (generateSoundtrackBtn) generateSoundtrackBtn.disabled = !allMainScriptGenerated;
+};
     
         /**
          * Escapa um objeto JSON para ser usado com segurança dentro de um atributo onclick.
@@ -4382,45 +4408,7 @@ Responda APENAS com o JSON válido.`;
   }
 };
 
-/**
- * Atualiza o estado de habilitação/desabilitação dos botões com base no estado do roteiro.
- */
-const updateButtonStates = () => {
-  const mapEmotionsBtn = document.getElementById('mapEmotionsBtn');
-  const generateIntroBtn = document.getElementById('generateIntroBtn');
-  const generateDevelopmentBtn = document.getElementById('generateDevelopmentBtn');
-  const climaxBtn = document.getElementById('climaxBtn');
-  const generateConclusionAndCtaBtn = document.getElementById('generateConclusionAndCtaBtn');
 
-  // Verifica se o esboço estratégico foi criado
-  const hasOutline = !!window.strategicOutline;
-
-  // Habilita/desabilita o botão "Mapear Emoções"
-  if (mapEmotionsBtn) {
-    mapEmotionsBtn.disabled = !hasOutline;
-  }
-
-  // Habilita/desabilita os botões de geração de seções
-  [generateIntroBtn, generateDevelopmentBtn, climaxBtn, generateConclusionAndCtaBtn].forEach(btn => {
-    if (btn) btn.disabled = !hasOutline;
-  });
-
-  // Verifica se todas as seções principais foram geradas
-  const allMainScriptGenerated = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection']
-    .every(id => {
-      const section = document.getElementById(id);
-      return section && section.querySelector('.generated-content-wrapper')?.textContent.trim() !== '';
-    });
-
-  // Habilita/desabilita botões que dependem do roteiro completo
-  const generateDescriptionBtn = document.getElementById('generateDescriptionBtn');
-  const generateTitlesAndThumbnailsBtn = document.getElementById('generateTitlesAndThumbnailsBtn');
-  const generateSoundtrackBtn = document.getElementById('generateSoundtrackBtn');
-
-  if (generateDescriptionBtn) generateDescriptionBtn.disabled = !allMainScriptGenerated;
-  if (generateTitlesAndThumbnailsBtn) generateTitlesAndThumbnailsBtn.disabled = !allMainScriptGenerated;
-  if (generateSoundtrackBtn) generateSoundtrackBtn.disabled = !allMainScriptGenerated;
-};
         /**
          * Realiza o download do roteiro como PDF.
          */
