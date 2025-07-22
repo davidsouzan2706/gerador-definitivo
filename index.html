@@ -3583,12 +3583,12 @@ The final output MUST be only the JSON code, like this example:
 
     
 /**
- * SUGERIR PERFORMANCE NARRATIVA (VERSÃO CORRIGIDA E ROBUSTA)
+ * SUGERIR PERFORMANCE NARRATIVA (VERSÃO CORRIGIDA E COMPATÍVEL)
  * Analisa cada parágrafo da seção e sugere tom, ritmo e ênfase para narração.
  * @param {string} sectionId - Ex: 'intro', 'development', 'climax', 'conclusion'
  */
 window.suggestPerformance = async (sectionId) => {
-  const sectionElement = document.getElementById(`${sectionId}Section`);
+  const sectionElement = document.getElementById(sectionId); // Usa apenas sectionId
   const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
   const outputContainer = sectionElement?.querySelector('.section-performance-output');
 
