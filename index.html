@@ -3270,8 +3270,8 @@ The final output MUST be only the JSON code, like this example:
 
        /**
 /**
- * Valida os inputs essenciais antes de gerar conteúdo.
- * @returns {boolean} True se os inputs são válidos, caso contrário, false.
+ * Valida os inputs obrigatórios.
+ * @returns {boolean} True se todos os obrigatórios estão preenchidos.
  */
 const validateInputs = () => {
   const requiredFields = [
@@ -5215,6 +5215,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- 6. EVENTO DE SCROLL PARA BARRA FLUTUANTE ----
     window.addEventListener('scroll', window.handleFloatingActionBar);
+});
+
+// Adiciona listeners para disparar validação ao digitar
+['videoTheme', 'videoDescription', 'targetAudience', 'videoObjective', 'videoDuration', 'narrativeStructure'].forEach(id => {
+  const element = document.getElementById(id);
+  if (element) {
+    element.addEventListener('input', validateInputs);
+    element.addEventListener('change', validateInputs);
+  }
 });
 
 </script>
