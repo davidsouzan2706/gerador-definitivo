@@ -1,14 +1,10 @@
-// Arquivo: netlify/functions/groq.js - VERSÃO 6.0: ROUND-ROBIN INTELIGENTE
+// Arquivo: netlify/functions/groq.js - VERSÃO 7.0: SELEÇÃO RANDÔMICA E STATELESS
 
 const Groq = require('groq-sdk');
 
-// Variável para guardar o último índice usado.
-// Ela será resetada a cada "cold start" da função, mas o cache da Netlify nos ajudará.
-let lastUsedIndex = -1;
-
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method NotAllowed' };
+    return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
   if (!process.env.GROQ_API_KEYS) {
@@ -28,26 +24,16 @@ exports.handler = async (event) => {
   }
   
   // ==========================================================
-  // LÓGICA DE SELEÇÃO INTELIGENTE (ROUND-ROBIN)
+  // LÓGICA DE SELEÇÃO INTELIGENTE (RANDÔMICA E STATELESS)
   // ==========================================================
-  // 1. Lê o último índice do "cache" da Netlify ou usa o valor da memória.
-  // A Netlify pode manter a função "aquecida", então a variável `lastUsedIndex` pode persistir.
-  let currentIndex = parseInt(process.env.LAST_GROQ_KEY_INDEX, 10) || lastUsedIndex;
-
-  // 2. Calcula o próximo índice na fila.
-  // O operador '%' (módulo) garante que o índice volte a 0 quando chegar ao fim da lista.
-  const nextIndex = (currentIndex + 1) % apiKeys.length;
+  // 1. Gera um índice aleatório que vai de 0 até (número de chaves - 1).
+  const randomIndex = Math.floor(Math.random() * apiKeys.length);
   
-  // 3. Pega a chave da vez.
-  const groqApiKey = apiKeys[nextIndex];
-  
-  // 4. "Lembra" o índice que acabamos de usar para a próxima execução.
-  // Atualiza a variável em memória E a variável de ambiente do processo.
-  lastUsedIndex = nextIndex;
-  process.env.LAST_GROQ_KEY_INDEX = nextIndex.toString();
+  // 2. Pega a chave aleatória da vez.
+  const groqApiKey = apiKeys[randomIndex];
   // ==========================================================
   
-  console.log(`Usando a chave de índice: ${nextIndex}`); // Adiciona um log para podermos ver qual chave está sendo usada.
+  console.log(`Usando a chave de índice randômico: ${randomIndex}`);
   
   const groq = new Groq({ apiKey: groqApiKey });
   
@@ -71,7 +57,7 @@ exports.handler = async (event) => {
     };
 
   } catch (error) {
-    console.error(`Erro com a chave de índice ${nextIndex}:`, error.message);
+    console.error(`Erro com a chave de índice ${randomIndex}:`, error.message);
     return {
       statusCode: 500,
       body: JSON.stringify({ error: { message: error.message } }),
