@@ -3274,29 +3274,30 @@ The final output MUST be only the JSON code, like this example:
            }
         };
 
-        /**
-         * Valida os inputs essenciais antes de gerar conteúdo.
-         * @returns {boolean} True se os inputs são válidos, caso contrário, false.
-         */
-        const validateInputs = () => {
-            if (!elements.channelName.value.trim()) {
-                window.showToast("Por favor, insira o nome do canal.");
-                return false;
-            }
-            if (!elements.videoTheme.value.trim()) {
-                window.showToast("Por favor, insira o tema do vídeo.");
-                return false;
-            }
-            if (!elements.videoDescription.value.trim()) {
-                window.showToast("Por favor, insira a descrição do vídeo (para inspiração).");
-                return false;
-            }
-            if (!elements.videoDuration.value || elements.videoDuration.value === "") {
-                window.showToast("Por favor, selecione a Duração Desejada do vídeo.");
-                return false;
-            }
-            return true;
-        };
+       /**
+ * Valida os inputs essenciais antes de gerar conteúdo.
+ * @returns {boolean} True se os inputs são válidos, caso contrário, false.
+ */
+const validateInputs = () => {
+  const requiredFields = [
+    'videoTheme',
+    'videoDescription',
+    'targetAudience',
+    'videoObjective',
+    'videoDuration',
+    'narrativeStructure'
+  ];
+
+  for (const fieldId of requiredFields) {
+    const element = document.getElementById(fieldId);
+    const value = element?.value.trim();
+    if (!value) {
+      window.showToast(`⚠️ Preencha o campo: ${fieldId}`);
+      return false;
+    }
+  }
+  return true;
+};
 
         /**
          * Itera sobre todas as seções do roteiro na ordem correta,
