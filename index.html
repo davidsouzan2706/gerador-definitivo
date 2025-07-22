@@ -2237,7 +2237,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             **REGRAS CRÍTICAS:** Responda APENAS com o texto final para ser falado. Sem metadados, sem labels (como "Conclusão:", "CTA:"), apenas o texto.`;
 
             try {
-                let result = await callGroqAPI(prompt, 800);
+                let result = await callGroqAPI(prompt, maxTokens);
                 result = removeMetaComments(result.trim());
 
                 const paragraphs = result.split('\n').filter(p => p.trim() !== '');
@@ -2725,14 +2725,22 @@ const invalidateAndClearPrompts = (sectionElement) => {
          * @returns {string} O texto sem os comentários meta.
          */
         const removeMetaComments = (text) => {
-            if (!text) return text;
-            // Padrão para remover "Here is/are..." ou "Sure, here is..." etc.
-            const introPattern = /^(Sure, |Of course, )?(here is|here's|here are|below is|certainly, here is) .*?:\s*\n?/im;
-            let cleanedText = text.replace(introPattern, '');
-            
-            // Remove linhas que começam com "Description:" ou "Hashtags:" se a IA as adicionar
-            cleanedText = cleanedText.replace(/^(Description:|Hashtags:)\s*\n?/gim, '');
-
+            if (!text) return "";
+            const patternsToRemove = [
+                /^(aqui está|aqui vai|claro, aqui está|certo, aqui está|eis o|sure, here is|here's|here are|below is|certainly, here is) .*?:\s*\n?/im,
+                /^introdução:\s*\n?/im,
+                /^desenvolvimento:\s*\n?/im,
+                /^clímax:\s*\n?/im,
+                /^conclusão:\s*\n?/im,
+                /^\*\*roteiro anotado:\*\*\s*\n?/im
+            ];
+            let cleanedText = text;
+            patternsToRemove.forEach(pattern => {
+                cleanedText = cleanedText.replace(pattern, '');
+            });
+            if (cleanedText.startsWith('"') && cleanedText.endsWith('"')) {
+                cleanedText = cleanedText.substring(1, cleanedText.length - 1);
+            }
             return cleanedText.trim();
         };
 
