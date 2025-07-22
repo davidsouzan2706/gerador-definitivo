@@ -3555,8 +3555,8 @@ The final output MUST be only the JSON code, like this example:
 
     
         /**
-         * Gera anotações de performance, guiando o usuário se o Mapa Emocional estiver faltando.
-         * (VERSÃO FINAL DE USABILIDADE)
+         * Gera anotações de performance, lendo os parágrafos diretamente dos elementos DIV.
+         * (VERSÃO ARQUITETURAL FINAL - CONSISTENTE)
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
@@ -3568,43 +3568,38 @@ The final output MUST be only the JSON code, like this example:
                 return;
             }
 
-            // ==========================================================
-            // >>>>> AQUI ESTÁ A NOVA LÓGICA INTELIGENTE <<<<<
-            // ==========================================================
             if (!window.emotionalMap || window.emotionalMap.length === 0) {
                 window.showToast("O roteiro mudou! Por favor, gere o Mapa Emocional novamente.");
-                
                 const mapButton = document.getElementById('mapEmotionsBtn');
                 if (mapButton) {
-                    // Rola a tela até o botão
                     mapButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    
-                    // Adiciona um "flash" visual para chamar a atenção
                     mapButton.style.transition = 'all 0.2s';
                     mapButton.style.boxShadow = '0 0 0 3px var(--primary-color)';
-                    setTimeout(() => { mapButton.style.boxShadow = ''; }, 2000); // Remove o flash após 2 segundos
+                    setTimeout(() => { mapButton.style.boxShadow = ''; }, 2000);
                 }
-                
-                // Limpa a área de output para não deixar a mensagem de erro antiga
                 outputContainer.innerHTML = ''; 
-                return; // Para a execução
+                return;
             }
-            // ==========================================================
 
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
-            // O resto da sua função continua exatamente igual, pois a lógica dela já era robusta.
-            const originalTextContent = contentWrapper.textContent.trim().replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim();
-            const originalParagraphs = contentWrapper.textContent.trim().split('\n\n').filter(p => p.trim() !== '');
-            const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
-            const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
-            const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-            
             try {
+                // ==========================================================
+                // >>>>> AQUI ESTÁ A CORREÇÃO ARQUITETURAL <<<<<
+                // ==========================================================
+                // Lemos os parágrafos diretamente dos elementos DIV, assim como na outra função.
+                const originalParagraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
+                const originalParagraphs = originalParagraphElements.map(p => p.textContent);
+                const originalTextContent = originalParagraphs.join('\n\n'); // Recriamos o texto completo para a auditoria final
+                // ==========================================================
+
+                if (window.emotionalMap.length < originalParagraphs.length) {
+                     throw new Error("O Mapa Emocional está desatualizado. Por favor, gere-o novamente.");
+                }
+
                 let promptContext = '';
                 originalParagraphs.forEach((p, index) => {
-                    const mapIndex = baseIndex + index;
-                    const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
+                    const emotionalContext = window.emotionalMap[index] || { emotion: 'Neutro', pace: 'Normal' };
                     promptContext += `Parágrafo ${index} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
                 });
 
@@ -3618,24 +3613,25 @@ The final output MUST be only the JSON code, like this example:
                 ${promptContext}
                 Responda apenas com o array JSON.`;
 
-                const rawResult = await callGroqAPI(prompt, 2000);
+                const rawResult = await callGroqAPI(prompt, 4000); // Aumentamos os tokens para garantir a resposta completa
                 const annotations = cleanGeneratedText(rawResult, true);
 
                 if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) {
                     throw new Error("A IA não retornou o número correto de anotações.");
                 }
-
-                // O resto da lógica de montagem do texto anotado continua aqui...
+                
                 let annotatedParagraphs = [];
                 originalParagraphs.forEach((p, index) => {
                     const annotationData = annotations[index];
                     let annotatedParagraph = p;
 
-                    if (annotationData && annotationData.emphasis_words && annotationData.emphasis_words.length > 0) {
+                    if (annotationData && annotationData.emphasis_words && Array.isArray(annotationData.emphasis_words)) {
                         annotationData.emphasis_words.forEach(word => {
-                            const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                            const wordRegex = new RegExp(`\\b(${escapedWord})\\b`, 'gi'); // 'gi' para case-insensitive
-                            annotatedParagraph = annotatedParagraph.replace(wordRegex, `[ênfase em '$&']`);
+                            if (typeof word === 'string') {
+                                const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                                const wordRegex = new RegExp(`\\b(${escapedWord})\\b`, 'gi');
+                                annotatedParagraph = annotatedParagraph.replace(wordRegex, (match) => `[ênfase em '${match}']`);
+                            }
                         });
                     }
                     
