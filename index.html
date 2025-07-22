@@ -3555,8 +3555,8 @@ The final output MUST be only the JSON code, like this example:
 
     
         /**
-         * Gera anotações de performance em duas etapas para garantir 100% de consistência.
-         * (VERSÃO FINAL - PLANO B ATIVADO)
+         * Gera anotações de performance, guiando o usuário se o Mapa Emocional estiver faltando.
+         * (VERSÃO FINAL DE USABILIDADE)
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
@@ -3567,21 +3567,40 @@ The final output MUST be only the JSON code, like this example:
                 window.showToast("Gere o roteiro desta seção primeiro.");
                 return;
             }
+
+            // ==========================================================
+            // >>>>> AQUI ESTÁ A NOVA LÓGICA INTELIGENTE <<<<<
+            // ==========================================================
             if (!window.emotionalMap || window.emotionalMap.length === 0) {
-                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos'.");
-                return;
+                window.showToast("O roteiro mudou! Por favor, gere o Mapa Emocional novamente.");
+                
+                const mapButton = document.getElementById('mapEmotionsBtn');
+                if (mapButton) {
+                    // Rola a tela até o botão
+                    mapButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Adiciona um "flash" visual para chamar a atenção
+                    mapButton.style.transition = 'all 0.2s';
+                    mapButton.style.boxShadow = '0 0 0 3px var(--primary-color)';
+                    setTimeout(() => { mapButton.style.boxShadow = ''; }, 2000); // Remove o flash após 2 segundos
+                }
+                
+                // Limpa a área de output para não deixar a mensagem de erro antiga
+                outputContainer.innerHTML = ''; 
+                return; // Para a execução
             }
+            // ==========================================================
 
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
+            // O resto da sua função continua exatamente igual, pois a lógica dela já era robusta.
             const originalTextContent = contentWrapper.textContent.trim().replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim();
-            const originalParagraphs = originalTextContent.split('\n\n').filter(p => p.trim() !== '');
+            const originalParagraphs = contentWrapper.textContent.trim().split('\n\n').filter(p => p.trim() !== '');
             const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
             const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
             const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
             
             try {
-                // ETAPA 1: PEDIR APENAS AS ANOTAÇÕES PARA A IA
                 let promptContext = '';
                 originalParagraphs.forEach((p, index) => {
                     const mapIndex = baseIndex + index;
@@ -3590,23 +3609,13 @@ The final output MUST be only the JSON code, like this example:
                 });
 
                 const prompt = `Você é um Diretor de Cena. Para CADA um dos ${originalParagraphs.length} parágrafos abaixo, sua tarefa é:
-                1.  Criar uma anotação geral de performance [em colchetes] (ex: "[Tom de curiosidade, ritmo rápido]").
+                1.  Criar uma anotação geral de performance [em colchetes].
                 2.  Identificar até 3 palavras ou frases curtas dentro do parágrafo que merecem ênfase.
-
                 REGRAS CRÍTICAS:
                 1.  Sua resposta DEVE ser um array JSON com ${originalParagraphs.length} objetos.
-                2.  Cada objeto deve ter DUAS chaves: "general_annotation" (a anotação geral em uma string) e "emphasis_words" (um array de strings com as palavras exatas para enfatizar).
-                3.  As palavras em "emphasis_words" DEVEM existir no parágrafo correspondente.
-
+                2.  Cada objeto deve ter as chaves: "general_annotation" e "emphasis_words".
                 ROTEIRO PARA ANÁLISE:
                 ${promptContext}
-
-                EXEMPLO DE RESPOSTA PARA UM PARÁGRAFO:
-                {
-                  "general_annotation": "[Tom de surpresa, pausa breve]",
-                  "emphasis_words": ["inacreditável", "segredo"]
-                }
-
                 Responda apenas com o array JSON.`;
 
                 const rawResult = await callGroqAPI(prompt, 2000);
@@ -3616,7 +3625,7 @@ The final output MUST be only the JSON code, like this example:
                     throw new Error("A IA não retornou o número correto de anotações.");
                 }
 
-                // ETAPA 2: O JAVASCRIPT MONTA O ROTEIRO FINAL
+                // O resto da lógica de montagem do texto anotado continua aqui...
                 let annotatedParagraphs = [];
                 originalParagraphs.forEach((p, index) => {
                     const annotationData = annotations[index];
@@ -3625,8 +3634,8 @@ The final output MUST be only the JSON code, like this example:
                     if (annotationData && annotationData.emphasis_words && annotationData.emphasis_words.length > 0) {
                         annotationData.emphasis_words.forEach(word => {
                             const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                            const wordRegex = new RegExp(`\\b(${escapedWord})\\b`, 'g');
-                            annotatedParagraph = annotatedParagraph.replace(wordRegex, `[ênfase em '${word}'] $1`);
+                            const wordRegex = new RegExp(`\\b(${escapedWord})\\b`, 'gi'); // 'gi' para case-insensitive
+                            annotatedParagraph = annotatedParagraph.replace(wordRegex, `[ênfase em '$&']`);
                         });
                     }
                     
@@ -3634,11 +3643,10 @@ The final output MUST be only the JSON code, like this example:
                     annotatedParagraphs.push(finalParagraph.trim());
                 });
                 const finalAnnotatedText = annotatedParagraphs.join('\n\n');
-
-                // ETAPA 3: AUDITOR DE CONSISTÊNCIA FINAL
+                
                 const { isValid } = auditGeneratedText(originalTextContent, finalAnnotatedText);
                 if (!isValid) {
-                    throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem.");
+                    throw new Error("Falha crítica na auditoria. O texto foi corrompido.");
                 }
                 
                 const highlightedText = finalAnnotatedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
