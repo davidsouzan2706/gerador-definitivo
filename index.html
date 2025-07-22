@@ -3565,9 +3565,8 @@ The final output MUST be only the JSON code, like this example:
 
     
 /**
- * SUGERIR PERFORMANCE NARRATIVA (VERSÃO CORRIGIDA E ROBUSTA)
- * Analisa cada parágrafo da seção e sugere tom, ritmo e ênfase para narração.
- * @param {string} sectionId - Ex: 'intro', 'development', 'climax', 'conclusion'
+ * SUGERIR PERFORMANCE NARRATIVA (VERSÃO CORRIGIDA E FUNCIONAL)
+ * Aplica sugestões de tom, emoção e ritmo em cada parágrafo
  */
 window.suggestPerformance = async (sectionId) => {
   const sectionElement = document.getElementById(sectionId);
@@ -3580,24 +3579,22 @@ window.suggestPerformance = async (sectionId) => {
   }
 
   try {
-    // Limpa o container e mostra loading
+    // Limpa e mostra loading
     outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
 
     if (!contentWrapper || contentWrapper.children.length === 0) {
       throw new Error("Nenhum parágrafo gerado para analisar.");
     }
 
-    // Garante IDs únicos em todos os parágrafos
+    // Garante IDs únicos
     const paragraphsWithIds = Array.from(contentWrapper.children).map((p, index) => {
       if (!p.id) p.id = `${sectionId}-p-${Date.now()}-${index}`;
       return { id: p.id, text: p.textContent.trim() };
     });
 
-    // Monta o prompt para a IA
+    // Prompt para IA
     const prompt = `Você é um Especialista em Performance Narrativa para YouTube.
-Analise os parágrafos abaixo e retorne um array JSON com sugestões detalhadas para cada um.
-
-Para cada parágrafo, inclua:
+Analise os parágrafos abaixo e retorne um array JSON com:
 - "paragraphId": string (o ID exato)
 - "performanceSuggestion": string em português (ex: "Fale com tensão crescente")
 - "emotion": string (emoção dominante)
@@ -3605,10 +3602,10 @@ Para cada parágrafo, inclua:
 
 **REGRAS ESTRITAS**:
 - Responda APENAS com um array JSON válido.
-- Todas as sugestões devem estar em português do Brasil.
-- Não inclua explicações, introduções ou texto fora do JSON.
+- Todas as sugestões em português do Brasil.
+- Nada além do JSON.
 
-Dados dos parágrafos:
+Dados:
 ${JSON.stringify(paragraphsWithIds, null, 2)}
 `;
 
@@ -3617,27 +3614,12 @@ ${JSON.stringify(paragraphsWithIds, null, 2)}
     const suggestions = JSON.parse(cleanedResult);
 
     if (!Array.isArray(suggestions)) {
-      throw new Error("A IA não retornou um array válido de sugestões.");
+      throw new Error("A IA retornou um formato inválido.");
     }
 
-    // Filtra apenas sugestões com ID que exista no DOM
-    const validSuggestions = suggestions.filter(item =>
-      item &&
-      typeof item === 'object' &&
-      typeof item.paragraphId === 'string' &&
-      typeof item.performanceSuggestion === 'string' &&
-      typeof item.emotion === 'string' &&
-      typeof item.pace === 'string' &&
-      document.getElementById(item.paragraphId)
-    );
-
-    if (validSuggestions.length === 0) {
-      throw new Error("Nenhuma sugestão válida foi gerada pela IA.");
-    }
-
-    // Aplica as sugestões como tooltips interativos
-    validSuggestions.forEach(suggestion => {
-      const p = document.getElementById(suggestion.paragraphId);
+    // Aplica tooltips
+    suggestions.forEach(item => {
+      const p = document.getElementById(item.paragraphId);
       if (!p) return;
 
       p.style.position = 'relative';
@@ -3652,9 +3634,7 @@ ${JSON.stringify(paragraphsWithIds, null, 2)}
       tooltip.style.opacity = '0';
       tooltip.style.pointerEvents = 'none';
       tooltip.style.transition = 'opacity 0.3s';
-      tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-      tooltip.style.fontWeight = '500';
-      tooltip.textContent = `🎯 ${suggestion.performanceSuggestion} | Emoção: ${suggestion.emotion} | Ritmo: ${suggestion.pace}`;
+      tooltip.textContent = `🎯 ${item.performanceSuggestion} | Emoção: ${item.emotion} | Ritmo: ${item.pace}`;
 
       p.appendChild(tooltip);
 
@@ -3664,16 +3644,16 @@ ${JSON.stringify(paragraphsWithIds, null, 2)}
 
     outputContainer.innerHTML = `
       <p class="text-green-600 dark:text-green-400 text-sm mt-2">
-        ✅ ${validSuggestions.length} sugestão(ões) de performance aplicada(s) com sucesso.
+        ✅ Sugestões de performance aplicadas!
       </p>
     `;
 
   } catch (error) {
-    console.error('Erro ao sugerir performance:', error);
+    console.error('Erro em suggestPerformance:', error);
     outputContainer.innerHTML = `
-      <p class="text-red-500 text-sm mt-2">Falha: ${error.message}</p>
+      <p class="text-red-500 text-sm mt-2">❌ ${error.message}</p>
       <button 
-        id="retryButton-${sectionId}" // Adiciona um ID único com base no sectionId
+        id="retryButton-${sectionId}" 
         onclick="window.suggestPerformance('${sectionId}')"
         class="btn btn-small btn-secondary mt-2 flex items-center gap-1">
         🔄 Tentar Novamente
@@ -3684,36 +3664,6 @@ ${JSON.stringify(paragraphsWithIds, null, 2)}
   }
 };
 
-
-/**
- * Função auxiliar: Limpa e parseia a resposta da IA
- * @param {string} text - Texto bruto retornado pela IA
- * @param {boolean} parseJson - Se deve tentar fazer JSON.parse
- * @returns {any} Objeto ou array parseado, ou o texto limpo
- */
-window.suggestPerformance = async (sectionId) => {
-  const sectionElement = document.getElementById(sectionId);
-  const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-  const outputContainer = sectionElement?.querySelector('.section-performance-output');
-
-  if (!outputContainer) {
-    window.showToast("Erro: container de performance não encontrado.");
-    return;
-  }
-
-  try {
-    // Limpa o container e mostra loading
-    outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-
-    if (!contentWrapper || contentWrapper.children.length === 0) {
-      throw new Error("Nenhum parágrafo gerado para analisar.");
-    }
-
-    // Garante IDs únicos em todos os parágrafos
-    const paragraphsWithIds = Array.from(contentWrapper.children).map((p, index) => {
-      if (!p.id) p.id = `${sectionId}-p-${Date.now()}-${index}`;
-      return { id: p.id, text: p.textContent.trim() };
-    });
 
     // Monta o prompt para a IA
     const prompt = `Você é um Especialista em Performance Narrativa para YouTube.
