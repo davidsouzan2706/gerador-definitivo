@@ -2775,14 +2775,13 @@ const invalidateAndClearPrompts = (sectionElement) => {
         };
     
         /**
-         * Limpa o texto gerado pela IA, tentando corrigir erros comuns de JSON.
-         * (VERSÃO "À PROVA DE BALAS" COM PLANO B)
+         * Limpa o texto gerado pela IA, corrigindo erros comuns e artefatos específicos.
+         * (VERSÃO FINAL COM LIMPEZA DE ARTEFATOS)
          */
         const cleanGeneratedText = (text, expectJson = false) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
-            // 1. Tenta encontrar o início e o fim do JSON ([...], ou {...})
             let jsonString = text;
             const firstBracket = text.indexOf('[');
             const lastBracket = text.lastIndexOf(']');
@@ -2795,29 +2794,27 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 jsonString = text.substring(firstBrace, lastBrace + 1);
             }
 
-            // 2. Remove "lixo" comum, como markdown e texto introdutório.
+            // Remove "lixo" comum
             jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
+            
+            // ==========================================================
+            // >>>>> AQUI ESTÁ A NOVA LINHA DE LIMPEZA <<<<<
+            // Remove o artefato específico que a IA está gerando.
+            // ==========================================================
+            jsonString = jsonString.replace(/\.scalablytyped\s*/g, '');
 
-            // 3. Tenta fazer o parse (PLANO A)
+            // Tenta fazer o parse (PLANO A)
             try {
-                // Remove vírgulas extras no final de arrays e objetos (ex: [1, 2,])
                 jsonString = jsonString.replace(/,\s*([}\]])/g, "$1");
                 return JSON.parse(jsonString);
             } catch (e) {
                 // PLANO A FALHOU. INICIANDO PLANO B.
                 console.warn("Primeira tentativa de parse falhou. Tentando plano B: encapsular em colchetes.");
                 try {
-                    // Repara a string, assumindo que é uma lista de objetos sem os colchetes.
                     const repairedJsonString = `[${jsonString}]`;
-                    
-                    // Remove vírgulas que possam ter ficado sobrando no final antes do novo colchete.
                     const finalRepairedString = repairedJsonString.replace(/,\s*\]/g, ']');
-
-                    // Tenta fazer o parse da string reparada.
                     return JSON.parse(finalRepairedString);
-
                 } catch (e2) {
-                    // Se até o PLANO B falhou, então o erro é mais sério.
                     console.error("Falha ao fazer o parse do JSON extraído, mesmo após a tentativa de correção:", e.message);
                     console.error("JSON problemático:", jsonString);
                     throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
