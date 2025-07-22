@@ -3372,7 +3372,7 @@ The final output MUST be only the JSON code, like this example:
     
         /**
          * Gera anotações de performance em duas etapas para garantir 100% de consistência do texto.
-         * (VERSÃO FINAL COM LIMPEZA PRÉVIA)
+         * (VERSÃO "ANOTADOR EM DUAS ETAPAS" COM AUDITOR - FINAL)
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
@@ -3390,9 +3390,7 @@ The final output MUST be only the JSON code, like this example:
 
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
-            // LIMPEZA PRÉVIA: Garante que estamos enviando o texto puro para a IA
-            const originalTextContent = contentWrapper.textContent.trim().replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim();
-            
+            const originalTextContent = contentWrapper.textContent.trim();
             const originalParagraphs = originalTextContent.split('\n\n').filter(p => p.trim() !== '');
             const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
             const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
@@ -3407,7 +3405,25 @@ The final output MUST be only the JSON code, like this example:
                     promptContext += `Parágrafo ${index} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
                 });
 
-                const prompt = `Você é um robô de anotação de texto... (seu prompt completo vai aqui)`; // Mantém o prompt que já aprimoramos
+                const prompt = `Você é um Diretor de Cena. Para CADA um dos ${originalParagraphs.length} parágrafos abaixo, sua tarefa é:
+                1.  Criar uma anotação geral de performance [em colchetes] (ex: "[Tom de curiosidade, ritmo rápido]").
+                2.  Identificar até 3 palavras ou frases curtas dentro do parágrafo que merecem ênfase.
+
+                REGRAS CRÍTICAS:
+                1.  Sua resposta DEVE ser um array JSON com ${originalParagraphs.length} objetos.
+                2.  Cada objeto deve ter DUAS chaves: "general_annotation" (a anotação geral em uma string) e "emphasis_words" (um array de strings com as palavras exatas para enfatizar).
+                3.  As palavras em "emphasis_words" DEVEM existir no parágrafo correspondente.
+
+                ROTEIRO PARA ANÁLISE:
+                ${promptContext}
+
+                EXEMPLO DE RESPOSTA PARA UM PARÁGRAFO:
+                {
+                  "general_annotation": "[Tom de surpresa, pausa breve]",
+                  "emphasis_words": ["inacreditável", "segredo"]
+                }
+
+                Responda apenas com o array JSON.`;
 
                 const rawResult = await callGroqAPI(prompt, 2000);
                 const annotations = cleanGeneratedText(rawResult, true);
