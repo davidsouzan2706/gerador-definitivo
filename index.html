@@ -4418,6 +4418,7 @@ const updateButtonStates = () => {
       return section && section.querySelector('.generated-content-wrapper')?.textContent.trim() !== '';
     });
 
+  // Habilita/desabilita botões que dependem do roteiro completo
   const generateDescriptionBtn = document.getElementById('generateDescriptionBtn');
   const generateTitlesAndThumbnailsBtn = document.getElementById('generateTitlesAndThumbnailsBtn');
   const generateSoundtrackBtn = document.getElementById('generateSoundtrackBtn');
@@ -4426,8 +4427,6 @@ const updateButtonStates = () => {
   if (generateTitlesAndThumbnailsBtn) generateTitlesAndThumbnailsBtn.disabled = !allMainScriptGenerated;
   if (generateSoundtrackBtn) generateSoundtrackBtn.disabled = !allMainScriptGenerated;
 };
-
-
 
         /**
          * Realiza o download do roteiro como PDF.
