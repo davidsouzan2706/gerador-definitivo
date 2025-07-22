@@ -2825,6 +2825,16 @@ const invalidateAndClearPrompts = (sectionElement) => {
             }
         };
 
+                // ==========================================================
+               // >>>>> COLE A NOVA FUNÇÃO DE DELAY EXATAMENTE AQUI <<<<<
+            // ==========================================================
+                /**
+                * Cria uma pausa (delay) no código.
+                * @param {number} ms - O tempo de pausa em milissegundos.
+                */
+                const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+
         /**
          * Remove comentários meta da IA do texto gerado.
          * @param {string} text - O texto gerado pela IA.
