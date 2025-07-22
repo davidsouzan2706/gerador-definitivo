@@ -3939,8 +3939,8 @@ window.regenerateSection = (fullSectionId) => {
 
 
          /**
-         * Gera prompts de imagem lendo os parágrafos diretamente dos elementos DIV.
-         * (VERSÃO ARQUITETURAL FINAL - CORRETA)
+         * Gera prompts de imagem de forma sequencial e com um prompt simplificado.
+         * (VERSÃO FINAL DE ENGENHARIA DE PROMPT)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
@@ -3960,23 +3960,23 @@ window.regenerateSection = (fullSectionId) => {
             promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
             try {
-                // ==========================================================
-                // >>>>> ESTA É A MUDANÇA FUNDAMENTAL <<<<<
-                // ==========================================================
-                // Em vez de 'split', pegamos os elementos DIV diretamente.
                 const paragraphElements = scriptContentElement.querySelectorAll('div[id]');
-                const baseIndex = 0; // O mapa emocional agora corresponde diretamente ao índice do loop
-
                 let allGeneratedPrompts = [];
-                for (let i = 0; i < paragraphElements.length; i++) {
-                    const paragraph = paragraphElements[i].textContent; // Lemos o texto de cada DIV
-                    const mapIndex = baseIndex + i;
-                    const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
 
+                for (const [index, pElement] of paragraphElements.entries()) {
+                    const paragraph = pElement.textContent;
+                    const emotionalContext = window.emotionalMap[index] || { emotion: 'Neutro', pace: 'Normal' };
+
+                    // ==========================================================
+                    // >>>>> AQUI ESTÁ A MUDANÇA FINAL NO PROMPT <<<<<
+                    // ==========================================================
+                    // Removemos o campo problemático do pedido.
                     const singlePrompt = `Você é um Diretor de Fotografia. Analise o PARÁGRAFO e o CONTEXTO EMOCIONAL abaixo.
-                    REGRAS: Sua resposta DEVE ser um ÚNICO objeto JSON. O objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration".
+                    REGRAS: Sua resposta DEVE ser um ÚNICO objeto JSON. O objeto deve ter APENAS as chaves "scriptPhrase" e "imageDescription".
+                    
                     PARÁGRAFO PARA ANALISAR: "${paragraph}"
                     CONTEXTO (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})
+                    
                     Gere o objeto JSON para o parágrafo acima.`;
                     
                     const rawResult = await callGroqAPI(singlePrompt, 500);
@@ -3986,11 +3986,11 @@ window.regenerateSection = (fullSectionId) => {
                         allGeneratedPrompts.push(promptObject);
                     }
                     
-                    await delay(250); 
+                    await delay(250);
                 }
-                // ==========================================================
-
+                
                 if (!validatePromptsArray(allGeneratedPrompts)) {
+                    // Nossa função de validação precisa ser ajustada também
                     throw new Error("A IA retornou prompts em formato inválido.");
                 }
                 
