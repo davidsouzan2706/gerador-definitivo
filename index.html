@@ -2175,51 +2175,56 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 
 
      /**
-         * Analisa o roteiro completo para criar um "mapa emocional" para guiar a produção.
+         * Analisa o roteiro completo lendo os DIVs para criar um "mapa emocional".
+         * (VERSÃO ARQUITETURAL FINAL - CORRETA)
          */
         const mapEmotionsAndPacing = async () => {
-            const fullTranscript = getTranscriptOnly();
-            if (!fullTranscript) {
-                showToast("Gere o roteiro completo primeiro para criar o mapa emocional.");
-                return;
-            }
-
             const button = document.getElementById('mapEmotionsBtn');
             const outputContainer = document.getElementById('emotionalMapContent');
             
-            showLoading(button);
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-
-            const paragraphs = fullTranscript.split('\n\n').filter(p => p.trim() !== '');
-
-            const prompt = `Você é um Diretor de Cena. Sua tarefa é analisar um roteiro e criar um "beat sheet" emocional. Para cada parágrafo, defina a 'emoção' chave e o 'ritmo' da narração.
-            
-            **REGRAS CRÍTICAS:**
-            1.  Sua resposta DEVE ser um array JSON.
-            2.  O array deve ter um objeto para CADA um dos ${paragraphs.length} parágrafos do roteiro.
-            3.  Cada objeto deve ter TRÊS chaves: "paragraph_index" (o número do índice, começando em 0), "emotion" (string, ex: "Curiosidade Intensa", "Empatia Profunda"), e "pace" (string, ex: "Rápido e Incisivo", "Lento e Reflexivo").
-
-            **ROTEIRO PARA ANALISAR (PARÁGRAFO POR PARÁGRAFO):**
-            ${paragraphs.map((p, index) => `PARAGRAFO ${index}: "${p}"`).join('\n\n')}
-
-            Responda apenas com o array JSON, garantindo um objeto para cada parágrafo de 0 a ${paragraphs.length - 1}.`;
+            showLoading(button);
 
             try {
-                const rawResult = await callGroqAPI(prompt, 3000);
+                // ==========================================================
+                // >>>>> AQUI ESTÁ A CORREÇÃO FUNDAMENTAL <<<<<
+                // ==========================================================
+                // Em vez de 'getTranscriptOnly' e 'split', lemos os parágrafos de todos os DIVs do roteiro.
+                const allParagraphElements = document.querySelectorAll('#scriptSectionsContainer .generated-content-wrapper div[id]');
+                const paragraphs = Array.from(allParagraphElements).map(p => p.textContent);
+
+                if (paragraphs.length === 0) {
+                    throw new Error("Gere o roteiro completo primeiro para criar o mapa emocional.");
+                }
+                // ==========================================================
+                
+                const prompt = `Você é um Diretor de Cena. Sua tarefa é analisar um roteiro e criar um "beat sheet" emocional. Para cada parágrafo, defina a 'emoção' chave e o 'ritmo' da narração.
+                
+                **REGRAS CRÍTICAS:**
+                1.  Sua resposta DEVE ser um array JSON.
+                2.  O array deve ter um objeto para CADA um dos ${paragraphs.length} parágrafos do roteiro.
+                3.  Cada objeto deve ter TRÊS chaves: "paragraph_index" (o número do índice, começando em 0), "emotion" (string), e "pace" (string).
+
+                **ROTEIRO PARA ANALISAR (PARÁGRAFO POR PARÁGRAFO):**
+                ${paragraphs.map((p, index) => `PARAGRAFO ${index}: "${p}"`).join('\n\n')}
+
+                Responda apenas com o array JSON.`;
+
+                const rawResult = await callGroqAPI(prompt, 4000);
                 const analysis = cleanGeneratedText(rawResult, true);
 
                 if (!analysis || !Array.isArray(analysis) || analysis.length !== paragraphs.length) {
                     throw new Error("A IA retornou um mapa emocional em formato inválido ou incompleto.");
                 }
 
-                // Armazena o mapa em uma variável global para que outras funções possam usá-lo
-                window.emotionalMap = analysis; // Usando window para garantir acesso global no escopo do módulo
+                window.emotionalMap = analysis;
                 
                 let mapHtml = '<div class="space-y-2">';
                 analysis.forEach(item => {
+                    const paragraphText = paragraphs[item.paragraph_index] || "Parágrafo não encontrado";
                     mapHtml += `
                         <div class="emotional-map-item">
-                            <p class="paragraph-preview">"${paragraphs[item.paragraph_index]}"</p>
+                            <p class="paragraph-preview">"${paragraphText.substring(0, 100)}..."</p>
                             <div class="analysis-tags">
                                 <span class="tag tag-emotion">${item.emotion}</span>
                                 <span class="tag tag-pace">${item.pace}</span>
@@ -2234,6 +2239,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar o mapa emocional: ${error.message}</p>`;
+                window.emotionalMap = null; // Garante que um mapa falho seja limpo
             } finally {
                 hideLoading(button);
             }
