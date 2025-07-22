@@ -299,18 +299,6 @@
             font-size: 1.25rem;
             font-weight: 700;
             color: var(--text-dark);
-
-            /* ADICIONE ESTA NOVA REGRA para o tempo estimado */
-        .header-content .text-xs {
-            font-size: 0.875rem; /* Aumenta a fonte (era text-xs) */
-            color: var(--text-light); /* Cor mais clara */
-            font-weight: 600; /* Deixa em negrito */
-        }
-        
-        /* ADICIONE ESTA NOVA REGRA para a seta */
-        .accordion-arrow {
-            color: var(--text-light); /* Garante que a seta tenha uma cor visível */
-            transition: transform 0.3s ease-in-out;
         }
         .accordion-arrow {
             transition: transform 0.3s ease-in-out;
@@ -3808,7 +3796,7 @@ window.regenerateSection = (fullSectionId) => {
                 }
 
                 // ETAPA 2: O NOSSO CÓDIGO FAZ A CURADORIA
-                const desiredSecondsPerScene = 15;
+                const desiredSecondsPerScene = 22;
                 let curatedPrompts = [];
                 let secondsAccumulator = 0;
                 let currentScenePhrase = "";
