@@ -2011,13 +2011,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             });
         };
 
-
-        ['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'].forEach(id => { // <-- ADICIONE 'mapEmotionsBtn' AQUI
-            const originalBtn = document.getElementById(id);
-            if (originalBtn) originalBtn.disabled = !allMainScriptGenerated;
-     
-         });
-            
+              
             const resetBtn = document.getElementById('resetScriptBtn');
             const floatResetBtn = document.getElementById('float_resetScriptBtn');
             if (resetBtn) resetBtn.disabled = false; 
@@ -4427,7 +4421,6 @@ const updateButtonStates = () => {
   if (generateTitlesAndThumbnailsBtn) generateTitlesAndThumbnailsBtn.disabled = !allMainScriptGenerated;
   if (generateSoundtrackBtn) generateSoundtrackBtn.disabled = !allMainScriptGenerated;
 };
-
         /**
          * Realiza o download do roteiro como PDF.
          */
