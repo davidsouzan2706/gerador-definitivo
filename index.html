@@ -3275,6 +3275,7 @@ The final output MUST be only the JSON code, like this example:
         };
 
        /**
+/**
  * Valida os inputs essenciais antes de gerar conteúdo.
  * @returns {boolean} True se os inputs são válidos, caso contrário, false.
  */
@@ -4426,28 +4427,6 @@ const updateButtonStates = () => {
   if (generateSoundtrackBtn) generateSoundtrackBtn.disabled = !allMainScriptGenerated;
 };
 
-// ======================
-// FUNÇÃO: VALIDAR INPUTS (opcional, se não existir)
-// ======================
-const validateInputs = () => {
-  const requiredFields = [
-    'videoTheme',
-    'videoDescription',
-    'targetAudience',
-    'videoObjective',
-    'videoDuration',
-    'narrativeStructure'
-  ];
-
-  for (const fieldId of requiredFields) {
-    const value = document.getElementById(fieldId)?.value.trim();
-    if (!value) {
-      window.showToast(`Preencha o campo: ${fieldId}`);
-      return false;
-    }
-  }
-  return true;
-};
 
 
         /**
