@@ -3930,7 +3930,7 @@ window.regenerateSection = (fullSectionId) => {
 
          /**
          * Gera prompts de imagem, processando o roteiro em partes para evitar erros de token.
-         * (VERSÃO FINALÍSSIMA - À PROVA DE INCONSISTÊNCIA DA IA)
+         * (VERSÃO FINAL SEM CURADORIA - CORRETA)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
@@ -3960,17 +3960,10 @@ window.regenerateSection = (fullSectionId) => {
                     const mapIndex = baseIndex + index;
                     const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
 
-                    // ==========================================================
-                    // >>>>> AQUI ESTÁ A MUDANÇA NO PROMPT <<<<<
-                    // ==========================================================
-                    // Agora pedimos apenas UM objeto, não um array. Mais simples, mais robusto.
                     const singlePrompt = `Você é um Diretor de Fotografia. Analise o PARÁGRAFO e o CONTEXTO EMOCIONAL abaixo.
-
                     REGRAS: Sua resposta DEVE ser um ÚNICO objeto JSON. O objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration".
-                    
                     PARÁGRAFO PARA ANALISAR: "${paragraph}"
                     CONTEXTO (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})
-                    
                     Gere o objeto JSON para o parágrafo acima.`;
                     
                     return callGroqAPI(singlePrompt, 500).then(rawResult => cleanGeneratedText(rawResult, true));
@@ -3978,38 +3971,19 @@ window.regenerateSection = (fullSectionId) => {
 
                 const resultsFromAllParagraphs = await Promise.all(promptPromises);
                 
-                // ==========================================================
-                // >>>>> AQUI ESTÁ A MUDANÇA NA COLETA DE DADOS <<<<<
-                // ==========================================================
-                // Como cada promessa agora retorna um objeto, não precisamos mais do .flat()
                 const allGeneratedPrompts = resultsFromAllParagraphs.filter(p => p);
 
                 if (!validatePromptsArray(allGeneratedPrompts)) {
                     throw new Error("A IA retornou prompts em formato inválido.");
                 }
 
-                // O resto da função (curadoria e renderização) permanece exatamente o mesmo.
-                const desiredSecondsPerScene = 15;
-                let curatedPrompts = [];
-                // ... (código de curadoria e renderização que já funciona) ...
-                let secondsAccumulator = 0;
-                let currentScenePhrase = "";
-
-                allGeneratedPrompts.forEach((prompt, index) => {
-                    const duration = parseInt(prompt.estimated_duration, 10) || 5;
-                    currentScenePhrase += prompt.scriptPhrase + " ";
-                    secondsAccumulator += duration;
-                    if (secondsAccumulator >= desiredSecondsPerScene || index === allGeneratedPrompts.length - 1) {
-                        let finalPrompt = { ...prompt };
-                        finalPrompt.scriptPhrase = currentScenePhrase.trim();
-                        finalPrompt.estimated_duration = secondsAccumulator;
-                        curatedPrompts.push(finalPrompt);
-                        currentScenePhrase = "";
-                        secondsAccumulator = 0;
-                    }
-                });
+                // ==========================================================
+                // >>>>> LÓGICA DE CURADORIA REMOVIDA DAQUI <<<<<
+                // A variável 'allGeneratedPrompts' já é a nossa lista final.
+                // ==========================================================
                 
-                allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
+                // Agora usamos 'allGeneratedPrompts' diretamente.
+                allImagePrompts[sectionElementId] = allGeneratedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
                 promptPaginationState[sectionElementId] = 0;
                 
                 promptContainer.innerHTML = `
