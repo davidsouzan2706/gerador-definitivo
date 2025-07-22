@@ -3584,98 +3584,76 @@ The final output MUST be only the JSON code, like this example:
 
     
         /**
- /**
- * SUGERIR PERFORMANCE NARRATIVA (VERSÃO CORRIGIDA, ROBUSTA E COMPATÍVEL)
- * Analisa cada parágrafo da seção e sugere tom, ritmo, ênfase e emoção para narração.
- * @param {string} sectionId - Ex: 'intro', 'development', 'climax', 'conclusion'
+/**
+ * SUGERIR PERFORMANCE NARRATIVA (VERSÃO CORRIGIDA E ROBUSTA)
+ * Aplica sugestões de tom, emoção e ritmo em cada parágrafo
  */
 window.suggestPerformance = async (sectionId) => {
-  const outputContainer = document.querySelector(`#${sectionId}Section .section-performance-output`);
+  const sectionElement = document.getElementById(`${sectionId}Section`);
+  const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+  const outputContainer = sectionElement?.querySelector('.section-performance-output');
+
   if (!outputContainer) {
-    console.warn(`Container de performance não encontrado para ${sectionId}`);
+    window.showToast("Erro: container de performance não encontrado.");
     return;
   }
 
   try {
-    // Mostra loading
-    showLoading(outputContainer);
-    outputContainer.innerHTML = '';
+    // Limpa e mostra loading
+    outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
 
-    // Busca a seção e o conteúdo gerado
-    const sectionElement = document.getElementById(`${sectionId}Section`);
-    const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-    
-    if (!contentWrapper) {
-      throw new Error(`Seção "${sectionId}" não tem conteúdo gerado para analisar.`);
+    if (!contentWrapper || contentWrapper.children.length === 0) {
+      throw new Error("Nenhum parágrafo gerado para analisar.");
     }
 
-    const paragraphs = Array.from(contentWrapper.children);
-    if (paragraphs.length === 0) {
-      throw new Error("Nenhum parágrafo encontrado para análise de performance.");
-    }
-
-    // Garante IDs únicos para cada parágrafo
-    const paragraphsWithIds = paragraphs.map((p, index) => {
-      const id = p.id || `${sectionId}-p-${Date.now()}-${index}`;
-      if (!p.id) p.id = id;
+    // Garante IDs únicos em todos os parágrafos
+    const paragraphsWithIds = Array.from(contentWrapper.children).map((p, index) => {
+      if (!p.id) p.id = `${sectionId}-p-${Date.now()}-${index}`;
       return { id: p.id, text: p.textContent.trim() };
     });
 
-    // Monta o prompt para a IA
-    const prompt = `Você é um Especialista em Performance Narrativa para YouTube.
-Analise os parágrafos abaixo e retorne um array JSON com sugestões detalhadas para cada um.
+    // Prompt claro e restrito para evitar erros
+    const prompt = `Você é um Especialista em Narração de YouTube.
+Analise os parágrafos abaixo e retorne um array JSON com:
+- "paragraphId": string (o ID exato)
+- "performanceSuggestion": string em português (ex: "Fale com mais suspense")
+- "emotion": string (ex: "tensão", "alegria")
+- "pace": string ("lento", "médio", "rápido")
 
-Para cada parágrafo, inclua:
-- "paragraphId": (string) o ID exato do parágrafo.
-- "performanceSuggestion": (string) sugestão clara em português do Brasil para tom, ritmo e ênfase (ex: "Fale com tensão crescente", "Desacelere e enfatize a palavra 'verdade'").
-- "emotion": (string) emoção dominante (ex: "suspense", "emoção", "urgência", "reflexão").
-- "pace": (string) ritmo sugerido ("lento", "médio", "rápido").
-
-**REGRAS ESTRITAS**:
+**REGRAS:**
 - Responda APENAS com um array JSON válido.
-- Todas as sugestões devem estar em português do Brasil.
-- Não inclua explicações, introduções ou texto fora do JSON.
+- Nada além do JSON.
 
-Dados dos parágrafos:
+Dados:
 ${JSON.stringify(paragraphsWithIds, null, 2)}
 `;
 
-    // Chama a IA
-    const rawResult = await callGroqAPI(prompt, 1500);
-    const cleanedResult = cleanGeneratedText(rawResult, true);
-    const suggestions = JSON.parse(cleanedResult);
+    const rawResult = await callGroqAPI(prompt, 800);
+    const cleaned = cleanGeneratedText(rawResult, true);
+    const suggestions = Array.isArray(cleaned) ? cleaned : JSON.parse(cleaned);
 
-    if (!Array.isArray(suggestions)) {
-      throw new Error("A IA não retornou um array válido de sugestões.");
-    }
-
-    // Filtra apenas sugestões com ID que exista no DOM
-    const validSuggestions = suggestions.filter(item => 
-      item && 
-      typeof item === 'object' &&
-      typeof item.paragraphId === 'string' &&
-      typeof item.performanceSuggestion === 'string' &&
-      typeof item.emotion === 'string' &&
-      typeof item.pace === 'string' &&
+    // Valida cada item
+    const validSuggestions = suggestions.filter(item =>
+      item &&
+      item.paragraphId &&
+      item.performanceSuggestion &&
+      item.emotion &&
+      item.pace &&
       document.getElementById(item.paragraphId)
     );
 
     if (validSuggestions.length === 0) {
-      throw new Error("Nenhuma sugestão válida foi gerada pela IA.");
+      throw new Error("Nenhuma sugestão válida foi gerada.");
     }
 
-    // Aplica as sugestões como tooltips interativos
-    validSuggestions.forEach(suggestion => {
-      const p = document.getElementById(suggestion.paragraphId);
+    // Aplica tooltips
+    validSuggestions.forEach(item => {
+      const p = document.getElementById(item.paragraphId);
       if (!p) return;
 
-      // Estiliza o parágrafo
       p.style.position = 'relative';
       p.style.cursor = 'help';
-      p.style.borderRadius = '4px';
-      p.style.transition = 'all 0.2s';
 
-      // Cria o tooltip
       const tooltip = document.createElement('div');
       tooltip.className = 'retention-tooltip bg-indigo-600 text-white text-xs p-2 rounded-md shadow-lg max-w-xs';
       tooltip.style.position = 'absolute';
@@ -3683,46 +3661,35 @@ ${JSON.stringify(paragraphsWithIds, null, 2)}
       tooltip.style.left = '0';
       tooltip.style.zIndex = '1000';
       tooltip.style.opacity = '0';
+      tooltip.style.transition = 'opacity 0.3s';
       tooltip.style.pointerEvents = 'none';
-      tooltip.style.transition = 'opacity 0.3s ease';
-      tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-      tooltip.style.fontWeight = '500';
-      tooltip.textContent = `🎯 ${suggestion.performanceSuggestion} | Emoção: ${suggestion.emotion} | Ritmo: ${suggestion.pace}`;
+      tooltip.textContent = `🎯 ${item.performanceSuggestion} | Emoção: ${item.emotion} | Ritmo: ${item.pace}`;
 
       p.appendChild(tooltip);
 
-      // Eventos de hover
-      p.addEventListener('mouseenter', () => {
-        tooltip.style.opacity = '1';
-      });
-      p.addEventListener('mouseleave', () => {
-        tooltip.style.opacity = '0';
-      });
+      p.addEventListener('mouseenter', () => { tooltip.style.opacity = '1'; });
+      p.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
     });
 
-    // Mensagem de sucesso
     outputContainer.innerHTML = `
-      <p class="text-green-600 dark:text-green-400 text-sm mt-2 flex items-center gap-1">
-        ✅ ${validSuggestions.length} sugestão(ões) de performance aplicada(s) com sucesso.
+      <p class="text-green-600 dark:text-green-400 text-sm mt-2">
+        ✅ ${validSuggestions.length} sugestão(ões) aplicadas com sucesso!
       </p>
     `;
 
   } catch (error) {
-    console.error('Erro ao sugerir performance:', error);
+    console.error('Erro em suggestPerformance:', error);
     outputContainer.innerHTML = `
-      <p class="text-red-500 text-sm mt-2 flex items-center gap-1">
-        ❌ Falha: ${error.message}
-      </p>
+      <p class="text-red-500 text-sm mt-2">❌ ${error.message}</p>
       <button 
         onclick="window.suggestPerformance('${sectionId}')"
-        class="btn btn-small btn-secondary mt-2 flex items-center gap-1">
+        class="btn btn-small btn-secondary mt-2">
         🔄 Tentar Novamente
       </button>
     `;
-  } finally {
-    hideLoading();
   }
 };
+
 
 /**
  * Função auxiliar: Limpa e parseia a resposta da IA
