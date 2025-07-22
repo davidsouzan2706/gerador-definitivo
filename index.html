@@ -4873,6 +4873,9 @@ const updateButtonStates = () => {
                 if(strategy.speakingPace) elements.speakingPace.value = strategy.speakingPace;
                 if(strategy.imageStyleSelect) elements.imageStyleSelect.value = strategy.imageStyleSelect;
 
+                validateInputs();
+                updateButtonStates();
+
                 window.showToast("Estratégia definida com sucesso!");
                 elements.projectDashboard.classList.remove('hidden');
                 
@@ -4884,8 +4887,7 @@ const updateButtonStates = () => {
             } finally {
                 isSettingStrategy = false;
                 hideLoading(button);
-                validateInputs();
-                updateButtonStates();
+
             }
         };
 
