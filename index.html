@@ -3583,7 +3583,7 @@ The final output MUST be only the JSON code, like this example:
 
     
 /**
- * SUGERIR PERFORMANCE NARRATIVA (VERSÃO CORRIGIDA E COMPATÍVEL)
+ * SUGERIR PERFORMANCE NARRATIVA (VERSÃO CORRIGIDA E ROBUSTA)
  * Analisa cada parágrafo da seção e sugere tom, ritmo e ênfase para narração.
  * @param {string} sectionId - Ex: 'intro', 'development', 'climax', 'conclusion'
  */
@@ -3623,7 +3623,8 @@ Para cada parágrafo, inclua:
 
 **REGRAS ESTRITAS**:
 - Responda APENAS com um array JSON válido.
-- Nada além do JSON.
+- Todas as sugestões devem estar em português do Brasil.
+- Não inclua explicações, introduções ou texto fora do JSON.
 
 Dados dos parágrafos:
 ${JSON.stringify(paragraphsWithIds, null, 2)}
@@ -3634,7 +3635,7 @@ ${JSON.stringify(paragraphsWithIds, null, 2)}
     const suggestions = JSON.parse(cleanedResult);
 
     if (!Array.isArray(suggestions)) {
-      throw new Error("A IA retornou um formato inválido para performance.");
+      throw new Error("A IA não retornou um array válido de sugestões.");
     }
 
     // Filtra apenas sugestões com ID que exista no DOM
@@ -3685,18 +3686,21 @@ ${JSON.stringify(paragraphsWithIds, null, 2)}
       </p>
     `;
 
-  catch (error) {
-  console.error('Erro ao sugerir performance:', error);
-  outputContainer.innerHTML = `
-    <p class="text-red-500 text-sm mt-2">Falha: ${error.message}</p>
-    <button 
-      id="retryButton-${sectionId}" // Adiciona um ID único com base no sectionId
-      onclick="window.suggestPerformance('${sectionId}')" 
-      class="btn btn-small btn-secondary mt-2 flex items-center gap-1">
-      🔄 Tentar Novamente
-    </button>
-  `;
-}
+  } catch (error) {
+    console.error('Erro ao sugerir performance:', error);
+    outputContainer.innerHTML = `
+      <p class="text-red-500 text-sm mt-2">Falha: ${error.message}</p>
+      <button 
+        id="retryButton-${sectionId}" // Adiciona um ID único com base no sectionId
+        onclick="window.suggestPerformance('${sectionId}')"
+        class="btn btn-small btn-secondary mt-2 flex items-center gap-1">
+        🔄 Tentar Novamente
+      </button>
+    `;
+  } finally {
+    hideLoading();
+  }
+};
 
 
 /**
