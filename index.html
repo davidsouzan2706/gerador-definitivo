@@ -3929,8 +3929,8 @@ window.regenerateSection = (fullSectionId) => {
 
 
          /**
-         * Gera prompts de imagem, processando o roteiro SEQUENCIALMENTE para respeitar os limites da API.
-         * (VERSÃO FINAL COM FILA - GARANTIDA)
+         * Gera prompts de imagem, processando o roteiro SEQUENCIALMENTE com PAUSAS para respeitar os limites da API.
+         * (VERSÃO FINAL COM DELAY - GARANTIDA)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
@@ -3957,14 +3957,12 @@ window.regenerateSection = (fullSectionId) => {
                 const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
 
                 // ==========================================================
-                // >>>>> ESTA É A MUDANÇA ARQUITETURAL PRINCIPAL <<<<<
+                // >>>>> ESTA É A MUDANÇA ARQUITETURAL FINAL <<<<<
                 // ==========================================================
-                // Em vez de Promise.all, usamos um loop for...of com await.
-                // Isso força o código a esperar cada chamada da API terminar antes de começar a próxima.
+                // Usamos um loop for...of que é mais limpo e introduzimos a pausa.
                 let allGeneratedPrompts = [];
-                for (let i = 0; i < paragraphs.length; i++) {
-                    const paragraph = paragraphs[i];
-                    const mapIndex = baseIndex + i;
+                for (const [index, paragraph] of paragraphs.entries()) {
+                    const mapIndex = baseIndex + index;
                     const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
 
                     const singlePrompt = `Você é um Diretor de Fotografia. Analise o PARÁGRAFO e o CONTEXTO EMOCIONAL abaixo.
@@ -3973,13 +3971,15 @@ window.regenerateSection = (fullSectionId) => {
                     CONTEXTO (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})
                     Gere o objeto JSON para o parágrafo acima.`;
                     
-                    // Espera esta chamada específica terminar
                     const rawResult = await callGroqAPI(singlePrompt, 500);
                     const promptObject = cleanGeneratedText(rawResult, true);
                     
                     if (promptObject) {
                         allGeneratedPrompts.push(promptObject);
                     }
+                    
+                    // A PAUSA MÁGICA! Espera 250 milissegundos antes da próxima chamada.
+                    await delay(250); 
                 }
                 // ==========================================================
 
