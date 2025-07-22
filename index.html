@@ -3433,25 +3433,27 @@ The final output MUST be only the JSON code, like this example:
                     throw new Error("A IA não retornou o número correto de anotações.");
                 }
 
-                // ETAPA 2: O JAVASCRIPT MONTA O ROTEIRO FINAL
-                let finalAnnotatedText = "";
+                // ==========================================================
+                // ETAPA 2: O JAVASCRIPT MONTA O ROTEIRO FINAL (VERSÃO CORRIGIDA)
+                // ==========================================================
+                let annotatedParagraphs = [];
                 originalParagraphs.forEach((p, index) => {
                     const annotationData = annotations[index];
                     let annotatedParagraph = p;
 
-                    // O Robô "Injetor de Ênfase"
                     if (annotationData && annotationData.emphasis_words && annotationData.emphasis_words.length > 0) {
                         annotationData.emphasis_words.forEach(word => {
-                            // Cria uma regex segura para encontrar a palavra exata
                             const wordRegex = new RegExp(`\\b(${word})\\b`, 'g');
-                            // Substitui a palavra por [ênfase em 'palavra'] palavra
                             annotatedParagraph = annotatedParagraph.replace(wordRegex, `[ênfase em '${word}'] $1`);
                         });
                     }
-
-                    // Adiciona a anotação geral no início
-                    finalAnnotatedText += `${annotationData.general_annotation || ''}\n${annotatedParagraph}\n\n`;
+                    
+                    const finalParagraph = `${annotationData.general_annotation || ''}\n${annotatedParagraph}`;
+                    annotatedParagraphs.push(finalParagraph.trim());
                 });
+
+                const finalAnnotatedText = annotatedParagraphs.join('\n\n');
+             
                 finalAnnotatedText = finalAnnotatedText.trim();
 
                 // ETAPA 3: AUDITOR DE CONSISTÊNCIA FINAL
