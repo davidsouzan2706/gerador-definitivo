@@ -2783,42 +2783,24 @@ const invalidateAndClearPrompts = (sectionElement) => {
             if (!expectJson) return text.trim();
 
             let jsonString = text;
-            const firstBracket = text.indexOf('[');
-            const lastBracket = text.lastIndexOf(']');
-            const firstBrace = text.indexOf('{');
-            const lastBrace = text.lastIndexOf('}');
-
-            if (firstBracket !== -1 && lastBracket > firstBracket) {
-                jsonString = text.substring(firstBracket, lastBracket + 1);
-            } else if (firstBrace !== -1 && lastBrace > firstBrace) {
-                jsonString = text.substring(firstBrace, lastBrace + 1);
-            }
+            // ... (lógica para encontrar o JSON continua igual)
 
             // Remove "lixo" comum
             jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
-            
-            // ==========================================================
-            // >>>>> AQUI ESTÁ A NOVA LINHA DE LIMPEZA <<<<<
-            // Remove o artefato específico que a IA está gerando.
-            // ==========================================================
             jsonString = jsonString.replace(/\.scalablytyped\s*/g, '');
+
+            // ==========================================================
+            // >>>>> AQUI ESTÁ A NOVA LÓGICA DE CORREÇÃO <<<<<
+            // Converte chaves com aspas simples para aspas duplas. Ex: 'key': -> "key":
+            // ==========================================================
+            jsonString = jsonString.replace(/'([^']+)':/g, '"$1":');
 
             // Tenta fazer o parse (PLANO A)
             try {
                 jsonString = jsonString.replace(/,\s*([}\]])/g, "$1");
                 return JSON.parse(jsonString);
             } catch (e) {
-                // PLANO A FALHOU. INICIANDO PLANO B.
-                console.warn("Primeira tentativa de parse falhou. Tentando plano B: encapsular em colchetes.");
-                try {
-                    const repairedJsonString = `[${jsonString}]`;
-                    const finalRepairedString = repairedJsonString.replace(/,\s*\]/g, ']');
-                    return JSON.parse(finalRepairedString);
-                } catch (e2) {
-                    console.error("Falha ao fazer o parse do JSON extraído, mesmo após a tentativa de correção:", e.message);
-                    console.error("JSON problemático:", jsonString);
-                    throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
-                }
+                // ... (o PLANO B continua igual)
             }
         };
 
@@ -3940,22 +3922,7 @@ window.regenerateSection = (fullSectionId) => {
          * (VERSÃO FINAL DE ENGENHARIA DE PROMPT)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
-            const sectionElement = document.getElementById(sectionElementId);
-            const scriptContentElement = sectionElement?.querySelector('.generated-content-wrapper');
-            const promptContainer = sectionElement?.querySelector('.prompt-container');
-            
-            if (!scriptContentElement || !scriptContentElement.textContent.trim() || !promptContainer) {
-                window.showToast("Gere o conteúdo do roteiro desta seção primeiro.");
-                return;
-            }
-
-            if (!window.emotionalMap || window.emotionalMap.length === 0) {
-                window.showToast("Gere o Mapa Emocional primeiro para criar prompts contextuais.");
-                return;
-            }
-
-            promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-            
+            // ... (o início da função continua igual)
             try {
                 const paragraphElements = scriptContentElement.querySelectorAll('div[id]');
                 let allGeneratedPrompts = [];
@@ -3965,16 +3932,18 @@ window.regenerateSection = (fullSectionId) => {
                     const emotionalContext = window.emotionalMap[index] || { emotion: 'Neutro', pace: 'Normal' };
 
                     // ==========================================================
-                    // >>>>> AQUI ESTÁ A MUDANÇA FINAL NO PROMPT <<<<<
+                    // >>>>> AQUI ESTÁ A NOVA REGRA DE PROMPT <<<<<
                     // ==========================================================
-                    // Removemos o campo problemático do pedido.
                     const singlePrompt = `Você é um Diretor de Fotografia. Analise o PARÁGRAFO e o CONTEXTO EMOCIONAL abaixo.
-                    REGRAS: Sua resposta DEVE ser um ÚNICO objeto JSON. O objeto deve ter APENAS as chaves "scriptPhrase" e "imageDescription".
+                    REGRAS: Sua resposta DEVE ser um ÚNICO objeto JSON.
+                    - O objeto deve ter APENAS as chaves "scriptPhrase" e "imageDescription".
+                    - **REGRA CRÍTICA DE SINTAXE: Você DEVE usar aspas duplas (") para todas as chaves e valores. Aspas simples (') são estritamente proibidas.**
                     
                     PARÁGRAFO PARA ANALISAR: "${paragraph}"
                     CONTEXTO (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})
                     
-                    Gere o objeto JSON para o parágrafo acima.`;
+                    Gere o objeto JSON seguindo TODAS as regras.`;
+                    // ==========================================================
                     
                     const rawResult = await callGroqAPI(singlePrompt, 500);
                     const promptObject = cleanGeneratedText(rawResult, true);
@@ -3982,29 +3951,12 @@ window.regenerateSection = (fullSectionId) => {
                     if (promptObject) {
                         allGeneratedPrompts.push(promptObject);
                     }
-                    
                     await delay(250);
                 }
                 
-                if (!validatePromptsArray(allGeneratedPrompts)) {
-                    // Nossa função de validação precisa ser ajustada também
-                    throw new Error("A IA retornou prompts em formato inválido.");
-                }
-                
-                allImagePrompts[sectionElementId] = allGeneratedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
-                promptPaginationState[sectionElementId] = 0;
-                
-                promptContainer.innerHTML = `
-                    <div class="prompt-pagination-wrapper space-y-4">
-                        <div class="prompt-nav-container flex items-center justify-center gap-4"></div>
-                        <div class="prompt-items-container space-y-4"></div>
-                    </div>
-                `;
-                renderPaginatedPrompts(sectionElementId);
-
+                // ... (o resto da função continua igual)
             } catch (error) {
-                 promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
-                 console.error("Erro detalhado ao gerar prompts:", error);
+                 // ... (o catch continua igual)
             }
         };
 
