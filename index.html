@@ -3290,7 +3290,7 @@ const validateInputs = () => {
 };
 
 /**
- * Atualiza o estado de habilitação/desabilitação dos botões com base no progresso do roteiro.
+ * Atualiza o estado de habilitação/desabilitação dos botões com base no estado do roteiro.
  */
 const updateButtonStates = () => {
   const mapEmotionsBtn = document.getElementById('mapEmotionsBtn');
@@ -3303,11 +3303,7 @@ const updateButtonStates = () => {
   const hasOutline = !!window.strategicOutline;
 
   // Habilita/desabilita o botão "Mapear Emoções"
-  if (mapEmotionsBtn) {
-    mapEmotionsBtn.disabled = !hasOutline;
-  }
-
-  // Habilita/desabilita os botões de geração de seções
+  if (mapEmotionsBtn) mapEmotionsBtn.disabled = !hasOutline;
   [generateIntroBtn, generateDevelopmentBtn, climaxBtn, generateConclusionAndCtaBtn].forEach(btn => {
     if (btn) btn.disabled = !hasOutline;
   });
@@ -3325,7 +3321,7 @@ const updateButtonStates = () => {
   const generateSoundtrackBtn = document.getElementById('generateSoundtrackBtn');
 
   if (generateDescriptionBtn) generateDescriptionBtn.disabled = !allMainScriptGenerated;
-  if (generateTitlesAndThumbnailsBtn) generateTitlesAndThumbnailsBtn.disabled = !allMainScriptGenerated;
+  if (generateTitlesAndThumbnailsBtn) generateDescriptionBtn.disabled = !allMainScriptGenerated;
   if (generateSoundtrackBtn) generateSoundtrackBtn.disabled = !allMainScriptGenerated;
 };
     
@@ -4843,6 +4839,10 @@ Responda APENAS com o JSON válido.`;
                 if (strategy.image_description_engine) elements.imageDescriptionEngine.value = strategy.image_description_engine;
                 if(strategy.video_objective) elements.videoObjective.value = strategy.video_objective;
                 if(strategy.narrative_goal) document.getElementById('narrativeGoal').value = strategy.narrative_goal;
+
+                // ✅ FORÇA A VALIDAÇÃO E ATUALIZAÇÃO DO ESTADO
+                validateInputs();
+                updateButtonStates();
                 
                 updateNarrativeStructureOptions(); 
                 
