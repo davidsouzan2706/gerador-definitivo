@@ -2055,13 +2055,20 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
     
         /**
-         * Calcula o tempo de leitura estimado de um texto.
-         * @param {string} text - O texto a ser analisado.
-         * @returns {string} O tempo de leitura formatado (ex: "~1 min 15 seg").
+         * Calcula o tempo de leitura estimado de um texto, considerando o ritmo de fala.
          */
         const calculateReadingTime = (text) => {
             if (!text) return "";
-            const wordsPerMinute = 150; // Média para um ritmo de fala moderado
+
+            const paceMap = {
+                slow: 120,
+                moderate: 150,
+                fast: 180
+            };
+            
+            const selectedPace = document.getElementById('speakingPace').value || 'moderate';
+            const wordsPerMinute = paceMap[selectedPace];
+            
             const words = text.trim().split(/\s+/).length;
             const totalSeconds = (words / wordsPerMinute) * 60;
             
@@ -2071,12 +2078,8 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             const seconds = Math.round(totalSeconds % 60);
             
             let timeString = "~";
-            if (minutes > 0) {
-                timeString += ` ${minutes} min`;
-            }
-            if (seconds > 0) {
-                timeString += ` ${seconds} seg`;
-            }
+            if (minutes > 0) timeString += ` ${minutes} min`;
+            if (seconds > 0) timeString += ` ${seconds} seg`;
             
             return timeString.trim();
         };
