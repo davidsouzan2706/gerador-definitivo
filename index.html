@@ -15,7 +15,12 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <style>
 
-
+// Variáveis globais de estado
+window.strategicOutline = null;
+let allImagePrompts = {};
+let generatedTitlesAndThumbnails = null;
+let totalScriptSeconds = 0;
+let promptPaginationState = {};
 
 /* ========================================================== */
         /* ==== MELHORIA DE VISIBILIDADE NO ACORDEÃO (CORREÇÃO) ==== */
@@ -1674,6 +1679,16 @@
     </div>
     
     <script type="module">
+
+
+    // ====== VARIÁVEIS GLOBAIS DE ESTADO (CORRIGIDAS) ======
+    window.strategicOutline = null;
+    let emotionalMap = null;
+    let allImagePrompts = {};
+    let generatedTitlesAndThumbnails = null;
+    let totalScriptSeconds = 0;
+    let promptPaginationState = {};
+        
         // ==========================================================
         // ==================== SETUP INICIAL =======================
         // ==========================================================
@@ -5215,6 +5230,31 @@ document.addEventListener('DOMContentLoaded', () => {
     element.addEventListener('change', validateInputs);
   }
 });
+
+/**
+ * Valida os inputs obrigatórios.
+ * @returns {boolean} True se todos os obrigatórios estão preenchidos.
+ */
+const validateInputs = () => {
+  const requiredFields = [
+    'videoTheme',
+    'videoDescription',
+    'targetAudience',
+    'videoObjective',
+    'videoDuration',
+    'narrativeStructure'
+  ];
+
+  for (const fieldId of requiredFields) {
+    const element = document.getElementById(fieldId);
+    const value = element?.value.trim();
+    if (!value) {
+      window.showToast(`⚠️ Preencha o campo: ${fieldId}`);
+      return false;
+    }
+  }
+  return true;
+};
 
 </script>
 </body>
