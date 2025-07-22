@@ -3257,13 +3257,9 @@ The final output MUST be only the JSON code, like this example:
          * @throws {Error} Se a chamada à API falhar.
          */
         const callGroqAPI = async (prompt, maxTokens) => {
-            const proxyUrl = "/.netlify/functions/groq"; // Endpoint do proxy
+            const proxyUrl = "/.netlify/functions/groq";
 
-            const payload = {
-                prompt: prompt,
-                maxTokens: maxTokens
-            };
-
+            const payload = { prompt: prompt, maxTokens: maxTokens };
             const request = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -3273,6 +3269,10 @@ The final output MUST be only the JSON code, like this example:
             try {
                 const response = await fetch(proxyUrl, request);
                 if (!response.ok) {
+                    // Se o erro for um timeout, mostra uma mensagem específica
+                    if (response.status === 504) {
+                        throw new Error(`O servidor demorou muito para responder (Timeout). Tente novamente ou, se o problema persistir, gere um texto menor.`);
+                    }
                     const errorData = await response.json().catch(() => ({ error: { message: 'Erro desconhecido do servidor proxy.' } }));
                     throw new Error(`Erro na API via Proxy: ${errorData.error?.message || 'Erro do servidor'}`);
                 }
@@ -3282,6 +3282,7 @@ The final output MUST be only the JSON code, like this example:
                 else { throw new Error("Resposta inesperada da API Groq."); }
             } catch (error) {
                 console.error("Fetch da API via Netlify Function falhou:", error);
+                // Mostra o erro de forma mais amigável na tela
                 window.showToast(`Falha na API: ${error.message}`);
                 throw error;
            }
