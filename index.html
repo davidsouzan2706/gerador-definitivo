@@ -3336,7 +3336,7 @@ The final output MUST be only the JSON code, like this example:
 
 
         /**
-         * Adiciona um novo capítulo ao desenvolvimento, expandindo o roteiro.
+         * Adiciona um novo capítulo ao desenvolvimento, expandindo o roteiro. (VERSÃO CORRIGIDA)
          * @param {HTMLElement} button - O botão que foi clicado.
          */
         window.addDevelopmentChapter = async (button) => {
@@ -3353,26 +3353,42 @@ The final output MUST be only the JSON code, like this example:
             button.innerHTML = '<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px;"></div>';
 
             try {
-                // Pega o mesmo prompt, mas adiciona um contexto crucial
-                const { prompt, maxTokens } = constructScriptPrompt('development', 'Desenvolvimento');
-                const continuationPrompt = `${prompt}
-                \n\n**CRITICAL CONTINUATION INSTRUCTION:** You are writing the NEXT chapter of a script that already exists. Do NOT repeat any previous information. Continue the narrative from where it left off.
-                \n\n**Here is the END of the current script, for context:**\n"...${existingText.slice(-500)}" 
-                \n\nNow, write the next part of the development section.`;
+                // ==========================================================
+                // >>>>> AQUI ESTÁ A CORREÇÃO DO PROBLEMA 1 (PROMPT) <<<<<
+                // ==========================================================
+                const basePrompt = constructScriptPrompt('development', 'Desenvolvimento').prompt;
+                const continuationPrompt = `${basePrompt}
+                \n\n**CRITICAL CONTINUATION INSTRUCTION: THIS IS THE MOST IMPORTANT RULE.**
+                You are writing the NEXT chapter of a script that already exists. 
+                - **DO NOT** repeat, rephrase, or summarize previous information.
+                - You **MUST** introduce new information, new evidence, a new event, or a deeper analysis that moves the story forward.
+                - Assume the viewer already knows everything written so far. Your task is to build upon it.
                 
-                const rawResult = await callGroqAPI(continuationPrompt, maxTokens);
+                **Here is the END of the current script, to give you context on where to continue from:**
+                \n"...${existingText.slice(-700)}" 
+                
+                Now, write the next chapter of the development section, ensuring it is entirely new content.`;
+                // ==========================================================
+                
+                const rawResult = await callGroqAPI(continuationPrompt, 4000); // Aumentamos os tokens para garantir que não corte
                 const newChapter = removeMetaComments(rawResult.trim());
                 
-                // Formata o novo capítulo em parágrafos com IDs únicos
                 const existingParagraphsCount = contentWrapper.querySelectorAll('div[id]').length;
                 const newParagraphs = newChapter.split('\n').filter(p => p.trim() !== '');
                 const newContentWithDivs = newParagraphs.map((p, index) => 
                     `<div id="development-p-${existingParagraphsCount + index}">${p}</div>`
                 ).join('');
 
-                contentWrapper.insertAdjacentHTML('beforeend', newContentWithDivs);
+                contentWrapper.insertAdjacentHTML('beforeend', `<br>${newContentWithDivs}`); // Adiciona espaço
                 
-                // Atualiza o tempo de leitura
+                // ==========================================================
+                // >>>>> AQUI ESTÁ A CORREÇÃO DO PROBLEMA 2 (INVALIDAÇÃO) <<<<<
+                // ==========================================================
+                window.emotionalMap = null; // Invalida o mapa antigo
+                invalidateAndClearPerformance(devSection); // Limpa a UI de performance
+                invalidateAndClearPrompts(devSection); // Limpa a UI de prompts
+                // ==========================================================
+
                 updateAllReadingTimes();
                 showToast("Novo capítulo adicionado!");
 
