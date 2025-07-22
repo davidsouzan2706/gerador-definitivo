@@ -16,6 +16,29 @@
     <style>
 
 
+
+/* ========================================================== */
+        /* ==== MELHORIA DE VISIBILIDADE NO ACORDEÃO (CORREÇÃO) ==== */
+        /* ========================================================== */
+
+        /* Alvo: Apenas o texto de tempo DENTRO do cabeçalho de um acordeão de roteiro */
+        #scriptSectionsContainer .accordion-header .header-content .text-xs {
+            font-size: 0.875rem !important; /* Aumenta a fonte */
+            color: var(--text-medium) !important; /* Cor mais visível */
+            font-weight: 600 !important; /* Deixa em negrito */
+        }
+
+        /* Alvo: Apenas a seta DENTRO do cabeçalho de um acordeão de roteiro */
+        #scriptSectionsContainer .accordion-header .accordion-arrow {
+            color: var(--text-medium); /* Garante a cor da seta */
+        }
+
+        /* Correção para o modo escuro */
+        .dark #scriptSectionsContainer .accordion-header .header-content .text-xs,
+        .dark #scriptSectionsContainer .accordion-header .accordion-arrow {
+            color: #9ca3af !important; /* Cinza claro para o modo escuro */
+        }
+
 /* ========================================================== */
 /* ======== ESTILOS PARA O CONSULTOR DE RETENÇÃO V3 ======== */
 /* ========================================================== */
@@ -3796,7 +3819,7 @@ window.regenerateSection = (fullSectionId) => {
                 }
 
                 // ETAPA 2: O NOSSO CÓDIGO FAZ A CURADORIA
-                const desiredSecondsPerScene = 22;
+                const desiredSecondsPerScene = 15;
                 let curatedPrompts = [];
                 let secondsAccumulator = 0;
                 let currentScenePhrase = "";
