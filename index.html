@@ -2545,58 +2545,67 @@ const validatePromptsArray = (data) => {
  * @param {string} sourceId - O ID do elemento que causou a mudança.
  */
 const resetGeneratedScriptContent = (sourceId) => {
-    // Só reseta se já houver conteúdo gerado para não incomodar o usuário no início.
-    if (!strategicOutline && !document.querySelector('#scriptSectionsContainer .accordion-item')) {
-        return;
-    }
+  // Só reseta se já houver conteúdo gerado para não incomodar o usuário no início.
+  if (!window.strategicOutline && !document.querySelector('#scriptSectionsContainer .accordion-item')) {
+    return;
+  }
 
-    console.log(`Input estratégico '${sourceId}' alterado. Resetando conteúdo do roteiro.`);
+  console.log(`Input estratégico '${sourceId}' alterado. Resetando conteúdo do roteiro.`);
 
-    // 2. Limpa a UI do esboço e das seções
-    const outlineContent = document.getElementById('outlineContent');
-    if (outlineContent) {
-        outlineContent.innerHTML = `<div class="asset-card-placeholder">A estratégia mudou. Clique em 'Criar Esboço' novamente.</div>`;
-    }
+  // 1. Limpa as variáveis de estado
+  window.strategicOutline = null;
+  allImagePrompts = {};
+  promptPaginationState = {};
+  totalScriptSeconds = 0;
 
-    const scriptContainer = document.getElementById('scriptSectionsContainer');
-    if (scriptContainer) {
-        scriptContainer.innerHTML = `
-            <div id="introSection" class="script-section"></div>
-            <div id="developmentSection" class="script-section"></div>
-            <div id="climaxSection" class="script-section"></div>
-            <div id="conclusionSection" class="script-section"></div>
-            <div id="ctaSection" class="script-section hidden"></div>
-        `;
-    }
-    
-    // 3. Reseta os botões de geração para o estado inicial
-    const buttonsToReset = [
-        'generateOutlineBtn', 'generateIntroBtn', 'generateDevelopmentBtn', 
-        'climaxBtn', 'conclusionBtn', 'generateCTABtn', 
-        'generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn'
-    ];
-    
-    buttonsToReset.forEach(id => {
-        const btn = document.getElementById(id);
-        const floatBtn = document.getElementById(`float_${id}`);
-        [btn, floatBtn].forEach(b => {
-            if (b) {
-                b.classList.remove('btn-success');
-                // Adiciona a classe correta (primary ou secondary)
-                if (['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateOutlineBtn'].includes(id)) {
-                    b.classList.add('btn-secondary');
-                } else {
-                    b.classList.add('btn-primary');
-                }
-            }
-        });
+  // 2. Limpa a UI do esboço e das seções
+  const outlineContent = document.getElementById('outlineContent');
+  if (outlineContent) {
+    outlineContent.innerHTML = `<div class="asset-card-placeholder">A estratégia mudou. Clique em 'Criar Esboço' novamente.</div>`;
+  }
+
+  const scriptContainer = document.getElementById('scriptSectionsContainer');
+  if (scriptContainer) {
+    scriptContainer.innerHTML = `
+      <div id="introSection" class="script-section"></div>
+      <div id="developmentSection" class="script-section"></div>
+      <div id="climaxSection" class="script-section"></div>
+      <div id="conclusionSection" class="script-section"></div>
+      <div id="ctaSection" class="script-section hidden"></div>
+    `;
+  }
+
+  // 3. Reseta os botões de geração para o estado inicial
+  const buttonsToReset = [
+    'generateOutlineBtn',
+    'generateIntroBtn',
+    'generateDevelopmentBtn',
+    'climaxBtn',
+    'generateConclusionAndCtaBtn',
+    'generateDescriptionBtn',
+    'generateTitlesAndThumbnailsBtn'
+  ];
+
+  buttonsToReset.forEach(id => {
+    const btn = document.getElementById(id);
+    const floatBtn = document.getElementById(`float_${id}`);
+    [btn, floatBtn].forEach(b => {
+      if (b) {
+        b.classList.remove('btn-success');
+        if (['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateOutlineBtn'].includes(id)) {
+          b.classList.add('btn-secondary');
+        } else {
+          b.classList.add('btn-primary');
+        }
+      }
     });
+  });
 
-    // 4. Atualiza a UI e notifica o usuário
-    updateProgressBar();
-    updateButtonStates();
-    const sourceLabel = document.querySelector(`label[for='${sourceId}']`)?.textContent || sourceId;
-    window.showToast(`'${sourceLabel}' mudou. O roteiro foi resetado.`);
+  // 4. Atualiza o estado dos botões
+  updateButtonStates();
+
+  // 5. Notifica o usuário
+  window.showToast(`${sourceId} mudou. O roteiro foi resetado.`);
 };
 
 
