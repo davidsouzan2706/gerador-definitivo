@@ -4884,6 +4884,7 @@ const updateButtonStates = () => {
             } finally {
                 isSettingStrategy = false;
                 hideLoading(button);
+                validateInputs();
                 updateButtonStates();
             }
         };
