@@ -3929,8 +3929,8 @@ window.regenerateSection = (fullSectionId) => {
 
 
          /**
-         * Gera prompts de imagem e depois aplica um filtro de curadoria.
-         * (VERSÃO FINAL COM CHUNKING - À PROVA DE ERRO DE TOKEN)
+         * Gera prompts de imagem, processando o roteiro em partes para evitar erros de token.
+         * (VERSÃO FINALÍSSIMA - À PROVA DE INCONSISTÊNCIA DA IA)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
@@ -3951,45 +3951,47 @@ window.regenerateSection = (fullSectionId) => {
             const scriptContent = scriptContentElement.textContent;
             
             try {
-                // 1. Divide o texto longo em parágrafos individuais
                 const paragraphs = scriptContent.split('\n\n').filter(p => p.trim() !== '');
                 const firstParagraphId = scriptContentElement.querySelector('div[id]')?.id;
                 const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
                 const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
 
-                // 2. Cria uma "promessa" de API para CADA parágrafo
                 const promptPromises = paragraphs.map((paragraph, index) => {
                     const mapIndex = baseIndex + index;
                     const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
 
-                    // O prompt agora é pequeno e focado em apenas um parágrafo
-                    const singlePrompt = `Você é um Diretor de Fotografia. Analise o PARÁGRAFO e o CONTEXTO EMOCIONAL abaixo para criar um storyboard granular.
+                    // ==========================================================
+                    // >>>>> AQUI ESTÁ A MUDANÇA NO PROMPT <<<<<
+                    // ==========================================================
+                    // Agora pedimos apenas UM objeto, não um array. Mais simples, mais robusto.
+                    const singlePrompt = `Você é um Diretor de Fotografia. Analise o PARÁGRAFO e o CONTEXTO EMOCIONAL abaixo.
 
-                    REGRAS: Sua resposta DEVE ser um array JSON. Normalmente, conterá apenas UM objeto, mas se o parágrafo for longo, pode ter mais. Cada objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration".
+                    REGRAS: Sua resposta DEVE ser um ÚNICO objeto JSON. O objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration".
                     
                     PARÁGRAFO PARA ANALISAR: "${paragraph}"
                     CONTEXTO (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})
                     
-                    Gere o array JSON para o parágrafo acima.`;
-
-                    // Retorna a chamada da API como uma promessa
-                    return callGroqAPI(singlePrompt, 1000).then(rawResult => cleanGeneratedText(rawResult, true));
+                    Gere o objeto JSON para o parágrafo acima.`;
+                    
+                    return callGroqAPI(singlePrompt, 500).then(rawResult => cleanGeneratedText(rawResult, true));
                 });
 
-                // 3. Executa todas as pequenas chamadas de API em paralelo e aguarda a conclusão
                 const resultsFromAllParagraphs = await Promise.all(promptPromises);
                 
-                // 4. Junta os resultados de todos os parágrafos em uma única lista grande
-                const allGeneratedPrompts = resultsFromAllParagraphs.flat().filter(p => p); // .flat() junta arrays de arrays
+                // ==========================================================
+                // >>>>> AQUI ESTÁ A MUDANÇA NA COLETA DE DADOS <<<<<
+                // ==========================================================
+                // Como cada promessa agora retorna um objeto, não precisamos mais do .flat()
+                const allGeneratedPrompts = resultsFromAllParagraphs.filter(p => p);
 
                 if (!validatePromptsArray(allGeneratedPrompts)) {
-                    throw new Error("A IA retornou prompts em formato inválido, mesmo após o processamento em partes.");
+                    throw new Error("A IA retornou prompts em formato inválido.");
                 }
 
-                // ETAPA 2 (CURADORIA) e ETAPA 3 (RENDERIZAÇÃO) continuam iguais...
-                // O código abaixo é o mesmo que já tínhamos, ele só vai operar sobre a lista completa e válida.
+                // O resto da função (curadoria e renderização) permanece exatamente o mesmo.
                 const desiredSecondsPerScene = 15;
                 let curatedPrompts = [];
+                // ... (código de curadoria e renderização que já funciona) ...
                 let secondsAccumulator = 0;
                 let currentScenePhrase = "";
 
