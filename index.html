@@ -3685,20 +3685,18 @@ ${JSON.stringify(paragraphsWithIds, null, 2)}
       </p>
     `;
 
-  } catch (error) {
-    console.error('Erro ao sugerir performance:', error);
-    outputContainer.innerHTML = `
-      <p class="text-red-500 text-sm mt-2">❌ Falha: ${error.message}</p>
-      <button 
-        onclick="window.suggestPerformance('${sectionId}')"
-        class="btn btn-small btn-secondary mt-2 flex items-center gap-1">
-        🔄 Tentar Novamente
-      </button>
-    `;
-  } finally {
-    hideLoading();
-  }
-};
+  catch (error) {
+  console.error('Erro ao sugerir performance:', error);
+  outputContainer.innerHTML = `
+    <p class="text-red-500 text-sm mt-2">Falha: ${error.message}</p>
+    <button 
+      id="retryButton-${sectionId}" // Adiciona um ID único com base no sectionId
+      onclick="window.suggestPerformance('${sectionId}')" 
+      class="btn btn-small btn-secondary mt-2 flex items-center gap-1">
+      🔄 Tentar Novamente
+    </button>
+  `;
+}
 
 
 /**
