@@ -3917,10 +3917,9 @@ window.regenerateSection = (fullSectionId) => {
 
 
 
-     /**
-         * Gera prompts de imagem e depois aplica um filtro de curadoria para garantir
-         * um ritmo visual adequado para a produção de vídeo.
-         * (VERSÃO CURADOR DE CENAS - CORRIGIDA)
+         /**
+         * Gera prompts de imagem e depois aplica um filtro de curadoria.
+         * (VERSÃO FINAL COM CHUNKING - À PROVA DE ERRO DE TOKEN)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
@@ -3933,43 +3932,51 @@ window.regenerateSection = (fullSectionId) => {
             }
 
             if (!window.emotionalMap || window.emotionalMap.length === 0) {
-                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para criar prompts contextuais.");
+                window.showToast("Gere o Mapa Emocional primeiro para criar prompts contextuais.");
                 return;
             }
 
             promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             const scriptContent = scriptContentElement.textContent;
             
-            const firstParagraphId = scriptContentElement.querySelector('div[id]')?.id;
-            const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
-            const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-            
-            let initialPrompt = `Você é um Diretor de Fotografia. Analise o roteiro e o CONTEXTO EMOCIONAL abaixo para criar um storyboard granular, com uma cena para cada momento importante.
-
-            REGRAS: Sua resposta DEVE ser um array JSON. Cada objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration".
-            
-            ROTEIRO E CONTEXTO EMOCIONAL:
-            ---
-            `;
-            const paragraphs = scriptContent.split('\n\n').filter(p => p.trim() !== '');
-            paragraphs.forEach((p, index) => {
-                const mapIndex = baseIndex + index;
-                const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
-                initialPrompt += `Parágrafo ${index}: "${p}"\nContexto (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})\n\n`;
-            });
-            initialPrompt += `---
-            Gere o array JSON para os parágrafos acima.`;
-
             try {
-                // ETAPA 1: A IA GERA MUITAS IDEIAS
-                const rawResult = await callGroqAPI(initialPrompt, 4000);
-                const allGeneratedPrompts = cleanGeneratedText(rawResult, true);
+                // 1. Divide o texto longo em parágrafos individuais
+                const paragraphs = scriptContent.split('\n\n').filter(p => p.trim() !== '');
+                const firstParagraphId = scriptContentElement.querySelector('div[id]')?.id;
+                const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
+                const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
+
+                // 2. Cria uma "promessa" de API para CADA parágrafo
+                const promptPromises = paragraphs.map((paragraph, index) => {
+                    const mapIndex = baseIndex + index;
+                    const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
+
+                    // O prompt agora é pequeno e focado em apenas um parágrafo
+                    const singlePrompt = `Você é um Diretor de Fotografia. Analise o PARÁGRAFO e o CONTEXTO EMOCIONAL abaixo para criar um storyboard granular.
+
+                    REGRAS: Sua resposta DEVE ser um array JSON. Normalmente, conterá apenas UM objeto, mas se o parágrafo for longo, pode ter mais. Cada objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration".
+                    
+                    PARÁGRAFO PARA ANALISAR: "${paragraph}"
+                    CONTEXTO (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})
+                    
+                    Gere o array JSON para o parágrafo acima.`;
+
+                    // Retorna a chamada da API como uma promessa
+                    return callGroqAPI(singlePrompt, 1000).then(rawResult => cleanGeneratedText(rawResult, true));
+                });
+
+                // 3. Executa todas as pequenas chamadas de API em paralelo e aguarda a conclusão
+                const resultsFromAllParagraphs = await Promise.all(promptPromises);
+                
+                // 4. Junta os resultados de todos os parágrafos em uma única lista grande
+                const allGeneratedPrompts = resultsFromAllParagraphs.flat().filter(p => p); // .flat() junta arrays de arrays
 
                 if (!validatePromptsArray(allGeneratedPrompts)) {
-                    throw new Error("A IA retornou prompts em formato inválido.");
+                    throw new Error("A IA retornou prompts em formato inválido, mesmo após o processamento em partes.");
                 }
 
-                // ETAPA 2: O NOSSO CÓDIGO FAZ A CURADORIA
+                // ETAPA 2 (CURADORIA) e ETAPA 3 (RENDERIZAÇÃO) continuam iguais...
+                // O código abaixo é o mesmo que já tínhamos, ele só vai operar sobre a lista completa e válida.
                 const desiredSecondsPerScene = 15;
                 let curatedPrompts = [];
                 let secondsAccumulator = 0;
@@ -3977,23 +3984,18 @@ window.regenerateSection = (fullSectionId) => {
 
                 allGeneratedPrompts.forEach((prompt, index) => {
                     const duration = parseInt(prompt.estimated_duration, 10) || 5;
-                    
                     currentScenePhrase += prompt.scriptPhrase + " ";
                     secondsAccumulator += duration;
-                    
                     if (secondsAccumulator >= desiredSecondsPerScene || index === allGeneratedPrompts.length - 1) {
                         let finalPrompt = { ...prompt };
                         finalPrompt.scriptPhrase = currentScenePhrase.trim();
                         finalPrompt.estimated_duration = secondsAccumulator;
-                        
                         curatedPrompts.push(finalPrompt);
-                        
                         currentScenePhrase = "";
                         secondsAccumulator = 0;
                     }
                 });
                 
-                // Agora usamos a lista CURADA
                 allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
                 promptPaginationState[sectionElementId] = 0;
                 
@@ -4007,6 +4009,7 @@ window.regenerateSection = (fullSectionId) => {
 
             } catch (error) {
                  promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
+                 console.error("Erro detalhado ao gerar prompts:", error);
             }
         };
 
