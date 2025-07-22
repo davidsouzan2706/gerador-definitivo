@@ -3578,7 +3578,7 @@ window.suggestPerformance = async (sectionId) => {
   }
 
   try {
-    // Limpa e mostra loading
+    // Limpa o container e mostra loading
     outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
 
     if (!contentWrapper || contentWrapper.children.length === 0) {
@@ -3662,98 +3662,6 @@ ${JSON.stringify(paragraphsWithIds, null, 2)}
     hideLoading();
   }
 };
-
-
-    // Monta o prompt para a IA
-    const prompt = `Você é um Especialista em Performance Narrativa para YouTube.
-Analise os parágrafos abaixo e retorne um array JSON com sugestões detalhadas para cada um.
-
-Para cada parágrafo, inclua:
-- "paragraphId": string (o ID exato)
-- "performanceSuggestion": string em português (ex: "Fale com tensão crescente")
-- "emotion": string (emoção dominante)
-- "pace": string ("lento", "médio", "rápido")
-
-**REGRAS ESTRITAS**:
-- Responda APENAS com um array JSON válido.
-- Nada além do JSON.
-
-Dados dos parágrafos:
-${JSON.stringify(paragraphsWithIds, null, 2)}
-`;
-
-    const rawResult = await callGroqAPI(prompt, 1500);
-    const cleanedResult = cleanGeneratedText(rawResult, true);
-    const suggestions = JSON.parse(cleanedResult);
-
-    if (!Array.isArray(suggestions)) {
-      throw new Error("A IA retornou um formato inválido para performance.");
-    }
-
-    // Filtra apenas sugestões com ID que exista no DOM
-    const validSuggestions = suggestions.filter(item =>
-      item &&
-      typeof item === 'object' &&
-      typeof item.paragraphId === 'string' &&
-      typeof item.performanceSuggestion === 'string' &&
-      typeof item.emotion === 'string' &&
-      typeof item.pace === 'string' &&
-      document.getElementById(item.paragraphId)
-    );
-
-    if (validSuggestions.length === 0) {
-      throw new Error("Nenhuma sugestão válida foi gerada pela IA.");
-    }
-
-    // Aplica as sugestões como tooltips interativos
-    validSuggestions.forEach(suggestion => {
-      const p = document.getElementById(suggestion.paragraphId);
-      if (!p) return;
-
-      p.style.position = 'relative';
-      p.style.cursor = 'help';
-
-      const tooltip = document.createElement('div');
-      tooltip.className = 'retention-tooltip bg-indigo-600 text-white text-xs p-2 rounded-md shadow-lg max-w-xs';
-      tooltip.style.position = 'absolute';
-      tooltip.style.top = '100%';
-      tooltip.style.left = '0';
-      tooltip.style.zIndex = '1000';
-      tooltip.style.opacity = '0';
-      tooltip.style.pointerEvents = 'none';
-      tooltip.style.transition = 'opacity 0.3s';
-      tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-      tooltip.style.fontWeight = '500';
-      tooltip.textContent = `🎯 ${suggestion.performanceSuggestion} | Emoção: ${suggestion.emotion} | Ritmo: ${suggestion.pace}`;
-
-      p.appendChild(tooltip);
-
-      p.addEventListener('mouseenter', () => { tooltip.style.opacity = '1'; });
-      p.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
-    });
-
-    outputContainer.innerHTML = `
-      <p class="text-green-600 dark:text-green-400 text-sm mt-2">
-        ✅ ${validSuggestions.length} sugestão(ões) de performance aplicada(s) com sucesso.
-      </p>
-    `;
-
-  } catch (error) {
-    console.error('Erro ao sugerir performance:', error);
-    outputContainer.innerHTML = `
-      <p class="text-red-500 text-sm mt-2">Falha: ${error.message}</p>
-      <button 
-        id="retryButton-${sectionId}" // Adiciona um ID único com base no sectionId
-        onclick="window.suggestPerformance('${sectionId}')"
-        class="btn btn-small btn-secondary mt-2 flex items-center gap-1">
-        🔄 Tentar Novamente
-      </button>
-    `;
-  } finally {
-    hideLoading();
-  }
-};
-
 
 
 
