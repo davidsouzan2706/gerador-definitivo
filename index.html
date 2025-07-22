@@ -4463,72 +4463,131 @@ window.regenerateSection = (fullSectionId) => {
             }
         };
 
-        /**
-         * Gera o esboço estratégico do roteiro, com formatação de layout corrigida.
-         */
-                /**
-         * Gera o esboço estratégico do roteiro, com formatação de layout corrigida.
-         */
-        const generateStrategicOutline = async () => {
-            if (!validateInputs()) return;
-            showLoading(buttons.generateOutlineBtn);
-            const outlineContentDiv = elements.outlineContent;
-            outlineContentDiv.innerHTML = `<div class="loading-spinner-small mx-auto"></div>`;
+// ======================
+// VARIÁVEL GLOBAL DE ESTADO
+// ======================
+window.strategicOutline = null;
 
-            try {
-                const { prompt, maxTokens } = constructScriptPrompt('outline', 'Esboço Estratégico');
-                const rawResult = await callGroqAPI(prompt, maxTokens);
-                
-                // ==========================================================
-                // AQUI ESTÁ A CORREÇÃO
-                // ==========================================================
-                // A função cleanGeneratedText já retorna o objeto JavaScript corrigido.
-                // Não precisamos mais do JSON.parse() ou do bloco try...catch complexo.
-                strategicOutline = cleanGeneratedText(rawResult, true);
+// ======================
+// FUNÇÃO: GERAR ESBOÇO ESTRATÉGICO
+// ======================
+const generateStrategicOutline = async () => {
+  if (!validateInputs()) return;
+  showLoading(buttons.generateOutlineBtn);
 
-                // Adicionamos uma verificação para garantir que a IA não retornou lixo.
-                if (!strategicOutline || typeof strategicOutline !== 'object') {
-                    console.error("A IA retornou um esboço em formato inválido:", rawResult);
-                    throw new Error("A IA falhou em gerar um esboço válido.");
-                }
-                // ==========================================================
-                // FIM DA CORREÇÃO
-                // ==========================================================
+  try {
+    const inputs = {
+      channelName: document.getElementById('channelName').value.trim(),
+      videoTheme: document.getElementById('videoTheme').value.trim(),
+      videoDescription: document.getElementById('videoDescription').value.trim(),
+      targetAudience: document.getElementById('targetAudience').value.trim(),
+      videoObjective: document.getElementById('videoObjective').value.trim(),
+      videoDuration: document.getElementById('videoDuration').value.trim(),
+      language: document.getElementById('languageSelect').value,
+      narrativeStructure: document.getElementById('narrativeStructure').value,
+      narrativeGoal: document.getElementById('narrativeGoal').value.trim(),
+      narrativeTheme: document.getElementById('narrativeTheme').value.trim(),
+      narrativeTone: document.getElementById('narrativeTone').value,
+      narrativeVoice: document.getElementById('narrativeVoice').value.trim(),
+      centralQuestion: document.getElementById('centralQuestion').value.trim(),
+      emotionalArc: document.getElementById('emotionalArc').value.trim(),
+      imageStyle: document.getElementById('imageDescriptionEngine').value.trim()
+    };
 
-                const titleTranslations = {
-                    'introduction': 'Introdução', 'development': 'Desenvolvimento',
-                    'climax': 'Clímax', 'conclusion': 'Conclusão', 'cta': 'CTA'
-                };
-                
-                let outlineHtml = '<ul class="space-y-4 text-sm">';
-                for (const key in strategicOutline) {
-                    if (Object.hasOwnProperty.call(strategicOutline, key)) {
-                        const translatedTitle = titleTranslations[key] || (key.charAt(0).toUpperCase() + key.slice(1));
-                        let contentText = strategicOutline[key] || '';
-                        
-                        outlineHtml += `
-                            <li>
-                                <div>
-                                    <strong class="outline-title">${translatedTitle}:</strong>
-                                    <span>${contentText}</span>
-                                </div>
-                            </li>
-                        `;
-                    }
-                }
-                outlineHtml += '</ul>';
-                outlineContentDiv.innerHTML = outlineHtml;
-                markButtonAsCompleted(buttons.generateOutlineBtn.id);
+    const prompt = `Você é um Estrategista de Conteúdo para YouTube. Gere um "Plano Estratégico" em JSON com os seguintes campos:
+- "narrative_goal": string
+- "narrative_theme": string
+- "narrative_tone": string
+- "narrative_voice": string
+- "central_question": string
+- "emotional_arc": string
+- "image_description_engine": string
 
-            } catch (error) {
-                window.showToast(`Falha ao gerar Esboço: ${error.message}`);
-                console.error("Error generating Outline.", error);
-                outlineContentDiv.innerHTML = `<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`;
-            } finally {
-                hideLoading(buttons.generateOutlineBtn);
-                updateButtonStates();
-            }
-        };
+Responda APENAS com o JSON válido.`;
+
+    const rawResult = await callGroqAPI(prompt, 800);
+    const outline = cleanGeneratedText(rawResult, true);
+
+    if (!outline || typeof outline !== 'object') {
+      throw new Error("IA retornou um esboço inválido.");
+    }
+
+    // ✅ Define o esboço globalmente
+    window.strategicOutline = outline;
+
+    // ✅ Atualiza o HTML
+    const outlineContainer = document.getElementById('outlineContent');
+    outlineContainer.innerHTML = `
+      <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-md space-y-2 text-sm">
+        <p><strong>Objetivo:</strong> ${outline.narrative_goal || 'Não informado'}</p>
+        <p><strong>Tema:</strong> ${outline.narrative_theme || 'Não informado'}</p>
+        <p><strong>Tom:</strong> ${outline.narrative_tone || 'Não informado'}</p>
+        <p><strong>Voz:</strong> ${outline.narrative_voice || 'Não informado'}</p>
+        <p><strong>Pergunta Central:</strong> ${outline.central_question || 'Não informado'}</p>
+        <p><strong>Arco Emocional:</strong> ${outline.emotional_arc || 'Não informado'}</p>
+        <p><strong>Estilo Visual:</strong> ${outline.image_description_engine || 'Não informado'}</p>
+      </div>
+    `;
+
+    window.showToast("✅ Esboço estratégico criado com sucesso!");
+    markButtonAsCompleted(buttons.generateOutlineBtn.id);
+  } catch (error) {
+    console.error("Erro ao gerar Esboço Estratégico:", error);
+    window.showToast(`❌ Falha ao gerar esboço: ${error.message}`);
+    document.getElementById('outlineContent').innerHTML = `
+      <div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>
+    `;
+  } finally {
+    hideLoading(buttons.generateOutlineBtn);
+    updateButtonStates(); // ✅ Atualiza o estado dos botões
+  }
+};
+
+// ======================
+// FUNÇÃO: ATUALIZAR ESTADO DOS BOTÕES
+// ======================
+const updateButtonStates = () => {
+  const mapEmotionsBtn = document.getElementById('mapEmotionsBtn');
+  const generateIntroBtn = document.getElementById('generateIntroBtn');
+  const generateDevelopmentBtn = document.getElementById('generateDevelopmentBtn');
+  const climaxBtn = document.getElementById('climaxBtn');
+  const generateConclusionAndCtaBtn = document.getElementById('generateConclusionAndCtaBtn');
+
+  // ✅ Verifica se o esboço foi criado
+  const hasOutline = !!window.strategicOutline;
+
+  // ✅ Habilita/desabilita botões com base no esboço
+  if (mapEmotionsBtn) {
+    mapEmotionsBtn.disabled = !hasOutline;
+  }
+
+  [generateIntroBtn, generateDevelopmentBtn, climaxBtn, generateConclusionAndCtaBtn].forEach(btn => {
+    if (btn) btn.disabled = !hasOutline;
+  });
+};
+
+// ======================
+// FUNÇÃO: VALIDAR INPUTS (opcional, se não existir)
+// ======================
+const validateInputs = () => {
+  const requiredFields = [
+    'videoTheme',
+    'videoDescription',
+    'targetAudience',
+    'videoObjective',
+    'videoDuration',
+    'narrativeStructure'
+  ];
+
+  for (const fieldId of requiredFields) {
+    const value = document.getElementById(fieldId)?.value.trim();
+    if (!value) {
+      window.showToast(`Preencha o campo: ${fieldId}`);
+      return false;
+    }
+  }
+  return true;
+};
 
 
         /**
