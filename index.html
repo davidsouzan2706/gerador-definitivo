@@ -3584,80 +3584,205 @@ The final output MUST be only the JSON code, like this example:
 
     
         /**
-         * Gera anotações de performance de forma sequencial e com um prompt simplificado,
-         * tornando a função à prova de "alucinações" da IA.
-         * (VERSÃO ARQUITETURAL FINAL E DEFINITIVA)
-         */
-        window.suggestPerformance = async (sectionId) => {
-            const sectionElement = document.getElementById(sectionId);
-            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-            const outputContainer = sectionElement?.querySelector('.section-performance-output');
+ /**
+ * SUGERIR PERFORMANCE NARRATIVA (VERSÃO CORRIGIDA, ROBUSTA E COMPATÍVEL)
+ * Analisa cada parágrafo da seção e sugere tom, ritmo, ênfase e emoção para narração.
+ * @param {string} sectionId - Ex: 'intro', 'development', 'climax', 'conclusion'
+ */
+window.suggestPerformance = async (sectionId) => {
+  const outputContainer = document.querySelector(`#${sectionId}Section .section-performance-output`);
+  if (!outputContainer) {
+    console.warn(`Container de performance não encontrado para ${sectionId}`);
+    return;
+  }
 
-            if (!contentWrapper || !contentWrapper.textContent.trim() || !outputContainer) {
-                window.showToast("Gere o roteiro desta seção primeiro.");
-                return;
-            }
-            if (!window.emotionalMap || window.emotionalMap.length === 0) {
-                // A lógica de guiar o usuário para o Mapa Emocional continua a mesma e é importante.
-                // ... (código existente para guiar o usuário)
-                return;
-            }
+  try {
+    // Mostra loading
+    showLoading(outputContainer);
+    outputContainer.innerHTML = '';
 
-            outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-            
-            try {
-                const originalParagraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
-                const originalParagraphs = originalParagraphElements.map(p => p.textContent);
-                const originalTextContent = originalParagraphs.join('\n\n');
-                
-                const sectionOrder = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection'];
-                let startIndex = 0;
-                // ... (código existente para calcular o startIndex)
+    // Busca a seção e o conteúdo gerado
+    const sectionElement = document.getElementById(`${sectionId}Section`);
+    const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+    
+    if (!contentWrapper) {
+      throw new Error(`Seção "${sectionId}" não tem conteúdo gerado para analisar.`);
+    }
 
-                // ==========================================================
-                // >>>>> AQUI ESTÁ A NOVA ARQUITETURA RESILIENTE <<<<<
-                // ==========================================================
-                let allAnnotations = [];
-                for (let i = 0; i < originalParagraphs.length; i++) {
-                    const paragraph = originalParagraphs[i];
-                    const emotionalContext = window.emotionalMap[startIndex + i] || { emotion: 'Neutro', pace: 'Normal' };
+    const paragraphs = Array.from(contentWrapper.children);
+    if (paragraphs.length === 0) {
+      throw new Error("Nenhum parágrafo encontrado para análise de performance.");
+    }
 
-                    const singlePrompt = `Você é um Diretor de Cena. Para o PARÁGRAFO abaixo, sua tarefa é:
-                    1. Criar uma anotação geral de performance.
-                    2. Identificar até 3 palavras para ênfase.
-                    
-                    REGRAS CRÍTICAS:
-                    1. Sua resposta DEVE ser um ÚNICO objeto JSON.
-                    2. O objeto deve ter as chaves "general_annotation" (string) e "emphasis_words" (um array de strings).
-                    3. NÃO inclua nenhum texto ou explicação fora do objeto JSON.
-                    
-                    ROTEIRO PARA ANALISAR:
-                    Parágrafo (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${paragraph}"
-                    
-                    Responda apenas com o objeto JSON.`;
+    // Garante IDs únicos para cada parágrafo
+    const paragraphsWithIds = paragraphs.map((p, index) => {
+      const id = p.id || `${sectionId}-p-${Date.now()}-${index}`;
+      if (!p.id) p.id = id;
+      return { id: p.id, text: p.textContent.trim() };
+    });
 
-                    const rawResult = await callGroqAPI(prompt, 500);
-                    const annotationObject = cleanGeneratedText(rawResult, true);
-                    
-                    if (annotationObject) {
-                        allAnnotations.push(annotationObject);
-                    }
-                    await delay(250); // Pausa para não sobrecarregar a API
-                }
-                // ==========================================================
-                
-                if (!Array.isArray(allAnnotations) || allAnnotations.length !== originalParagraphs.length) {
-                    throw new Error("A IA não retornou o número correto de anotações.");
-                }
+    // Monta o prompt para a IA
+    const prompt = `Você é um Especialista em Performance Narrativa para YouTube.
+Analise os parágrafos abaixo e retorne um array JSON com sugestões detalhadas para cada um.
 
-                // O resto da sua função, que reconstrói o texto, continua exatamente igual.
-                let annotatedParagraphs = [];
-                // ... (código de reconstrução que já funciona)
+Para cada parágrafo, inclua:
+- "paragraphId": (string) o ID exato do parágrafo.
+- "performanceSuggestion": (string) sugestão clara em português do Brasil para tom, ritmo e ênfase (ex: "Fale com tensão crescente", "Desacelere e enfatize a palavra 'verdade'").
+- "emotion": (string) emoção dominante (ex: "suspense", "emoção", "urgência", "reflexão").
+- "pace": (string) ritmo sugerido ("lento", "médio", "rápido").
 
-            } catch (error) {
-                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
-            }
-        };
+**REGRAS ESTRITAS**:
+- Responda APENAS com um array JSON válido.
+- Todas as sugestões devem estar em português do Brasil.
+- Não inclua explicações, introduções ou texto fora do JSON.
+
+Dados dos parágrafos:
+${JSON.stringify(paragraphsWithIds, null, 2)}
+`;
+
+    // Chama a IA
+    const rawResult = await callGroqAPI(prompt, 1500);
+    const cleanedResult = cleanGeneratedText(rawResult, true);
+    const suggestions = JSON.parse(cleanedResult);
+
+    if (!Array.isArray(suggestions)) {
+      throw new Error("A IA não retornou um array válido de sugestões.");
+    }
+
+    // Filtra apenas sugestões com ID que exista no DOM
+    const validSuggestions = suggestions.filter(item => 
+      item && 
+      typeof item === 'object' &&
+      typeof item.paragraphId === 'string' &&
+      typeof item.performanceSuggestion === 'string' &&
+      typeof item.emotion === 'string' &&
+      typeof item.pace === 'string' &&
+      document.getElementById(item.paragraphId)
+    );
+
+    if (validSuggestions.length === 0) {
+      throw new Error("Nenhuma sugestão válida foi gerada pela IA.");
+    }
+
+    // Aplica as sugestões como tooltips interativos
+    validSuggestions.forEach(suggestion => {
+      const p = document.getElementById(suggestion.paragraphId);
+      if (!p) return;
+
+      // Estiliza o parágrafo
+      p.style.position = 'relative';
+      p.style.cursor = 'help';
+      p.style.borderRadius = '4px';
+      p.style.transition = 'all 0.2s';
+
+      // Cria o tooltip
+      const tooltip = document.createElement('div');
+      tooltip.className = 'retention-tooltip bg-indigo-600 text-white text-xs p-2 rounded-md shadow-lg max-w-xs';
+      tooltip.style.position = 'absolute';
+      tooltip.style.top = '100%';
+      tooltip.style.left = '0';
+      tooltip.style.zIndex = '1000';
+      tooltip.style.opacity = '0';
+      tooltip.style.pointerEvents = 'none';
+      tooltip.style.transition = 'opacity 0.3s ease';
+      tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+      tooltip.style.fontWeight = '500';
+      tooltip.textContent = `🎯 ${suggestion.performanceSuggestion} | Emoção: ${suggestion.emotion} | Ritmo: ${suggestion.pace}`;
+
+      p.appendChild(tooltip);
+
+      // Eventos de hover
+      p.addEventListener('mouseenter', () => {
+        tooltip.style.opacity = '1';
+      });
+      p.addEventListener('mouseleave', () => {
+        tooltip.style.opacity = '0';
+      });
+    });
+
+    // Mensagem de sucesso
+    outputContainer.innerHTML = `
+      <p class="text-green-600 dark:text-green-400 text-sm mt-2 flex items-center gap-1">
+        ✅ ${validSuggestions.length} sugestão(ões) de performance aplicada(s) com sucesso.
+      </p>
+    `;
+
+  } catch (error) {
+    console.error('Erro ao sugerir performance:', error);
+    outputContainer.innerHTML = `
+      <p class="text-red-500 text-sm mt-2 flex items-center gap-1">
+        ❌ Falha: ${error.message}
+      </p>
+      <button 
+        onclick="window.suggestPerformance('${sectionId}')"
+        class="btn btn-small btn-secondary mt-2 flex items-center gap-1">
+        🔄 Tentar Novamente
+      </button>
+    `;
+  } finally {
+    hideLoading();
+  }
+};
+
+/**
+ * Função auxiliar: Limpa e parseia a resposta da IA
+ * @param {string} text - Texto bruto retornado pela IA
+ * @param {boolean} parseJson - Se deve tentar fazer JSON.parse
+ * @returns {any} Objeto ou array parseado, ou o texto limpo
+ */
+window.cleanGeneratedText = (text, parseJson = false) => {
+  try {
+    // Remove comentários, markdown e textos extras
+    let cleaned = text
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .replace(/<[^>]*>/g, '')
+      .replace(/\*\*/g, '')
+      .trim();
+
+    if (parseJson) {
+      // Extrai conteúdo entre colchetes ou chaves
+      const jsonMatch = cleaned.match(/\[.*\]|\{.*\}/s);
+      if (jsonMatch) cleaned = jsonMatch[0];
+      return JSON.parse(cleaned);
+    }
+    return cleaned;
+  } catch (e) {
+    console.warn('Erro ao limpar texto gerado:', e);
+    return parseJson ? [] : text;
+  }
+};
+
+/**
+ * Função para revalidar IDs em uma seção (opcional)
+ * Use em caso de colagem manual ou erro de ID
+ */
+window.revalidateParagraphIds = (sectionId) => {
+  const contentWrapper = document.getElementById(`${sectionId}Section`)?.querySelector('.generated-content-wrapper');
+  if (!contentWrapper) return;
+
+  Array.from(contentWrapper.children).forEach((p, index) => {
+    p.id = p.id || `${sectionId}-p-${Date.now()}-${index}`;
+  });
+};
+
+/**
+ * Função para limpar sugestões de performance antigas
+ * (chamada automaticamente quando o conteúdo muda)
+ */
+const invalidateAndClearPerformance = (sectionElement) => {
+  if (!sectionElement) return;
+  const performanceContainer = sectionElement.querySelector('.section-performance-output');
+  if (performanceContainer && performanceContainer.innerHTML.trim() !== '') {
+    performanceContainer.innerHTML = `
+      <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
+        <p class="text-sm text-yellow-700 dark:text-yellow-300 font-semibold">⚠️ Roteiro modificado</p>
+        <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+          Clique em "Sugerir Performance" novamente para atualizar as anotações.
+        </p>
+      </div>`;
+  }
+};
 
     
         /**
