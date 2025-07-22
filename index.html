@@ -4552,7 +4552,7 @@ const updateButtonStates = () => {
     if (btn) btn.disabled = !hasOutline;
   });
 
-  // Opcional: outros botões que dependem do roteiro completo
+  // Verifica se todas as seções principais foram geradas
   const allMainScriptGenerated = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection']
     .every(id => {
       const section = document.getElementById(id);
@@ -4561,9 +4561,11 @@ const updateButtonStates = () => {
 
   const generateDescriptionBtn = document.getElementById('generateDescriptionBtn');
   const generateTitlesAndThumbnailsBtn = document.getElementById('generateTitlesAndThumbnailsBtn');
+  const generateSoundtrackBtn = document.getElementById('generateSoundtrackBtn');
 
   if (generateDescriptionBtn) generateDescriptionBtn.disabled = !allMainScriptGenerated;
   if (generateTitlesAndThumbnailsBtn) generateTitlesAndThumbnailsBtn.disabled = !allMainScriptGenerated;
+  if (generateSoundtrackBtn) generateSoundtrackBtn.disabled = !allMainScriptGenerated;
 };
 
 // ======================
