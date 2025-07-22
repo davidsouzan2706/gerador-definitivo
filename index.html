@@ -5218,30 +5218,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-/**
- * Valida os inputs obrigatórios.
- * @returns {boolean} True se todos os obrigatórios estão preenchidos.
- */
-const validateInputs = () => {
-  const requiredFields = [
-    'videoTheme',
-    'videoDescription',
-    'targetAudience',
-    'videoObjective',
-    'videoDuration',
-    'narrativeStructure'
-  ];
-
-  for (const fieldId of requiredFields) {
-    const element = document.getElementById(fieldId);
-    const value = element?.value.trim();
-    if (!value) {
-      window.showToast(`⚠️ Preencha o campo: ${fieldId}`);
-      return false;
-    }
-  }
-  return true;
-};
 
 </script>
 </body>
