@@ -2776,7 +2776,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
     
         /**
          * Limpa o texto gerado pela IA, tentando corrigir erros comuns de JSON.
-         * (VERSÃO "À PROVA DE BALAS")
+         * (VERSÃO "À PROVA DE BALAS" COM PLANO B)
          */
         const cleanGeneratedText = (text, expectJson = false) => {
             if (!text) return null;
@@ -2798,19 +2798,30 @@ const invalidateAndClearPrompts = (sectionElement) => {
             // 2. Remove "lixo" comum, como markdown e texto introdutório.
             jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
 
-            // 3. Tenta corrigir erros comuns de sintaxe antes do parse.
+            // 3. Tenta fazer o parse (PLANO A)
             try {
                 // Remove vírgulas extras no final de arrays e objetos (ex: [1, 2,])
                 jsonString = jsonString.replace(/,\s*([}\]])/g, "$1");
-                
-                // Tenta fazer o parse. Se funcionar, ótimo!
                 return JSON.parse(jsonString);
             } catch (e) {
-                // Se falhar, o erro original é mais útil para depuração.
-                console.error("Falha ao fazer o parse do JSON extraído:", e.message);
-                console.error("JSON problemático:", jsonString); // Mostra a string que tentamos corrigir
-                // Lança o erro para que a função que chamou possa tratá-lo.
-                throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
+                // PLANO A FALHOU. INICIANDO PLANO B.
+                console.warn("Primeira tentativa de parse falhou. Tentando plano B: encapsular em colchetes.");
+                try {
+                    // Repara a string, assumindo que é uma lista de objetos sem os colchetes.
+                    const repairedJsonString = `[${jsonString}]`;
+                    
+                    // Remove vírgulas que possam ter ficado sobrando no final antes do novo colchete.
+                    const finalRepairedString = repairedJsonString.replace(/,\s*\]/g, ']');
+
+                    // Tenta fazer o parse da string reparada.
+                    return JSON.parse(finalRepairedString);
+
+                } catch (e2) {
+                    // Se até o PLANO B falhou, então o erro é mais sério.
+                    console.error("Falha ao fazer o parse do JSON extraído, mesmo após a tentativa de correção:", e.message);
+                    console.error("JSON problemático:", jsonString);
+                    throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
+                }
             }
         };
 
