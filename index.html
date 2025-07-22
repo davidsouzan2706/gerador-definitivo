@@ -3390,11 +3390,15 @@ The final output MUST be only the JSON code, like this example:
 
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
-            const originalTextContent = contentWrapper.textContent.trim();
+            // ==========================================================
+            // A CIRURGIA ACONTECE AQUI
+            // ==========================================================
+            // Pega o texto e remove qualquer anotação [em colchetes] que já exista
+            const originalTextContent = contentWrapper.textContent.trim().replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim();
+            // ==========================================================
+
             const originalParagraphs = originalTextContent.split('\n\n').filter(p => p.trim() !== '');
-            const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
-            const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
-            const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
+            // ... o resto da função continua exatamente igual
             
             try {
                 // ETAPA 1: PEDIR APENAS AS ANOTAÇÕES PARA A IA
