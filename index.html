@@ -3939,8 +3939,8 @@ window.regenerateSection = (fullSectionId) => {
 
 
          /**
-         * Gera prompts de imagem, processando o roteiro SEQUENCIALMENTE com PAUSAS para respeitar os limites da API.
-         * (VERSÃO FINAL COM DELAY - GARANTIDA)
+         * Gera prompts de imagem lendo os parágrafos diretamente dos elementos DIV.
+         * (VERSÃO ARQUITETURAL FINAL - CORRETA)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
@@ -3958,21 +3958,19 @@ window.regenerateSection = (fullSectionId) => {
             }
 
             promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-            const scriptContent = scriptContentElement.textContent;
             
             try {
-                const paragraphs = scriptContent.split('\n\n').filter(p => p.trim() !== '');
-                const firstParagraphId = scriptContentElement.querySelector('div[id]')?.id;
-                const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
-                const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
+                // ==========================================================
+                // >>>>> ESTA É A MUDANÇA FUNDAMENTAL <<<<<
+                // ==========================================================
+                // Em vez de 'split', pegamos os elementos DIV diretamente.
+                const paragraphElements = scriptContentElement.querySelectorAll('div[id]');
+                const baseIndex = 0; // O mapa emocional agora corresponde diretamente ao índice do loop
 
-                // ==========================================================
-                // >>>>> ESTA É A MUDANÇA ARQUITETURAL FINAL <<<<<
-                // ==========================================================
-                // Usamos um loop for...of que é mais limpo e introduzimos a pausa.
                 let allGeneratedPrompts = [];
-                for (const [index, paragraph] of paragraphs.entries()) {
-                    const mapIndex = baseIndex + index;
+                for (let i = 0; i < paragraphElements.length; i++) {
+                    const paragraph = paragraphElements[i].textContent; // Lemos o texto de cada DIV
+                    const mapIndex = baseIndex + i;
                     const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
 
                     const singlePrompt = `Você é um Diretor de Fotografia. Analise o PARÁGRAFO e o CONTEXTO EMOCIONAL abaixo.
@@ -3988,13 +3986,12 @@ window.regenerateSection = (fullSectionId) => {
                         allGeneratedPrompts.push(promptObject);
                     }
                     
-                    // A PAUSA MÁGICA! Espera 250 milissegundos antes da próxima chamada.
                     await delay(250); 
                 }
                 // ==========================================================
 
                 if (!validatePromptsArray(allGeneratedPrompts)) {
-                    throw new Error("A IA retornou prompts em formato inválido, mesmo após o processamento sequencial.");
+                    throw new Error("A IA retornou prompts em formato inválido.");
                 }
                 
                 allImagePrompts[sectionElementId] = allGeneratedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
