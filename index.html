@@ -2237,6 +2237,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             **REGRAS CRÍTICAS:** Responda APENAS com o texto final para ser falado. Sem metadados, sem labels (como "Conclusão:", "CTA:"), apenas o texto.`;
 
             try {
+                const maxTokens = 800; // Define o limite de tokens para esta tarefa
                 let result = await callGroqAPI(prompt, maxTokens);
                 result = removeMetaComments(result.trim());
 
