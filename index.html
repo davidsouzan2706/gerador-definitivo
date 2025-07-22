@@ -1685,12 +1685,7 @@ let promptPaginationState = {};
         // ==========================================================
         // ==================== SETUP INICIAL =======================
         // ==========================================================
-        // Variáveis de estado globais
-        let generatedTitlesAndThumbnails = null;
-        let allImagePrompts = {}; 
-        window.strategicOutline = null; // <--- Corrigido
-        let totalScriptSeconds = 0;
-        let promptPaginationState = {};
+
     let isSettingStrategy = false; // <-- NOSSO NOVO SINALIZADOR
     
         // Bloco de estilo cinematográfico para prompts de imagem
@@ -1794,14 +1789,6 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
          */
         const resetProjectOutputs = () => {
             console.log("Resetando outputs do projeto para nova estratégia...");
-
-            // Limpa variáveis de estado
-            window.strategicOutline = null;
-            allImagePrompts = {};
-            generatedTitlesAndThumbnails = null;
-            totalScriptSeconds = 0;
-            promptPaginationState = {};
-            window.emotionalMap = null;
 
             // Limpa a UI dos outputs
             const contentContainers = [
@@ -2564,12 +2551,6 @@ const resetGeneratedScriptContent = (sourceId) => {
     }
 
     console.log(`Input estratégico '${sourceId}' alterado. Resetando conteúdo do roteiro.`);
-
-    // 1. Limpa as variáveis de estado
-    window.strategicOutline = null;
-    allImagePrompts = {};
-    promptPaginationState = {};
-    totalScriptSeconds = 0;
 
     // 2. Limpa a UI do esboço e das seções
     const outlineContent = document.getElementById('outlineContent');
@@ -4336,11 +4317,6 @@ window.regenerateSection = (fullSectionId) => {
         };
 
 // ======================
-// VARIÁVEL GLOBAL DE ESTADO
-// ======================
-window.strategicOutline = null;
-
-// ======================
 // FUNÇÃO: GERAR ESBOÇO ESTRATÉGICO
 // ======================
 const generateStrategicOutline = async () => {
@@ -4536,11 +4512,6 @@ Responda APENAS com o JSON válido.`;
             if (nicheDesc) nicheDesc.value = '';
             if (ideasOut) ideasOut.innerHTML = '';
 
-            window.strategicOutline = null;
-            allImagePrompts = {};
-            generatedTitlesAndThumbnails = null;
-            totalScriptSeconds = 0;
-            promptPaginationState = {}; // Reset pagination state
 
             // ==========================================================
             // A CORREÇÃO CRÍTICA ESTÁ AQUI
@@ -4788,12 +4759,6 @@ Responda APENAS com o JSON válido.`;
                 window.showToast("Por favor, preencha o Tema e a Descrição do Vídeo.");
                 return;
             }
-            
-            window.strategicOutline = null;
-            allImagePrompts = {};
-            generatedTitlesAndThumbnails = null;
-            totalScriptSeconds = 0;
-            promptPaginationState = {};
             
             const button = document.getElementById('analyzeStrategyBtn');
             showLoading(button);
