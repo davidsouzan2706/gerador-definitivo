@@ -2718,19 +2718,24 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-6">
                     <div>
                         <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 1: Diagnóstico e Criativo</h5>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Analise a retenção de cada parágrafo e, se precisar, enriqueça trechos específicos com uma linguagem mais poderosa. Selecione um trecho e clique.</p>
-                        <div class="flex items-center gap-2">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Analise a retenção e, se precisar, enriqueça trechos específicos. Selecione um trecho e clique.</p>
+                        <div class="flex items-center gap-2 flex-wrap">
                             <button class="btn btn-secondary btn-small" onclick="window.analyzeSectionRetention('${sectionId}Section')">Analisar Retenção</button>
                             <button class="btn btn-secondary btn-small" onclick="window.enrichText(this)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0ZM5.5 7a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1Zm-1.829-1.5a.5.5 0 0 0-.707 0L2 6.793a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L3.707 7.5H3.5a.5.5 0 0 0 0-1h.207L2.707 5.5Zm-1 .707a.5.5 0 0 0-.707-.707L.707 6.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L1.293 7.5H1.5a.5.5 0 0 0 0-1h-.207L2.293 6.207Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
                                 <span class="button-text">Enriquecer Texto</span>
                             </button>
+                            ${sectionId === 'development' ? `
+                            <button class="btn btn-primary btn-small" onclick="window.addDevelopmentChapter(this)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/></svg>
+                                Adicionar Capítulo
+                            </button>` : ''}
                         </div>
                         <div id="analysis-output-${sectionId}" class="section-analysis-output mt-3"></div>
                     </div>
                     <div class="pt-4 border-t border-dashed border-gray-200 dark:border-gray-700">
-                         <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 2: Estrutura de Narração Criativa</h5>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Após a estrutura estar boa, adicione sugestões de performance para guiar a narração e torná-la mais impactante.</p>
+                         <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 2: Estrutura de Narração</h5>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Após a estrutura estar boa, adicione sugestões de performance para guiar a narração.</p>
                         <div class="flex items-center gap-2">
                             <button class="btn btn-secondary btn-small" onclick="window.suggestPerformance('${sectionId}Section')">Sugerir Performance</button>
                         </div>
@@ -3328,6 +3333,58 @@ The final output MUST be only the JSON code, like this example:
                 bar.classList.remove('visible');
             }
         };
+
+
+        /**
+         * Adiciona um novo capítulo ao desenvolvimento, expandindo o roteiro.
+         * @param {HTMLElement} button - O botão que foi clicado.
+         */
+        window.addDevelopmentChapter = async (button) => {
+            const devSection = document.getElementById('developmentSection');
+            const contentWrapper = devSection.querySelector('.generated-content-wrapper');
+            const existingText = contentWrapper.textContent;
+
+            if (!existingText) {
+                showToast("Gere o desenvolvimento inicial primeiro.");
+                return;
+            }
+
+            button.disabled = true;
+            button.innerHTML = '<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px;"></div>';
+
+            try {
+                // Pega o mesmo prompt, mas adiciona um contexto crucial
+                const { prompt, maxTokens } = constructScriptPrompt('development', 'Desenvolvimento');
+                const continuationPrompt = `${prompt}
+                \n\n**CRITICAL CONTINUATION INSTRUCTION:** You are writing the NEXT chapter of a script that already exists. Do NOT repeat any previous information. Continue the narrative from where it left off.
+                \n\n**Here is the END of the current script, for context:**\n"...${existingText.slice(-500)}" 
+                \n\nNow, write the next part of the development section.`;
+                
+                const rawResult = await callGroqAPI(continuationPrompt, maxTokens);
+                const newChapter = removeMetaComments(rawResult.trim());
+                
+                // Formata o novo capítulo em parágrafos com IDs únicos
+                const existingParagraphsCount = contentWrapper.querySelectorAll('div[id]').length;
+                const newParagraphs = newChapter.split('\n').filter(p => p.trim() !== '');
+                const newContentWithDivs = newParagraphs.map((p, index) => 
+                    `<div id="development-p-${existingParagraphsCount + index}">${p}</div>`
+                ).join('');
+
+                contentWrapper.insertAdjacentHTML('beforeend', newContentWithDivs);
+                
+                // Atualiza o tempo de leitura
+                updateAllReadingTimes();
+                showToast("Novo capítulo adicionado!");
+
+            } catch (error) {
+                showToast(`Falha ao adicionar capítulo: ${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/></svg> Adicionar Capítulo`;
+            }
+        };
+
+
 
         /**
          * Escapa uma string de texto plano para ser usada em um documento RTF,
