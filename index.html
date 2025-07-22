@@ -1691,6 +1691,48 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         // Labels para descrição de imagem em diferentes idiomas
         const imageDescriptionLabels = { 'pt-br': 'Descrição da Imagem:', 'pt-pt': 'Descrição da Imagem:', 'en': 'Image Description:' };
 
+// ==========================================================
+        // NOVO: MAPA DE CONTAGEM DE PALAVRAS PARA CONTROLAR DURAÇÃO
+        // ==========================================================
+        const wordCountMap = {
+            // ~2.5 min @ 150 WPM = ~375 palavras
+            'short': {
+                intro: 60,
+                development: 190,
+                climax: 75,
+                conclusion: 50
+            },
+            // ~5.5 min @ 150 WPM = ~825 palavras
+            'medium': {
+                intro: 120,
+                development: 420,
+                climax: 165,
+                conclusion: 120
+            },
+            // ~10 min @ 150 WPM = ~1500 palavras
+            'long': {
+                intro: 225,
+                development: 750,
+                climax: 300,
+                conclusion: 225
+            },
+            // ~16 min @ 150 WPM = ~2400 palavras
+            'extra-long': {
+                intro: 360,
+                development: 1200,
+                climax: 480,
+                conclusion: 360
+            },
+            // ~30 min @ 150 WPM = ~4500 palavras
+            'documentary': {
+                intro: 450,
+                development: 2700,
+                climax: 900,
+                conclusion: 450
+            }
+        };
+
+
         // Mapeamento de elementos do DOM para acesso fácil
         const elements = {};
         const buttons = {};
@@ -2935,6 +2977,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 if (imageDescriptionEngine) { context += `\n- Image Description Keywords: "${imageDescriptionEngine}"`; }
                 if (imageStyleSelect === 'cinematic') {
                     context += `\n- Image Style: ${CINEMATIC_STYLE_BLOCK}`;
+
                 } else if (imageStyleSelect === 'custom' && customImageStyle) {
                     context += `\n- Custom Image Style: ${customImageStyle}`;
                 }
@@ -2956,9 +2999,18 @@ const invalidateAndClearPrompts = (sectionElement) => {
             const selectedLanguage = elements.languageSelect.value;
             const narrativeStructure = elements.narrativeStructure.value; // Corrected to use elements.narrativeStructure
 
+            const targetWords = wordCountMap[videoDuration]?.[sectionName];
+
+            let durationInstruction = '';
+            if (targetWords) {
+                // Cria uma instrução MUITO MAIS FORTE e explícita para a IA
+                durationInstruction = `\n\n**CRITICAL TIMING CONSTRAINT:** The generated text for this section MUST be approximately **${targetWords} words** long to fit the video's schedule. This is a strict requirement.`;
+            }
+
             let prompt = `${baseContext}
 
-Você é um mestre roteiro de YouTube. Sua tarefa é escrever o texto para a seção **"${sectionTitle}"** do roteiro.
+        Você é um mestre roteiro de YouTube. Sua tarefa é escrever o texto para a seção **"${sectionTitle}"** do roteiro.
+            ${durationInstruction}
 
 **REGRAS CRÍTICAS E INEGOCIÁVEIS:**
 1.  **FOCO TOTAL:** Sua resposta deve ser APENAS e SOMENTE o texto para a seção **"${sectionTitle}"**.
@@ -3050,10 +3102,11 @@ Siga estas regras e gere o roteiro para a seção "${sectionTitle}" agora.`;
                     break;
             }
 
-            // O resto da função continua...
-            // ...
+            // ==========================================================
+            // >>>>> CÓDIGO FINAL E CORRIGIDO PARA O SWITCH <<<<<
+            // ==========================================================
             switch (sectionName) {
-                case 'outline': // New case for strategic outline
+                case 'outline': // Este não muda
                     prompt = `${baseContext}
 
 Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar um "beat sheet" ou um esboço estratégico detalhado para o vídeo. Analise todos os parâmetros fornecidos (tema, público, estilo narrativo, etc.) para criar a estrutura mais impactante possível.
@@ -3073,11 +3126,9 @@ Exemplo de formato JSON esperado:
 `;
                     maxTokens = 1500;
                     break;
+
                 case 'intro':
-                    // LEIA O VALOR DO NOVO CAMPO
                     const shockingHook = document.getElementById('shockingEndingHook')?.value.trim();
-                    
-                    // LÓGICA CONDICIONAL PARA O PROMPT
                     if (shockingHook) {
                         prompt += `
                         \n\n**CRITICAL INSTRUCTION FOR THE INTRODUCTION:**
@@ -3085,48 +3136,51 @@ Exemplo de formato JSON esperado:
                         After stating that phrase, use the rest of the introduction to build a deep sense of mystery and curiosity, making the audience desperate to know the chain of events that led to that ending. Do not explain the ending, only create the hook.
                         `;
                     } else {
-                        // Comportamento padrão se o campo estiver vazio
                         prompt += `
-                        The introduction should hook the viewer immediately, clearly state the video's intriguing question or mystery, and set the stage for what's to come. It must be captivating and create curiosity. For a "${videoDuration}" video, make this introduction appropriate in length and detail.
+                        The introduction should hook the viewer immediately, clearly state the video's intriguing question or mystery, and set the stage for what's to come. It must be captivating and create curiosity.
                         `;
                     }
-
                     if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
                         prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
                     }
-                    maxTokens = 500;
+                    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500; // CORRIGIDO
                     break;
+
                 case 'development':
                     prompt += `
-                    The development section should delve into the core topic, presenting facts, arguments, and historical context. It should maintain a strong narrative flow, building suspense and providing compelling information. Break down complex ideas into easily digestible parts. For a "${videoDuration}" video, ensure this section is comprehensive but also flows well, adapting its length to the desired duration.
+                    The development section should delve into the core topic, presenting facts, arguments, and historical context. It should maintain a strong narrative flow, building suspense and providing compelling information. Break down complex ideas into easily digestible parts.
                     `;
-                    maxTokens = 1500;
+                    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 1500; // CORRIGIDO
                     break;
+
                 case 'climax':
                     prompt += `
-                    The climax should be the most impactful part of the video, revealing key insights, surprising twists, or the most compelling evidence related to the video theme. It should be dramatic and leave the viewer with a sense of awe or profound understanding. For a "${videoDuration}" video, make this climax impactful and well-paced.
+                    The climax should be the most impactful part of the video, revealing key insights, surprising twists, or the most compelling evidence related to the video theme. It should be dramatic and leave the viewer with a sense of awe or profound understanding.
                     `;
                     if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
                         prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
                     }
-                    maxTokens = 500;
+                    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500; // CORRIGIDO
                     break;
+
                 case 'conclusion':
                     prompt += `
-                    The conclusion should summarize the main points, provide a final thought or reflection, and leave the viewer with a lasting impression. Ensure the conclusion is complete and well-rounded, providing a sense of closure. For a "${videoDuration}" video, make this conclusion concise yet impactful.
+                    The conclusion should summarize the main points, provide a final thought or reflection, and leave the viewer with a lasting impression. Ensure the conclusion is complete and well-rounded, providing a sense of closure.
                     `;
                     if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
                         prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
                     }
-                    maxTokens = 500;
+                    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500; // CORRIGIDO
                     break;
+
                 case 'cta':
                     prompt += `
-                    The Call to Action (CTA) should be clear and concise, encouraging viewers to subscribe, like, comment, or share. It should be compelling and feel like a natural conclusion to the video. For a "${videoDuration}" video, keep this CTA direct and effective, **but ensure it is a complete and well-rounded paragraph.**
+                    The Call to Action (CTA) should be clear and concise, encouraging viewers to subscribe, like, comment, or share. It should be compelling and feel like a natural conclusion to the video, **but ensure it is a complete and well-rounded paragraph.**
                     `;
-                    maxTokens = 400; 
+                    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 400; // CORRIGIDO
                     break;
-                case 'titles_thumbnails':
+
+                case 'titles_thumbnails': // Este não muda
                     prompt = `${baseContext}
 Generate 5 highly clickable and viral YouTube video titles and 5 compelling thumbnail ideas.
 
@@ -3148,7 +3202,8 @@ The final output MUST be only the JSON code, like this example:
     {\n      "title": "HISTORY CHANGED",\n      "description": "A visually stunning image of the Ark of the Covenant radiating golden light inside a reconstructed Solomon's Temple."\n}\n]\n}`;
                     maxTokens = 800;
                     break;
-                case 'description':
+
+                case 'description': // Este não muda
                     prompt = `${baseContext}\n\nGenerate a compelling YouTube video description (around 150-200 words) that summarizes the video, includes relevant keywords for SEO, and encourages engagement. Include a strong hook, a brief overview of the content, and a call to action. Include 10 relevant hashtags.
                     Output format:
                     Description:
@@ -3159,7 +3214,8 @@ The final output MUST be only the JSON code, like this example:
                     `;
                     maxTokens = 700;
                     break;
-                default:
+
+                default: // Este não muda
                     maxTokens = 1000;
                     break;
             }
