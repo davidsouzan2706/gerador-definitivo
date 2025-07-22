@@ -3439,11 +3439,13 @@ The final output MUST be only the JSON code, like this example:
                 let annotatedParagraphs = [];
                 originalParagraphs.forEach((p, index) => {
                     const annotationData = annotations[index];
-                    let annotatedParagraph = p;
+                    let annotatedParagraph = p; // Usando 'let' aqui
 
                     if (annotationData && annotationData.emphasis_words && annotationData.emphasis_words.length > 0) {
                         annotationData.emphasis_words.forEach(word => {
-                            const wordRegex = new RegExp(`\\b(${word})\\b`, 'g');
+                            // Escapa caracteres especiais na palavra para usar na Regex
+                            const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                            const wordRegex = new RegExp(`\\b(${escapedWord})\\b`, 'g');
                             annotatedParagraph = annotatedParagraph.replace(wordRegex, `[ênfase em '${word}'] $1`);
                         });
                     }
