@@ -3372,8 +3372,8 @@ The final output MUST be only the JSON code, like this example:
 
     
         /**
-         * Gera anotações de performance em duas etapas, com auditoria.
-         * (VERSÃO FINAL COM CORREÇÃO DE ESCOPO)
+         * Gera anotações de performance em duas etapas para garantir 100% de consistência.
+         * (VERSÃO FINAL - PLANO B ATIVADO)
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
@@ -3406,19 +3406,25 @@ The final output MUST be only the JSON code, like this example:
                     promptContext += `Parágrafo ${index} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
                 });
 
-                const prompt = `Você é um robô de anotação de texto. Sua única função é seguir as regras abaixo. Você deve ignorar qualquer conversa ou contexto anterior. Sua análise deve se basear **única e exclusivamente** no "Roteiro para Análise" fornecido.
+                const prompt = `Você é um Diretor de Cena. Para CADA um dos ${originalParagraphs.length} parágrafos abaixo, sua tarefa é:
+                1.  Criar uma anotação geral de performance [em colchetes] (ex: "[Tom de curiosidade, ritmo rápido]").
+                2.  Identificar até 3 palavras ou frases curtas dentro do parágrafo que merecem ênfase.
 
-                **Tarefa:** Para CADA um dos ${originalParagraphs.length} parágrafos do roteiro abaixo, crie uma única anotação de performance [em colchetes]. A anotação deve guiar o narrador sobre o tom, o ritmo e as palavras-chave para enfatizar.
+                REGRAS CRÍTICAS:
+                1.  Sua resposta DEVE ser um array JSON com ${originalParagraphs.length} objetos.
+                2.  Cada objeto deve ter DUAS chaves: "general_annotation" (a anotação geral em uma string) e "emphasis_words" (um array de strings com as palavras exatas para enfatizar).
+                3.  As palavras em "emphasis_words" DEVEM existir no parágrafo correspondente.
 
-                **REGRAS INEGOCIÁVEIS:**
-                1.  Sua resposta DEVE ser um array JSON com EXATAMENTE ${originalParagraphs.length} strings.
-                2.  Cada string no array deve ser APENAS a anotação completa (ex: "[Tom de curiosidade, com ênfase em 'segredo' e 'verdade']").
-                3.  As palavras escolhidas para ênfase DEVEM ser extraídas do parágrafo correspondente. **É PROIBIDO inventar palavras que não estão no texto.**
-
-                **Roteiro para Análise:**
+                ROTEIRO PARA ANÁLISE:
                 ${promptContext}
 
-                Responda apenas com o array JSON de anotações.`;
+                EXEMPLO DE RESPOSTA PARA UM PARÁGRAFO:
+                {
+                  "general_annotation": "[Tom de surpresa, pausa breve]",
+                  "emphasis_words": ["inacreditável", "segredo"]
+                }
+
+                Responda apenas com o array JSON.`;
 
                 const rawResult = await callGroqAPI(prompt, 2000);
                 const annotations = cleanGeneratedText(rawResult, true);
@@ -3441,7 +3447,6 @@ The final output MUST be only the JSON code, like this example:
                         });
                     }
                     
-                    // A variável 'finalParagraph' é criada e usada DENTRO do mesmo escopo
                     const finalParagraph = `${annotationData.general_annotation || ''}\n${annotatedParagraph}`;
                     annotatedParagraphs.push(finalParagraph.trim());
                 });
