@@ -3918,22 +3918,34 @@ window.regenerateSection = (fullSectionId) => {
 
 
          /**
-         * Gera prompts de imagem de forma sequencial e com um prompt simplificado.
-         * (VERSÃO FINAL DE ENGENHARIA DE PROMPT)
+         * Gera prompts de imagem, com o Mapa Emocional como um bônus opcional.
+         * (VERSÃO FINAL DE USABILIDADE)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
-            // ... (o início da função continua igual)
+            const sectionElement = document.getElementById(sectionElementId);
+            const scriptContentElement = sectionElement?.querySelector('.generated-content-wrapper');
+            const promptContainer = sectionElement?.querySelector('.prompt-container');
+            
+            if (!scriptContentElement || !scriptContentElement.textContent.trim() || !promptContainer) {
+                window.showToast("Gere o conteúdo do roteiro desta seção primeiro.");
+                return;
+            }
+
+            // ==========================================================
+            // >>>>> A VERIFICAÇÃO OBRIGATÓRIA FOI REMOVIDA DAQUI <<<<<
+            // ==========================================================
+
+            promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
+            
             try {
                 const paragraphElements = scriptContentElement.querySelectorAll('div[id]');
                 let allGeneratedPrompts = [];
 
                 for (const [index, pElement] of paragraphElements.entries()) {
                     const paragraph = pElement.textContent;
-                    const emotionalContext = window.emotionalMap[index] || { emotion: 'Neutro', pace: 'Normal' };
+                    // Esta linha já lida com o caso do mapa não existir, usando um valor padrão.
+                    const emotionalContext = (window.emotionalMap && window.emotionalMap[index]) || { emotion: 'Neutro', pace: 'Normal' };
 
-                    // ==========================================================
-                    // >>>>> AQUI ESTÁ A NOVA REGRA DE PROMPT <<<<<
-                    // ==========================================================
                     const singlePrompt = `Você é um Diretor de Fotografia. Analise o PARÁGRAFO e o CONTEXTO EMOCIONAL abaixo.
                     REGRAS: Sua resposta DEVE ser um ÚNICO objeto JSON.
                     - O objeto deve ter APENAS as chaves "scriptPhrase" e "imageDescription".
@@ -3943,7 +3955,6 @@ window.regenerateSection = (fullSectionId) => {
                     CONTEXTO (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})
                     
                     Gere o objeto JSON seguindo TODAS as regras.`;
-                    // ==========================================================
                     
                     const rawResult = await callGroqAPI(singlePrompt, 500);
                     const promptObject = cleanGeneratedText(rawResult, true);
@@ -3954,9 +3965,24 @@ window.regenerateSection = (fullSectionId) => {
                     await delay(250);
                 }
                 
-                // ... (o resto da função continua igual)
+                if (!validatePromptsArray(allGeneratedPrompts)) {
+                    throw new Error("A IA retornou prompts em formato inválido.");
+                }
+                
+                allImagePrompts[sectionElementId] = allGeneratedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
+                promptPaginationState[sectionElementId] = 0;
+                
+                promptContainer.innerHTML = `
+                    <div class="prompt-pagination-wrapper space-y-4">
+                        <div class="prompt-nav-container flex items-center justify-center gap-4"></div>
+                        <div class="prompt-items-container space-y-4"></div>
+                    </div>
+                `;
+                renderPaginatedPrompts(sectionElementId);
+
             } catch (error) {
-                 // ... (o catch continua igual)
+                 promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
+                 console.error("Erro detalhado ao gerar prompts:", error);
             }
         };
 
