@@ -2717,9 +2717,9 @@ const invalidateAndClearPrompts = (sectionElement) => {
             }
         };
     
-               /**
-         * Gera o HTML para uma seção do roteiro, com fluxo de trabalho em 3 passos e 'this' nos botões.
-         * (VERSÃO FINAL COM MELHORIAS DE UI)
+        /**
+         * Gera o HTML para uma seção do roteiro, com fluxo de trabalho em 3 passos.
+         * (VERSÃO FINAL COM PASSO 3 PARA PROMPTS)
          */
         const generateSectionHtmlContent = (sectionId, title, content) => {
             const mainBodyId = `${sectionId}Body`;
@@ -2732,8 +2732,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
                         <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 1: Diagnóstico e Criativo</h5>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Analise a retenção e, se precisar, enriqueça trechos. Selecione um trecho e clique.</p>
                         <div class="flex items-center gap-2 flex-wrap">
-                            {/* >>>>> MUDANÇA #1: Passando o próprio botão (this) para a função */}
-                            <button class="btn btn-secondary btn-small" onclick="window.analyzeSectionRetention(this, '${sectionId}Section')">Analisar Retenção</button>
+                            <button class="btn btn-secondary btn-small" onclick="window.analyzeSectionRetention('${sectionId}Section')">Analisar Retenção</button>
                             <button class="btn btn-secondary btn-small" onclick="window.enrichText(this)">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
                                 <span class="button-text">Enriquecer Texto</span>
@@ -2750,8 +2749,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
                          <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 2: Estrutura de Narração</h5>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Após a estrutura estar boa, adicione sugestões de performance para guiar a narração.</p>
                         <div class="flex items-center gap-2">
-                            {/* >>>>> MUDANÇA #2: Passando o próprio botão (this) aqui também */}
-                            <button class="btn btn-secondary btn-small" onclick="window.suggestPerformance(this, '${sectionId}Section')">Sugerir Performance</button>
+                            <button class="btn btn-secondary btn-small" onclick="window.suggestPerformance('${sectionId}Section')">Sugerir Performance</button>
                         </div>
                         <div class="section-performance-output mt-3"></div> 
                     </div>
@@ -3351,36 +3349,6 @@ The final output MUST be only the JSON code, like this example:
                 bar.classList.remove('visible');
             }
         };
-
-
-
-        /**
-         * Mostra um spinner de carregamento em QUALQUER botão, salvando seu conteúdo original.
-         * @param {HTMLElement} button - O elemento do botão a ser modificado.
-         */
-        const showButtonLoading = (button) => {
-            if (!button) return;
-            // Salva o HTML original do botão (incluindo ícones e texto)
-            button.setAttribute('data-original-html', button.innerHTML);
-            button.disabled = true;
-            // Define o spinner como o novo conteúdo. Ajustamos o tamanho para botões menores.
-            button.innerHTML = '<div class="loading-spinner" style="width:18px; height:18px; border-width: 2px;"></div>';
-        };
-
-        /**
-         * Esconde o spinner de carregamento de um botão, restaurando seu conteúdo original.
-         * @param {HTMLElement} button - O elemento do botão a ser restaurado.
-         */
-        const hideButtonLoading = (button) => {
-            if (!button) return;
-            // Restaura o HTML original que salvamos
-            if (button.hasAttribute('data-original-html')) {
-                button.innerHTML = button.getAttribute('data-original-html');
-                button.removeAttribute('data-original-html');
-            }
-            button.disabled = false;
-        };
-
 
 
 
