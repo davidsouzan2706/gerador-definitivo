@@ -16,6 +16,7 @@
     <style>
 
 
+
 /* ========================================================== */
         /* ==== MELHORIA DE VISIBILIDADE NO ACORDEÃO (CORREÇÃO) ==== */
         /* ========================================================== */
@@ -1673,11 +1674,15 @@
     </div>
     
     <script type="module">
-
         // ==========================================================
         // ==================== SETUP INICIAL =======================
         // ==========================================================
-
+        // Variáveis de estado globais
+        let generatedTitlesAndThumbnails = null;
+        let allImagePrompts = {}; 
+        let strategicOutline = null;
+        let totalScriptSeconds = 0;
+        let promptPaginationState = {};
     let isSettingStrategy = false; // <-- NOSSO NOVO SINALIZADOR
     
         // Bloco de estilo cinematográfico para prompts de imagem
@@ -1776,11 +1781,19 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         }
 
 
-        /**
+/**
          * Limpa apenas os outputs gerados do projeto, mantendo os inputs principais.
          */
         const resetProjectOutputs = () => {
             console.log("Resetando outputs do projeto para nova estratégia...");
+
+            // Limpa variáveis de estado
+            strategicOutline = null;
+            allImagePrompts = {};
+            generatedTitlesAndThumbnails = null;
+            totalScriptSeconds = 0;
+            promptPaginationState = {};
+            window.emotionalMap = null;
 
             // Limpa a UI dos outputs
             const contentContainers = [
@@ -1935,100 +1948,17 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
          * @param {HTMLElement} button - O botão que estava em estado de carregamento.
          */
         const hideLoading = (button) => {
-  if (!button) return; // Garante que o botão existe
+            // Habilita TODOS os botões de geração novamente
+            Object.values(buttons).forEach(btn => { if(btn) btn.disabled = false; });
+            
+            const spinnerDiv = button.querySelector('.loading-spinner');
+            if (spinnerDiv) spinnerDiv.classList.add('hidden');
+            
+            const textSpan = button.querySelector('.button-text');
+            if (textSpan) textSpan.classList.remove('hidden');
 
-
-// ==========================================================
-        // >>>>> NOVA CENTRAL DE COMANDO E VALIDAÇÃO <<<<<
-        // ==========================================================
-        /**
-         * Valida apenas os campos necessários para criar o Esboço Estratégico.
-         */
-        const validateOutlinePrerequisites = () => {
-            const theme = document.getElementById('videoTheme')?.value.trim();
-            const description = document.getElementById('videoDescription')?.value.trim();
-            return theme && description;
+            updateButtonStates(); // Chama a função centralizada para reavaliar o estado
         };
-        
-        /**
-         * Atualiza o estado de TODOS os botões com base no estado atual da aplicação.
-         */
-        const updateButtonStates = () => {
-            const canGenerateOutline = validateOutlinePrerequisites();
-            const hasOutline = !!window.strategicOutline;
-            const scriptIsComplete = isScriptComplete();
-
-            // Botão do Esboço
-            const outlineBtn = document.getElementById('generateOutlineBtn');
-            if (outlineBtn) outlineBtn.disabled = !canGenerateOutline;
-
-            // Botões que dependem do Esboço
-            const outlineDependents = ['mapEmotionsBtn', 'generateIntroBtn', 'generateDevelopmentBtn', 'climaxBtn', 'conclusionBtn', 'generateCTABtn'];
-            outlineDependents.forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) btn.disabled = !hasOutline;
-            });
-
-            // Botões que dependem do Roteiro Completo
-            const scriptDependents = ['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateSoundtrackBtn'];
-            scriptDependents.forEach(id => {
-                const btn = document.getElementById(id);
-                const floatBtn = document.getElementById(`float_${id}`);
-                if (btn) btn.disabled = !scriptIsComplete;
-                if (floatBtn) floatBtn.disabled = !scriptIsComplete;
-            });
-        };
-
-
-
-    // ==========================================================
-// EVENT LISTENER ÚNICO E CORRETO
-// ==========================================================
-document.addEventListener('DOMContentLoaded', () => {
-    // ---- 1. INICIALIZAÇÃO GERAL ----
-    setupInputTabs();
-    setupTabs();
-    updateProgressBar();
-    updateButtonStates();
-    handleConclusionStrategyChange();
-    updateNarrativeStructureOptions();
-
-    // ---- 2. EVENTOS DIRETOS EM ELEMENTOS ESPECÍFICOS ----
-    document.getElementById('importFileInput')?.addEventListener('change', importProject);
-    
-    document.getElementById('darkModeToggle')?.addEventListener('click', () => {
-        document.body.classList.toggle('dark');
-        const isDarkMode = document.body.classList.contains('dark');
-        document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
-        document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
-        localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
-    });
-
-    if (localStorage.getItem('darkMode') === 'enabled') {
-        document.body.classList.add('dark');
-        document.getElementById('moonIcon')?.classList.add('hidden');
-        document.getElementById('sunIcon')?.classList.remove('hidden');
-    }
-
-    document.getElementById('toggleZenModeBtn')?.addEventListener('click', () => document.body.classList.toggle('zen-mode'));
-    document.getElementById('exitZenModeBtn')?.addEventListener('click', () => document.body.classList.remove('zen-mode'));
-    document.getElementById('imageStyleSelect')?.addEventListener('change', toggleCustomImageStyleVisibility);
-    
-    document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
-        radio.addEventListener('change', handleConclusionStrategyChange);
-
-        const speakingPaceSelect = document.getElementById('speakingPace');
-            if (speakingPaceSelect) {
-                speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
-        }
-    });
-
-
-  button.classList.remove('loading');
-  button.disabled = false;
-  button.querySelector('.loading-spinner').classList.add('hidden');
-  button.querySelector('.button-text').classList.remove('hidden');
-};
 
         /**
          * Marca um botão (original e flutuante) como concluído (cor verde).
@@ -2075,18 +2005,66 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         
         /**
-         * Verifica se as seções principais do roteiro foram geradas.
+         * Verifica se todas as seções principais do roteiro foram geradas.
          * @returns {boolean} True se todas as seções principais foram geradas, caso contrário, false.
          */
         const isScriptComplete = () => {
-            return ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection'].every(id => { // CTA is now part of conclusionSection
-                const section = document.getElementById(id);
-                return section && !section.classList.contains('hidden') && section.querySelector('.generated-content-wrapper')?.textContent.trim() !== '';
-            });
+          const sectionIds = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection'];
+  
+          return sectionIds.every(id => {
+           const section = document.getElementById(id);
+            if (!section) return false;
+    
+            const contentWrapper = section.querySelector('.generated-content-wrapper');
+            const textContent = contentWrapper?.textContent.trim() || '';
+    
+            return textContent.length > 0;
+          });
         };
 
-              
-         /**
+        /**
+ * ATUALIZA O ESTADO DOS BOTÕES COM BASE NO PROGRESSO DO ROTEIRO
+ * Habilita/desabilita botões de geração e recursos.
+ */
+const updateButtonStates = () => {
+  // 1. Botões principais de geração
+  const mapEmotionsBtn = document.getElementById('mapEmotionsBtn');
+  const generateIntroBtn = document.getElementById('generateIntroBtn');
+  const generateDevelopmentBtn = document.getElementById('generateDevelopmentBtn');
+  const climaxBtn = document.getElementById('climaxBtn');
+  const generateConclusionAndCtaBtn = document.getElementById('generateConclusionAndCtaBtn');
+
+  // 2. Verifica se o esboço estratégico foi criado
+  const hasOutline = !!window.strategicOutline;
+
+  // 3. Habilita/desabilita botão "Mapear Emoções"
+  if (mapEmotionsBtn) {
+    mapEmotionsBtn.disabled = !hasOutline;
+  }
+
+  // 4. Habilita/desabilita seções do roteiro
+  [generateIntroBtn, generateDevelopmentBtn, climaxBtn, generateConclusionAndCtaBtn].forEach(btn => {
+    if (btn) btn.disabled = !hasOutline;
+  });
+
+  // 5. Verifica se TODAS as seções principais foram geradas
+  const allMainScriptGenerated = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection']
+    .every(id => {
+      const section = document.getElementById(id);
+      return section && section.querySelector('.generated-content-wrapper')?.textContent.trim() !== '';
+    });
+
+  // 6. Botões que dependem do roteiro completo
+  const generateDescriptionBtn = document.getElementById('generateDescriptionBtn');
+  const generateTitlesAndThumbnailsBtn = document.getElementById('generateTitlesAndThumbnailsBtn');
+  const generateSoundtrackBtn = document.getElementById('generateSoundtrackBtn');
+
+  if (generateDescriptionBtn) generateDescriptionBtn.disabled = !allMainScriptGenerated;
+  if (generateTitlesAndThumbnailsBtn) generateTitlesAndThumbnailsBtn.disabled = !allMainScriptGenerated;
+  if (generateSoundtrackBtn) generateSoundtrackBtn.disabled = !allMainScriptGenerated;
+};
+
+        /**
          * Mostra um alerta em tela cheia com uma mensagem.
          * @param {string} message - A mensagem a ser exibida.
          */
@@ -2179,81 +2157,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
      /**
-         * Gera sugestões de trilha sonora para a transcrição completa do roteiro.
-         * (VERSÃO GLOBAL - NA ABA RECURSOS)
-         */
+ * Gera sugestões de trilha sonora com base no roteiro completo.
+ */
+const generateSoundtrackSuggestions = async () => {
+  const button = document.getElementById('generateSoundtrackBtn');
+  const outputContainer = document.getElementById('soundtrackContent');
 
+  if (!button || !outputContainer) return;
 
-     /**
-         * Analisa o roteiro completo lendo os DIVs para criar um "mapa emocional".
-         * (VERSÃO ARQUITETURAL FINAL - CORRETA)
-         */
-        const mapEmotionsAndPacing = async () => {
-            const button = document.getElementById('mapEmotionsBtn');
-            const outputContainer = document.getElementById('emotionalMapContent');
-            
-            outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-            showLoading(button);
+  showLoading(button);
 
-            try {
-                // ==========================================================
-                // >>>>> AQUI ESTÁ A CORREÇÃO FUNDAMENTAL <<<<<
-                // ==========================================================
-                // Em vez de 'getTranscriptOnly' e 'split', lemos os parágrafos de todos os DIVs do roteiro.
-                const allParagraphElements = document.querySelectorAll('#scriptSectionsContainer .generated-content-wrapper div[id]');
-                const paragraphs = Array.from(allParagraphElements).map(p => p.textContent);
+  try {
+    // Verifica se o roteiro completo existe
+    const introText = document.getElementById('introSection')?.textContent.trim() || '';
+    const developmentText = document.getElementById('developmentSection')?.textContent.trim() || '';
+    const climaxText = document.getElementById('climaxSection')?.textContent.trim() || '';
+    const conclusionText = document.getElementById('conclusionSection')?.textContent.trim() || '';
 
-                if (paragraphs.length === 0) {
-                    throw new Error("Gere o roteiro completo primeiro para criar o mapa emocional.");
-                }
-                // ==========================================================
-                
-                const prompt = `Você é um Diretor de Cena. Sua tarefa é analisar um roteiro e criar um "beat sheet" emocional. Para cada parágrafo, defina a 'emoção' chave e o 'ritmo' da narração.
-                
-                **REGRAS CRÍTICAS:**
-                1.  Sua resposta DEVE ser um array JSON.
-                2.  O array deve ter um objeto para CADA um dos ${paragraphs.length} parágrafos do roteiro.
-                3.  Cada objeto deve ter TRÊS chaves: "paragraph_index" (o número do índice, começando em 0), "emotion" (string), e "pace" (string).
+    const fullScript = [introText, developmentText, climaxText, conclusionText].filter(Boolean).join(' ');
 
-                **ROTEIRO PARA ANALISAR (PARÁGRAFO POR PARÁGRAFO):**
-                ${paragraphs.map((p, index) => `PARAGRAFO ${index}: "${p}"`).join('\n\n')}
+    if (!fullScript) {
+      throw new Error("Não há roteiro gerado para analisar.");
+    }
 
-                Responda apenas com o array JSON.`;
+    const prompt = `Você é um Especialista em Trilha Sonora para vídeos virais. 
+Analise o roteiro abaixo e sugira 3 faixas musicais que combinem com o clima, ritmo e emoção do vídeo.
 
-                const rawResult = await callGroqAPI(prompt, 4000);
-                const analysis = cleanGeneratedText(rawResult, true);
+Para cada faixa, inclua:
+- Nome da música
+- Artista
+- Estilo musical
+- Momento ideal do vídeo para tocar
+- Justificativa curta
 
-                if (!analysis || !Array.isArray(analysis) || analysis.length !== paragraphs.length) {
-                    throw new Error("A IA retornou um mapa emocional em formato inválido ou incompleto.");
-                }
+Roteiro:
+${fullScript.substring(0, 2000)}...`;
 
-                window.emotionalMap = analysis;
-                
-                let mapHtml = '<div class="space-y-2">';
-                analysis.forEach(item => {
-                    const paragraphText = paragraphs[item.paragraph_index] || "Parágrafo não encontrado";
-                    mapHtml += `
-                        <div class="emotional-map-item">
-                            <p class="paragraph-preview">"${paragraphText.substring(0, 100)}..."</p>
-                            <div class="analysis-tags">
-                                <span class="tag tag-emotion">${item.emotion}</span>
-                                <span class="tag tag-pace">${item.pace}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-                mapHtml += '</div>';
-                
-                outputContainer.innerHTML = mapHtml;
-                markButtonAsCompleted(button.id);
+    const rawResult = await callGroqAPI(prompt, 800);
+    const cleanResult = cleanGeneratedText(rawResult, true);
 
-            } catch (error) {
-                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar o mapa emocional: ${error.message}</p>`;
-                window.emotionalMap = null; // Garante que um mapa falho seja limpo
-            } finally {
-                hideLoading(button);
-            }
-        };
+    // Extração simples de sugestões (ajuste conforme o formato da resposta da IA)
+    const lines = cleanResult.split('\n').filter(line => line.trim() !== '');
+    let suggestionsHtml = '<div class="soundtrack-suggestions space-y-4">';
+
+    // Assume que cada bloco de 4-5 linhas é uma sugestão
+    for (let i = 0; i < lines.length && suggestionsHtml.split('<div class="track-item"').length - 1 < 3; ) {
+      const title = lines[i++].trim().replace(/^[-*]?\s*(?:1\.|2\.|3\.)?\s*/, '');
+      const artist = i < lines.length ? lines[i++].trim().replace(/^-?\s*/, '') : 'Artista desconhecido';
+      const genre = i < lines.length ? lines[i++].trim().replace(/^-?\s*/, '') : '';
+      const moment = i < lines.length ? lines[i++].trim().replace(/^-?\s*/, '') : '';
+      const reason = i < lines.length ? lines[i++].trim().replace(/^-?\s*/, '') : '';
+
+      suggestionsHtml += `
+        <div class="track-item p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+          <h4 class="font-bold text-indigo-700 dark:text-indigo-400">${title}</h4>
+          <p class="text-sm text-gray-600 dark:text-gray-300"><strong>Artista:</strong> ${artist}</p>
+          <p class="text-sm text-gray-600 dark:text-gray-300"><strong>Estilo:</strong> ${genre}</p>
+          <p class="text-sm text-gray-600 dark:text-gray-300"><strong>Momento:</strong> ${moment}</p>
+          <p class="text-sm mt-1"><em>${reason}</em></p>
+        </div>`;
+    }
+
+    suggestionsHtml += '</div>';
+
+    if (suggestionsHtml.includes('track-item')) {
+      outputContainer.innerHTML = suggestionsHtml;
+      markButtonAsCompleted(button.id);
+    } else {
+      throw new Error("Não foi possível extrair sugestões da resposta da IA.");
+    }
+
+  } catch (error) {
+    console.error('Erro ao gerar trilha:', error);
+    outputContainer.innerHTML = `<p class="text-red-500 text-sm">❌ ${error.message}</p>`;
+  } finally {
+    hideLoading(button);
+  }
+};
 
 
 
@@ -2368,47 +2348,56 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-    // ==========================================================
-        // NOVA FUNÇÃO PARA ATUALIZAR A BARRA DE PROGRESO
-        // ==========================================================
+        /**
+       * ATUALIZA A BARRA DE PROGRESSO BASEADA NOS BOTÕES MARCADOS COMO CONCLUÍDOS
+        */
         const updateProgressBar = () => {
-            // Lista de todas as tarefas que contam para o progresso
-            const taskButtonIds = [
-                'generateOutlineBtn', 
-                'generateIntroBtn', 'generateDevelopmentBtn', 'climaxBtn', 
-                'conclusionBtn', 'generateCTABtn', 'generateDescriptionBtn', 
-                'generateTitlesAndThumbnailsBtn' 
+         const taskButtonIds = [
+           'generateOutlineBtn',
+         'mapEmotionsBtn',
+         'generateIntroBtn',
+         'generateDevelopmentBtn',
+         'climaxBtn',
+         'generateConclusionAndCtaBtn',
+         'generateDescriptionBtn',
+         'generateTitlesAndThumbnailsBtn',
+          'generateSoundtrackBtn'
             ];
-            const totalTasks = taskButtonIds.length;
 
-            let completedTasks = 0;
+         const totalTasks = taskButtonIds.length;
+        let completedTasks = 0;
+
             taskButtonIds.forEach(id => {
-                const button = document.getElementById(id);
+          const button = document.getElementById(id);
                 if (button && button.classList.contains('btn-success')) {
-                    completedTasks++;
-                }
-            });
+           completedTasks++;
+              }
+             });
 
             const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-            // Atualiza a UI
-            if (elements.progressBar && elements.progressText) {
-                elements.progressBar.style.width = `${percentage}%`;
-                elements.progressText.textContent = `${percentage}%`;
+             // Atualiza a UI
+             const progressBar = document.getElementById('progressBar');
+             const progressText = document.getElementById('progressText');
 
-                if (percentage === 100) {
-                    elements.progressBar.textContent = "Projeto Pronto!"; 
-                    elements.progressBar.style.color = '#ffffff';
-                    elements.progressBar.style.textAlign = 'center';
-                    elements.progressBar.style.backgroundColor = 'var(--primary-color)';
-                } else {
-                    elements.progressBar.textContent = '';
-                    elements.progressBar.style.backgroundColor = 'var(--success-color)';
-                }
+            if (progressBar) {
+              progressBar.style.width = `${percentage}%`;
+             if (percentage === 100) {
+               progressBar.textContent = "Projeto Pronto!";
+               progressBar.style.color = '#ffffff';
+                progressBar.style.fontSize = '0.75rem';
+                 progressBar.style.fontWeight = 'bold';
+               } else {
+               progressBar.textContent = '';
+              }
             }
-        };
 
-        const setupInputTabs = () => {
+             if (progressText) {
+              progressText.textContent = `${percentage}%`;
+             }
+            };
+
+              const setupInputTabs = () => {
             const nav = document.getElementById('inputTabsNav');
             if (!nav) return;
 
@@ -2585,61 +2574,64 @@ const validatePromptsArray = (data) => {
  * @param {string} sourceId - O ID do elemento que causou a mudança.
  */
 const resetGeneratedScriptContent = (sourceId) => {
-  // Só reseta se já houver conteúdo gerado para não incomodar o usuário no início.
-  if (!window.strategicOutline && !document.querySelector('#scriptSectionsContainer .accordion-item')) {
-    return;
-  }
+    // Só reseta se já houver conteúdo gerado para não incomodar o usuário no início.
+    if (!strategicOutline && !document.querySelector('#scriptSectionsContainer .accordion-item')) {
+        return;
+    }
 
-  console.log(`Input estratégico '${sourceId}' alterado. Resetando conteúdo do roteiro.`);
+    console.log(`Input estratégico '${sourceId}' alterado. Resetando conteúdo do roteiro.`);
 
-  // 2. Limpa a UI do esboço e das seções
-  const outlineContent = document.getElementById('outlineContent');
-  if (outlineContent) {
-    outlineContent.innerHTML = `<div class="asset-card-placeholder">A estratégia mudou. Clique em 'Criar Esboço' novamente.</div>`;
-  }
+    // 1. Limpa as variáveis de estado
+    strategicOutline = null;
+    allImagePrompts = {};
+    promptPaginationState = {};
+    totalScriptSeconds = 0;
 
-  const scriptContainer = document.getElementById('scriptSectionsContainer');
-  if (scriptContainer) {
-    scriptContainer.innerHTML = `
-      <div id="introSection" class="script-section"></div>
-      <div id="developmentSection" class="script-section"></div>
-      <div id="climaxSection" class="script-section"></div>
-      <div id="conclusionSection" class="script-section"></div>
-      <div id="ctaSection" class="script-section hidden"></div>
-    `;
-  }
+    // 2. Limpa a UI do esboço e das seções
+    const outlineContent = document.getElementById('outlineContent');
+    if (outlineContent) {
+        outlineContent.innerHTML = `<div class="asset-card-placeholder">A estratégia mudou. Clique em 'Criar Esboço' novamente.</div>`;
+    }
 
-  // 3. Reseta os botões de geração para o estado inicial
-  const buttonsToReset = [
-    'generateOutlineBtn',
-    'generateIntroBtn',
-    'generateDevelopmentBtn',
-    'climaxBtn',
-    'generateConclusionAndCtaBtn',
-    'generateDescriptionBtn',
-    'generateTitlesAndThumbnailsBtn'
-  ];
-
-  buttonsToReset.forEach(id => {
-    const btn = document.getElementById(id);
-    const floatBtn = document.getElementById(`float_${id}`);
-    [btn, floatBtn].forEach(b => {
-      if (b) {
-        b.classList.remove('btn-success');
-        if (['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateOutlineBtn'].includes(id)) {
-          b.classList.add('btn-secondary');
-        } else {
-          b.classList.add('btn-primary');
-        }
-      }
+    const scriptContainer = document.getElementById('scriptSectionsContainer');
+    if (scriptContainer) {
+        scriptContainer.innerHTML = `
+            <div id="introSection" class="script-section"></div>
+            <div id="developmentSection" class="script-section"></div>
+            <div id="climaxSection" class="script-section"></div>
+            <div id="conclusionSection" class="script-section"></div>
+            <div id="ctaSection" class="script-section hidden"></div>
+        `;
+    }
+    
+    // 3. Reseta os botões de geração para o estado inicial
+    const buttonsToReset = [
+        'generateOutlineBtn', 'generateIntroBtn', 'generateDevelopmentBtn', 
+        'climaxBtn', 'conclusionBtn', 'generateCTABtn', 
+        'generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn'
+    ];
+    
+    buttonsToReset.forEach(id => {
+        const btn = document.getElementById(id);
+        const floatBtn = document.getElementById(`float_${id}`);
+        [btn, floatBtn].forEach(b => {
+            if (b) {
+                b.classList.remove('btn-success');
+                // Adiciona a classe correta (primary ou secondary)
+                if (['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateOutlineBtn'].includes(id)) {
+                    b.classList.add('btn-secondary');
+                } else {
+                    b.classList.add('btn-primary');
+                }
+            }
+        });
     });
-  });
 
-  // 4. Atualiza o estado dos botões
-  updateButtonStates();
-
-  // 5. Notifica o usuário
-  window.showToast(`${sourceId} mudou. O roteiro foi resetado.`);
+    // 4. Atualiza a UI e notifica o usuário
+    updateProgressBar();
+    updateButtonStates();
+    const sourceLabel = document.querySelector(`label[for='${sourceId}']`)?.textContent || sourceId;
+    window.showToast(`'${sourceLabel}' mudou. O roteiro foi resetado.`);
 };
 
 
@@ -2674,26 +2666,27 @@ const invalidateAndClearPrompts = (sectionElement) => {
     }
 };
 
-        /**
-         * Invalida e limpa a sugestão de performance, exibindo um aviso.
-         */
-        const invalidateAndClearPerformance = (sectionElement) => {
-            if (!sectionElement) return;
 
-            const performanceContainer = sectionElement.querySelector('.section-performance-output');
-            if (performanceContainer && performanceContainer.innerHTML.trim() !== '') {
-                performanceContainer.innerHTML = `
-                    <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
-                        <p class="text-sm text-yellow-700 dark:text-yellow-300 font-semibold">
-                            Atenção: O roteiro foi modificado.
-                        </p>
-                        <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                            Por favor, clique em "Sugerir Performance" novamente para criar novas anotações com base no texto atualizado.
-                        </p>
-                    </div>
-                `;
-            }
-        };
+/**
+ * Invalida e limpa a sugestão de performance quando o texto é modificado.
+ * @param {HTMLElement} sectionElement - O elemento da seção (ex: #introSection)
+ */
+const invalidateAndClearPerformance = (sectionElement) => {
+  if (!sectionElement) return;
+
+  const performanceContainer = sectionElement.querySelector('.section-performance-output');
+  
+  if (performanceContainer && performanceContainer.innerHTML.trim() !== '') {
+    performanceContainer.innerHTML = `
+      <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
+        <p class="text-sm text-yellow-700 dark:text-yellow-300 font-semibold">⚠️ Análise de Performance Desatualizada</p>
+        <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+          O roteiro foi modificado. Clique em "Sugerir Performance" novamente para atualizar as sugestões.
+        </p>
+      </div>
+    `;
+  }
+};
 
         /**
          * Lida com os cliques nas setas de navegação dos prompts.
@@ -3300,7 +3293,37 @@ The final output MUST be only the JSON code, like this example:
            }
         };
 
+        /**
+       * Valida os inputs obrigatórios do painel de estratégia.
+       * @returns {boolean} True se todos os campos obrigatórios estão preenchidos.
+       */
+        const validateInputs = () => {
+        const requiredFields = [
+        'videoTheme',
+         'videoDescription',
+         'targetAudience',
+         'videoObjective',
+          'videoDuration',
+          'narrativeStructure'
+            ];
 
+        for (const fieldId of requiredFields) {
+         const element = document.getElementById(fieldId);
+         const value = element?.value.trim();
+        if (!value) {
+              window.showToast(`⚠️ Preencha o campo: ${fieldId}`);
+              return false;
+            }
+        }
+            return true;
+            };
+
+        /**
+         * Itera sobre todas as seções do roteiro na ordem correta,
+         * renumera globalmente todas as cenas E recalcula o timestamp
+         * com base na duração estimada pela IA para cada cena.
+         */
+        
     
         /**
          * Escapa um objeto JSON para ser usado com segurança dentro de um atributo onclick.
@@ -3438,72 +3461,123 @@ The final output MUST be only the JSON code, like this example:
             return result;
         };
 
-        // ==========================================================
-        // ================== FUNÇÕES PRINCIPAIS ====================
-        // ==========================================================
-        
-      /**
-         * Analisa a seção, anexa tooltips com título e botões de ação.
-         * (VERSÃO TOOLTIP FINAL CORRIGIDA)
-         */
-        window.analyzeSectionRetention = async (sectionId) => {
-            const sectionElement = document.getElementById(sectionId);
-            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-            if (!contentWrapper) return;
-
-            const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]'));
-            if (paragraphs.length === 0) {
-                window.showToast("Não há parágrafos para analisar.");
-                return;
-            }
-
-            try {
-                const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
-                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion".
-        
-            **CRITICAL RULE: The "suggestion" MUST be written in Portuguese (Brazil).**
-
-            Analyze this data:
-            ${JSON.stringify(paragraphsWithIds, null, 2)}`;
 
 
-                const rawResult = await callGroqAPI(prompt, 2500);
-                const analysis = cleanGeneratedText(rawResult, true);
+   /**
+ * Analisa o nível de retenção de uma seção do roteiro e aplica um mapa de calor.
+ * @param {string} sectionId - O ID da seção (ex: 'introSection').
+ */
+window.analyzeSectionRetention = async (sectionId) => {
+  const sectionElement = document.getElementById(sectionId);
+  const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+  const outputContainer = sectionElement?.querySelector('.section-analysis-output');
 
-                if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
+  if (!outputContainer) {
+    window.showToast("Erro: container de análise não encontrado.");
+    return;
+  }
 
-                // Limpa tooltips e botões antigos antes de adicionar os novos
-                paragraphs.forEach(p => {
-                    p.classList.remove('retention-green', 'retention-yellow', 'retention-red');
-                    p.querySelector('.retention-tooltip')?.remove();
-                    p.querySelector('.retention-action-btn')?.remove();
-                });
+  try {
+    // Mostra loading
+    outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
 
-                analysis.forEach(item => {
-                    const p = document.getElementById(item.paragraphId);
-                    if (p) {
-                        p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
-                        
-                        if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
-                            const scoreLabels = { green: "PONTO FORTE", yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
-                            const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
+    // Valida se há parágrafos gerados
+    if (!contentWrapper || contentWrapper.children.length === 0) {
+      throw new Error("Nenhum parágrafo gerado para analisar.");
+    }
 
-                            const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}</div>`;
-                            const buttonHtml = `
-                                <button class="retention-action-btn" onclick="event.stopPropagation(); window.optimizeParagraph('${item.paragraphId}', '${item.suggestion.replace(/'/g, "\\'")}')" title="Otimizar com IA">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
-                                </button>`;
-                            p.insertAdjacentHTML('beforeend', tooltipHtml + buttonHtml);
-                        }
-                    }
-                });
-                window.showToast("Análise de retenção concluída!");
-            } catch (error) {
-                window.showToast(`Falha na análise: ${error.message}`);
-            }
-        };
+    // Garante IDs únicos em todos os parágrafos
+    const paragraphsWithIds = Array.from(contentWrapper.children).map((p, index) => {
+      if (!p.id) {
+        p.id = `${sectionId}-p-${Date.now()}-${index}`;
+      }
+      return { id: p.id, text: p.textContent.trim() };
+    });
 
+    // Prompt para a IA
+    const prompt = `Você é um Especialista em Retenção de Audiência para YouTube. Analise os parágrafos abaixo e retorne um array JSON com:
+    - "paragraphId": string (o ID exato)
+    - "retentionScore": string ("green", "yellow" ou "red")
+    - "suggestion": string em português do Brasil (sugestão clara para melhorar)
 
+    **REGRAS ESTRITAS**:
+    - Responda APENAS com um array JSON válido.
+    - Todas as sugestões em português do Brasil.
+    - Nada além do JSON.
+
+    Dados dos parágrafos:
+    ${JSON.stringify(paragraphsWithIds, null, 2)}
+    `;
+
+    const rawResult = await callGroqAPI(prompt, 1500);
+    const cleanedResult = cleanGeneratedText(rawResult, true);
+    const analysis = JSON.parse(cleanedResult);
+
+    if (!Array.isArray(analysis)) {
+      throw new Error("A IA retornou um formato inválido para análise de retenção.");
+    }
+
+    // Limpa análise anterior
+    contentWrapper
+      .querySelectorAll('.retention-green, .retention-yellow, .retention-red, .retention-tooltip, .retention-action-btn')
+      .forEach(el => el.remove());
+
+    // Aplica os resultados
+    analysis.forEach(item => {
+      const p = document.getElementById(item.paragraphId);
+      if (!p) return;
+
+      // Aplica cor do mapa de calor
+      p.classList.add(`retention-${item.retentionScore}`);
+
+      // Cria tooltip com sugestão
+      const tooltip = document.createElement('div');
+      tooltip.className = 'retention-tooltip bg-gray-800 text-white text-xs p-2 rounded-md shadow-lg max-w-xs';
+      tooltip.style.position = 'absolute';
+      tooltip.style.top = '100%';
+      tooltip.style.left = '0';
+      tooltip.style.zIndex = '1000';
+      tooltip.style.opacity = '0';
+      tooltip.style.pointerEvents = 'none';
+      tooltip.style.transition = 'opacity 0.3s';
+      tooltip.textContent = `💡 ${item.suggestion}`;
+
+      p.appendChild(tooltip);
+
+      p.addEventListener('mouseenter', () => { tooltip.style.opacity = '1'; });
+      p.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
+
+      // Botão "Enriquecer"
+      const enrichBtn = document.createElement('button');
+      enrichBtn.className = 'retention-action-btn btn btn-small btn-primary mt-1';
+      enrichBtn.textContent = 'Enriquecer';
+      enrichBtn.onclick = () => window.enrichText(enrichBtn);
+
+      p.appendChild(enrichBtn);
+    });
+
+    // Mensagem de sucesso
+    outputContainer.innerHTML = `
+      <p class="text-green-600 dark:text-green-400 text-sm mt-2">
+        ✅ Análise de retenção aplicada com sucesso!
+      </p>
+    `;
+
+    } catch (error) {
+    console.error('Erro ao analisar retenção:', error);
+    outputContainer.innerHTML = `
+      <p class="text-red-500 text-sm mt-2">❌ Falha: ${error.message}</p>
+      <button 
+        id="retryRetention-${sectionId}" 
+        onclick="window.analyzeSectionRetention('${sectionId}')"
+        class="btn btn-small btn-secondary mt-2 flex items-center gap-1">
+        🔄 Tentar Novamente
+      </button>
+    `;
+    } finally {
+    hideLoading();
+    }
+    };
 
     
         /**
@@ -3559,9 +3633,60 @@ The final output MUST be only the JSON code, like this example:
         };
 
 
+/**
+ * Revalida e garante IDs únicos para todos os parágrafos em uma seção.
+ * Deve ser chamada sempre que o conteúdo de uma seção é modificado manualmente.
+ * @param {string} sectionId - O ID da seção (ex: 'introSection').
+ */
+window.revalidateParagraphIds = (sectionId) => {
+  const contentWrapper = document.getElementById(sectionId)?.querySelector('.generated-content-wrapper');
+  if (!contentWrapper) return;
+
+  let hasChanges = false;
+  const seenIds = new Set();
+
+  Array.from(contentWrapper.children).forEach((p, index) => {
+    // Gera um ID baseado no conteúdo e na posição
+    const textHash = Array.from(p.textContent.trim()).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const baseId = `${sectionId}-p-${textHash}-${index}`;
+    let uniqueId = baseId;
+    let counter = 1;
+
+    // Garante que o ID é único
+    while (seenIds.has(uniqueId) || document.getElementById(uniqueId)) {
+      uniqueId = `${baseId}-dup${counter}`;
+      counter++;
+    }
+
+    if (!p.id || p.id !== uniqueId) {
+      p.id = uniqueId;
+      hasChanges = true;
+    }
+
+    seenIds.add(uniqueId);
+  });
+
+  // Se houver mudanças, invalida análises anteriores
+  if (hasChanges) {
+    const sectionElement = document.getElementById(sectionId);
+    if (sectionElement) {
+      const analysisOutput = sectionElement.querySelector('.section-analysis-output');
+      const performanceOutput = sectionElement.querySelector('.section-performance-output');
+      
+      if (analysisOutput) {
+        analysisOutput.innerHTML = '<p class="text-orange-500 text-sm">O texto foi alterado. Execute "Analisar Retenção" novamente.</p>';
+      }
+      
+      if (performanceOutput) {
+        performanceOutput.innerHTML = '<p class="text-orange-500 text-sm">O texto foi alterado. Execute "Sugerir Performance" novamente.</p>';
+      }
+    }
+  }
+};
+
     
 /**
- * SUGERIR PERFORMANCE NARRATIVA (VERSÃO CORRIGIDA E FUNCIONAL)
+ * SUGERIR PERFORMANCE NARRATIVA (VERSÃO FINAL CORRIGIDA)
  * Aplica sugestões de tom, emoção e ritmo em cada parágrafo
  */
 window.suggestPerformance = async (sectionId) => {
@@ -3575,9 +3700,10 @@ window.suggestPerformance = async (sectionId) => {
   }
 
   try {
-    // Limpa o container e mostra loading
+    // Mostra loading
     outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
 
+    // Valida se há parágrafos
     if (!contentWrapper || contentWrapper.children.length === 0) {
       throw new Error("Nenhum parágrafo gerado para analisar.");
     }
@@ -3592,13 +3718,12 @@ window.suggestPerformance = async (sectionId) => {
     const prompt = `Você é um Especialista em Performance Narrativa para YouTube.
 Analise os parágrafos abaixo e retorne um array JSON com:
 - "paragraphId": string (o ID exato)
-- "performanceSuggestion": string em português (ex: "Fale com tensão crescente")
+- "performanceSuggestion": string em português
 - "emotion": string (emoção dominante)
 - "pace": string ("lento", "médio", "rápido")
 
 **REGRAS ESTRITAS**:
 - Responda APENAS com um array JSON válido.
-- Todas as sugestões em português do Brasil.
 - Nada além do JSON.
 
 Dados:
@@ -3638,6 +3763,7 @@ ${JSON.stringify(paragraphsWithIds, null, 2)}
       p.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
     });
 
+    // Mensagem de sucesso
     outputContainer.innerHTML = `
       <p class="text-green-600 dark:text-green-400 text-sm mt-2">
         ✅ Sugestões de performance aplicadas!
@@ -3656,98 +3782,75 @@ ${JSON.stringify(paragraphsWithIds, null, 2)}
       </button>
     `;
   } finally {
-    hideLoading();
+    // Certifique-se de que hideLoading é chamado
+    const button = document.getElementById(`suggestPerformanceBtn-${sectionId}`);
+    if (button) hideLoading(button);
   }
 };
-
-
-
-/**
- * Função para revalidar IDs em uma seção (opcional)
- * Use em caso de colagem manual ou erro de ID
- */
-window.revalidateParagraphIds = (sectionId) => {
-  const contentWrapper = document.getElementById(`${sectionId}Section`)?.querySelector('.generated-content-wrapper');
-  if (!contentWrapper) return;
-
-  Array.from(contentWrapper.children).forEach((p, index) => {
-    p.id = p.id || `${sectionId}-p-${Date.now()}-${index}`;
-  });
-};
-
-
     
         /**
-         * Pega o texto selecionado pelo usuário, pede para a IA reescrevê-lo com uma analogia/metáfora,
-         * substitui o texto original e invalida a análise anterior. (VERSÃO CORRIGIDA)
-         * @param {HTMLElement} buttonElement - O botão que foi clicado.
-         */
-        window.enrichText = async (buttonElement) => {
-            const selection = window.getSelection();
-            const selectedText = selection.toString().trim();
+ * Enriquece o texto selecionado com uma sugestão da IA.
+ * @param {HTMLElement} buttonElement - O botão "Enriquecer" clicado.
+ */
+window.enrichText = async (buttonElement) => {
+  const selection = window.getSelection();
+  if (!selection.rangeCount || selection.isCollapsed) {
+    window.showToast("Selecione um trecho de texto para enriquecer.");
+    return;
+  }
 
-            if (!selectedText) {
-                window.showToast("Por favor, selecione primeiro o texto que deseja enriquecer.");
-                return;
-            }
+  const selectedText = selection.toString().trim();
+  if (selectedText.length < 10) {
+    window.showToast("Selecione um trecho maior para análise.");
+    return;
+  }
 
-            showLoading(buttonElement);
+  showLoading(buttonElement);
 
-            try {
-                const prompt = `Você é um Mestre Roteirista e poeta. Sua tarefa é reescrever o "Parágrafo Original" para incorporar a "Sugestão de Melhoria".
+  try {
+    const prompt = `Você é um Mestre Roteirista. Reescreva o texto abaixo para torná-lo mais envolvente, claro e viral, mantendo o sentido original.
+**Texto Original:** "${selectedText}"
+**Regras:**
+- Responda apenas com o texto reescrito.
+- Nada de introduções ou explicações.`;
 
-                **Parágrafo Original:**
-                "${selectedText}"
+    const rawResult = await callGroqAPI(prompt, 500);
+    const enrichedText = cleanGeneratedText(rawResult, true).trim();
 
-                **REGRAS:**
-                - Mantenha o núcleo da mensagem intacto.
-                - A resposta deve ser APENAS o parágrafo reescrito. Sem introduções, comentários ou explicações.`;
+    if (!enrichedText || enrichedText === selectedText) {
+      throw new Error("IA retornou um texto vazio ou idêntico.");
+    }
 
-                const rawResult = await callGroqAPI(prompt, 500);
-                const enrichedText = removeMetaComments(rawResult);
+    // Substitui o texto selecionado
+    const range = selection.getRangeAt(0);
+    const span = document.createElement('span');
+    span.className = 'highlight-change';
+    span.textContent = enrichedText;
+    range.deleteContents();
+    range.insertNode(span);
 
-                if (selection.rangeCount > 0) {
-                    document.execCommand('insertHTML', false, `<span class="highlight-change">${enrichedText}</span>`);
-                }
+    // Foca de volta no container
+    const container = buttonElement.closest('.script-section');
+    if (container) container.focus();
 
-                // ==========================================================
-                // A CORREÇÃO ESTÁ AQUI: Invalidar a análise antiga
-                // ==========================================================
-                // Encontra a seção pai onde a modificação ocorreu
-                const accordionItem = buttonElement.closest('.accordion-item');
-                if (accordionItem) {
-                    // Invalida a análise de retenção
-                    const analysisOutput = accordionItem.querySelector('.section-analysis-output');
-                    if (analysisOutput) {
-                        const invalidationMessage = `<p class="text-sm text-yellow-500 italic p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">O texto foi modificado. Por favor, clique em "Analisar Retenção" novamente.</p>`;
-                        analysisOutput.innerHTML = invalidationMessage;
-                    }
-                                        
-                    
-                    // Invalida os prompts de imagem (lógica que já implementamos)
-                    const scriptSection = accordionItem.parentElement; 
-                    invalidateAndClearPrompts(scriptSection);
-                    // A CORREÇÃO EXPLÍCITA: Invalida a sugestão de performance
-                   invalidateAndClearPerformance(accordionItem.closest('.script-section'));
+    // Invalida a análise de retenção
+    const accordionItem = buttonElement.closest('.accordion-item');
+    if (accordionItem) {
+      const analysisOutput = accordionItem.querySelector('.section-analysis-output');
+      if (analysisOutput) {
+        analysisOutput.innerHTML = '<p class="text-orange-500 text-sm">Seu texto foi alterado. Execute "Analisar Retenção" novamente.</p>';
+      }
+    }
 
-                }
-                // ==========================================================
-                // FIM DA CORREÇÃO
-                // ==========================================================
+    window.showToast("✅ Trecho enriquecido com sucesso!");
 
-
-                
-
-
-
-                window.showToast("Texto enriquecido! Análise anterior resetada.");
-
-            } catch (error) {
-                window.showToast(`Falha ao enriquecer o texto: ${error.message}`);
-            } finally {
-                hideLoading(buttonElement);
-            }
-        };
+  } catch (error) {
+    console.error('Erro ao enriquecer texto:', error);
+    window.showToast(`❌ Falha: ${error.message}`);
+  } finally {
+    hideLoading(buttonElement);
+  }
+};
     
         /**
          * Gera e valida ideias de vídeo com base no nicho fornecido.
@@ -4303,80 +4406,72 @@ window.regenerateSection = (fullSectionId) => {
             }
         };
 
-// ======================
-// FUNÇÃO: GERAR ESBOÇO ESTRATÉGICO
-// ======================
-const generateStrategicOutline = async () => {
-  if (!validateOutlinePrerequisites()) return; // <<<<< LINHA CORRIGIDA
-  showLoading(buttons.generateOutlineBtn);
+        /**
+         * Gera o esboço estratégico do roteiro, com formatação de layout corrigida.
+         */
+                /**
+         * Gera o esboço estratégico do roteiro, com formatação de layout corrigida.
+         */
+        const generateStrategicOutline = async () => {
+            if (!validateInputs()) return;
+            showLoading(buttons.generateOutlineBtn);
+            const outlineContentDiv = elements.outlineContent;
+            outlineContentDiv.innerHTML = `<div class="loading-spinner-small mx-auto"></div>`;
 
-  try {
-    const inputs = {
-      channelName: document.getElementById('channelName').value.trim(),
-      videoTheme: document.getElementById('videoTheme').value.trim(),
-      videoDescription: document.getElementById('videoDescription').value.trim(),
-      targetAudience: document.getElementById('targetAudience').value.trim(),
-      videoObjective: document.getElementById('videoObjective').value.trim(),
-      videoDuration: document.getElementById('videoDuration').value.trim(),
-      language: document.getElementById('languageSelect').value,
-      narrativeStructure: document.getElementById('narrativeStructure').value,
-      narrativeGoal: document.getElementById('narrativeGoal').value.trim(),
-      narrativeTheme: document.getElementById('narrativeTheme').value.trim(),
-      narrativeTone: document.getElementById('narrativeTone').value,
-      narrativeVoice: document.getElementById('narrativeVoice').value.trim(),
-      centralQuestion: document.getElementById('centralQuestion').value.trim(),
-      emotionalArc: document.getElementById('emotionalArc').value.trim(),
-      imageStyle: document.getElementById('imageDescriptionEngine').value.trim()
-    };
+            try {
+                const { prompt, maxTokens } = constructScriptPrompt('outline', 'Esboço Estratégico');
+                const rawResult = await callGroqAPI(prompt, maxTokens);
+                
+                // ==========================================================
+                // AQUI ESTÁ A CORREÇÃO
+                // ==========================================================
+                // A função cleanGeneratedText já retorna o objeto JavaScript corrigido.
+                // Não precisamos mais do JSON.parse() ou do bloco try...catch complexo.
+                strategicOutline = cleanGeneratedText(rawResult, true);
 
-    const prompt = `Você é um Estrategista de Conteúdo para YouTube. Gere um "Plano Estratégico" em JSON com os seguintes campos:
-- "narrative_goal": string
-- "narrative_theme": string
-- "narrative_tone": string
-- "narrative_voice": string
-- "central_question": string
-- "emotional_arc": string
-- "image_description_engine": string
+                // Adicionamos uma verificação para garantir que a IA não retornou lixo.
+                if (!strategicOutline || typeof strategicOutline !== 'object') {
+                    console.error("A IA retornou um esboço em formato inválido:", rawResult);
+                    throw new Error("A IA falhou em gerar um esboço válido.");
+                }
+                // ==========================================================
+                // FIM DA CORREÇÃO
+                // ==========================================================
 
-Responda APENAS com o JSON válido.`;
+                const titleTranslations = {
+                    'introduction': 'Introdução', 'development': 'Desenvolvimento',
+                    'climax': 'Clímax', 'conclusion': 'Conclusão', 'cta': 'CTA'
+                };
+                
+                let outlineHtml = '<ul class="space-y-4 text-sm">';
+                for (const key in strategicOutline) {
+                    if (Object.hasOwnProperty.call(strategicOutline, key)) {
+                        const translatedTitle = titleTranslations[key] || (key.charAt(0).toUpperCase() + key.slice(1));
+                        let contentText = strategicOutline[key] || '';
+                        
+                        outlineHtml += `
+                            <li>
+                                <div>
+                                    <strong class="outline-title">${translatedTitle}:</strong>
+                                    <span>${contentText}</span>
+                                </div>
+                            </li>
+                        `;
+                    }
+                }
+                outlineHtml += '</ul>';
+                outlineContentDiv.innerHTML = outlineHtml;
+                markButtonAsCompleted(buttons.generateOutlineBtn.id);
 
-    const rawResult = await callGroqAPI(prompt, 800);
-    const outline = cleanGeneratedText(rawResult, true);
-
-    if (!outline || typeof outline !== 'object') {
-      throw new Error("IA retornou um esboço inválido.");
-    }
-
-    // ✅ Define o esboço globalmente
-    window.strategicOutline = outline;
-
-    // ✅ Atualiza o HTML
-    const outlineContainer = document.getElementById('outlineContent');
-    outlineContainer.innerHTML = `
-      <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-md space-y-2 text-sm">
-        <p><strong>Objetivo:</strong> ${outline.narrative_goal || 'Não informado'}</p>
-        <p><strong>Tema:</strong> ${outline.narrative_theme || 'Não informado'}</p>
-        <p><strong>Tom:</strong> ${outline.narrative_tone || 'Não informado'}</p>
-        <p><strong>Voz:</strong> ${outline.narrative_voice || 'Não informado'}</p>
-        <p><strong>Pergunta Central:</strong> ${outline.central_question || 'Não informado'}</p>
-        <p><strong>Arco Emocional:</strong> ${outline.emotional_arc || 'Não informado'}</p>
-        <p><strong>Estilo Visual:</strong> ${outline.image_description_engine || 'Não informado'}</p>
-      </div>
-    `;
-
-    window.showToast("✅ Esboço estratégico criado com sucesso!");
-    markButtonAsCompleted(buttons.generateOutlineBtn.id);
-  } catch (error) {
-    console.error("Erro ao gerar Esboço Estratégico:", error);
-    window.showToast(`❌ Falha ao gerar esboço: ${error.message}`);
-    document.getElementById('outlineContent').innerHTML = `
-      <div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>
-    `;
-  } finally {
-    hideLoading(buttons.generateOutlineBtn);
-    updateButtonStates(); // ✅ Atualiza o estado dos botões
-  }
-};
+            } catch (error) {
+                window.showToast(`Falha ao gerar Esboço: ${error.message}`);
+                console.error("Error generating Outline.", error);
+                outlineContentDiv.innerHTML = `<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`;
+            } finally {
+                hideLoading(buttons.generateOutlineBtn);
+                updateButtonStates();
+            }
+        };
 
 
         /**
@@ -4499,6 +4594,11 @@ Responda APENAS com o JSON válido.`;
             if (nicheDesc) nicheDesc.value = '';
             if (ideasOut) ideasOut.innerHTML = '';
 
+            strategicOutline = null;
+            allImagePrompts = {};
+            generatedTitlesAndThumbnails = null;
+            totalScriptSeconds = 0;
+            promptPaginationState = {}; // Reset pagination state
 
             // ==========================================================
             // A CORREÇÃO CRÍTICA ESTÁ AQUI
@@ -4721,7 +4821,10 @@ Responda APENAS com o JSON válido.`;
         /**
          * Analisa o tema e a descrição do vídeo para definir a estratégia de conteúdo. (VERSÃO CORRIGIDA PARA ABAS)
          */
-            const analyzeAndSetStrategy = async () => {
+                const analyzeAndSetStrategy = async () => {
+            // ==========================================================
+            // VERIFICAÇÃO DE PROJETO EM ANDAMENTO
+            // ==========================================================
             const hasExistingWork = document.querySelector('#scriptSectionsContainer .accordion-item');
             if (hasExistingWork) {
                 const userConfirmed = await showConfirmationDialog(
@@ -4739,10 +4842,16 @@ Responda APENAS com o JSON válido.`;
 
             const theme = elements.videoTheme.value.trim();
             const description = elements.videoDescription.value.trim();
-            if (!validateOutlinePrerequisites()) {
-                window.showToast("Por favor, preencha o Tema e a Descrição do Vídeo primeiro.");
+            if (!theme || !description) {
+                window.showToast("Por favor, preencha o Tema e a Descrição do Vídeo.");
                 return;
             }
+            
+            strategicOutline = null;
+            allImagePrompts = {};
+            generatedTitlesAndThumbnails = null;
+            totalScriptSeconds = 0;
+            promptPaginationState = {};
             
             const button = document.getElementById('analyzeStrategyBtn');
             showLoading(button);
@@ -4794,11 +4903,9 @@ Responda APENAS com o JSON válido.`;
                 // ==========================================================
                 
                 // Preenchimento dos campos em todas as abas
-                if (strategy.image_description_engine) elements.imageDescriptionEngine.value = strategy.image_description_engine;
+                if(strategy.target_audience) elements.targetAudience.value = strategy.target_audience;
                 if(strategy.video_objective) elements.videoObjective.value = strategy.video_objective;
                 if(strategy.narrative_goal) document.getElementById('narrativeGoal').value = strategy.narrative_goal;
-
-        
                 
                 updateNarrativeStructureOptions(); 
                 
@@ -4819,7 +4926,6 @@ Responda APENAS com o JSON válido.`;
                 if(strategy.speakingPace) elements.speakingPace.value = strategy.speakingPace;
                 if(strategy.imageStyleSelect) elements.imageStyleSelect.value = strategy.imageStyleSelect;
 
-
                 window.showToast("Estratégia definida com sucesso!");
                 elements.projectDashboard.classList.remove('hidden');
                 
@@ -4831,12 +4937,51 @@ Responda APENAS com o JSON válido.`;
             } finally {
                 isSettingStrategy = false;
                 hideLoading(button);
-                updateButtonStates()
-
+                updateButtonStates();
             }
         };
 
+// ==========================================================
+// EVENT LISTENER ÚNICO E CORRETO
+// ==========================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // ---- 1. INICIALIZAÇÃO GERAL ----
+    setupInputTabs();
+    setupTabs();
+    updateProgressBar();
+    updateButtonStates();
+    handleConclusionStrategyChange();
+    updateNarrativeStructureOptions();
 
+    // ---- 2. EVENTOS DIRETOS EM ELEMENTOS ESPECÍFICOS ----
+    document.getElementById('importFileInput')?.addEventListener('change', importProject);
+    
+    document.getElementById('darkModeToggle')?.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDarkMode = document.body.classList.contains('dark');
+        document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
+        document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
+        localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+    });
+
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark');
+        document.getElementById('moonIcon')?.classList.add('hidden');
+        document.getElementById('sunIcon')?.classList.remove('hidden');
+    }
+
+    document.getElementById('toggleZenModeBtn')?.addEventListener('click', () => document.body.classList.toggle('zen-mode'));
+    document.getElementById('exitZenModeBtn')?.addEventListener('click', () => document.body.classList.remove('zen-mode'));
+    document.getElementById('imageStyleSelect')?.addEventListener('change', toggleCustomImageStyleVisibility);
+    
+    document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
+        radio.addEventListener('change', handleConclusionStrategyChange);
+
+        const speakingPaceSelect = document.getElementById('speakingPace');
+            if (speakingPaceSelect) {
+                speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
+        }
+    });
 
 // ==========================================================
         // CIRURGIA: INVALIDAÇÃO DE PROMPTS AO DIGITAR MANUALMENTE
@@ -5101,21 +5246,9 @@ Responda APENAS com o JSON válido.`;
     });
 
 
-    // ==========================================================
-    // >>>>> 5. VIGIAS DE ESTADO E GATILHOS <<<<<
-    // ==========================================================
-    
-    // Vigias para habilitar o botão de Esboço assim que o usuário digita
-    ['videoTheme', 'videoDescription'].forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.addEventListener('input', updateButtonStates);
-        }
-    });
-
-    // Vigias para resetar o roteiro se a estratégia for alterada
+    // ---- 5. LÓGICA PARA RESETAR ROTEIRO ----
     const strategicInputIds = [
-        'videoDuration', 'speakingPace', 'narrativeGoal',
+        'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
         'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
         'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect'
     ];
@@ -5135,7 +5268,6 @@ Responda APENAS com o JSON válido.`;
     // ---- 6. EVENTO DE SCROLL PARA BARRA FLUTUANTE ----
     window.addEventListener('scroll', window.handleFloatingActionBar);
 });
-
 
 </script>
 </body>
