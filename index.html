@@ -419,7 +419,7 @@
 
     <!-- Navegação das Abas -->
     <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
-        <nav id="inputTabsNav" class="-mb-px flex space-x-6" aria-label="Tabs">
+        <nav id="inputTabsNav" class="-mb-px flex flex-wrap md:flex-nowrap space-x-6" aria-label="Tabs">
             <button data-tab="input-tab-basico" class="tab-button active-tab">
                 <i class="fas fa-info-circle mr-2"></i> Básico
             </button>
@@ -455,8 +455,12 @@
                 <div class="input-group">
                     <label for="videoDuration">Duração Desejada:</label>
                     <select id="videoDuration">
+                        <option value="">-- Selecione --</option>
+                        <option value="short">Curto (~1-3 min)</option>
                         <option value="medium">Médio (~4-7 min)</option>
                         <option value="long">Longo (~8-12 min)</option>
+                        <option value="extra-long">Extra Longo (~12-20 min)</option>
+                        <option value="documentary">Documentário (~20-45 min)</option>
                     </select>
                 </div>
                 <div class="input-group md:col-span-2">
@@ -493,11 +497,24 @@
                     <select id="narrativeTone">
                         <option value="inspirador" selected>Inspirador</option>
                         <option value="serio">Sério</option>
+                        <option value="emocional">Emocional</option>
                     </select>
                 </div>
                  <div class="input-group">
                     <label for="narrativeVoice">5. Voz do Narrador (a personalidade):</label>
                     <input type="text" id="narrativeVoice" placeholder="Ex: Sábio e experiente...">
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="centralQuestion">Pergunta Central (Opcional):</label>
+                    <textarea id="centralQuestion" rows="2" placeholder="Qual a pergunta que o seu vídeo deve responder?"></textarea>
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="emotionalArc">Arco Emocional Desejado (Opcional):</label>
+                    <textarea id="emotionalArc" rows="2" placeholder="Ex: Curiosidade -> Tensão -> Surpresa"></textarea>
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):</label>
+                    <input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada.">
                 </div>
              </div>
         </div>
@@ -524,6 +541,19 @@
                     <select id="speakingPace">
                         <option value="moderate" selected>Moderado</option>
                         <option value="slow">Lento</option>
+                        <option value="fast">Rápido</option>
+                    </select>
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="imageDescriptionEngine">Motor de Descrição de Imagem:</label>
+                    <textarea id="imageDescriptionEngine" rows="2" placeholder="Ex: 'fotografias reais', 'close-up emocional'"></textarea>
+                </div>
+                <div class="input-group md:col-span-2">
+                    <label for="imageStyleSelect">Motor de Qualidade de Imagem:</label>
+                    <select id="imageStyleSelect">
+                        <option value="cinematic" selected>Cinematográfico</option>
+                        <option value="custom">Personalizado</option>
+                        <option value="none">Nenhum</option>
                     </select>
                 </div>
             </div>
