@@ -2184,26 +2184,19 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
 
 
-     /**
-         * Gera sugestões de trilha sonora para a transcrição completa do roteiro.
-         * (VERSÃO GLOBAL - NA ABA RECURSOS)
-         */
-
-
-     /**
+         /**
          * Analisa o roteiro completo para criar um "mapa emocional" para guiar a produção.
          */
-        const mapEmotionsAndPacing = async () => {
+                        const mapEmotionsAndPacing = async (button) => {
             const fullTranscript = getTranscriptOnly();
             if (!fullTranscript) {
                 showToast("Gere o roteiro completo primeiro para criar o mapa emocional.");
                 return;
             }
 
-            const button = document.getElementById('mapEmotionsBtn');
             const outputContainer = document.getElementById('emotionalMapContent');
             
-            showLoading(button);
+            showButtonLoading(button);
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
 
             const paragraphs = fullTranscript.split('\n\n').filter(p => p.trim() !== '');
@@ -2228,8 +2221,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                     throw new Error("A IA retornou um mapa emocional em formato inválido ou incompleto.");
                 }
 
-                // Armazena o mapa em uma variável global para que outras funções possam usá-lo
-                window.emotionalMap = analysis; // Usando window para garantir acesso global no escopo do módulo
+                window.emotionalMap = analysis;
                 
                 let mapHtml = '<div class="space-y-2">';
                 analysis.forEach(item => {
@@ -2251,24 +2243,23 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar o mapa emocional: ${error.message}</p>`;
             } finally {
-                hideLoading(button);
+                hideButtonLoading(button);
             }
         };
 
 
 
 
-    const generateSoundtrack = async () => {
+            const generateSoundtrack = async (button) => {
             const fullTranscript = getTranscriptOnly();
             if (!fullTranscript) {
                 window.showToast("Gere o roteiro completo primeiro para sugerir uma trilha sonora coerente.");
                 return;
             }
 
-            const button = document.getElementById('generateSoundtrackBtn');
             const outputContainer = document.getElementById('soundtrackContent');
             
-            showLoading(button);
+            showButtonLoading(button);
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
 
             const prompt = `Você é um especialista em prompts para IAs de geração de música (como Suno/Udio). Sua tarefa é analisar o roteiro completo de um vídeo e criar 3 prompts de texto distintos e detalhados que capturem a essência emocional da narrativa.
@@ -2303,7 +2294,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar sugestões: ${error.message}</p>`;
             } finally {
-                hideLoading(button);
+                hideButtonLoading(button);
             }
         };
 
@@ -3741,7 +3732,7 @@ Exemplo de formato JSON esperado:
                 hideButtonLoading(buttonElement);
             }
         };
-        
+
     
         /**
          * Gera e valida ideias de vídeo com base no nicho fornecido.
@@ -4159,23 +4150,19 @@ window.regenerateSection = (fullSectionId) => {
         /**
          * Gera títulos de vídeo e ideias de thumbnail.
          */
-        const generateTitlesAndThumbnails = async () => {
+                const generateTitlesAndThumbnails = async (button) => {
             if (!validateInputs()) return;
-            showLoading(buttons.generateTitlesAndThumbnailsBtn);
+            showButtonLoading(button);
+
             try {
-                // --- INÍCIO DA CORREÇÃO NO PROMPT ---
                 const { prompt, maxTokens } = constructScriptPrompt('titles_thumbnails');
-                // Adicionamos uma instrução extra para garantir a validade do JSON
+                
                 const finalPrompt = prompt + `\n\nCRITICAL RULE: Inside the 'description' strings, you MUST use single quotes ('') for any internal quotes, or properly escape double quotes (\\\"). Failure to do so will result in an invalid JSON. Example: "A text overlay that says 'Hope is Here'".`;
                 
                 const result = await callGroqAPI(finalPrompt, maxTokens);
-                // --- FIM DA CORREÇÃO NO PROMPT ---
-
                 const cleanedResult = cleanGeneratedText(result, true);
                 
                 if (!cleanedResult) {
-                    // Adiciona um log mais detalhado em caso de falha
-                    console.error("Falha ao limpar ou validar o JSON retornado pela IA.", result);
                     throw new Error("A IA não retornou um JSON válido.");
                 }
                 
@@ -4212,13 +4199,13 @@ window.regenerateSection = (fullSectionId) => {
                             </div>
                         </div>
                     `;
-                    markButtonAsCompleted(buttons.generateTitlesAndThumbnailsBtn.id);
+                    markButtonAsCompleted(button.id);
                 }
             } catch (error) {
                 window.showToast(`Falha ao gerar Títulos: ${error.message}`);
                 console.error("Error generating Titles/Thumbnails.", error);
             } finally {
-                hideLoading(buttons.generateTitlesAndThumbnailsBtn);
+                hideButtonLoading(button);
                 updateButtonStates();
             }
         };
@@ -4330,60 +4317,50 @@ window.regenerateSection = (fullSectionId) => {
         /**
          * Gera a descrição do vídeo e hashtags.
          */
-        const generateVideoDescription = async () => {
+                const generateVideoDescription = async (button) => {
             if (!validateInputs()) return;
-            showLoading(buttons.generateDescriptionBtn);
+            showButtonLoading(button);
 
             try {
                 let result = await callGroqAPI(constructScriptPrompt('description').prompt, constructScriptPrompt('description').maxTokens);
                 result = cleanGeneratedText(result, false);
-                result = removeMetaComments(result); // <-- REINTRODUZIMOS A LIMPEZA!
+                result = removeMetaComments(result);
                 
                 const targetContentElement = document.getElementById('videoDescriptionContent');
                 if (targetContentElement) {
                     targetContentElement.innerHTML = `<div class="p-3 text-sm card-background rounded-md whitespace-pre-wrap">${result}</div>`;
-                    markButtonAsCompleted(buttons.generateDescriptionBtn.id);
+                    markButtonAsCompleted(button.id);
                 }
             } catch (error) {
                 window.showToast(`Falha ao gerar Descrição: ${error.message}`);
                 console.error("Error generating Video Description.", error);
             } finally {
-                hideLoading(buttons.generateDescriptionBtn);
+                hideButtonLoading(button);
                 updateButtonStates();
             }
         };
 
         /**
-         * Gera o esboço estratégico do roteiro, com formatação de layout corrigida.
+         * Gera o esboço estratégico do roteiro, com a lógica de loading correta.
          */
-                /**
-         * Gera o esboço estratégico do roteiro, com formatação de layout corrigida.
-         */
-        const generateStrategicOutline = async () => {
+        const generateStrategicOutline = async (button) => {
             if (!validateInputs()) return;
-            showLoading(buttons.generateOutlineBtn);
+            
             const outlineContentDiv = elements.outlineContent;
+            // >>>>> CORREÇÃO AQUI <<<<<
+            showButtonLoading(button);
             outlineContentDiv.innerHTML = `<div class="loading-spinner-small mx-auto"></div>`;
 
             try {
                 const { prompt, maxTokens } = constructScriptPrompt('outline', 'Esboço Estratégico');
                 const rawResult = await callGroqAPI(prompt, maxTokens);
                 
-                // ==========================================================
-                // AQUI ESTÁ A CORREÇÃO
-                // ==========================================================
-                // A função cleanGeneratedText já retorna o objeto JavaScript corrigido.
-                // Não precisamos mais do JSON.parse() ou do bloco try...catch complexo.
                 strategicOutline = cleanGeneratedText(rawResult, true);
 
-                // Adicionamos uma verificação para garantir que a IA não retornou lixo.
                 if (!strategicOutline || typeof strategicOutline !== 'object') {
                     console.error("A IA retornou um esboço em formato inválido:", rawResult);
                     throw new Error("A IA falhou em gerar um esboço válido.");
                 }
-                // ==========================================================
-                // FIM DA CORREÇÃO
-                // ==========================================================
 
                 const titleTranslations = {
                     'introduction': 'Introdução', 'development': 'Desenvolvimento',
@@ -4408,14 +4385,15 @@ window.regenerateSection = (fullSectionId) => {
                 }
                 outlineHtml += '</ul>';
                 outlineContentDiv.innerHTML = outlineHtml;
-                markButtonAsCompleted(buttons.generateOutlineBtn.id);
+                markButtonAsCompleted(button.id);
 
             } catch (error) {
                 window.showToast(`Falha ao gerar Esboço: ${error.message}`);
                 console.error("Error generating Outline.", error);
                 outlineContentDiv.innerHTML = `<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`;
             } finally {
-                hideLoading(buttons.generateOutlineBtn);
+                // >>>>> CORREÇÃO AQUI <<<<<
+                hideButtonLoading(button);
                 updateButtonStates();
             }
         };
