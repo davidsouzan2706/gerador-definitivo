@@ -1776,7 +1776,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         }
 
 
-/**
+        /**
          * Limpa apenas os outputs gerados do projeto, mantendo os inputs principais.
          */
         const resetProjectOutputs = () => {
@@ -1936,6 +1936,49 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
          */
         const hideLoading = (button) => {
   if (!button) return; // Garante que o botão existe
+
+
+// ==========================================================
+        // >>>>> NOVA CENTRAL DE COMANDO E VALIDAÇÃO <<<<<
+        // ==========================================================
+        /**
+         * Valida apenas os campos necessários para criar o Esboço Estratégico.
+         */
+        const validateOutlinePrerequisites = () => {
+            const theme = document.getElementById('videoTheme')?.value.trim();
+            const description = document.getElementById('videoDescription')?.value.trim();
+            return theme && description;
+        };
+        
+        /**
+         * Atualiza o estado de TODOS os botões com base no estado atual da aplicação.
+         */
+        const updateButtonStates = () => {
+            const canGenerateOutline = validateOutlinePrerequisites();
+            const hasOutline = !!window.strategicOutline;
+            const scriptIsComplete = isScriptComplete();
+
+            // Botão do Esboço
+            const outlineBtn = document.getElementById('generateOutlineBtn');
+            if (outlineBtn) outlineBtn.disabled = !canGenerateOutline;
+
+            // Botões que dependem do Esboço
+            const outlineDependents = ['mapEmotionsBtn', 'generateIntroBtn', 'generateDevelopmentBtn', 'climaxBtn', 'conclusionBtn', 'generateCTABtn'];
+            outlineDependents.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = !hasOutline;
+            });
+
+            // Botões que dependem do Roteiro Completo
+            const scriptDependents = ['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateSoundtrackBtn'];
+            scriptDependents.forEach(id => {
+                const btn = document.getElementById(id);
+                const floatBtn = document.getElementById(`float_${id}`);
+                if (btn) btn.disabled = !scriptIsComplete;
+                if (floatBtn) floatBtn.disabled = !scriptIsComplete;
+            });
+        };
+
 
   button.classList.remove('loading');
   button.disabled = false;
@@ -4259,7 +4302,7 @@ window.regenerateSection = (fullSectionId) => {
 // FUNÇÃO: GERAR ESBOÇO ESTRATÉGICO
 // ======================
 const generateStrategicOutline = async () => {
-  if (!validateInputs()) return;
+  if (!validateOutlinePrerequisites()) return; // <<<<< LINHA CORRIGIDA
   showLoading(buttons.generateOutlineBtn);
 
   try {
@@ -4783,6 +4826,7 @@ Responda APENAS com o JSON válido.`;
             } finally {
                 isSettingStrategy = false;
                 hideLoading(button);
+                updateButtonStates()
 
             }
         };
@@ -5127,46 +5171,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', window.handleFloatingActionBar);
 });
 
-// ==========================================================
-        // >>>>> NOVA CENTRAL DE COMANDO E VALIDAÇÃO <<<<<
-        // ==========================================================
-        /**
-         * Valida apenas os campos necessários para criar o Esboço Estratégico.
-         */
-        const validateOutlinePrerequisites = () => {
-            const theme = document.getElementById('videoTheme')?.value.trim();
-            const description = document.getElementById('videoDescription')?.value.trim();
-            return theme && description;
-        };
-        
-        /**
-         * Atualiza o estado de TODOS os botões com base no estado atual da aplicação.
-         */
-        const updateButtonStates = () => {
-            const canGenerateOutline = validateOutlinePrerequisites();
-            const hasOutline = !!window.strategicOutline;
-            const scriptIsComplete = isScriptComplete();
-
-            // Botão do Esboço
-            const outlineBtn = document.getElementById('generateOutlineBtn');
-            if (outlineBtn) outlineBtn.disabled = !canGenerateOutline;
-
-            // Botões que dependem do Esboço
-            const outlineDependents = ['mapEmotionsBtn', 'generateIntroBtn', 'generateDevelopmentBtn', 'climaxBtn', 'conclusionBtn', 'generateCTABtn'];
-            outlineDependents.forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) btn.disabled = !hasOutline;
-            });
-
-            // Botões que dependem do Roteiro Completo
-            const scriptDependents = ['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateSoundtrackBtn'];
-            scriptDependents.forEach(id => {
-                const btn = document.getElementById(id);
-                const floatBtn = document.getElementById(`float_${id}`);
-                if (btn) btn.disabled = !scriptIsComplete;
-                if (floatBtn) floatBtn.disabled = !scriptIsComplete;
-            });
-        };
 
 </script>
 </body>
