@@ -3456,11 +3456,7 @@ Exemplo de formato JSON esperado:
         // ================== FUNÇÕES PRINCIPAIS ====================
         // ==========================================================
         
-      /**
-         * Analisa a seção, anexa tooltips com título e botões de ação.
-         * (VERSÃO TOOLTIP FINAL CORRIGIDA)
-         */
-        window.analyzeSectionRetention = async (sectionId) => {
+              window.analyzeSectionRetention = async (button, sectionId) => {
             const sectionElement = document.getElementById(sectionId);
             const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
             if (!contentWrapper) return;
@@ -3470,6 +3466,8 @@ Exemplo de formato JSON esperado:
                 window.showToast("Não há parágrafos para analisar.");
                 return;
             }
+
+            showButtonLoading(button);
 
             try {
                 const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
@@ -3514,61 +3512,8 @@ Exemplo de formato JSON esperado:
                 window.showToast("Análise de retenção concluída!");
             } catch (error) {
                 window.showToast(`Falha na análise: ${error.message}`);
-            }
-        };
-
-
-
-    
-        /**
-         * Pega um parágrafo, otimiza com IA e substitui seu conteúdo.
-         * (VERSÃO TOOLTIP RESGATADA)
-         */
-        window.optimizeParagraph = async (paragraphId, suggestion) => {
-            const paragraphElement = document.getElementById(paragraphId);
-            if (!paragraphElement) return;
-
-            const button = paragraphElement.querySelector('.retention-action-btn');
-            if (button) {
-                button.disabled = true;
-                button.innerHTML = `<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px;"></div>`;
-            }
-
-            const originalText = paragraphElement.firstChild.textContent.trim(); // Pega apenas o texto
-            const languageName = document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text;
-            const prompt = `You are an expert copywriter. Rewrite the "Original Paragraph" below based on the "Improvement Suggestion".
-        
-            **CRITICAL RULE: You MUST respond in ${languageName}.** Do not change the language.
-
-             **Original Paragraph:**
-             "${originalText}"
-
-              **Improvement Suggestion:**
-               "${suggestion}"
-
-           Respond ONLY with the rewritten paragraph, in ${languageName}.`;
-
-            try {
-                const rewrittenText = await callGroqAPI(prompt, 1000);
-                paragraphElement.firstChild.textContent = removeMetaComments(rewrittenText);
-                
-                // Feedback visual
-                paragraphElement.classList.remove('retention-yellow', 'retention-red');
-                paragraphElement.classList.add('retention-green');
-                paragraphElement.querySelector('.retention-tooltip')?.remove();
-                button?.remove();
-                
-                invalidateAndClearPrompts(paragraphElement.closest('.script-section'));
-
-
-            invalidateAndClearPerformance(paragraphElement.closest('.script-section'));
-
-
-
-                window.showToast("Parágrafo otimizado!");
-            } catch (error) {
-                window.showToast(`Falha ao otimizar: ${error.message}`);
-                if (button) button.innerHTML = '⚠️'; // Ícone de erro
+            } finally {
+                hideButtonLoading(button);
             }
         };
 
@@ -3578,8 +3523,7 @@ Exemplo de formato JSON esperado:
          * Gera anotações de performance, com scroll e espaçamento corrigido.
          * (VERSÃO FINAL COM MELHORIAS DE UI)
          */
-        window.suggestPerformance = async (sectionId) => {
-            // ... (o início da função continua igual até o try...catch)
+                window.suggestPerformance = async (button, sectionId) => {
             const sectionElement = document.getElementById(sectionId);
             const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
             const outputContainer = sectionElement?.querySelector('.section-performance-output');
@@ -3593,10 +3537,10 @@ Exemplo de formato JSON esperado:
                 return;
             }
 
+            showButtonLoading(button);
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
             try {
-                // ... (toda a lógica de lotes e chamada da API permanece a mesma)
                 const paragraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
                 const originalParagraphs = paragraphElements.map(p => p.textContent.trim().replace(/\[.*?\]/g, '').trim());
 
@@ -3644,23 +3588,15 @@ Exemplo de formato JSON esperado:
                     annotatedParagraphs.push(finalParagraph.trim());
                 });
 
-                // ==========================================================
-                // >>>>> CORREÇÃO #3: ESPAÇAMENTO ENTRE PARÁGRAFOS <<<<<
-                // ==========================================================
-                // Trocamos '\n\n' por '\n' para evitar o espaçamento duplo.
                 const finalAnnotatedText = annotatedParagraphs.join('\n');
-                // ==========================================================
-
-                const originalTextForAudit = originalParagraphs.join('\n'); // Também corrigido aqui para a auditoria
+                
+                const originalTextForAudit = originalParagraphs.join('\n');
                 const { isValid } = auditGeneratedText(originalTextForAudit.replace(/\n/g, ' '), finalAnnotatedText.replace(/\n/g, ' '));
 
                 if (!isValid) { throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem."); }
                 
                 const highlightedText = finalAnnotatedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
 
-                // ==========================================================
-                // >>>>> CORREÇÃO #2: APLICANDO A BARRA DE ROLAGEM <<<<<
-                // ==========================================================
                 outputContainer.innerHTML = `
                     <div class="card-background p-4 mt-2 rounded-lg border-l-4 border-indigo-500">
                         <h5 class="font-bold text-sm mb-2 text-gray-700 dark:text-gray-200">Sugestão de Performance:</h5>
@@ -3668,12 +3604,13 @@ Exemplo de formato JSON esperado:
                             <p class="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">${highlightedText}</p>
                         </div>
                     </div>`;
-                // ==========================================================
 
                 if (sectionElement) { invalidateAndClearPrompts(sectionElement); }
 
             } catch (error) {
-                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}`;
+                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
+            } finally {
+                hideButtonLoading(button);
             }
         };
 
@@ -3925,11 +3862,11 @@ window.regenerateSection = (fullSectionId) => {
 
 
 
-                /**
+        /**
          * Gera um prompt por parágrafo em lotes e depois aplica curadoria.
-         * (VERSÃO FINAL BLINDADA - FORÇA A GERAÇÃO 1 PARA 1)
+         * (VERSÃO CORRIGIDA COM ARGUMENTOS ALINHADOS)
          */
-        window.generatePromptsForSection = async (sectionElementId) => {
+        window.generatePromptsForSection = async (button, sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
             const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
             const promptContainer = sectionElement?.querySelector('.prompt-container');
@@ -3944,6 +3881,7 @@ window.regenerateSection = (fullSectionId) => {
                 return;
             }
 
+            showButtonLoading(button);
             promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
             try {
@@ -3963,7 +3901,6 @@ window.regenerateSection = (fullSectionId) => {
 
                 for (let i = 0; i < originalParagraphs.length; i += batchSize) {
                     const paragraphBatch = originalParagraphs.slice(i, i + batchSize);
-                    
                     let promptContext = '';
                     paragraphBatch.forEach((p, indexInBatch) => {
                         const globalIndex = i + indexInBatch;
@@ -3972,28 +3909,8 @@ window.regenerateSection = (fullSectionId) => {
                         promptContext += `Parágrafo ${globalIndex}: "${p}"\nContexto (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})\n\n`;
                     });
                     
-                    // ==========================================================
-                    // >>>>> AQUI ESTÁ A MUDANÇA CRÍTICA - O PROMPT BLINDADO <<<<<
-                    // ==========================================================
-                    const prompt = `Você é um Diretor de Fotografia que transforma texto em cenas. Sua tarefa é criar um objeto JSON para CADA UM dos ${paragraphBatch.length} parágrafos no lote abaixo.
-
-                    REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):
-                    1.  Sua resposta DEVE ser um array JSON contendo EXATAMENTE ${paragraphBatch.length} objetos.
-                    2.  Cada objeto DEVE corresponder a um parágrafo do lote, na mesma ordem.
-                    3.  Cada objeto deve ter as chaves: "scriptPhrase" (o texto exato do parágrafo), "imageDescription" (uma descrição visual para a cena), e "estimated_duration" (uma estimativa em segundos).
-
-                    NÃO RESUMA. CRIE UM OBJETO PARA CADA PARÁGRAFO.
-
-                    Analise o lote a seguir e gere o array JSON.
-
-                    ROTEIRO (LOTE ATUAL):
-                    ---
-                    ${promptContext}
-                    ---`;
-                    // ==========================================================
-                    // >>>>> FIM DA MUDANÇA CRÍTICA <<<<<
-                    // ==========================================================
-
+                    const prompt = `Você é um Diretor de Fotografia que transforma texto em cenas. Sua tarefa é criar um objeto JSON para CADA UM dos ${paragraphBatch.length} parágrafos no lote abaixo.\n\nREGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):\n1.  Sua resposta DEVE ser um array JSON contendo EXATAMENTE ${paragraphBatch.length} objetos.\n2.  Cada objeto DEVE corresponder a um parágrafo do lote, na mesma ordem.\n3.  Cada objeto deve ter as chaves: "scriptPhrase" (o texto exato do parágrafo), "imageDescription" (uma descrição visual para a cena), e "estimated_duration" (uma estimativa em segundos).\n\nNÃO RESUMA. CRIE UM OBJETO PARA CADA PARÁGRAFO.\n\nAnalise o lote a seguir e gere o array JSON.\n\nROTEIRO (LOTE ATUAL):\n---\n${promptContext}\n---`;
+                    
                     apiPromises.push(callGroqAPI(prompt, 4000).then(res => cleanGeneratedText(res, true)));
                 }
 
@@ -4005,28 +3922,21 @@ window.regenerateSection = (fullSectionId) => {
                     throw new Error("A IA não retornou um prompt para cada parágrafo.");
                 }
                 
-                // ETAPA 2: A CURADORIA (agora recebe uma lista muito maior e mais rica de prompts)
                 const desiredSecondsPerScene = 15;
                 let curatedPrompts = [];
                 let secondsAccumulator = 0;
                 let currentScenePhrase = "";
 
                 allGeneratedPrompts.forEach((promptData, index) => {
-                    // Prevenção de erro caso o prompt venha mal formatado
                     if (!promptData || !promptData.scriptPhrase) return;
-
                     const duration = parseInt(promptData.estimated_duration, 10) || 5;
-                    
                     currentScenePhrase += promptData.scriptPhrase + " ";
                     secondsAccumulator += duration;
-                    
                     if (secondsAccumulator >= desiredSecondsPerScene || index === allGeneratedPrompts.length - 1) {
                         let finalPrompt = { ...promptData };
                         finalPrompt.scriptPhrase = currentScenePhrase.trim();
                         finalPrompt.estimated_duration = secondsAccumulator;
-                        
                         curatedPrompts.push(finalPrompt);
-                        
                         currentScenePhrase = "";
                         secondsAccumulator = 0;
                     }
@@ -4045,6 +3955,8 @@ window.regenerateSection = (fullSectionId) => {
 
             } catch (error) {
                  promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
+            } finally {
+                hideButtonLoading(button);
             }
         };
 
