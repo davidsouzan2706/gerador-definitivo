@@ -16,13 +16,6 @@
     <style>
 
 
-// Variáveis globais de estado
-window.strategicOutline = null;
-let emotionalMap = null;
-let allImagePrompts = {};
-let generatedTitlesAndThumbnails = null;
-let totalScriptSeconds = 0;
-let promptPaginationState = {};
 
 /* ========================================================== */
         /* ==== MELHORIA DE VISIBILIDADE NO ACORDEÃO (CORREÇÃO) ==== */
@@ -1964,7 +1957,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             const textSpan = button.querySelector('.button-text');
             if (textSpan) textSpan.classList.remove('hidden');
 
-            
+            updateButtonStates(); // Chama a função centralizada para reavaliar o estado
         };
 
         /**
@@ -2012,64 +2005,76 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
         
         /**
-         * Verifica se todas as seções principais do roteiro foram geradas.
+         * Verifica se as seções principais do roteiro foram geradas.
          * @returns {boolean} True se todas as seções principais foram geradas, caso contrário, false.
          */
         const isScriptComplete = () => {
-          const sectionIds = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection'];
-  
-          return sectionIds.every(id => {
-           const section = document.getElementById(id);
-            if (!section) return false;
-    
-            const contentWrapper = section.querySelector('.generated-content-wrapper');
-            const textContent = contentWrapper?.textContent.trim() || '';
-    
-            return textContent.length > 0;
-          });
+            return ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection'].every(id => { // CTA is now part of conclusionSection
+                const section = document.getElementById(id);
+                return section && !section.classList.contains('hidden') && section.querySelector('.generated-content-wrapper')?.textContent.trim() !== '';
+            });
         };
 
         /**
- * ATUALIZA O ESTADO DOS BOTÕES COM BASE NO PROGRESSO DO ROTEIRO
- * Habilita/desabilita botões de geração e recursos.
- */
-const updateButtonStates = () => {
-  // 1. Botões principais de geração
-  const mapEmotionsBtn = document.getElementById('mapEmotionsBtn');
-  const generateIntroBtn = document.getElementById('generateIntroBtn');
-  const generateDevelopmentBtn = document.getElementById('generateDevelopmentBtn');
-  const climaxBtn = document.getElementById('climaxBtn');
-  const generateConclusionAndCtaBtn = document.getElementById('generateConclusionAndCtaBtn');
+         * Atualiza o estado de habilitação/desabilitação dos botões com base no estado do roteiro. (VERSÃO CORRIGIDA)
+         */
+        const updateButtonStates = () => {
+            const allMainScriptGenerated = isScriptComplete();
+            const hasAnyContent = document.querySelector('#scriptColumn .accordion-item') != null; 
 
-  // 2. Verifica se o esboço estratégico foi criado
-  const hasOutline = !!window.strategicOutline;
+            // Botões que dependem da conclusão do roteiro principal
+            ['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn'].forEach(id => { 
+                const originalBtn = document.getElementById(id);
+                const floatBtn = document.getElementById(`float_${id}`);
+                if (originalBtn) originalBtn.disabled = !allMainScriptGenerated;
+                if (floatBtn) floatBtn.disabled = !allMainScriptGenerated;
+            });
 
-  // 3. Habilita/desabilita botão "Mapear Emoções"
-  if (mapEmotionsBtn) {
-    mapEmotionsBtn.disabled = !hasOutline;
-  }
+        ['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'].forEach(id => { // <-- ADICIONE 'mapEmotionsBtn' AQUI
+            const originalBtn = document.getElementById(id);
+            if (originalBtn) originalBtn.disabled = !allMainScriptGenerated;
+     
+         });
+            
+            const resetBtn = document.getElementById('resetScriptBtn');
+            const floatResetBtn = document.getElementById('float_resetScriptBtn');
+            if (resetBtn) resetBtn.disabled = false; 
+            if (floatResetBtn) floatResetBtn.disabled = false;
 
-  // 4. Habilita/desabilita seções do roteiro
-  [generateIntroBtn, generateDevelopmentBtn, climaxBtn, generateConclusionAndCtaBtn].forEach(btn => {
-    if (btn) btn.disabled = !hasOutline;
-  });
+            // Lógica para mostrar/esconder o módulo de conclusão (AGORA MAIS SEGURA)
+            const introSec = document.getElementById('introSection');
+            const devSec = document.getElementById('developmentSection');
+            const climaxSec = document.getElementById('climaxSection');
 
-  // 5. Verifica se TODAS as seções principais foram geradas
-  const allMainScriptGenerated = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection']
-    .every(id => {
-      const section = document.getElementById(id);
-      return section && section.querySelector('.generated-content-wrapper')?.textContent.trim() !== '';
-    });
+            // A CORREÇÃO ESTÁ AQUI: Verificamos se os elementos existem ANTES de ler o innerHTML
+            const mainSectionsDone = 
+                (introSec && introSec.innerHTML.trim() !== '') &&
+                (devSec && devSec.innerHTML.trim() !== '') &&
+                (climaxSec && climaxSec.innerHTML.trim() !== '');
 
-  // 6. Botões que dependem do roteiro completo
-  const generateDescriptionBtn = document.getElementById('generateDescriptionBtn');
-  const generateTitlesAndThumbnailsBtn = document.getElementById('generateTitlesAndThumbnailsBtn');
-  const generateSoundtrackBtn = document.getElementById('generateSoundtrackBtn');
+            const conclusionModule = document.getElementById('conclusionStrategyModule');
+            if (conclusionModule) { // Adicionada verificação de segurança aqui também
+                if (conclusionModule) { // <-- DELETE ESTA LINHA
+                    if (mainSectionsDone && conclusionModule.classList.contains('hidden')) { 
+                        
+                        const climaxSection = document.getElementById('climaxSection');
+                        if (climaxSection) {
+                            climaxSection.parentNode.insertBefore(conclusionModule, climaxSection.nextSibling);
+                        }
+                        
+                        conclusionModule.classList.remove('hidden');
+                        conclusionModule.classList.add('animate-fade-in');
+                        handleConclusionStrategyChange();
+                        conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        window.showToast("Último passo: Defina o objetivo da sua conclusão!");
 
-  if (generateDescriptionBtn) generateDescriptionBtn.disabled = !allMainScriptGenerated;
-  if (generateTitlesAndThumbnailsBtn) generateTitlesAndThumbnailsBtn.disabled = !allMainScriptGenerated;
-  if (generateSoundtrackBtn) generateSoundtrackBtn.disabled = !allMainScriptGenerated;
-};
+                    } else if (!mainSectionsDone && !conclusionModule.classList.contains('hidden')) {
+                        conclusionModule.classList.add('hidden');
+                    }
+                } // <-- DELETE ESTA LINHA
+            }
+        };
 
         /**
          * Mostra um alerta em tela cheia com uma mensagem.
@@ -2164,83 +2169,75 @@ const updateButtonStates = () => {
 
 
      /**
- * Gera sugestões de trilha sonora com base no roteiro completo.
- */
-const generateSoundtrackSuggestions = async () => {
-  const button = document.getElementById('generateSoundtrackBtn');
-  const outputContainer = document.getElementById('soundtrackContent');
+         * Gera sugestões de trilha sonora para a transcrição completa do roteiro.
+         * (VERSÃO GLOBAL - NA ABA RECURSOS)
+         */
 
-  if (!button || !outputContainer) return;
 
-  showLoading(button);
+     /**
+         * Analisa o roteiro completo para criar um "mapa emocional" para guiar a produção.
+         */
+        const mapEmotionsAndPacing = async () => {
+            const fullTranscript = getTranscriptOnly();
+            if (!fullTranscript) {
+                showToast("Gere o roteiro completo primeiro para criar o mapa emocional.");
+                return;
+            }
 
-  try {
-    // Verifica se o roteiro completo existe
-    const introText = document.getElementById('introSection')?.textContent.trim() || '';
-    const developmentText = document.getElementById('developmentSection')?.textContent.trim() || '';
-    const climaxText = document.getElementById('climaxSection')?.textContent.trim() || '';
-    const conclusionText = document.getElementById('conclusionSection')?.textContent.trim() || '';
+            const button = document.getElementById('mapEmotionsBtn');
+            const outputContainer = document.getElementById('emotionalMapContent');
+            
+            showLoading(button);
+            outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
 
-    const fullScript = [introText, developmentText, climaxText, conclusionText].filter(Boolean).join(' ');
+            const paragraphs = fullTranscript.split('\n\n').filter(p => p.trim() !== '');
 
-    if (!fullScript) {
-      throw new Error("Não há roteiro gerado para analisar.");
-    }
+            const prompt = `Você é um Diretor de Cena. Sua tarefa é analisar um roteiro e criar um "beat sheet" emocional. Para cada parágrafo, defina a 'emoção' chave e o 'ritmo' da narração.
+            
+            **REGRAS CRÍTICAS:**
+            1.  Sua resposta DEVE ser um array JSON.
+            2.  O array deve ter um objeto para CADA um dos ${paragraphs.length} parágrafos do roteiro.
+            3.  Cada objeto deve ter TRÊS chaves: "paragraph_index" (o número do índice, começando em 0), "emotion" (string, ex: "Curiosidade Intensa", "Empatia Profunda"), e "pace" (string, ex: "Rápido e Incisivo", "Lento e Reflexivo").
 
-    const prompt = `Você é um Especialista em Trilha Sonora para vídeos virais. 
-Analise o roteiro abaixo e sugira 3 faixas musicais que combinem com o clima, ritmo e emoção do vídeo.
+            **ROTEIRO PARA ANALISAR (PARÁGRAFO POR PARÁGRAFO):**
+            ${paragraphs.map((p, index) => `PARAGRAFO ${index}: "${p}"`).join('\n\n')}
 
-Para cada faixa, inclua:
-- Nome da música
-- Artista
-- Estilo musical
-- Momento ideal do vídeo para tocar
-- Justificativa curta
+            Responda apenas com o array JSON, garantindo um objeto para cada parágrafo de 0 a ${paragraphs.length - 1}.`;
 
-Roteiro:
-${fullScript.substring(0, 2000)}...`;
+            try {
+                const rawResult = await callGroqAPI(prompt, 3000);
+                const analysis = cleanGeneratedText(rawResult, true);
 
-    const rawResult = await callGroqAPI(prompt, 800);
-    const cleanResult = cleanGeneratedText(rawResult, true);
+                if (!analysis || !Array.isArray(analysis) || analysis.length !== paragraphs.length) {
+                    throw new Error("A IA retornou um mapa emocional em formato inválido ou incompleto.");
+                }
 
-    // Extração simples de sugestões (ajuste conforme o formato da resposta da IA)
-    const lines = cleanResult.split('\n').filter(line => line.trim() !== '');
-    let suggestionsHtml = '<div class="soundtrack-suggestions space-y-4">';
+                // Armazena o mapa em uma variável global para que outras funções possam usá-lo
+                window.emotionalMap = analysis; // Usando window para garantir acesso global no escopo do módulo
+                
+                let mapHtml = '<div class="space-y-2">';
+                analysis.forEach(item => {
+                    mapHtml += `
+                        <div class="emotional-map-item">
+                            <p class="paragraph-preview">"${paragraphs[item.paragraph_index]}"</p>
+                            <div class="analysis-tags">
+                                <span class="tag tag-emotion">${item.emotion}</span>
+                                <span class="tag tag-pace">${item.pace}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                mapHtml += '</div>';
+                
+                outputContainer.innerHTML = mapHtml;
+                markButtonAsCompleted(button.id);
 
-    // Assume que cada bloco de 4-5 linhas é uma sugestão
-    for (let i = 0; i < lines.length && suggestionsHtml.split('<div class="track-item"').length - 1 < 3; ) {
-      const title = lines[i++].trim().replace(/^[-*]?\s*(?:1\.|2\.|3\.)?\s*/, '');
-      const artist = i < lines.length ? lines[i++].trim().replace(/^-?\s*/, '') : 'Artista desconhecido';
-      const genre = i < lines.length ? lines[i++].trim().replace(/^-?\s*/, '') : '';
-      const moment = i < lines.length ? lines[i++].trim().replace(/^-?\s*/, '') : '';
-      const reason = i < lines.length ? lines[i++].trim().replace(/^-?\s*/, '') : '';
-
-      suggestionsHtml += `
-        <div class="track-item p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <h4 class="font-bold text-indigo-700 dark:text-indigo-400">${title}</h4>
-          <p class="text-sm text-gray-600 dark:text-gray-300"><strong>Artista:</strong> ${artist}</p>
-          <p class="text-sm text-gray-600 dark:text-gray-300"><strong>Estilo:</strong> ${genre}</p>
-          <p class="text-sm text-gray-600 dark:text-gray-300"><strong>Momento:</strong> ${moment}</p>
-          <p class="text-sm mt-1"><em>${reason}</em></p>
-        </div>`;
-    }
-
-    suggestionsHtml += '</div>';
-
-    if (suggestionsHtml.includes('track-item')) {
-      outputContainer.innerHTML = suggestionsHtml;
-      markButtonAsCompleted(button.id);
-    } else {
-      throw new Error("Não foi possível extrair sugestões da resposta da IA.");
-    }
-
-  } catch (error) {
-    console.error('Erro ao gerar trilha:', error);
-    outputContainer.innerHTML = `<p class="text-red-500 text-sm">❌ ${error.message}</p>`;
-  } finally {
-    hideLoading(button);
-  }
-};
+            } catch (error) {
+                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar o mapa emocional: ${error.message}</p>`;
+            } finally {
+                hideLoading(button);
+            }
+        };
 
 
 
@@ -2346,7 +2343,7 @@ ${fullScript.substring(0, 2000)}...`;
 
                 document.getElementById('conclusionStrategyModule').classList.add('hidden');
                 window.showToast("Conclusão e CTA gerados com sucesso!");
-                
+                updateButtonStates();
 
             } catch(error) {
                 window.showToast(`Falha ao gerar a conclusão: ${error.message}`);
@@ -2355,56 +2352,47 @@ ${fullScript.substring(0, 2000)}...`;
             }
         };
 
-        /**
-       * ATUALIZA A BARRA DE PROGRESSO BASEADA NOS BOTÕES MARCADOS COMO CONCLUÍDOS
-        */
+    // ==========================================================
+        // NOVA FUNÇÃO PARA ATUALIZAR A BARRA DE PROGRESO
+        // ==========================================================
         const updateProgressBar = () => {
-         const taskButtonIds = [
-           'generateOutlineBtn',
-         'mapEmotionsBtn',
-         'generateIntroBtn',
-         'generateDevelopmentBtn',
-         'climaxBtn',
-         'generateConclusionAndCtaBtn',
-         'generateDescriptionBtn',
-         'generateTitlesAndThumbnailsBtn',
-          'generateSoundtrackBtn'
+            // Lista de todas as tarefas que contam para o progresso
+            const taskButtonIds = [
+                'generateOutlineBtn', 
+                'generateIntroBtn', 'generateDevelopmentBtn', 'climaxBtn', 
+                'conclusionBtn', 'generateCTABtn', 'generateDescriptionBtn', 
+                'generateTitlesAndThumbnailsBtn' 
             ];
+            const totalTasks = taskButtonIds.length;
 
-         const totalTasks = taskButtonIds.length;
-        let completedTasks = 0;
-
+            let completedTasks = 0;
             taskButtonIds.forEach(id => {
-          const button = document.getElementById(id);
+                const button = document.getElementById(id);
                 if (button && button.classList.contains('btn-success')) {
-           completedTasks++;
-              }
-             });
+                    completedTasks++;
+                }
+            });
 
             const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-             // Atualiza a UI
-             const progressBar = document.getElementById('progressBar');
-             const progressText = document.getElementById('progressText');
+            // Atualiza a UI
+            if (elements.progressBar && elements.progressText) {
+                elements.progressBar.style.width = `${percentage}%`;
+                elements.progressText.textContent = `${percentage}%`;
 
-            if (progressBar) {
-              progressBar.style.width = `${percentage}%`;
-             if (percentage === 100) {
-               progressBar.textContent = "Projeto Pronto!";
-               progressBar.style.color = '#ffffff';
-                progressBar.style.fontSize = '0.75rem';
-                 progressBar.style.fontWeight = 'bold';
-               } else {
-               progressBar.textContent = '';
-              }
+                if (percentage === 100) {
+                    elements.progressBar.textContent = "Projeto Pronto!"; 
+                    elements.progressBar.style.color = '#ffffff';
+                    elements.progressBar.style.textAlign = 'center';
+                    elements.progressBar.style.backgroundColor = 'var(--primary-color)';
+                } else {
+                    elements.progressBar.textContent = '';
+                    elements.progressBar.style.backgroundColor = 'var(--success-color)';
+                }
             }
+        };
 
-             if (progressText) {
-              progressText.textContent = `${percentage}%`;
-             }
-            };
-
-              const setupInputTabs = () => {
+        const setupInputTabs = () => {
             const nav = document.getElementById('inputTabsNav');
             if (!nav) return;
 
@@ -2636,7 +2624,7 @@ const resetGeneratedScriptContent = (sourceId) => {
 
     // 4. Atualiza a UI e notifica o usuário
     updateProgressBar();
-    
+    updateButtonStates();
     const sourceLabel = document.querySelector(`label[for='${sourceId}']`)?.textContent || sourceId;
     window.showToast(`'${sourceLabel}' mudou. O roteiro foi resetado.`);
 };
@@ -2675,25 +2663,25 @@ const invalidateAndClearPrompts = (sectionElement) => {
 
 
 /**
- * Invalida e limpa a sugestão de performance quando o texto é modificado.
- * @param {HTMLElement} sectionElement - O elemento da seção (ex: #introSection)
- */
-const invalidateAndClearPerformance = (sectionElement) => {
-  if (!sectionElement) return;
+         * Invalida e limpa a sugestão de performance, exibindo um aviso.
+         */
+        const invalidateAndClearPerformance = (sectionElement) => {
+            if (!sectionElement) return;
 
-  const performanceContainer = sectionElement.querySelector('.section-performance-output');
-  
-  if (performanceContainer && performanceContainer.innerHTML.trim() !== '') {
-    performanceContainer.innerHTML = `
-      <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
-        <p class="text-sm text-yellow-700 dark:text-yellow-300 font-semibold">⚠️ Análise de Performance Desatualizada</p>
-        <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-          O roteiro foi modificado. Clique em "Sugerir Performance" novamente para atualizar as sugestões.
-        </p>
-      </div>
-    `;
-  }
-};
+            const performanceContainer = sectionElement.querySelector('.section-performance-output');
+            if (performanceContainer && performanceContainer.innerHTML.trim() !== '') {
+                performanceContainer.innerHTML = `
+                    <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
+                        <p class="text-sm text-yellow-700 dark:text-yellow-300 font-semibold">
+                            Atenção: O roteiro foi modificado.
+                        </p>
+                        <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                            Por favor, clique em "Sugerir Performance" novamente para criar novas anotações com base no texto atualizado.
+                        </p>
+                    </div>
+                `;
+            }
+        };
 
         /**
          * Lida com os cliques nas setas de navegação dos prompts.
@@ -2787,64 +2775,44 @@ const invalidateAndClearPerformance = (sectionElement) => {
         };
     
         /**
-         * Extrai e limpa um objeto JSON de uma string de texto, mesmo que esteja suja.
-         * (VERSÃO "EXTRATORA" FINAL)
+         * Limpa o texto gerado pela IA, tentando corrigir erros comuns de JSON.
+         * (VERSÃO "À PROVA DE BALAS")
          */
         const cleanGeneratedText = (text, expectJson = false) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
+            // 1. Tenta encontrar o início e o fim do JSON ([...], ou {...})
             let jsonString = text;
+            const firstBracket = text.indexOf('[');
+            const lastBracket = text.lastIndexOf(']');
+            const firstBrace = text.indexOf('{');
+            const lastBrace = text.lastIndexOf('}');
 
-            // 1. Tenta extrair o conteúdo de dentro de um bloco de markdown, se existir.
-            const markdownMatch = jsonString.match(/```(?:json)?([\s\S]*?)```/);
-            if (markdownMatch && markdownMatch[1]) {
-                jsonString = markdownMatch[1];
+            if (firstBracket !== -1 && lastBracket > firstBracket) {
+                jsonString = text.substring(firstBracket, lastBracket + 1);
+            } else if (firstBrace !== -1 && lastBrace > firstBrace) {
+                jsonString = text.substring(firstBrace, lastBrace + 1);
             }
 
-            // 2. Caça o primeiro '{' ou '[' e o último '}' ou ']' para isolar o JSON.
-            const firstBrace = jsonString.indexOf('{');
-            const lastBrace = jsonString.lastIndexOf('}');
-            const firstBracket = jsonString.indexOf('[');
-            const lastBracket = jsonString.lastIndexOf(']');
+            // 2. Remove "lixo" comum, como markdown e texto introdutório.
+            jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
 
-            if (firstBrace !== -1 && lastBrace > firstBrace) {
-                jsonString = jsonString.substring(firstBrace, lastBrace + 1);
-            } else if (firstBracket !== -1 && lastBracket > firstBracket) {
-                jsonString = jsonString.substring(firstBracket, lastBracket + 1);
-            }
-            
-            // 3. Aplica as limpezas finas que já tínhamos.
-            jsonString = jsonString.replace(/\.scalablytyped\s*/g, '');
-            jsonString = jsonString.replace(/'([^']+)':/g, '"$1":');
-
-            // 4. Tenta o parse (PLANO A e B)
+            // 3. Tenta corrigir erros comuns de sintaxe antes do parse.
             try {
+                // Remove vírgulas extras no final de arrays e objetos (ex: [1, 2,])
                 jsonString = jsonString.replace(/,\s*([}\]])/g, "$1");
+                
+                // Tenta fazer o parse. Se funcionar, ótimo!
                 return JSON.parse(jsonString);
             } catch (e) {
-                console.warn("Primeira tentativa de parse falhou. Tentando plano B: encapsular em colchetes.");
-                try {
-                    const repairedJsonString = `[${jsonString}]`;
-                    const finalRepairedString = repairedJsonString.replace(/,\s*\]/g, ']');
-                    return JSON.parse(finalRepairedString);
-                } catch (e2) {
-                    console.error("Falha ao fazer o parse do JSON extraído, mesmo após a tentativa de correção:", e.message);
-                    console.error("JSON problemático:", jsonString);
-                    throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
-                }
+                // Se falhar, o erro original é mais útil para depuração.
+                console.error("Falha ao fazer o parse do JSON extraído:", e.message);
+                console.error("JSON problemático:", jsonString); // Mostra a string que tentamos corrigir
+                // Lança o erro para que a função que chamou possa tratá-lo.
+                throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
             }
         };
-
-                // ==========================================================
-               // >>>>> COLE A NOVA FUNÇÃO DE DELAY EXATAMENTE AQUI <<<<<
-            // ==========================================================
-                /**
-                * Cria uma pausa (delay) no código.
-                * @param {number} ms - O tempo de pausa em milissegundos.
-                */
-                const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
 
         /**
          * Remove comentários meta da IA do texto gerado.
@@ -3143,26 +3111,24 @@ Siga estas regras e gere o roteiro para a seção "${sectionTitle}" agora.`;
             // >>>>> CÓDIGO FINAL E CORRIGIDO PARA O SWITCH <<<<<
             // ==========================================================
             switch (sectionName) {
-                case 'outline':
+                case 'outline': // Este não muda
                     prompt = `${baseContext}
 
-                    Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar um "beat sheet" ou um esboço estratégico detalhado para o vídeo.
+Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar um "beat sheet" ou um esboço estratégico detalhado para o vídeo. Analise todos os parâmetros fornecidos (tema, público, estilo narrativo, etc.) para criar a estrutura mais impactante possível.
 
-                    **REGRAS CRÍTICAS E INEGOCIÁVEIS:**
-                    1.  Sua resposta deve ser APENAS o código JSON.
-                    2.  **NÃO inclua a palavra "json", markdown como \`\`\`, ou qualquer texto explicativo antes ou depois do objeto JSON.** A violação desta regra resultará em falha.
-                    3.  O objeto JSON deve conter chaves para "introduction", "development", "climax", "conclusion", e "cta".
-                    4.  O valor de cada chave deve ser uma string descrevendo o objetivo e a emoção daquela secção.
+Responda APENAS com um objeto JSON. O objeto deve conter chaves para cada parte principal do roteiro: "introduction", "development", "climax", "conclusion", e "cta".
 
-                    Exemplo de formato JSON esperado:
-                    {
-                    "introduction": "Começar com uma pergunta retórica chocante sobre a mortalidade...",
-                    "development": "Construir a narrativa explorando o luto...",
-                    "climax": "O momento de maior tensão no túmulo...",
-                    "conclusion": "Resumir a lição...",
-                    "cta": "Fazer uma chamada para ação suave..."
-                    }
-                    `;
+O valor de cada chave deve ser uma string descrevendo o objetivo, o conteúdo e a emoção daquela secção específica. Seja conciso, mas estratégico.
+
+Exemplo de formato JSON esperado:
+{
+  "introduction": "Começar com uma pergunta retórica chocante sobre a mortalidade, seguida por uma promessa de que a história de Lázaro detém uma resposta inesperada. Gancho emocional: curiosidade e um toque de medo existencial.",
+  "development": "Construir a narrativa explorando o luto das irmãs de Lázaro, humanizando a história. Apresentar a chegada tardia de Jesus como um ponto de tensão e dúvida. Foco na emoção de perda antes do milagre.",
+  "climax": "O momento de maior tensão no túmulo. Descrever a ordem de Jesus com autoridade e o espanto da multidão. O milagre deve ser o pico emocional e visual do vídeo.",
+  "conclusion": "Resumir a lição: o milagre não é sobre desafiar a morte, mas sobre o poder da fé. Conectar a história de Lázaro à jornada de fé pessoal do espectador.",
+  "cta": "Fazer uma chamada para ação suave, pedindo para o espectador compartilhar sua própria história de superação ou fé nos comentários, criando uma comunidade."
+}
+`;
                     maxTokens = 1500;
                     break;
 
@@ -3269,9 +3235,13 @@ The final output MUST be only the JSON code, like this example:
          * @throws {Error} Se a chamada à API falhar.
          */
         const callGroqAPI = async (prompt, maxTokens) => {
-            const proxyUrl = "/.netlify/functions/groq";
+            const proxyUrl = "/.netlify/functions/groq"; // Endpoint do proxy
 
-            const payload = { prompt: prompt, maxTokens: maxTokens };
+            const payload = {
+                prompt: prompt,
+                maxTokens: maxTokens
+            };
+
             const request = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -3281,10 +3251,6 @@ The final output MUST be only the JSON code, like this example:
             try {
                 const response = await fetch(proxyUrl, request);
                 if (!response.ok) {
-                    // Se o erro for um timeout, mostra uma mensagem específica
-                    if (response.status === 504) {
-                        throw new Error(`O servidor demorou muito para responder (Timeout). Tente novamente ou, se o problema persistir, gere um texto menor.`);
-                    }
                     const errorData = await response.json().catch(() => ({ error: { message: 'Erro desconhecido do servidor proxy.' } }));
                     throw new Error(`Erro na API via Proxy: ${errorData.error?.message || 'Erro do servidor'}`);
                 }
@@ -3294,36 +3260,34 @@ The final output MUST be only the JSON code, like this example:
                 else { throw new Error("Resposta inesperada da API Groq."); }
             } catch (error) {
                 console.error("Fetch da API via Netlify Function falhou:", error);
-                // Mostra o erro de forma mais amigável na tela
                 window.showToast(`Falha na API: ${error.message}`);
                 throw error;
            }
         };
 
         /**
-       * Valida os inputs obrigatórios do painel de estratégia.
-       * @returns {boolean} True se todos os campos obrigatórios estão preenchidos.
-       */
+         * Valida os inputs essenciais antes de gerar conteúdo.
+         * @returns {boolean} True se os inputs são válidos, caso contrário, false.
+         */
         const validateInputs = () => {
-        const requiredFields = [
-        'videoTheme',
-         'videoDescription',
-         'targetAudience',
-         'videoObjective',
-          'videoDuration',
-          'narrativeStructure'
-            ];
-
-        for (const fieldId of requiredFields) {
-         const element = document.getElementById(fieldId);
-         const value = element?.value.trim();
-        if (!value) {
-              window.showToast(`⚠️ Preencha o campo: ${fieldId}`);
-              return false;
+            if (!elements.channelName.value.trim()) {
+                window.showToast("Por favor, insira o nome do canal.");
+                return false;
             }
-        }
+            if (!elements.videoTheme.value.trim()) {
+                window.showToast("Por favor, insira o tema do vídeo.");
+                return false;
+            }
+            if (!elements.videoDescription.value.trim()) {
+                window.showToast("Por favor, insira a descrição do vídeo (para inspiração).");
+                return false;
+            }
+            if (!elements.videoDuration.value || elements.videoDuration.value === "") {
+                window.showToast("Por favor, selecione a Duração Desejada do vídeo.");
+                return false;
+            }
             return true;
-            };
+        };
 
         /**
          * Itera sobre todas as seções do roteiro na ordem correta,
@@ -3372,7 +3336,7 @@ The final output MUST be only the JSON code, like this example:
 
 
         /**
-         * Adiciona um novo capítulo ao desenvolvimento, expandindo o roteiro. (VERSÃO CORRIGIDA)
+         * Adiciona um novo capítulo ao desenvolvimento, expandindo o roteiro.
          * @param {HTMLElement} button - O botão que foi clicado.
          */
         window.addDevelopmentChapter = async (button) => {
@@ -3389,42 +3353,26 @@ The final output MUST be only the JSON code, like this example:
             button.innerHTML = '<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px;"></div>';
 
             try {
-                // ==========================================================
-                // >>>>> AQUI ESTÁ A CORREÇÃO DO PROBLEMA 1 (PROMPT) <<<<<
-                // ==========================================================
-                const basePrompt = constructScriptPrompt('development', 'Desenvolvimento').prompt;
-                const continuationPrompt = `${basePrompt}
-                \n\n**CRITICAL CONTINUATION INSTRUCTION: THIS IS THE MOST IMPORTANT RULE.**
-                You are writing the NEXT chapter of a script that already exists. 
-                - **DO NOT** repeat, rephrase, or summarize previous information.
-                - You **MUST** introduce new information, new evidence, a new event, or a deeper analysis that moves the story forward.
-                - Assume the viewer already knows everything written so far. Your task is to build upon it.
+                // Pega o mesmo prompt, mas adiciona um contexto crucial
+                const { prompt, maxTokens } = constructScriptPrompt('development', 'Desenvolvimento');
+                const continuationPrompt = `${prompt}
+                \n\n**CRITICAL CONTINUATION INSTRUCTION:** You are writing the NEXT chapter of a script that already exists. Do NOT repeat any previous information. Continue the narrative from where it left off.
+                \n\n**Here is the END of the current script, for context:**\n"...${existingText.slice(-500)}" 
+                \n\nNow, write the next part of the development section.`;
                 
-                **Here is the END of the current script, to give you context on where to continue from:**
-                \n"...${existingText.slice(-700)}" 
-                
-                Now, write the next chapter of the development section, ensuring it is entirely new content.`;
-                // ==========================================================
-                
-                const rawResult = await callGroqAPI(continuationPrompt, 4000); // Aumentamos os tokens para garantir que não corte
+                const rawResult = await callGroqAPI(continuationPrompt, maxTokens);
                 const newChapter = removeMetaComments(rawResult.trim());
                 
+                // Formata o novo capítulo em parágrafos com IDs únicos
                 const existingParagraphsCount = contentWrapper.querySelectorAll('div[id]').length;
                 const newParagraphs = newChapter.split('\n').filter(p => p.trim() !== '');
                 const newContentWithDivs = newParagraphs.map((p, index) => 
                     `<div id="development-p-${existingParagraphsCount + index}">${p}</div>`
                 ).join('');
 
-                contentWrapper.insertAdjacentHTML('beforeend', `<br>${newContentWithDivs}`); // Adiciona espaço
+                contentWrapper.insertAdjacentHTML('beforeend', newContentWithDivs);
                 
-                // ==========================================================
-                // >>>>> AQUI ESTÁ A CORREÇÃO DO PROBLEMA 2 (INVALIDAÇÃO) <<<<<
-                // ==========================================================
-                window.emotionalMap = null; // Invalida o mapa antigo
-                invalidateAndClearPerformance(devSection); // Limpa a UI de performance
-                invalidateAndClearPrompts(devSection); // Limpa a UI de prompts
-                // ==========================================================
-
+                // Atualiza o tempo de leitura
                 updateAllReadingTimes();
                 showToast("Novo capítulo adicionado!");
 
@@ -3468,123 +3416,72 @@ The final output MUST be only the JSON code, like this example:
             return result;
         };
 
+        // ==========================================================
+        // ================== FUNÇÕES PRINCIPAIS ====================
+        // ==========================================================
+        
+      /**
+         * Analisa a seção, anexa tooltips com título e botões de ação.
+         * (VERSÃO TOOLTIP FINAL CORRIGIDA)
+         */
+        window.analyzeSectionRetention = async (sectionId) => {
+            const sectionElement = document.getElementById(sectionId);
+            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+            if (!contentWrapper) return;
+
+            const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]'));
+            if (paragraphs.length === 0) {
+                window.showToast("Não há parágrafos para analisar.");
+                return;
+            }
+
+            try {
+                const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion".
+        
+            **CRITICAL RULE: The "suggestion" MUST be written in Portuguese (Brazil).**
+
+            Analyze this data:
+            ${JSON.stringify(paragraphsWithIds, null, 2)}`;
 
 
-   /**
- * Analisa o nível de retenção de uma seção do roteiro e aplica um mapa de calor.
- * @param {string} sectionId - O ID da seção (ex: 'introSection').
- */
-window.analyzeSectionRetention = async (sectionId) => {
-  const sectionElement = document.getElementById(sectionId);
-  const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-  const outputContainer = sectionElement?.querySelector('.section-analysis-output');
+                const rawResult = await callGroqAPI(prompt, 2500);
+                const analysis = cleanGeneratedText(rawResult, true);
 
-  if (!outputContainer) {
-    window.showToast("Erro: container de análise não encontrado.");
-    return;
-  }
+                if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
-  try {
-    // Mostra loading
-    outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
+                // Limpa tooltips e botões antigos antes de adicionar os novos
+                paragraphs.forEach(p => {
+                    p.classList.remove('retention-green', 'retention-yellow', 'retention-red');
+                    p.querySelector('.retention-tooltip')?.remove();
+                    p.querySelector('.retention-action-btn')?.remove();
+                });
 
-    // Valida se há parágrafos gerados
-    if (!contentWrapper || contentWrapper.children.length === 0) {
-      throw new Error("Nenhum parágrafo gerado para analisar.");
-    }
+                analysis.forEach(item => {
+                    const p = document.getElementById(item.paragraphId);
+                    if (p) {
+                        p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
+                        
+                        if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
+                            const scoreLabels = { green: "PONTO FORTE", yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
+                            const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
 
-    // Garante IDs únicos em todos os parágrafos
-    const paragraphsWithIds = Array.from(contentWrapper.children).map((p, index) => {
-      if (!p.id) {
-        p.id = `${sectionId}-p-${Date.now()}-${index}`;
-      }
-      return { id: p.id, text: p.textContent.trim() };
-    });
+                            const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}</div>`;
+                            const buttonHtml = `
+                                <button class="retention-action-btn" onclick="event.stopPropagation(); window.optimizeParagraph('${item.paragraphId}', '${item.suggestion.replace(/'/g, "\\'")}')" title="Otimizar com IA">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
+                                </button>`;
+                            p.insertAdjacentHTML('beforeend', tooltipHtml + buttonHtml);
+                        }
+                    }
+                });
+                window.showToast("Análise de retenção concluída!");
+            } catch (error) {
+                window.showToast(`Falha na análise: ${error.message}`);
+            }
+        };
 
-    // Prompt para a IA
-    const prompt = `Você é um Especialista em Retenção de Audiência para YouTube. Analise os parágrafos abaixo e retorne um array JSON com:
-    - "paragraphId": string (o ID exato)
-    - "retentionScore": string ("green", "yellow" ou "red")
-    - "suggestion": string em português do Brasil (sugestão clara para melhorar)
 
-    **REGRAS ESTRITAS**:
-    - Responda APENAS com um array JSON válido.
-    - Todas as sugestões em português do Brasil.
-    - Nada além do JSON.
-
-    Dados dos parágrafos:
-    ${JSON.stringify(paragraphsWithIds, null, 2)}
-    `;
-
-    const rawResult = await callGroqAPI(prompt, 1500);
-    const cleanedResult = cleanGeneratedText(rawResult, true);
-    const analysis = JSON.parse(cleanedResult);
-
-    if (!Array.isArray(analysis)) {
-      throw new Error("A IA retornou um formato inválido para análise de retenção.");
-    }
-
-    // Limpa análise anterior
-    contentWrapper
-      .querySelectorAll('.retention-green, .retention-yellow, .retention-red, .retention-tooltip, .retention-action-btn')
-      .forEach(el => el.remove());
-
-    // Aplica os resultados
-    analysis.forEach(item => {
-      const p = document.getElementById(item.paragraphId);
-      if (!p) return;
-
-      // Aplica cor do mapa de calor
-      p.classList.add(`retention-${item.retentionScore}`);
-
-      // Cria tooltip com sugestão
-      const tooltip = document.createElement('div');
-      tooltip.className = 'retention-tooltip bg-gray-800 text-white text-xs p-2 rounded-md shadow-lg max-w-xs';
-      tooltip.style.position = 'absolute';
-      tooltip.style.top = '100%';
-      tooltip.style.left = '0';
-      tooltip.style.zIndex = '1000';
-      tooltip.style.opacity = '0';
-      tooltip.style.pointerEvents = 'none';
-      tooltip.style.transition = 'opacity 0.3s';
-      tooltip.textContent = `💡 ${item.suggestion}`;
-
-      p.appendChild(tooltip);
-
-      p.addEventListener('mouseenter', () => { tooltip.style.opacity = '1'; });
-      p.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
-
-      // Botão "Enriquecer"
-      const enrichBtn = document.createElement('button');
-      enrichBtn.className = 'retention-action-btn btn btn-small btn-primary mt-1';
-      enrichBtn.textContent = 'Enriquecer';
-      enrichBtn.onclick = () => window.enrichText(enrichBtn);
-
-      p.appendChild(enrichBtn);
-    });
-
-    // Mensagem de sucesso
-    outputContainer.innerHTML = `
-      <p class="text-green-600 dark:text-green-400 text-sm mt-2">
-        ✅ Análise de retenção aplicada com sucesso!
-      </p>
-    `;
-
-    } catch (error) {
-    console.error('Erro ao analisar retenção:', error);
-    outputContainer.innerHTML = `
-      <p class="text-red-500 text-sm mt-2">❌ Falha: ${error.message}</p>
-      <button 
-        id="retryRetention-${sectionId}" 
-        onclick="window.analyzeSectionRetention('${sectionId}')"
-        class="btn btn-small btn-secondary mt-2 flex items-center gap-1">
-        🔄 Tentar Novamente
-      </button>
-    `;
-    } finally {
-    hideLoading();
-    }
-    };
 
     
         /**
@@ -3640,224 +3537,180 @@ window.analyzeSectionRetention = async (sectionId) => {
         };
 
 
-/**
- * Revalida e garante IDs únicos para todos os parágrafos em uma seção.
- * Deve ser chamada sempre que o conteúdo de uma seção é modificado manualmente.
- * @param {string} sectionId - O ID da seção (ex: 'introSection').
- */
-window.revalidateParagraphIds = (sectionId) => {
-  const contentWrapper = document.getElementById(sectionId)?.querySelector('.generated-content-wrapper');
-  if (!contentWrapper) return;
-
-  let hasChanges = false;
-  const seenIds = new Set();
-
-  Array.from(contentWrapper.children).forEach((p, index) => {
-    // Gera um ID baseado no conteúdo e na posição
-    const textHash = Array.from(p.textContent.trim()).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const baseId = `${sectionId}-p-${textHash}-${index}`;
-    let uniqueId = baseId;
-    let counter = 1;
-
-    // Garante que o ID é único
-    while (seenIds.has(uniqueId) || document.getElementById(uniqueId)) {
-      uniqueId = `${baseId}-dup${counter}`;
-      counter++;
-    }
-
-    if (!p.id || p.id !== uniqueId) {
-      p.id = uniqueId;
-      hasChanges = true;
-    }
-
-    seenIds.add(uniqueId);
-  });
-
-  // Se houver mudanças, invalida análises anteriores
-  if (hasChanges) {
-    const sectionElement = document.getElementById(sectionId);
-    if (sectionElement) {
-      const analysisOutput = sectionElement.querySelector('.section-analysis-output');
-      const performanceOutput = sectionElement.querySelector('.section-performance-output');
-      
-      if (analysisOutput) {
-        analysisOutput.innerHTML = '<p class="text-orange-500 text-sm">O texto foi alterado. Execute "Analisar Retenção" novamente.</p>';
-      }
-      
-      if (performanceOutput) {
-        performanceOutput.innerHTML = '<p class="text-orange-500 text-sm">O texto foi alterado. Execute "Sugerir Performance" novamente.</p>';
-      }
-    }
-  }
-};
-
-    
-/**
- * SUGERIR PERFORMANCE NARRATIVA (VERSÃO FINAL CORRIGIDA)
- * Aplica sugestões de tom, emoção e ritmo em cada parágrafo
- */
-window.suggestPerformance = async (sectionId) => {
-  const sectionElement = document.getElementById(sectionId);
-  const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-  const outputContainer = sectionElement?.querySelector('.section-performance-output');
-
-  if (!outputContainer) {
-    window.showToast("Erro: container de performance não encontrado.");
-    return;
-  }
-
-  try {
-    // Mostra loading
-    outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-
-    // Valida se há parágrafos
-    if (!contentWrapper || contentWrapper.children.length === 0) {
-      throw new Error("Nenhum parágrafo gerado para analisar.");
-    }
-
-    // Garante IDs únicos
-    const paragraphsWithIds = Array.from(contentWrapper.children).map((p, index) => {
-      if (!p.id) p.id = `${sectionId}-p-${Date.now()}-${index}`;
-      return { id: p.id, text: p.textContent.trim() };
-    });
-
-    // Prompt para IA
-    const prompt = `Você é um Especialista em Performance Narrativa para YouTube.
-Analise os parágrafos abaixo e retorne um array JSON com:
-- "paragraphId": string (o ID exato)
-- "performanceSuggestion": string em português
-- "emotion": string (emoção dominante)
-- "pace": string ("lento", "médio", "rápido")
-
-**REGRAS ESTRITAS**:
-- Responda APENAS com um array JSON válido.
-- Nada além do JSON.
-
-Dados:
-${JSON.stringify(paragraphsWithIds, null, 2)}
-`;
-
-    const rawResult = await callGroqAPI(prompt, 1500);
-    const cleanedResult = cleanGeneratedText(rawResult, true);
-    const suggestions = JSON.parse(cleanedResult);
-
-    if (!Array.isArray(suggestions)) {
-      throw new Error("A IA retornou um formato inválido.");
-    }
-
-    // Aplica tooltips
-    suggestions.forEach(item => {
-      const p = document.getElementById(item.paragraphId);
-      if (!p) return;
-
-      p.style.position = 'relative';
-      p.style.cursor = 'help';
-
-      const tooltip = document.createElement('div');
-      tooltip.className = 'retention-tooltip bg-indigo-600 text-white text-xs p-2 rounded-md shadow-lg max-w-xs';
-      tooltip.style.position = 'absolute';
-      tooltip.style.top = '100%';
-      tooltip.style.left = '0';
-      tooltip.style.zIndex = '1000';
-      tooltip.style.opacity = '0';
-      tooltip.style.pointerEvents = 'none';
-      tooltip.style.transition = 'opacity 0.3s';
-      tooltip.textContent = `🎯 ${item.performanceSuggestion} | Emoção: ${item.emotion} | Ritmo: ${item.pace}`;
-
-      p.appendChild(tooltip);
-
-      p.addEventListener('mouseenter', () => { tooltip.style.opacity = '1'; });
-      p.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
-    });
-
-    // Mensagem de sucesso
-    outputContainer.innerHTML = `
-      <p class="text-green-600 dark:text-green-400 text-sm mt-2">
-        ✅ Sugestões de performance aplicadas!
-      </p>
-    `;
-
-  } catch (error) {
-    console.error('Erro em suggestPerformance:', error);
-    outputContainer.innerHTML = `
-      <p class="text-red-500 text-sm mt-2">❌ ${error.message}</p>
-      <button 
-        id="retryButton-${sectionId}" 
-        onclick="window.suggestPerformance('${sectionId}')"
-        class="btn btn-small btn-secondary mt-2 flex items-center gap-1">
-        🔄 Tentar Novamente
-      </button>
-    `;
-  } finally {
-    // Certifique-se de que hideLoading é chamado
-    const button = document.getElementById(`suggestPerformanceBtn-${sectionId}`);
-    if (button) hideLoading(button);
-  }
-};
     
         /**
- * Enriquece o texto selecionado com uma sugestão da IA.
- * @param {HTMLElement} buttonElement - O botão "Enriquecer" clicado.
- */
-window.enrichText = async (buttonElement) => {
-  const selection = window.getSelection();
-  if (!selection.rangeCount || selection.isCollapsed) {
-    window.showToast("Selecione um trecho de texto para enriquecer.");
-    return;
-  }
+         * Gera anotações de performance em duas etapas para garantir 100% de consistência.
+         * (VERSÃO FINAL - PLANO B ATIVADO)
+         */
+        window.suggestPerformance = async (sectionId) => {
+            const sectionElement = document.getElementById(sectionId);
+            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+            const outputContainer = sectionElement?.querySelector('.section-performance-output');
 
-  const selectedText = selection.toString().trim();
-  if (selectedText.length < 10) {
-    window.showToast("Selecione um trecho maior para análise.");
-    return;
-  }
+            if (!contentWrapper || !contentWrapper.textContent.trim() || !outputContainer) {
+                window.showToast("Gere o roteiro desta seção primeiro.");
+                return;
+            }
+            if (!window.emotionalMap || window.emotionalMap.length === 0) {
+                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos'.");
+                return;
+            }
 
-  showLoading(buttonElement);
+            outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
+            
+            const originalTextContent = contentWrapper.textContent.trim().replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim();
+            const originalParagraphs = originalTextContent.split('\n\n').filter(p => p.trim() !== '');
+            const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
+            const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
+            const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
+            
+            try {
+                // ETAPA 1: PEDIR APENAS AS ANOTAÇÕES PARA A IA
+                let promptContext = '';
+                originalParagraphs.forEach((p, index) => {
+                    const mapIndex = baseIndex + index;
+                    const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
+                    promptContext += `Parágrafo ${index} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
+                });
 
-  try {
-    const prompt = `Você é um Mestre Roteirista. Reescreva o texto abaixo para torná-lo mais envolvente, claro e viral, mantendo o sentido original.
-**Texto Original:** "${selectedText}"
-**Regras:**
-- Responda apenas com o texto reescrito.
-- Nada de introduções ou explicações.`;
+                const prompt = `Você é um Diretor de Cena. Para CADA um dos ${originalParagraphs.length} parágrafos abaixo, sua tarefa é:
+                1.  Criar uma anotação geral de performance [em colchetes] (ex: "[Tom de curiosidade, ritmo rápido]").
+                2.  Identificar até 3 palavras ou frases curtas dentro do parágrafo que merecem ênfase.
 
-    const rawResult = await callGroqAPI(prompt, 500);
-    const enrichedText = cleanGeneratedText(rawResult, true).trim();
+                REGRAS CRÍTICAS:
+                1.  Sua resposta DEVE ser um array JSON com ${originalParagraphs.length} objetos.
+                2.  Cada objeto deve ter DUAS chaves: "general_annotation" (a anotação geral em uma string) e "emphasis_words" (um array de strings com as palavras exatas para enfatizar).
+                3.  As palavras em "emphasis_words" DEVEM existir no parágrafo correspondente.
 
-    if (!enrichedText || enrichedText === selectedText) {
-      throw new Error("IA retornou um texto vazio ou idêntico.");
-    }
+                ROTEIRO PARA ANÁLISE:
+                ${promptContext}
 
-    // Substitui o texto selecionado
-    const range = selection.getRangeAt(0);
-    const span = document.createElement('span');
-    span.className = 'highlight-change';
-    span.textContent = enrichedText;
-    range.deleteContents();
-    range.insertNode(span);
+                EXEMPLO DE RESPOSTA PARA UM PARÁGRAFO:
+                {
+                  "general_annotation": "[Tom de surpresa, pausa breve]",
+                  "emphasis_words": ["inacreditável", "segredo"]
+                }
 
-    // Foca de volta no container
-    const container = buttonElement.closest('.script-section');
-    if (container) container.focus();
+                Responda apenas com o array JSON.`;
 
-    // Invalida a análise de retenção
-    const accordionItem = buttonElement.closest('.accordion-item');
-    if (accordionItem) {
-      const analysisOutput = accordionItem.querySelector('.section-analysis-output');
-      if (analysisOutput) {
-        analysisOutput.innerHTML = '<p class="text-orange-500 text-sm">Seu texto foi alterado. Execute "Analisar Retenção" novamente.</p>';
-      }
-    }
+                const rawResult = await callGroqAPI(prompt, 2000);
+                const annotations = cleanGeneratedText(rawResult, true);
 
-    window.showToast("✅ Trecho enriquecido com sucesso!");
+                if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) {
+                    throw new Error("A IA não retornou o número correto de anotações.");
+                }
 
-  } catch (error) {
-    console.error('Erro ao enriquecer texto:', error);
-    window.showToast(`❌ Falha: ${error.message}`);
-  } finally {
-    hideLoading(buttonElement);
-  }
-};
+                // ETAPA 2: O JAVASCRIPT MONTA O ROTEIRO FINAL
+                let annotatedParagraphs = [];
+                originalParagraphs.forEach((p, index) => {
+                    const annotationData = annotations[index];
+                    let annotatedParagraph = p;
+
+                    if (annotationData && annotationData.emphasis_words && annotationData.emphasis_words.length > 0) {
+                        annotationData.emphasis_words.forEach(word => {
+                            const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                            const wordRegex = new RegExp(`\\b(${escapedWord})\\b`, 'g');
+                            annotatedParagraph = annotatedParagraph.replace(wordRegex, `[ênfase em '${word}'] $1`);
+                        });
+                    }
+                    
+                    const finalParagraph = `${annotationData.general_annotation || ''}\n${annotatedParagraph}`;
+                    annotatedParagraphs.push(finalParagraph.trim());
+                });
+                const finalAnnotatedText = annotatedParagraphs.join('\n\n');
+
+                // ETAPA 3: AUDITOR DE CONSISTÊNCIA FINAL
+                const { isValid } = auditGeneratedText(originalTextContent, finalAnnotatedText);
+                if (!isValid) {
+                    throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem.");
+                }
+                
+                const highlightedText = finalAnnotatedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
+                outputContainer.innerHTML = `
+                    <div class="card-background p-4 mt-2 rounded-lg border-l-4 border-indigo-500">
+                        <h5 class="font-bold text-sm mb-2 text-gray-700 dark:text-gray-200">Sugestão de Performance:</h5>
+                        <p class="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">${highlightedText}</p>
+                    </div>`;
+                if (sectionElement) {
+                    invalidateAndClearPrompts(sectionElement);
+                }
+            } catch (error) {
+                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
+            }
+        };
+
+    
+        /**
+         * Pega o texto selecionado pelo usuário, pede para a IA reescrevê-lo com uma analogia/metáfora,
+         * substitui o texto original e invalida a análise anterior. (VERSÃO CORRIGIDA)
+         * @param {HTMLElement} buttonElement - O botão que foi clicado.
+         */
+        window.enrichText = async (buttonElement) => {
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+
+            if (!selectedText) {
+                window.showToast("Por favor, selecione primeiro o texto que deseja enriquecer.");
+                return;
+            }
+
+            showLoading(buttonElement);
+
+            try {
+                const prompt = `Você é um Mestre Roteirista e poeta. Sua tarefa é reescrever o "Parágrafo Original" para incorporar a "Sugestão de Melhoria".
+
+                **Parágrafo Original:**
+                "${selectedText}"
+
+                **REGRAS:**
+                - Mantenha o núcleo da mensagem intacto.
+                - A resposta deve ser APENAS o parágrafo reescrito. Sem introduções, comentários ou explicações.`;
+
+                const rawResult = await callGroqAPI(prompt, 500);
+                const enrichedText = removeMetaComments(rawResult);
+
+                if (selection.rangeCount > 0) {
+                    document.execCommand('insertHTML', false, `<span class="highlight-change">${enrichedText}</span>`);
+                }
+
+                // ==========================================================
+                // A CORREÇÃO ESTÁ AQUI: Invalidar a análise antiga
+                // ==========================================================
+                // Encontra a seção pai onde a modificação ocorreu
+                const accordionItem = buttonElement.closest('.accordion-item');
+                if (accordionItem) {
+                    // Invalida a análise de retenção
+                    const analysisOutput = accordionItem.querySelector('.section-analysis-output');
+                    if (analysisOutput) {
+                        const invalidationMessage = `<p class="text-sm text-yellow-500 italic p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">O texto foi modificado. Por favor, clique em "Analisar Retenção" novamente.</p>`;
+                        analysisOutput.innerHTML = invalidationMessage;
+                    }
+                                        
+                    
+                    // Invalida os prompts de imagem (lógica que já implementamos)
+                    const scriptSection = accordionItem.parentElement; 
+                    invalidateAndClearPrompts(scriptSection);
+                    // A CORREÇÃO EXPLÍCITA: Invalida a sugestão de performance
+                   invalidateAndClearPerformance(accordionItem.closest('.script-section'));
+
+                }
+                // ==========================================================
+                // FIM DA CORREÇÃO
+                // ==========================================================
+
+
+                
+
+
+
+                window.showToast("Texto enriquecido! Análise anterior resetada.");
+
+            } catch (error) {
+                window.showToast(`Falha ao enriquecer o texto: ${error.message}`);
+            } finally {
+                hideLoading(buttonElement);
+            }
+        };
     
         /**
          * Gera e valida ideias de vídeo com base no nicho fornecido.
@@ -3991,7 +3844,7 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
                 }
                 
                 markButtonAsCompleted(button.id);
-                
+                updateButtonStates();
 
             } catch (error) {
                 window.showToast(`Falha ao gerar ${sectionTitle}: ${error.message}`);
@@ -4048,9 +3901,10 @@ window.regenerateSection = (fullSectionId) => {
 
 
 
-         /**
-         * Gera prompts de imagem, com o Mapa Emocional como um bônus opcional.
-         * (VERSÃO FINAL DE USABILIDADE)
+     /**
+         * Gera prompts de imagem e depois aplica um filtro de curadoria para garantir
+         * um ritmo visual adequado para a produção de vídeo.
+         * (VERSÃO CURADOR DE CENAS - CORRIGIDA)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
@@ -4062,45 +3916,69 @@ window.regenerateSection = (fullSectionId) => {
                 return;
             }
 
-            // ==========================================================
-            // >>>>> A VERIFICAÇÃO OBRIGATÓRIA FOI REMOVIDA DAQUI <<<<<
-            // ==========================================================
+            if (!window.emotionalMap || window.emotionalMap.length === 0) {
+                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para criar prompts contextuais.");
+                return;
+            }
 
             promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
+            const scriptContent = scriptContentElement.textContent;
             
+            const firstParagraphId = scriptContentElement.querySelector('div[id]')?.id;
+            const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
+            const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
+            
+            let initialPrompt = `Você é um Diretor de Fotografia. Analise o roteiro e o CONTEXTO EMOCIONAL abaixo para criar um storyboard granular, com uma cena para cada momento importante.
+
+            REGRAS: Sua resposta DEVE ser um array JSON. Cada objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration".
+            
+            ROTEIRO E CONTEXTO EMOCIONAL:
+            ---
+            `;
+            const paragraphs = scriptContent.split('\n\n').filter(p => p.trim() !== '');
+            paragraphs.forEach((p, index) => {
+                const mapIndex = baseIndex + index;
+                const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
+                initialPrompt += `Parágrafo ${index}: "${p}"\nContexto (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})\n\n`;
+            });
+            initialPrompt += `---
+            Gere o array JSON para os parágrafos acima.`;
+
             try {
-                const paragraphElements = scriptContentElement.querySelectorAll('div[id]');
-                let allGeneratedPrompts = [];
+                // ETAPA 1: A IA GERA MUITAS IDEIAS
+                const rawResult = await callGroqAPI(initialPrompt, 4000);
+                const allGeneratedPrompts = cleanGeneratedText(rawResult, true);
 
-                for (const [index, pElement] of paragraphElements.entries()) {
-                    const paragraph = pElement.textContent;
-                    // Esta linha já lida com o caso do mapa não existir, usando um valor padrão.
-                    const emotionalContext = (window.emotionalMap && window.emotionalMap[index]) || { emotion: 'Neutro', pace: 'Normal' };
-
-                    const singlePrompt = `Você é um Diretor de Fotografia. Analise o PARÁGRAFO e o CONTEXTO EMOCIONAL abaixo.
-                    REGRAS: Sua resposta DEVE ser um ÚNICO objeto JSON.
-                    - O objeto deve ter APENAS as chaves "scriptPhrase" e "imageDescription".
-                    - **REGRA CRÍTICA DE SINTAXE: Você DEVE usar aspas duplas (") para todas as chaves e valores. Aspas simples (') são estritamente proibidas.**
-                    
-                    PARÁGRAFO PARA ANALISAR: "${paragraph}"
-                    CONTEXTO (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})
-                    
-                    Gere o objeto JSON seguindo TODAS as regras.`;
-                    
-                    const rawResult = await callGroqAPI(singlePrompt, 500);
-                    const promptObject = cleanGeneratedText(rawResult, true);
-                    
-                    if (promptObject) {
-                        allGeneratedPrompts.push(promptObject);
-                    }
-                    await delay(250);
-                }
-                
                 if (!validatePromptsArray(allGeneratedPrompts)) {
                     throw new Error("A IA retornou prompts em formato inválido.");
                 }
+
+                // ETAPA 2: O NOSSO CÓDIGO FAZ A CURADORIA
+                const desiredSecondsPerScene = 15;
+                let curatedPrompts = [];
+                let secondsAccumulator = 0;
+                let currentScenePhrase = "";
+
+                allGeneratedPrompts.forEach((prompt, index) => {
+                    const duration = parseInt(prompt.estimated_duration, 10) || 5;
+                    
+                    currentScenePhrase += prompt.scriptPhrase + " ";
+                    secondsAccumulator += duration;
+                    
+                    if (secondsAccumulator >= desiredSecondsPerScene || index === allGeneratedPrompts.length - 1) {
+                        let finalPrompt = { ...prompt };
+                        finalPrompt.scriptPhrase = currentScenePhrase.trim();
+                        finalPrompt.estimated_duration = secondsAccumulator;
+                        
+                        curatedPrompts.push(finalPrompt);
+                        
+                        currentScenePhrase = "";
+                        secondsAccumulator = 0;
+                    }
+                });
                 
-                allImagePrompts[sectionElementId] = allGeneratedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
+                // Agora usamos a lista CURADA
+                allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
                 promptPaginationState[sectionElementId] = 0;
                 
                 promptContainer.innerHTML = `
@@ -4113,7 +3991,6 @@ window.regenerateSection = (fullSectionId) => {
 
             } catch (error) {
                  promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
-                 console.error("Erro detalhado ao gerar prompts:", error);
             }
         };
 
@@ -4279,7 +4156,7 @@ window.regenerateSection = (fullSectionId) => {
                 console.error("Error generating Titles/Thumbnails.", error);
             } finally {
                 hideLoading(buttons.generateTitlesAndThumbnailsBtn);
-                
+                updateButtonStates();
             }
         };
 
@@ -4409,7 +4286,7 @@ window.regenerateSection = (fullSectionId) => {
                 console.error("Error generating Video Description.", error);
             } finally {
                 hideLoading(buttons.generateDescriptionBtn);
-                
+                updateButtonStates();
             }
         };
 
@@ -4476,7 +4353,7 @@ window.regenerateSection = (fullSectionId) => {
                 outlineContentDiv.innerHTML = `<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`;
             } finally {
                 hideLoading(buttons.generateOutlineBtn);
-                
+                updateButtonStates();
             }
         };
 
@@ -4800,6 +4677,7 @@ window.regenerateSection = (fullSectionId) => {
                         }
                     });
 
+                    updateButtonStates();
                     
                     if (elements.outlineContent.textContent.trim().length > 100) markButtonAsCompleted('generateOutlineBtn');
                     if (document.getElementById('introSection').innerHTML.trim()) markButtonAsCompleted('generateIntroBtn');
@@ -4943,7 +4821,7 @@ window.regenerateSection = (fullSectionId) => {
             } finally {
                 isSettingStrategy = false;
                 hideLoading(button);
-  
+                updateButtonStates();
             }
         };
 
@@ -4955,6 +4833,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupInputTabs();
     setupTabs();
     updateProgressBar();
+    updateButtonStates();
     handleConclusionStrategyChange();
     updateNarrativeStructureOptions();
 
@@ -5186,6 +5065,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // Não usamos 'return' aqui, para que o código continue e verifique os botões por ID.
         }
+
+        // PARTE 3: LÓGICA DOS BOTÕES GERAIS POR ID (JÁ ESTAVA FUNCIONANDO)
+        if (button) {
+            const clickActions = {
+        'mapEmotionsBtn': mapEmotionsAndPacing,
+                'analyzeStrategyBtn': analyzeAndSetStrategy,
+                'generateOutlineBtn': generateStrategicOutline,
+
 
     // ==========================================================
 
