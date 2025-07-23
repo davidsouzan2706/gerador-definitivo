@@ -347,6 +347,15 @@
             .accordion-body {
                 padding: 1rem;
             }
+
+            /* ========================================================== */
+        /* ==== CORREÇÃO DE COR PARA PLACEHOLDERS NO MODO ESCURO ==== */
+        /* ========================================================== */
+        .dark .input-group input::placeholder,
+        .dark .input-group textarea::placeholder {
+            color: #94a3b8; /* Cor: slate-400 (um cinza mais claro e visível) */
+            opacity: 1; /* Garante que a cor seja aplicada */
+             }
         }
     </style>
 </head>
@@ -401,43 +410,54 @@
                     </div>
                     
                     <div class="card">
-                        <h3 class="font-semibold text-lg mb-4">Configurações Avançadas</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="input-group">
-                                <label for="videoDuration">Duração</label>
-                                <select id="videoDuration">
-                                    <option value="short">Curta (5 min)</option>
-                                    <option value="medium" selected>Média (10 min)</option>
-                                    <option value="long">Longa (16 min)</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label for="speakingPace">Ritmo de Fala</label>
-                                <select id="speakingPace">
-                                    <option value="slow">Lento</option>
-                                    <option value="moderate" selected>Moderado</option>
-                                    <option value="fast">Rápido</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label for="languageSelect">Idioma</label>
-                                <select id="languageSelect">
-                                    <option value="pt-br" selected>Português (BR)</option>
-                                    <option value="en">Inglês</option>
-                                    <option value="es">Espanhol</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label for="languageStyle">Estilo</label>
-                                <select id="languageStyle">
-                                    <option value="formal">Formal</option>
-                                    <option value="informal">Informal</option>
-                                    <option value="emocional">Emocional</option>
-                                    <option value="inspirador" selected>Inspirador</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+    <h3 class="font-semibold text-lg mb-4">Configurações Avançadas</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="input-group">
+            <label for="videoDuration">Duração</label>
+            <select id="videoDuration">  <!-- ID ADICIONADO -->
+                <option value="short">Curta (5 min)</option>
+                <option value="medium" selected>Média (10 min)</option>
+                <option value="long">Longa (16 min)</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="speakingPace">Ritmo de Fala</label>
+            <select id="speakingPace">  <!-- ID ADICIONADO -->
+                <option value="slow">Lento</option>
+                <option value="moderate" selected>Moderado</option>
+                <option value="fast">Rápido</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="languageSelect">Idioma</label>
+            <select id="languageSelect">  <!-- ID ADICIONADO -->
+                <option value="pt-br" selected>Português (BR)</option>
+                <option value="en">Inglês</option>
+                <option value="es">Espanhol</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="languageStyle">Estilo</label>
+            <select id="languageStyle">  <!-- ID ADICIONADO -->
+                <option value="formal">Formal</option>
+                <option value="informal">Informal</option>
+                <option value="emocional">Emocional</option>
+                <option value="inspirador" selected>Inspirador</option>
+            </select>
+        </div>
+        <!-- CAMPO "OBJETIVO DO VÍDEO" QUE ESTAVA FALTANDO -->
+        <div class="input-group md:col-span-2">
+            <label for="videoObjective">Objetivo do Vídeo</label>
+            <select id="videoObjective">
+                <option value="informar" selected>Informar</option>
+                <option value="emocionar">Emocionar</option>
+                <option value="evangelizar">Evangelizar</option>
+                <option value="vender">Vender</option>
+                <option value="entreter">Entreter</option>
+            </select>
+        </div>
+    </div>
+</div>
                 </div>
                 
                 <div class="mt-6 text-center">
