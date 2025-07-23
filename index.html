@@ -3586,11 +3586,11 @@ Exemplo de formato JSON esperado:
             }
         };
     
-                /**
-         * Gera anotações de performance, com scroll e espaçamento corrigido.
-         * (VERSÃO FINAL COM MELHORIAS DE UI)
+                 /**
+         * Gera anotações de performance, com ênfase limitada a 2 palavras.
+         * (VERSÃO FINAL COM CALIBRAGEM DE ÊNFASE)
          */
-                window.suggestPerformance = async (button, sectionId) => {
+        window.suggestPerformance = async (button, sectionId) => {
             const sectionElement = document.getElementById(sectionId);
             const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
             const outputContainer = sectionElement?.querySelector('.section-performance-output');
@@ -3630,7 +3630,28 @@ Exemplo de formato JSON esperado:
                         promptContext += `Parágrafo ${globalIndex} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
                     });
 
-                    const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON. Para cada um dos ${paragraphBatch.length} parágrafos no lote abaixo, crie um objeto com DUAS chaves: "general_annotation" e "emphasis_words".\n\n**REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**\n1.  A resposta final DEVE ser um array JSON contendo ${paragraphBatch.length} objetos.\n2.  O valor da chave "emphasis_words" DEVE ser um array de strings.\n3.  **REGRA MAIS IMPORTANTE:** O valor da chave "general_annotation" DEVE ser uma **STRING** que começa e termina com colchetes. **NÃO** retorne um array ou qualquer outro tipo de dado para esta chave.\n\n**EXEMPLO DE OBJETO VÁLIDO:**\n{\n  "general_annotation": "[Tom de surpresa, fazendo uma pausa dramática]",\n  "emphasis_words": ["inacreditável", "segredo", "finalmente"]\n}\n\nAnalise o lote a seguir e gere o array JSON seguindo estas regras estritamente.\n\n**ROTEIRO (LOTE ATUAL):**\n${promptContext}`;
+                    // ==========================================================
+                    // >>>>> AQUI ESTÁ A MUDANÇA CIRÚRGICA >>>> ANOTACOES <<<<<
+                    // ==========================================================
+                    const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON. Para cada um dos ${paragraphBatch.length} parágrafos no lote abaixo, crie um objeto com DUAS chaves: "general_annotation" e "emphasis_words".
+
+                    **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
+                    1.  A resposta final DEVE ser um array JSON contendo ${paragraphBatch.length} objetos.
+                    2.  O valor da chave "emphasis_words" DEVE ser um array de strings contendo **NO MÁXIMO 1** palavra ou frase curta. {/* <<<<<<< MUDANÇA #1 AQUI */}
+                    3.  **REGRA MAIS IMPORTANTE:** O valor da chave "general_annotation" DEVE ser uma **STRING** que começa e termina com colchetes.
+
+                    **EXEMPLO DE OBJETO VÁLIDO:**
+                    {
+                      "general_annotation": "[Tom de surpresa, fazendo uma pausa dramática]",
+                      "emphasis_words": ["inacreditável"] {/* <<<<<<< MUDANÇA #2 AQUI */}
+                    }
+
+                    Analise o lote a seguir e retorne o array JSON seguindo estas regras estritamente.
+
+                    **ROTEIRO (LOTE ATUAL):**
+                    ${promptContext}`;
+                    // ==========================================================
+
                     apiPromises.push(callGroqAPI(prompt, 3000).then(res => cleanGeneratedText(res, true)));
                 }
 
