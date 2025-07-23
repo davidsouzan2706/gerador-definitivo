@@ -4673,10 +4673,7 @@ Responda APENAS com o JSON válido.`;
         /**
          * Analisa o tema e a descrição do vídeo para definir a estratégia de conteúdo. (VERSÃO CORRIGIDA PARA ABAS)
          */
-                const analyzeAndSetStrategy = async () => {
-            // ==========================================================
-            // VERIFICAÇÃO DE PROJETO EM ANDAMENTO
-            // ==========================================================
+            const analyzeAndSetStrategy = async () => {
             const hasExistingWork = document.querySelector('#scriptSectionsContainer .accordion-item');
             if (hasExistingWork) {
                 const userConfirmed = await showConfirmationDialog(
@@ -4694,8 +4691,8 @@ Responda APENAS com o JSON válido.`;
 
             const theme = elements.videoTheme.value.trim();
             const description = elements.videoDescription.value.trim();
-            if (!theme || !description) {
-                window.showToast("Por favor, preencha o Tema e a Descrição do Vídeo.");
+            if (!validateOutlinePrerequisites()) {
+                window.showToast("Por favor, preencha o Tema e a Descrição do Vídeo primeiro.");
                 return;
             }
             
