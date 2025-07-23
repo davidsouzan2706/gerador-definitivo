@@ -4750,9 +4750,7 @@ Responda APENAS com o JSON válido.`;
                 if(strategy.video_objective) elements.videoObjective.value = strategy.video_objective;
                 if(strategy.narrative_goal) document.getElementById('narrativeGoal').value = strategy.narrative_goal;
 
-                // ✅ FORÇA A VALIDAÇÃO E ATUALIZAÇÃO DO ESTADO
-                validateInputs();
-                updateButtonStates();
+        
                 
                 updateNarrativeStructureOptions(); 
                 
@@ -4773,8 +4771,6 @@ Responda APENAS com o JSON válido.`;
                 if(strategy.speakingPace) elements.speakingPace.value = strategy.speakingPace;
                 if(strategy.imageStyleSelect) elements.imageStyleSelect.value = strategy.imageStyleSelect;
 
-                validateInputs();
-                updateButtonStates();
 
                 window.showToast("Estratégia definida com sucesso!");
                 elements.projectDashboard.classList.remove('hidden');
