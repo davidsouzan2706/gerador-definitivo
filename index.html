@@ -16,6 +16,20 @@
     <style>
 
 
+        /* ========================================================== */
+        /* ==== ESTILO PARA SAÍDA DE PERFORMANCE COM SCROLL ==== */
+        /* ========================================================== */
+        .performance-output-scrollable {
+            max-height: 400px; /* Altura máxima da caixa */
+            overflow-y: auto;  /* Barra de rolagem vertical automática */
+            padding-right: 10px; /* Espaço para a barra de rolagem não cobrir o texto */
+            border-radius: 6px;
+            background-color: rgba(79, 70, 229, 0.02); /* Fundo sutil para destacar a área */
+        }
+        .dark .performance-output-scrollable {
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+
 
 /* ========================================================== */
         /* ==== MELHORIA DE VISIBILIDADE NO ACORDEÃO (CORREÇÃO) ==== */
@@ -2703,22 +2717,20 @@ const invalidateAndClearPrompts = (sectionElement) => {
             }
         };
     
-         /**
-         * Gera o HTML para uma seção do roteiro. (VERSÃO FINALÍSSIMA COM ACORDEÃO CORRIGIDO)
+        /**
+         * Gera o HTML para uma seção do roteiro, com fluxo de trabalho em 3 passos.
+         * (VERSÃO FINAL COM PASSO 3 PARA PROMPTS)
          */
         const generateSectionHtmlContent = (sectionId, title, content) => {
             const mainBodyId = `${sectionId}Body`;
             const mainArrowId = `${sectionId}Arrow`;
-            const promptsBodyId = `promptsBody-${sectionId}`;
-            const promptsArrowId = `promptsArrow-${sectionId}`;
-            const soundtrackBodyId = `soundtrackBody-${sectionId}`;
-            const soundtrackArrowId = `soundtrackArrow-${sectionId}`;
-
+            
+            // HTML para os Passos 1 e 2
             const analysisToolsHtml = `
                 <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-6">
                     <div>
                         <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 1: Diagnóstico e Criativo</h5>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Analise a retenção e, se precisar, enriqueça trechos específicos. Selecione um trecho e clique.</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Analise a retenção e, se precisar, enriqueça trechos. Selecione um trecho e clique.</p>
                         <div class="flex items-center gap-2 flex-wrap">
                             <button class="btn btn-secondary btn-small" onclick="window.analyzeSectionRetention('${sectionId}Section')">Analisar Retenção</button>
                             <button class="btn btn-secondary btn-small" onclick="window.enrichText(this)">
@@ -2743,20 +2755,21 @@ const invalidateAndClearPrompts = (sectionElement) => {
                     </div>
                 </div>
             `;
+            
+            // HTML para o Passo 3
+            const promptsSectionHtml = `
+                <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 3: Recursos Visuais</h5>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Crie o storyboard visual para esta seção do roteiro.</p>
+                    <button class="btn btn-secondary btn-small" data-action="generate-prompts" data-section-id="${sectionId}Section">Gerar Prompts de Imagem</button>
+                    <div class="prompt-container mt-4"></div>
+                </div>
+            `;
+
             const regenerateBtnHtml = `<button class="regenerate-btn" data-action="regenerate" data-section-id="${sectionId}Section" title="Re-gerar esta seção"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg></button>`;
             const copyBtnHtml = `<button class="copy-btn" data-action="copy" title="Copiar Roteiro"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg></button>`;
             const headerButtonsHtml = `${regenerateBtnHtml} ${copyBtnHtml}`;
 
-            const promptsSectionHtml = `<div class="section-prompts">
-                                            <div class="nested-accordion-header">
-                                                <h4>Recursos Visuais (Prompts)</h4>
-                                                <svg id="${promptsArrowId}" class="accordion-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
-                                            </div>
-                                            <div id="${promptsBodyId}" class="accordion-body">
-                                                <div class="pt-2"><button class="btn btn-secondary btn-small" data-action="generate-prompts" data-section-id="${sectionId}Section">Gerar Prompts de Imagem</button><div class="prompt-container mt-4"></div></div>
-                                            </div>
-                                        </div>`;
-            
             return `<div class="accordion-item">
                         <div class="accordion-header main-accordion-header">
                             <div class="header-content">
@@ -2814,8 +2827,8 @@ const invalidateAndClearPrompts = (sectionElement) => {
             }
         };
 
-        /**
-         * Remove comentários meta da IA do texto gerado.
+                /**
+         * Remove comentários meta da IA do texto gerado. (VERSÃO BLINDADA)
          * @param {string} text - O texto gerado pela IA.
          * @returns {string} O texto sem os comentários meta.
          */
@@ -2823,6 +2836,8 @@ const invalidateAndClearPrompts = (sectionElement) => {
             if (!text) return "";
             const patternsToRemove = [
                 /^(aqui está|aqui vai|claro, aqui está|certo, aqui está|eis o|sure, here is|here's|here are|below is|certainly, here is) .*?:\s*\n?/im,
+                // NOVO PADRÃO MAIS AGRESSIVO PARA PEGAR O TEXTO INJETADO
+                /Here is the (generated )?script for the "[^"]+" section:\s*\n?/gi,
                 /^introdução:\s*\n?/im,
                 /^desenvolvimento:\s*\n?/im,
                 /^clímax:\s*\n?/im,
@@ -2833,6 +2848,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
             patternsToRemove.forEach(pattern => {
                 cleanedText = cleanedText.replace(pattern, '');
             });
+            // Remove aspas do início e fim, caso a IA envolva a resposta inteira nelas
             if (cleanedText.startsWith('"') && cleanedText.endsWith('"')) {
                 cleanedText = cleanedText.substring(1, cleanedText.length - 1);
             }
@@ -3555,10 +3571,11 @@ The final output MUST be only the JSON code, like this example:
 
     
                 /**
-         * Gera anotações de performance em lotes, com prompt blindado para garantir a formatação do JSON.
-         * (VERSÃO FINALÍSSIMA - À PROVA DE CRIATIVIDADE DA IA)
+         * Gera anotações de performance, com scroll e espaçamento corrigido.
+         * (VERSÃO FINAL COM MELHORIAS DE UI)
          */
         window.suggestPerformance = async (sectionId) => {
+            // ... (o início da função continua igual até o try...catch)
             const sectionElement = document.getElementById(sectionId);
             const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
             const outputContainer = sectionElement?.querySelector('.section-performance-output');
@@ -3575,12 +3592,11 @@ The final output MUST be only the JSON code, like this example:
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
             try {
+                // ... (toda a lógica de lotes e chamada da API permanece a mesma)
                 const paragraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
                 const originalParagraphs = paragraphElements.map(p => p.textContent.trim().replace(/\[.*?\]/g, '').trim());
 
-                if (originalParagraphs.length === 0) {
-                    throw new Error("Não foram encontrados parágrafos estruturados para análise.");
-                }
+                if (originalParagraphs.length === 0) { throw new Error("Não foram encontrados parágrafos estruturados para análise."); }
 
                 const firstParagraphId = paragraphElements[0]?.id;
                 const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
@@ -3591,55 +3607,22 @@ The final output MUST be only the JSON code, like this example:
 
                 for (let i = 0; i < originalParagraphs.length; i += batchSize) {
                     const paragraphBatch = originalParagraphs.slice(i, i + batchSize);
-                    
                     let promptContext = '';
                     paragraphBatch.forEach((p, indexInBatch) => {
                         const globalIndex = i + indexInBatch;
                         const mapIndex = baseIndex + globalIndex;
                         const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
-                        promptContext += `Parágrafo ${globalIndex}: "${p}"\nContexto (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})\n\n`;
+                        promptContext += `Parágrafo ${globalIndex} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
                     });
 
-                    // ==========================================================
-                    // >>>>> AQUI ESTÁ A MUDANÇA CRÍTICA - O PROMPT BLINDADO <<<<<
-                    // ==========================================================
-                    const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON. Para cada um dos ${paragraphBatch.length} parágrafos abaixo, crie um objeto com DUAS chaves: "general_annotation" e "emphasis_words".
-
-                    **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
-                    1.  A resposta final DEVE ser um array JSON contendo ${paragraphBatch.length} objetos.
-                    2.  O valor da chave "emphasis_words" DEVE ser um array de strings.
-                    3.  **REGRA MAIS IMPORTANTE:** O valor da chave "general_annotation" DEVE ser uma **STRING** que começa e termina com colchetes. **NÃO** retorne um array ou qualquer outro tipo de dado para esta chave.
-
-                    **EXEMPLO DE OBJETO VÁLIDO:**
-                    {
-                      "general_annotation": "[Tom de surpresa, fazendo uma pausa dramática]",
-                      "emphasis_words": ["inacreditável", "segredo", "finalmente"]
-                    }
-
-                    **EXEMPLO DE OBJETO INVÁLIDO (NÃO FAÇA ISSO):**
-                    {
-                      "general_annotation": [Tom de surpresa],
-                      "emphasis_words": ["inacreditável"]
-                    }
-
-                    Analise o lote de parágrafos a seguir e retorne o array JSON seguindo estas regras estritamente.
-
-                    **ROTEIRO (LOTE ATUAL):**
-                    ${promptContext}`;
-                    // ==========================================================
-                    // >>>>> FIM DA MUDANÇA CRÍTICA <<<<<
-                    // ==========================================================
-
+                    const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON. Para cada um dos ${paragraphBatch.length} parágrafos no lote abaixo, crie um objeto com DUAS chaves: "general_annotation" e "emphasis_words".\n\n**REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**\n1.  A resposta final DEVE ser um array JSON contendo ${paragraphBatch.length} objetos.\n2.  O valor da chave "emphasis_words" DEVE ser um array de strings.\n3.  **REGRA MAIS IMPORTANTE:** O valor da chave "general_annotation" DEVE ser uma **STRING** que começa e termina com colchetes. **NÃO** retorne um array ou qualquer outro tipo de dado para esta chave.\n\n**EXEMPLO DE OBJETO VÁLIDO:**\n{\n  "general_annotation": "[Tom de surpresa, fazendo uma pausa dramática]",\n  "emphasis_words": ["inacreditável", "segredo", "finalmente"]\n}\n\nAnalise o lote a seguir e gere o array JSON seguindo estas regras estritamente.\n\n**ROTEIRO (LOTE ATUAL):**\n${promptContext}`;
                     apiPromises.push(callGroqAPI(prompt, 3000).then(res => cleanGeneratedText(res, true)));
                 }
 
                 const allBatchResults = await Promise.all(apiPromises);
                 const annotations = allBatchResults.flat();
 
-                if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) {
-                    console.error(`Falha na contagem final: JS esperava ${originalParagraphs.length} anotações, IA retornou ${annotations.length}.`);
-                    throw new Error("A IA não retornou o número correto de anotações após juntar os lotes.");
-                }
+                if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) { throw new Error("A IA não retornou o número correto de anotações após juntar os lotes."); }
                 
                 let annotatedParagraphs = [];
                 originalParagraphs.forEach((p, index) => {
@@ -3653,31 +3636,40 @@ The final output MUST be only the JSON code, like this example:
                             annotatedParagraph = annotatedParagraph.replace(wordRegex, `[ênfase em '${word}']$1`);
                         });
                     }
-                    
                     const finalParagraph = `${annotationData.general_annotation || ''}\n${annotatedParagraph}`;
                     annotatedParagraphs.push(finalParagraph.trim());
                 });
-                const finalAnnotatedText = annotatedParagraphs.join('\n\n');
 
-                const originalTextForAudit = originalParagraphs.join('\n\n');
-                const { isValid } = auditGeneratedText(originalTextForAudit, finalAnnotatedText);
+                // ==========================================================
+                // >>>>> CORREÇÃO #3: ESPAÇAMENTO ENTRE PARÁGRAFOS <<<<<
+                // ==========================================================
+                // Trocamos '\n\n' por '\n' para evitar o espaçamento duplo.
+                const finalAnnotatedText = annotatedParagraphs.join('\n');
+                // ==========================================================
 
-                if (!isValid) {
-                    throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem.");
-                }
+                const originalTextForAudit = originalParagraphs.join('\n'); // Também corrigido aqui para a auditoria
+                const { isValid } = auditGeneratedText(originalTextForAudit.replace(/\n/g, ' '), finalAnnotatedText.replace(/\n/g, ' '));
+
+                if (!isValid) { throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem."); }
                 
                 const highlightedText = finalAnnotatedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
+
+                // ==========================================================
+                // >>>>> CORREÇÃO #2: APLICANDO A BARRA DE ROLAGEM <<<<<
+                // ==========================================================
                 outputContainer.innerHTML = `
                     <div class="card-background p-4 mt-2 rounded-lg border-l-4 border-indigo-500">
                         <h5 class="font-bold text-sm mb-2 text-gray-700 dark:text-gray-200">Sugestão de Performance:</h5>
-                        <p class="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">${highlightedText}</p>
+                        <div class="performance-output-scrollable">
+                            <p class="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">${highlightedText}</p>
+                        </div>
                     </div>`;
-                if (sectionElement) {
-                    invalidateAndClearPrompts(sectionElement);
-                }
+                // ==========================================================
+
+                if (sectionElement) { invalidateAndClearPrompts(sectionElement); }
 
             } catch (error) {
-                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
+                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}`;
             }
         };
 
