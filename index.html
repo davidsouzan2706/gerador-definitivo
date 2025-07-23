@@ -3260,27 +3260,6 @@ The final output MUST be only the JSON code, like this example:
            }
         };
 
-// ====== FUNÇÕES FINAIS (SEM DUPLICATAS) ======
-const validateInputs = () => {
-  const requiredFields = [
-    'videoTheme',
-    'videoDescription',
-    'targetAudience',
-    'videoObjective',
-    'videoDuration',
-    'narrativeStructure'
-  ];
-
-  for (const fieldId of requiredFields) {
-    const element = document.getElementById(fieldId);
-    const value = element?.value.trim();
-    if (!value) {
-      window.showToast(`⚠️ Preencha o campo: ${fieldId}`);
-      return false;
-    }
-  }
-  return true;
-};
 
 /**
  * Atualiza o estado de habilitação/desabilitação dos botões com base no estado do roteiro.
@@ -5163,9 +5142,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    // ---- 5. LÓGICA PARA RESETAR ROTEIRO ----
+    // ==========================================================
+    // >>>>> 5. VIGIAS DE ESTADO E GATILHOS <<<<<
+    // ==========================================================
+    
+    // Vigias para habilitar o botão de Esboço assim que o usuário digita
+    ['videoTheme', 'videoDescription'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', updateButtonStates);
+        }
+    });
+
+    // Vigias para resetar o roteiro se a estratégia for alterada
     const strategicInputIds = [
-        'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
+        'videoDuration', 'speakingPace', 'narrativeGoal',
         'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
         'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect'
     ];
@@ -5186,15 +5177,46 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', window.handleFloatingActionBar);
 });
 
-// Adiciona listeners para disparar validação ao digitar
-['videoTheme', 'videoDescription', 'targetAudience', 'videoObjective', 'videoDuration', 'narrativeStructure'].forEach(id => {
-  const element = document.getElementById(id);
-  if (element) {
-    element.addEventListener('input', validateInputs);
-    element.addEventListener('change', validateInputs);
-  }
-});
+// ==========================================================
+        // >>>>> NOVA CENTRAL DE COMANDO E VALIDAÇÃO <<<<<
+        // ==========================================================
+        /**
+         * Valida apenas os campos necessários para criar o Esboço Estratégico.
+         */
+        const validateOutlinePrerequisites = () => {
+            const theme = document.getElementById('videoTheme')?.value.trim();
+            const description = document.getElementById('videoDescription')?.value.trim();
+            return theme && description;
+        };
+        
+        /**
+         * Atualiza o estado de TODOS os botões com base no estado atual da aplicação.
+         */
+        const updateButtonStates = () => {
+            const canGenerateOutline = validateOutlinePrerequisites();
+            const hasOutline = !!window.strategicOutline;
+            const scriptIsComplete = isScriptComplete();
 
+            // Botão do Esboço
+            const outlineBtn = document.getElementById('generateOutlineBtn');
+            if (outlineBtn) outlineBtn.disabled = !canGenerateOutline;
+
+            // Botões que dependem do Esboço
+            const outlineDependents = ['mapEmotionsBtn', 'generateIntroBtn', 'generateDevelopmentBtn', 'climaxBtn', 'conclusionBtn', 'generateCTABtn'];
+            outlineDependents.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = !hasOutline;
+            });
+
+            // Botões que dependem do Roteiro Completo
+            const scriptDependents = ['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateSoundtrackBtn'];
+            scriptDependents.forEach(id => {
+                const btn = document.getElementById(id);
+                const floatBtn = document.getElementById(`float_${id}`);
+                if (btn) btn.disabled = !scriptIsComplete;
+                if (floatBtn) floatBtn.disabled = !scriptIsComplete;
+            });
+        };
 
 </script>
 </body>
