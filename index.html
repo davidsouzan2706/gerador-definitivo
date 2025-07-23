@@ -3555,8 +3555,8 @@ The final output MUST be only the JSON code, like this example:
 
     
                 /**
-         * Gera anotações de performance em duas etapas para garantir 100% de consistência.
-         * (VERSÃO FINAL COM CORREÇÃO DE AUDITORIA)
+         * Gera anotações de performance em lotes para lidar com textos longos, garantindo 100% de consistência.
+         * (VERSÃO FINAL BLINDADA CONTRA LIMITE DE TOKENS)
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
@@ -3574,49 +3574,68 @@ The final output MUST be only the JSON code, like this example:
 
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
-            const paragraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
-            const originalParagraphs = paragraphElements.map(p => p.textContent.trim().replace(/\[.*?\]/g, '').trim());
-            
-            if (originalParagraphs.length === 0) {
-                window.showToast("Não foram encontrados parágrafos estruturados para análise.");
-                outputContainer.innerHTML = '';
-                return;
-            }
-
-            const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
-            const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
-            const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-            
             try {
-                let promptContext = '';
-                originalParagraphs.forEach((p, index) => {
-                    const mapIndex = baseIndex + index;
-                    const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
-                    promptContext += `Parágrafo ${index} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
-                });
+                const paragraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
+                const originalParagraphs = paragraphElements.map(p => p.textContent.trim().replace(/\[.*?\]/g, '').trim());
 
-                const prompt = `Você é um Diretor de Cena. Para CADA um dos ${originalParagraphs.length} parágrafos abaixo, sua tarefa é:
-                1.  Criar uma anotação geral de performance [em colchetes] (ex: "[Tom de curiosidade, ritmo rápido]").
-                2.  Identificar até 3 palavras ou frases curtas dentro do parágrafo que merecem ênfase.
-
-                REGRAS CRÍTICAS:
-                1.  Sua resposta DEVE ser um array JSON com ${originalParagraphs.length} objetos.
-                2.  Cada objeto deve ter DUAS chaves: "general_annotation" (a anotação geral em uma string) e "emphasis_words" (um array de strings com as palavras exatas para enfatizar).
-                3.  As palavras em "emphasis_words" DEVEM existir no parágrafo correspondente.
-
-                ROTEIRO PARA ANÁLISE:
-                ${promptContext}
-
-                Responda apenas com o array JSON.`;
-
-                const rawResult = await callGroqAPI(prompt, 3000);
-                const annotations = cleanGeneratedText(rawResult, true);
-
-                if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) {
-                    console.error(`Falha na contagem: JS esperava ${originalParagraphs.length} anotações, IA retornou ${annotations.length}.`);
-                    throw new Error("A IA não retornou o número correto de anotações.");
+                if (originalParagraphs.length === 0) {
+                    throw new Error("Não foram encontrados parágrafos estruturados para análise.");
                 }
 
+                const firstParagraphId = paragraphElements[0]?.id;
+                const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
+                const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
+                
+                // ==========================================================
+                // >>>>> AQUI COMEÇA A LÓGICA DE ANÁLISE EM LOTES <<<<<
+                // ==========================================================
+                const batchSize = 15; // Analisa 15 parágrafos por vez. Podemos ajustar se necessário.
+                const apiPromises = [];
+
+                for (let i = 0; i < originalParagraphs.length; i += batchSize) {
+                    const paragraphBatch = originalParagraphs.slice(i, i + batchSize);
+                    
+                    let promptContext = '';
+                    paragraphBatch.forEach((p, indexInBatch) => {
+                        const globalIndex = i + indexInBatch;
+                        const mapIndex = baseIndex + globalIndex;
+                        const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
+                        promptContext += `Parágrafo ${globalIndex} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
+                    });
+
+                    const prompt = `Você é um Diretor de Cena. Para CADA um dos ${paragraphBatch.length} parágrafos abaixo, sua tarefa é:
+                    1.  Criar uma anotação geral de performance [em colchetes].
+                    2.  Identificar até 3 palavras ou frases curtas para ênfase.
+
+                    REGRAS CRÍTICAS:
+                    1.  Sua resposta DEVE ser um array JSON com ${paragraphBatch.length} objetos.
+                    2.  Cada objeto deve ter as chaves "general_annotation" e "emphasis_words" (um array de strings).
+                    3.  As palavras em "emphasis_words" DEVEM existir no parágrafo.
+
+                    ROTEIRO PARA ANÁLISE (LOTE ATUAL):
+                    ${promptContext}
+
+                    Responda apenas com o array JSON.`;
+
+                    // Adiciona a chamada da API à lista de promessas
+                    apiPromises.push(callGroqAPI(prompt, 3000).then(res => cleanGeneratedText(res, true)));
+                }
+
+                // Espera todas as chamadas da API terminarem e junta os resultados
+                const allBatchResults = await Promise.all(apiPromises);
+                const annotations = allBatchResults.flat(); // .flat() transforma [[a,b], [c,d]] em [a,b,c,d]
+                // ==========================================================
+                // >>>>> FIM DA LÓGICA DE ANÁLISE EM LOTES <<<<<
+                // ==========================================================
+
+                if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) {
+                    console.error(`Falha na contagem final: JS esperava ${originalParagraphs.length} anotações, IA retornou ${annotations.length}.`);
+                    throw new Error("A IA não retornou o número correto de anotações após juntar os lotes.");
+                }
+
+                // O restante do código (montagem, auditoria, exibição) permanece o mesmo,
+                // pois agora ele recebe a lista completa de anotações.
+                
                 let annotatedParagraphs = [];
                 originalParagraphs.forEach((p, index) => {
                     const annotationData = annotations[index];
@@ -3626,14 +3645,7 @@ The final output MUST be only the JSON code, like this example:
                         annotationData.emphasis_words.forEach(word => {
                             const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
                             const wordRegex = new RegExp(`\\b(${escapedWord})\\b`, 'gi');
-                            
-                            // ==========================================================
-                            // >>>>> A CORREÇÃO FINAL ESTÁ AQUI (REMOÇÃO DO ESPAÇO) <<<<<
-                            // ==========================================================
-                            // Linha Antiga (com erro): `[ênfase em '${word}'] $1`
-                            // Linha Nova (corrigida): `[ênfase em '${word}']$1`
                             annotatedParagraph = annotatedParagraph.replace(wordRegex, `[ênfase em '${word}']$1`);
-                            // ==========================================================
                         });
                     }
                     
@@ -3646,7 +3658,6 @@ The final output MUST be only the JSON code, like this example:
                 const { isValid } = auditGeneratedText(originalTextForAudit, finalAnnotatedText);
 
                 if (!isValid) {
-                    // Adiciona um log útil para futuras depurações
                     console.error("AUDITORIA FALHOU. Comparando textos:");
                     console.log("Original Normalizado:", originalTextForAudit.replace(/\s+/g, ' ').trim());
                     console.log("Reconstruído Limpo e Normalizado:", finalAnnotatedText.replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim());
@@ -3662,6 +3673,7 @@ The final output MUST be only the JSON code, like this example:
                 if (sectionElement) {
                     invalidateAndClearPrompts(sectionElement);
                 }
+
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
             }
