@@ -2787,15 +2787,14 @@ const invalidateAndClearPrompts = (sectionElement) => {
                     </div>`;
         };
     
-        /**
-         * Limpa o texto gerado pela IA, tentando corrigir erros comuns de JSON.
-         * (VERSÃO "À PROVA DE BALAS")
+                /**
+         * Limpa o texto gerado pela IA, com uma "manobra defensiva" para corrigir
+         * erros comuns de formatação de JSON.
          */
         const cleanGeneratedText = (text, expectJson = false) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
-            // 1. Tenta encontrar o início e o fim do JSON ([...], ou {...})
             let jsonString = text;
             const firstBracket = text.indexOf('[');
             const lastBracket = text.lastIndexOf(']');
@@ -2808,21 +2807,26 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 jsonString = text.substring(firstBrace, lastBrace + 1);
             }
 
-            // 2. Remove "lixo" comum, como markdown e texto introdutório.
             jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
 
-            // 3. Tenta corrigir erros comuns de sintaxe antes do parse.
+            // ==========================================================
+            // >>>>> MANOBRA DEFENSIVA PARA CORRIGIR O JSON <<<<<
+            // ==========================================================
+            // Verifica se a string se parece com o erro que vimos (um array seguido pela chave "thumbnails")
+            if (jsonString.startsWith('[') && jsonString.includes('"thumbnails"')) {
+                console.warn("JSON malformado detectado. Tentando corrigir...");
+                // Adiciona a chave "titles" que faltava e envolve tudo em chaves {}
+                jsonString = `{ "titles": ${jsonString} }`;
+                console.log("JSON após tentativa de correção:", jsonString);
+            }
+            // ==========================================================
+
             try {
-                // Remove vírgulas extras no final de arrays e objetos (ex: [1, 2,])
                 jsonString = jsonString.replace(/,\s*([}\]])/g, "$1");
-                
-                // Tenta fazer o parse. Se funcionar, ótimo!
                 return JSON.parse(jsonString);
             } catch (e) {
-                // Se falhar, o erro original é mais útil para depuração.
                 console.error("Falha ao fazer o parse do JSON extraído:", e.message);
-                console.error("JSON problemático:", jsonString); // Mostra a string que tentamos corrigir
-                // Lança o erro para que a função que chamou possa tratá-lo.
+                console.error("JSON problemático:", text); // Mostra o texto original que causou o erro
                 throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
             }
         };
@@ -3201,27 +3205,34 @@ Exemplo de formato JSON esperado:
                     maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 400; // CORRIGIDO
                     break;
 
-                case 'titles_thumbnails': // Este não muda
+                                case 'titles_thumbnails':
+                    // >>>>> PROMPT BLINDADO <<<<<
                     prompt = `${baseContext}
-Generate 5 highly clickable and viral YouTube video titles and 5 compelling thumbnail ideas.
+                    Você é uma API de geração de metadados. Sua única função é retornar um objeto JSON.
 
-IMPORTANT: Respond ONLY with a valid JSON object. Do not include any other text, preambles, or explanations outside of the JSON structure itself.
+                    **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E ESTRICTAS):**
+                    1.  Sua resposta DEVE ser APENAS e SOMENTE o código de um objeto JSON.
+                    2.  O objeto DEVE começar com uma chave de abertura \`{\` e terminar com uma chave de fechamento \`}\`.
+                    3.  O objeto DEVE conter EXATAMENTE duas chaves de nível superior: \`"titles"\` e \`"thumbnails"\`.
+                    4.  O valor de \`"titles"\` DEVE ser um array de strings.
+                    5.  O valor de \`"thumbnails"\` DEVE ser um array de objetos, onde cada objeto tem as chaves "title" e "description".
 
-The JSON object must have two top-level keys:
-1.  "titles": An array of strings.
-2.  "thumbnails": Anatah array of objects, where each object has a "title" (string) and a "description" (string) key. Each description should focus on strong visual elements, emotions, and clear text overlays.
+                    **EXEMPLO DE RESPOSTA PERFEITA:**
+                    {
+                  "titles": [
+                  "Título de Exemplo 1",
+                  "Título de Exemplo 2"
+                    ],
+                    "thumbnails": [
+                     {
+                      "title": "THUMB 1",
+                  "description": "Descrição da thumbnail 1."
+                 }
+                ]
+                }
 
-The final output MUST be only the JSON code, like this example:
-{
-  "titles": [
-    "The Shocking Truth About the Ark of the Covenant",
-    "Was the Ark of the Covenant Finally Discovered?",
-    "This Ancient Secret Could Change History Forever",
-    "Biblical Mystery: The Ark's Final Location Revealed",
-    "They Found It? The Search for the Lost Ark Ends Here"
-  ],\n  "thumbnails": [\n    {\n      "title": "FOUND?",\n      "description": "A dramatic image of an ancient, glowing chest half-buried in a dark cave, with an astonished archaeologist looking on."\n    },\n    {\n      "title": "TOP SECRET",\n      "description": "A collage showing a faded ancient map, a secret biblical text, and a satellite image pointing to a location in Ethiopia."\n    },\
-    {\n      "title": "HISTORY CHANGED",\n      "description": "A visually stunning image of the Ark of the Covenant radiating golden light inside a reconstructed Solomon's Temple."\n}\n]\n}`;
-                    maxTokens = 800;
+                    Analise o contexto fornecido e gere 5 títulos e 5 ideias de thumbnail, seguindo as regras de formatação acima SEM QUALQUER DESVIO.`;
+                    maxTokens = 1500; // Aumentamos um pouco por segurança
                     break;
 
                 case 'description': // Este não muda
