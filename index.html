@@ -3555,8 +3555,8 @@ The final output MUST be only the JSON code, like this example:
 
     
                 /**
-         * Gera anotações de performance em lotes para lidar com textos longos, garantindo 100% de consistência.
-         * (VERSÃO FINAL BLINDADA CONTRA LIMITE DE TOKENS)
+         * Gera anotações de performance em lotes, com prompt blindado para garantir a formatação do JSON.
+         * (VERSÃO FINALÍSSIMA - À PROVA DE CRIATIVIDADE DA IA)
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
@@ -3586,10 +3586,7 @@ The final output MUST be only the JSON code, like this example:
                 const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
                 const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
                 
-                // ==========================================================
-                // >>>>> AQUI COMEÇA A LÓGICA DE ANÁLISE EM LOTES <<<<<
-                // ==========================================================
-                const batchSize = 15; // Analisa 15 parágrafos por vez. Podemos ajustar se necessário.
+                const batchSize = 15;
                 const apiPromises = [];
 
                 for (let i = 0; i < originalParagraphs.length; i += batchSize) {
@@ -3600,41 +3597,49 @@ The final output MUST be only the JSON code, like this example:
                         const globalIndex = i + indexInBatch;
                         const mapIndex = baseIndex + globalIndex;
                         const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
-                        promptContext += `Parágrafo ${globalIndex} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
+                        promptContext += `Parágrafo ${globalIndex}: "${p}"\nContexto (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})\n\n`;
                     });
 
-                    const prompt = `Você é um Diretor de Cena. Para CADA um dos ${paragraphBatch.length} parágrafos abaixo, sua tarefa é:
-                    1.  Criar uma anotação geral de performance [em colchetes].
-                    2.  Identificar até 3 palavras ou frases curtas para ênfase.
+                    // ==========================================================
+                    // >>>>> AQUI ESTÁ A MUDANÇA CRÍTICA - O PROMPT BLINDADO <<<<<
+                    // ==========================================================
+                    const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON. Para cada um dos ${paragraphBatch.length} parágrafos abaixo, crie um objeto com DUAS chaves: "general_annotation" e "emphasis_words".
 
-                    REGRAS CRÍTICAS:
-                    1.  Sua resposta DEVE ser um array JSON com ${paragraphBatch.length} objetos.
-                    2.  Cada objeto deve ter as chaves "general_annotation" e "emphasis_words" (um array de strings).
-                    3.  As palavras em "emphasis_words" DEVEM existir no parágrafo.
+                    **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
+                    1.  A resposta final DEVE ser um array JSON contendo ${paragraphBatch.length} objetos.
+                    2.  O valor da chave "emphasis_words" DEVE ser um array de strings.
+                    3.  **REGRA MAIS IMPORTANTE:** O valor da chave "general_annotation" DEVE ser uma **STRING** que começa e termina com colchetes. **NÃO** retorne um array ou qualquer outro tipo de dado para esta chave.
 
-                    ROTEIRO PARA ANÁLISE (LOTE ATUAL):
-                    ${promptContext}
+                    **EXEMPLO DE OBJETO VÁLIDO:**
+                    {
+                      "general_annotation": "[Tom de surpresa, fazendo uma pausa dramática]",
+                      "emphasis_words": ["inacreditável", "segredo", "finalmente"]
+                    }
 
-                    Responda apenas com o array JSON.`;
+                    **EXEMPLO DE OBJETO INVÁLIDO (NÃO FAÇA ISSO):**
+                    {
+                      "general_annotation": [Tom de surpresa],
+                      "emphasis_words": ["inacreditável"]
+                    }
 
-                    // Adiciona a chamada da API à lista de promessas
+                    Analise o lote de parágrafos a seguir e retorne o array JSON seguindo estas regras estritamente.
+
+                    **ROTEIRO (LOTE ATUAL):**
+                    ${promptContext}`;
+                    // ==========================================================
+                    // >>>>> FIM DA MUDANÇA CRÍTICA <<<<<
+                    // ==========================================================
+
                     apiPromises.push(callGroqAPI(prompt, 3000).then(res => cleanGeneratedText(res, true)));
                 }
 
-                // Espera todas as chamadas da API terminarem e junta os resultados
                 const allBatchResults = await Promise.all(apiPromises);
-                const annotations = allBatchResults.flat(); // .flat() transforma [[a,b], [c,d]] em [a,b,c,d]
-                // ==========================================================
-                // >>>>> FIM DA LÓGICA DE ANÁLISE EM LOTES <<<<<
-                // ==========================================================
+                const annotations = allBatchResults.flat();
 
                 if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) {
                     console.error(`Falha na contagem final: JS esperava ${originalParagraphs.length} anotações, IA retornou ${annotations.length}.`);
                     throw new Error("A IA não retornou o número correto de anotações após juntar os lotes.");
                 }
-
-                // O restante do código (montagem, auditoria, exibição) permanece o mesmo,
-                // pois agora ele recebe a lista completa de anotações.
                 
                 let annotatedParagraphs = [];
                 originalParagraphs.forEach((p, index) => {
@@ -3658,9 +3663,6 @@ The final output MUST be only the JSON code, like this example:
                 const { isValid } = auditGeneratedText(originalTextForAudit, finalAnnotatedText);
 
                 if (!isValid) {
-                    console.error("AUDITORIA FALHOU. Comparando textos:");
-                    console.log("Original Normalizado:", originalTextForAudit.replace(/\s+/g, ' ').trim());
-                    console.log("Reconstruído Limpo e Normalizado:", finalAnnotatedText.replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim());
                     throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem.");
                 }
                 
