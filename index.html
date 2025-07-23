@@ -1957,7 +1957,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             const textSpan = button.querySelector('.button-text');
             if (textSpan) textSpan.classList.remove('hidden');
 
-            updateButtonStates(); // Chama a função centralizada para reavaliar o estado
+            
         };
 
         /**
@@ -2339,7 +2339,7 @@ ${fullScript.substring(0, 2000)}...`;
 
                 document.getElementById('conclusionStrategyModule').classList.add('hidden');
                 window.showToast("Conclusão e CTA gerados com sucesso!");
-                updateButtonStates();
+                
 
             } catch(error) {
                 window.showToast(`Falha ao gerar a conclusão: ${error.message}`);
@@ -2629,7 +2629,7 @@ const resetGeneratedScriptContent = (sourceId) => {
 
     // 4. Atualiza a UI e notifica o usuário
     updateProgressBar();
-    updateButtonStates();
+    
     const sourceLabel = document.querySelector(`label[for='${sourceId}']`)?.textContent || sourceId;
     window.showToast(`'${sourceLabel}' mudou. O roteiro foi resetado.`);
 };
@@ -3984,7 +3984,7 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
                 }
                 
                 markButtonAsCompleted(button.id);
-                updateButtonStates();
+                
 
             } catch (error) {
                 window.showToast(`Falha ao gerar ${sectionTitle}: ${error.message}`);
@@ -4272,7 +4272,7 @@ window.regenerateSection = (fullSectionId) => {
                 console.error("Error generating Titles/Thumbnails.", error);
             } finally {
                 hideLoading(buttons.generateTitlesAndThumbnailsBtn);
-                updateButtonStates();
+                
             }
         };
 
@@ -4402,7 +4402,7 @@ window.regenerateSection = (fullSectionId) => {
                 console.error("Error generating Video Description.", error);
             } finally {
                 hideLoading(buttons.generateDescriptionBtn);
-                updateButtonStates();
+                
             }
         };
 
@@ -4469,7 +4469,7 @@ window.regenerateSection = (fullSectionId) => {
                 outlineContentDiv.innerHTML = `<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`;
             } finally {
                 hideLoading(buttons.generateOutlineBtn);
-                updateButtonStates();
+                
             }
         };
 
@@ -4793,7 +4793,6 @@ window.regenerateSection = (fullSectionId) => {
                         }
                     });
 
-                    updateButtonStates();
                     
                     if (elements.outlineContent.textContent.trim().length > 100) markButtonAsCompleted('generateOutlineBtn');
                     if (document.getElementById('introSection').innerHTML.trim()) markButtonAsCompleted('generateIntroBtn');
@@ -4937,7 +4936,7 @@ window.regenerateSection = (fullSectionId) => {
             } finally {
                 isSettingStrategy = false;
                 hideLoading(button);
-                updateButtonStates();
+  
             }
         };
 
