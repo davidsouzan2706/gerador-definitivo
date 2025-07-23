@@ -2800,9 +2800,9 @@ const invalidateAndClearPrompts = (sectionElement) => {
                     </div>`;
         };
     
-                /**
+         /**
          * Limpa o texto gerado pela IA, com uma "manobra defensiva" para corrigir
-         * erros comuns de formatação de JSON.
+         * erros comuns de formatação de JSON, incluindo a falta de vírgulas.
          */
         const cleanGeneratedText = (text, expectJson = false) => {
             if (!text) return null;
@@ -2821,20 +2821,23 @@ const invalidateAndClearPrompts = (sectionElement) => {
             }
 
             jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
-
-            // ==========================================================
-            // >>>>> MANOBRA DEFENSIVA PARA CORRIGIR O JSON <<<<<
-            // ==========================================================
-            // Verifica se a string se parece com o erro que vimos (um array seguido pela chave "thumbnails")
+            
             if (jsonString.startsWith('[') && jsonString.includes('"thumbnails"')) {
                 console.warn("JSON malformado detectado. Tentando corrigir...");
-                // Adiciona a chave "titles" que faltava e envolve tudo em chaves {}
                 jsonString = `{ "titles": ${jsonString} }`;
                 console.log("JSON após tentativa de correção:", jsonString);
             }
-            // ==========================================================
 
             try {
+                // ==========================================================
+                // >>>>> O CIRURGIÃO DE VÍRGULAS (A NOVA BLINDAGEM) <<<<<
+                // ==========================================================
+                // Esta linha encontra todos os lugares onde um '}' é seguido por um '{'
+                // e insere uma vírgula entre eles.
+                jsonString = jsonString.replace(/\}\s*\{/g, '},{');
+                // ==========================================================
+
+                // Remove vírgulas extras no final de arrays/objetos (trailing commas)
                 jsonString = jsonString.replace(/,\s*([}\]])/g, "$1");
                 return JSON.parse(jsonString);
             } catch (e) {
