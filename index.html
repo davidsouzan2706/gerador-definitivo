@@ -3554,9 +3554,9 @@ The final output MUST be only the JSON code, like this example:
 
 
     
-        /**
+                /**
          * Gera anotações de performance em duas etapas para garantir 100% de consistência.
-         * (VERSÃO FINAL - PLANO B ATIVADO)
+         * (VERSÃO CORRIGIDA PARA MÚLTIPLOS CAPÍTULOS)
          */
         window.suggestPerformance = async (sectionId) => {
             const sectionElement = document.getElementById(sectionId);
@@ -3568,14 +3568,26 @@ The final output MUST be only the JSON code, like this example:
                 return;
             }
             if (!window.emotionalMap || window.emotionalMap.length === 0) {
-                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos'.");
+                window.showToast("Gere o Mapa Emocional primeiro na aba 'Roteiro'.");
                 return;
             }
 
             outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
-            const originalTextContent = contentWrapper.textContent.trim().replace(/\[.*?\]/g, '').replace(/\s+/g, ' ').trim();
-            const originalParagraphs = originalTextContent.split('\n\n').filter(p => p.trim() !== '');
+            // ==========================================================
+            // >>>>> CORREÇÃO PRINCIPAL: Lendo os parágrafos corretamente <<<<<
+            // ==========================================================
+            // Em vez de ler o textContent todo, pegamos cada div de parágrafo individualmente.
+            const paragraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
+            const originalParagraphs = paragraphElements.map(p => p.textContent.trim().replace(/\[.*?\]/g, '').trim());
+            // ==========================================================
+            
+            if (originalParagraphs.length === 0) {
+                window.showToast("Não foram encontrados parágrafos estruturados para análise.");
+                outputContainer.innerHTML = '';
+                return;
+            }
+
             const firstParagraphId = contentWrapper.querySelector('div[id]')?.id;
             const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
             const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
@@ -3609,10 +3621,12 @@ The final output MUST be only the JSON code, like this example:
 
                 Responda apenas com o array JSON.`;
 
-                const rawResult = await callGroqAPI(prompt, 2000);
+                const rawResult = await callGroqAPI(prompt, 3000); // Aumentei um pouco os tokens por segurança
                 const annotations = cleanGeneratedText(rawResult, true);
 
                 if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) {
+                    // Este log ajuda a depurar se o erro ocorrer de novo
+                    console.error(`Falha na contagem: JS esperava ${originalParagraphs.length} anotações, IA retornou ${annotations.length}.`);
                     throw new Error("A IA não retornou o número correto de anotações.");
                 }
 
@@ -3622,10 +3636,10 @@ The final output MUST be only the JSON code, like this example:
                     const annotationData = annotations[index];
                     let annotatedParagraph = p;
 
-                    if (annotationData && annotationData.emphasis_words && annotationData.emphasis_words.length > 0) {
+                    if (annotationData && annotationData.emphasis_words && Array.isArray(annotationData.emphasis_words) && annotationData.emphasis_words.length > 0) {
                         annotationData.emphasis_words.forEach(word => {
                             const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                            const wordRegex = new RegExp(`\\b(${escapedWord})\\b`, 'g');
+                            const wordRegex = new RegExp(`\\b(${escapedWord})\\b`, 'gi'); // 'gi' para case-insensitive
                             annotatedParagraph = annotatedParagraph.replace(wordRegex, `[ênfase em '${word}'] $1`);
                         });
                     }
@@ -3635,8 +3649,13 @@ The final output MUST be only the JSON code, like this example:
                 });
                 const finalAnnotatedText = annotatedParagraphs.join('\n\n');
 
-                // ETAPA 3: AUDITOR DE CONSISTÊNCIA FINAL
-                const { isValid } = auditGeneratedText(originalTextContent, finalAnnotatedText);
+                // ==========================================================
+                // >>>>> AJUSTE NA AUDITORIA FINAL <<<<<
+                // ==========================================================
+                const originalTextForAudit = originalParagraphs.join('\n\n');
+                const { isValid } = auditGeneratedText(originalTextForAudit, finalAnnotatedText);
+                // ==========================================================
+
                 if (!isValid) {
                     throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem.");
                 }
