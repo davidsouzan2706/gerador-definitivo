@@ -3538,7 +3538,53 @@ Exemplo de formato JSON esperado:
             }
         };
 
+/**
+         * Pega um parágrafo, otimiza com IA e substitui seu conteúdo.
+         * (VERSÃO CORRIGIDA E ANEXADA AO 'WINDOW')
+         */
+        window.optimizeParagraph = async (paragraphId, suggestion) => {
+            const paragraphElement = document.getElementById(paragraphId);
+            if (!paragraphElement) return;
 
+            const button = paragraphElement.querySelector('.retention-action-btn');
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = `<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px;"></div>`;
+            }
+
+            const originalText = paragraphElement.firstChild.textContent.trim();
+            const languageName = document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text;
+            const prompt = `You are an expert copywriter. Rewrite the "Original Paragraph" below based on the "Improvement Suggestion".
+        
+            **CRITICAL RULE: You MUST respond in ${languageName}.** Do not change the language.
+
+             **Original Paragraph:**
+             "${originalText}"
+
+              **Improvement Suggestion:**
+               "${suggestion}"
+
+           Respond ONLY with the rewritten paragraph, in ${languageName}.`;
+
+            try {
+                const rewrittenText = await callGroqAPI(prompt, 1000);
+                paragraphElement.firstChild.textContent = removeMetaComments(rewrittenText);
+                
+                // Feedback visual
+                paragraphElement.classList.remove('retention-yellow', 'retention-red');
+                paragraphElement.classList.add('retention-green');
+                paragraphElement.querySelector('.retention-tooltip')?.remove();
+                button?.remove();
+                
+                invalidateAndClearPrompts(paragraphElement.closest('.script-section'));
+                invalidateAndClearPerformance(paragraphElement.closest('.script-section'));
+
+                window.showToast("Parágrafo otimizado!");
+            } catch (error) {
+                window.showToast(`Falha ao otimizar: ${error.message}`);
+                if (button) button.innerHTML = '⚠️'; // Ícone de erro
+            }
+        };
     
                 /**
          * Gera anotações de performance, com scroll e espaçamento corrigido.
