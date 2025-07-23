@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Roteiros Virais v3.1 - O Painel do Projeto</title>
+    <title>Gerador de Roteiros Virais v3.2</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF para geração de PDF (ainda incluído, mas não usado para download principal) -->
@@ -1285,7 +1285,7 @@
             </button>
         </div>
         
-        <h1 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 text-center mb-2">Gerador de Roteiros Virais v3.1</h1>
+        <h1 class="text-4xl font-extrabold text-gray-800 dark:text-gray-100 text-center mb-2">Gerador de Roteiros Virais v3.2</h1>
         <p class="text-center text-gray-500 dark:text-gray-400 mb-8">O seu painel de controle para conteúdo de alto impacto.</p>
         
         <!-- Seção de Inputs da Aplicação -->
@@ -3943,59 +3943,83 @@ window.regenerateSection = (fullSectionId) => {
 
 
 
-     /**
-         * Gera prompts de imagem e depois aplica um filtro de curadoria para garantir
-         * um ritmo visual adequado para a produção de vídeo.
-         * (VERSÃO CURADOR DE CENAS - CORRIGIDA)
+             /**
+         * Gera prompts de imagem em lotes para lidar com textos longos e depois aplica um filtro de curadoria.
+         * (VERSÃO BLINDADA CONTRA LIMITE DE TOKENS)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
-            const scriptContentElement = sectionElement?.querySelector('.generated-content-wrapper');
+            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
             const promptContainer = sectionElement?.querySelector('.prompt-container');
             
-            if (!scriptContentElement || !scriptContentElement.textContent.trim() || !promptContainer) {
+            if (!contentWrapper || !contentWrapper.textContent.trim() || !promptContainer) {
                 window.showToast("Gere o conteúdo do roteiro desta seção primeiro.");
                 return;
             }
 
             if (!window.emotionalMap || window.emotionalMap.length === 0) {
-                window.showToast("Gere o Mapa Emocional primeiro na aba 'Recursos' para criar prompts contextuais.");
+                window.showToast("Gere o Mapa Emocional primeiro na aba 'Roteiro' para criar prompts contextuais.");
                 return;
             }
 
             promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-            const scriptContent = scriptContentElement.textContent;
             
-            const firstParagraphId = scriptContentElement.querySelector('div[id]')?.id;
-            const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
-            const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-            
-            let initialPrompt = `Você é um Diretor de Fotografia. Analise o roteiro e o CONTEXTO EMOCIONAL abaixo para criar um storyboard granular, com uma cena para cada momento importante.
-
-            REGRAS: Sua resposta DEVE ser um array JSON. Cada objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration".
-            
-            ROTEIRO E CONTEXTO EMOCIONAL:
-            ---
-            `;
-            const paragraphs = scriptContent.split('\n\n').filter(p => p.trim() !== '');
-            paragraphs.forEach((p, index) => {
-                const mapIndex = baseIndex + index;
-                const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
-                initialPrompt += `Parágrafo ${index}: "${p}"\nContexto (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})\n\n`;
-            });
-            initialPrompt += `---
-            Gere o array JSON para os parágrafos acima.`;
-
             try {
-                // ETAPA 1: A IA GERA MUITAS IDEIAS
-                const rawResult = await callGroqAPI(initialPrompt, 4000);
-                const allGeneratedPrompts = cleanGeneratedText(rawResult, true);
+                // Pega todos os parágrafos de forma estruturada
+                const paragraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
+                const originalParagraphs = paragraphElements.map(p => p.textContent.trim().replace(/\[.*?\]/g, '').trim());
 
-                if (!validatePromptsArray(allGeneratedPrompts)) {
-                    throw new Error("A IA retornou prompts em formato inválido.");
+                if (originalParagraphs.length === 0) {
+                    throw new Error("Não foram encontrados parágrafos estruturados para análise.");
                 }
 
-                // ETAPA 2: O NOSSO CÓDIGO FAZ A CURADORIA
+                const firstParagraphId = paragraphElements[0]?.id;
+                const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
+                const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
+
+                // ==========================================================
+                // >>>>> AQUI COMEÇA A LÓGICA DE GERAÇÃO EM LOTES <<<<<
+                // ==========================================================
+                const batchSize = 10; // Gera prompts para 10 parágrafos por vez.
+                const apiPromises = [];
+
+                for (let i = 0; i < originalParagraphs.length; i += batchSize) {
+                    const paragraphBatch = originalParagraphs.slice(i, i + batchSize);
+                    
+                    let promptContext = '';
+                    paragraphBatch.forEach((p, indexInBatch) => {
+                        const globalIndex = i + indexInBatch;
+                        const mapIndex = baseIndex + globalIndex;
+                        const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
+                        promptContext += `Parágrafo ${globalIndex}: "${p}"\nContexto (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})\n\n`;
+                    });
+                    
+                    const prompt = `Você é um Diretor de Fotografia. Analise o lote de roteiro e o CONTEXTO EMOCIONAL abaixo para criar um storyboard granular.
+
+                    REGRAS: Sua resposta DEVE ser um array JSON. Cada objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration".
+                    
+                    ROTEIRO E CONTEXTO EMOCIONAL (LOTE ATUAL):
+                    ---
+                    ${promptContext}
+                    ---
+                    Gere o array JSON para os parágrafos acima.`;
+
+                    // Adiciona a chamada da API à lista de promessas
+                    apiPromises.push(callGroqAPI(prompt, 4000).then(res => cleanGeneratedText(res, true)));
+                }
+
+                // Espera todas as chamadas da API terminarem e junta os resultados
+                const allBatchResults = await Promise.all(apiPromises);
+                const allGeneratedPrompts = allBatchResults.flat();
+                // ==========================================================
+                // >>>>> FIM DA LÓGICA DE GERAÇÃO EM LOTES <<<<<
+                // ==========================================================
+
+                if (!validatePromptsArray(allGeneratedPrompts)) {
+                    throw new Error("A IA retornou prompts em formato inválido após juntar os lotes.");
+                }
+                
+                // ETAPA 2: O NOSSO CÓDIGO FAZ A CURADORIA (essa parte não muda)
                 const desiredSecondsPerScene = 15;
                 let curatedPrompts = [];
                 let secondsAccumulator = 0;
