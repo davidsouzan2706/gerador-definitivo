@@ -3943,9 +3943,9 @@ window.regenerateSection = (fullSectionId) => {
 
 
 
-             /**
-         * Gera prompts de imagem em lotes para lidar com textos longos e depois aplica um filtro de curadoria.
-         * (VERSÃO BLINDADA CONTRA LIMITE DE TOKENS)
+                /**
+         * Gera um prompt por parágrafo em lotes e depois aplica curadoria.
+         * (VERSÃO FINAL BLINDADA - FORÇA A GERAÇÃO 1 PARA 1)
          */
         window.generatePromptsForSection = async (sectionElementId) => {
             const sectionElement = document.getElementById(sectionElementId);
@@ -3965,7 +3965,6 @@ window.regenerateSection = (fullSectionId) => {
             promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
             
             try {
-                // Pega todos os parágrafos de forma estruturada
                 const paragraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
                 const originalParagraphs = paragraphElements.map(p => p.textContent.trim().replace(/\[.*?\]/g, '').trim());
 
@@ -3977,10 +3976,7 @@ window.regenerateSection = (fullSectionId) => {
                 const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
                 const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
 
-                // ==========================================================
-                // >>>>> AQUI COMEÇA A LÓGICA DE GERAÇÃO EM LOTES <<<<<
-                // ==========================================================
-                const batchSize = 10; // Gera prompts para 10 parágrafos por vez.
+                const batchSize = 10;
                 const apiPromises = [];
 
                 for (let i = 0; i < originalParagraphs.length; i += batchSize) {
@@ -3994,45 +3990,56 @@ window.regenerateSection = (fullSectionId) => {
                         promptContext += `Parágrafo ${globalIndex}: "${p}"\nContexto (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})\n\n`;
                     });
                     
-                    const prompt = `Você é um Diretor de Fotografia. Analise o lote de roteiro e o CONTEXTO EMOCIONAL abaixo para criar um storyboard granular.
+                    // ==========================================================
+                    // >>>>> AQUI ESTÁ A MUDANÇA CRÍTICA - O PROMPT BLINDADO <<<<<
+                    // ==========================================================
+                    const prompt = `Você é um Diretor de Fotografia que transforma texto em cenas. Sua tarefa é criar um objeto JSON para CADA UM dos ${paragraphBatch.length} parágrafos no lote abaixo.
 
-                    REGRAS: Sua resposta DEVE ser um array JSON. Cada objeto deve ter as chaves "scriptPhrase", "imageDescription", e "estimated_duration".
-                    
-                    ROTEIRO E CONTEXTO EMOCIONAL (LOTE ATUAL):
+                    REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):
+                    1.  Sua resposta DEVE ser um array JSON contendo EXATAMENTE ${paragraphBatch.length} objetos.
+                    2.  Cada objeto DEVE corresponder a um parágrafo do lote, na mesma ordem.
+                    3.  Cada objeto deve ter as chaves: "scriptPhrase" (o texto exato do parágrafo), "imageDescription" (uma descrição visual para a cena), e "estimated_duration" (uma estimativa em segundos).
+
+                    NÃO RESUMA. CRIE UM OBJETO PARA CADA PARÁGRAFO.
+
+                    Analise o lote a seguir e gere o array JSON.
+
+                    ROTEIRO (LOTE ATUAL):
                     ---
                     ${promptContext}
-                    ---
-                    Gere o array JSON para os parágrafos acima.`;
+                    ---`;
+                    // ==========================================================
+                    // >>>>> FIM DA MUDANÇA CRÍTICA <<<<<
+                    // ==========================================================
 
-                    // Adiciona a chamada da API à lista de promessas
                     apiPromises.push(callGroqAPI(prompt, 4000).then(res => cleanGeneratedText(res, true)));
                 }
 
-                // Espera todas as chamadas da API terminarem e junta os resultados
                 const allBatchResults = await Promise.all(apiPromises);
                 const allGeneratedPrompts = allBatchResults.flat();
-                // ==========================================================
-                // >>>>> FIM DA LÓGICA DE GERAÇÃO EM LOTES <<<<<
-                // ==========================================================
 
-                if (!validatePromptsArray(allGeneratedPrompts)) {
-                    throw new Error("A IA retornou prompts em formato inválido após juntar os lotes.");
+                if (!Array.isArray(allGeneratedPrompts) || allGeneratedPrompts.length < originalParagraphs.length) {
+                     console.error(`Falha na contagem de prompts: JS esperava ${originalParagraphs.length}, IA retornou ${allGeneratedPrompts.length}.`);
+                    throw new Error("A IA não retornou um prompt para cada parágrafo.");
                 }
                 
-                // ETAPA 2: O NOSSO CÓDIGO FAZ A CURADORIA (essa parte não muda)
+                // ETAPA 2: A CURADORIA (agora recebe uma lista muito maior e mais rica de prompts)
                 const desiredSecondsPerScene = 15;
                 let curatedPrompts = [];
                 let secondsAccumulator = 0;
                 let currentScenePhrase = "";
 
-                allGeneratedPrompts.forEach((prompt, index) => {
-                    const duration = parseInt(prompt.estimated_duration, 10) || 5;
+                allGeneratedPrompts.forEach((promptData, index) => {
+                    // Prevenção de erro caso o prompt venha mal formatado
+                    if (!promptData || !promptData.scriptPhrase) return;
+
+                    const duration = parseInt(promptData.estimated_duration, 10) || 5;
                     
-                    currentScenePhrase += prompt.scriptPhrase + " ";
+                    currentScenePhrase += promptData.scriptPhrase + " ";
                     secondsAccumulator += duration;
                     
                     if (secondsAccumulator >= desiredSecondsPerScene || index === allGeneratedPrompts.length - 1) {
-                        let finalPrompt = { ...prompt };
+                        let finalPrompt = { ...promptData };
                         finalPrompt.scriptPhrase = currentScenePhrase.trim();
                         finalPrompt.estimated_duration = secondsAccumulator;
                         
@@ -4043,7 +4050,6 @@ window.regenerateSection = (fullSectionId) => {
                     }
                 });
                 
-                // Agora usamos a lista CURADA
                 allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
                 promptPaginationState[sectionElementId] = 0;
                 
