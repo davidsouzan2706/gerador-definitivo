@@ -2552,12 +2552,6 @@ const resetGeneratedScriptContent = (sourceId) => {
 
   console.log(`Input estratégico '${sourceId}' alterado. Resetando conteúdo do roteiro.`);
 
-  // 1. Limpa as variáveis de estado
-  window.strategicOutline = null;
-  allImagePrompts = {};
-  promptPaginationState = {};
-  totalScriptSeconds = 0;
-
   // 2. Limpa a UI do esboço e das seções
   const outlineContent = document.getElementById('outlineContent');
   if (outlineContent) {
