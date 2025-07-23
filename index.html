@@ -348,7 +348,7 @@
                 padding: 1rem;
             }
 
-            /* ========================================================== */
+        /* ========================================================== */
         /* ==== CORREÇÃO DE COR PARA PLACEHOLDERS NO MODO ESCURO ==== */
         /* ========================================================== */
         .dark .input-group input::placeholder,
@@ -356,16 +356,32 @@
             color: #94a3b8; /* Cor: slate-400 (um cinza mais claro e visível) */
             opacity: 1; /* Garante que a cor seja aplicada */
              }
-/* ========================================================== */
-        /* ==== CORREÇÃO DE COR PARA TEXTO DO INPUT NO MODO ESCURO ==== */
         /* ========================================================== */
+        /* ==== CORREÇÃO FINAL DE CORES PARA MODO ESCURO ==== */
+        /* ========================================================== */
+        
+        /* Regra para a cor dos LABELS (títulos dos campos) */
+        .dark .input-group label {
+            color: var(--gray-300) !important; /* Um cinza claro e legível */
+        }
+        
+        /* Regra para a cor do TEXTO DIGITADO nos inputs, selects e textareas */
         .dark .input-group input,
         .dark .input-group select,
         .dark .input-group textarea {
-            color: var(--gray-800); /* No modo escuro, a variável --gray-800 é uma cor clara */
+            color: var(--gray-800); /* No modo escuro, --gray-800 é uma cor clara (f8fafc) */
         }
-             
+
+        /* Regra para a cor do PLACEHOLDER */
+        .dark .input-group input::placeholder,
+        .dark .input-group textarea::placeholder {
+            color: #94a3b8; /* Cor: slate-400 */
+            opacity: 1;
         }
+
+        }
+
+
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -402,8 +418,8 @@
         <main class="container mx-auto px-4 pb-20">
 
 
-         <!-- ================================================================= -->
-<!-- SUBSTITUA A SEÇÃO "1. DEFINIR ESTRATÉGIA" INTEIRA POR ESTE BLOCO -->
+<!-- ================================================================= -->
+<!-- SUBSTITUA A SEÇÃO "1. DEFINIR ESTRATÉGIA" INTEIRA POR ESTE BLOCO FINAL -->
 <!-- ================================================================= -->
 <section class="mb-10">
     <div class="section-title">
@@ -425,7 +441,7 @@
         </nav>
     </div>
 
-    <!-- Conteúdo das Abas -->
+    <!-- Conteúdo das Abas (agora dentro de um card) -->
     <div id="inputTabContent" class="card">
         <!-- Aba 1: Básico -->
         <div id="input-tab-basico" class="tab-pane active-pane">
@@ -442,20 +458,14 @@
                     <label for="languageSelect">Idioma do Roteiro:</label>
                     <select id="languageSelect">
                         <option value="pt-br">Português (Brasil)</option>
-                        <option value="pt-pt">Português (Portugal)</option>
                         <option value="en" selected>English</option>
-                        <option value="es">Español</option>
                     </select>
                 </div>
                 <div class="input-group">
                     <label for="videoDuration">Duração Desejada:</label>
                     <select id="videoDuration">
-                        <option value="">-- Selecione a Duração --</option>
-                        <option value="short">Curto (~1-3 min)</option>
                         <option value="medium">Médio (~4-7 min)</option>
                         <option value="long">Longo (~8-12 min)</option>
-                        <option value="extra-long">Extra Longo (~12-20 min)</option>
-                        <option value="documentary">Documentário (~20-45 min)</option>
                     </select>
                 </div>
                 <div class="input-group md:col-span-2">
@@ -470,15 +480,18 @@
              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="input-group md:col-span-2">
                     <label for="targetAudience">Público-Alvo:</label>
-                    <input type="text" id="targetAudience" value="Interessados em mistérios, história e narrativas envolventes." readonly>
+                    <input type="text" id="targetAudience" value="Interessados em mistérios e história." readonly>
                 </div>
                 <div class="input-group">
                     <label for="narrativeGoal">1. Objetivo da Narrativa:</label>
-                    <select id="narrativeGoal"><!-- Opções serão populadas via JS --></select>
+                    <select id="narrativeGoal">
+                        <option value="storytelling">Storytelling</option>
+                        <option value="storyselling">Storyselling</option>
+                    </select>
                 </div>
                 <div class="input-group">
                     <label for="narrativeStructure">2. Estrutura Específica:</label>
-                    <select id="narrativeStructure"><!-- Opções serão populadas via JS --></select>
+                    <select id="narrativeStructure"></select>
                 </div>
                 <div class="input-group md:col-span-2">
                     <label for="narrativeTheme">3. Tema Principal (a grande ideia):</label>
@@ -487,14 +500,13 @@
                 <div class="input-group">
                     <label for="narrativeTone">4. Tom da Narração (a sensação):</label>
                     <select id="narrativeTone">
-                        <option value="inspirador" selected>Inspirador / Motivacional</option>
-                        <option value="serio">Sério / Factual</option>
-                        <option value="emocional">Emocional / Vulnerável</option>
+                        <option value="inspirador" selected>Inspirador</option>
+                        <option value="serio">Sério</option>
                     </select>
                 </div>
                  <div class="input-group">
                     <label for="narrativeVoice">5. Voz do Narrador (a personalidade):</label>
-                    <input type="text" id="narrativeVoice" placeholder="Ex: Sábio e experiente, Jovem e cético...">
+                    <input type="text" id="narrativeVoice" placeholder="Ex: Sábio e experiente...">
                 </div>
              </div>
         </div>
@@ -521,10 +533,8 @@
                     <select id="speakingPace">
                         <option value="moderate" selected>Moderado</option>
                         <option value="slow">Lento</option>
-                        <option value="fast">Rápido</option>
                     </select>
                 </div>
-                <!-- Outros campos técnicos podem ir aqui -->
             </div>
         </div>
     </div>
