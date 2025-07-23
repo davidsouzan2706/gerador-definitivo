@@ -3745,18 +3745,20 @@ Exemplo de formato JSON esperado:
     
         /**
          * Gera e valida ideias de vídeo com base no nicho fornecido.
+         * (VERSÃO COMPLETA E CORRIGIDA COM O LOADING CERTO)
          */
-        const generateVideoIdeas = async () => {
+        const generateVideoIdeas = async (button) => {
             const nicheDescription = document.getElementById('nicheDescription').value.trim();
             if (!nicheDescription) {
                 window.showToast("Por favor, descreva o nicho do seu canal.");
                 return;
             }
 
-            const button = document.getElementById('generateIdeasBtn');
             const outputContainer = document.getElementById('ideasOutput');
             outputContainer.innerHTML = `<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`;
-            showLoading(button);
+            
+            // >>>>> MUDANÇA #1: Usando a nova função de loading <<<<<
+            showButtonLoading(button);
 
             try {
                 const prompt = `Você é um Estrategista de Conteúdo Viral para o YouTube. Sua tarefa é analisar a descrição de um nicho e gerar 6 ideias de vídeo com alto potencial de engajamento.
@@ -3773,12 +3775,10 @@ Exemplo de formato JSON esperado:
                 Responda APENAS com um array JSON. Cada objeto no array deve conter exatamente as chaves acima.`;
 
                 const rawResult = await callGroqAPI(prompt, 4000);
-                const cleanedResult = cleanGeneratedText(rawResult, true);
-                const ideas = cleanedResult;
+                const ideas = cleanGeneratedText(rawResult, true);
 
                 outputContainer.innerHTML = ''; 
 
-                // --- LÓGICA DE RENDERIZAÇÃO FINAL MINIMALISTA ---
                 ideas.forEach((idea, index) => {
                     const ideaCard = `
                         <div class="card-background p-4 rounded-lg shadow-md border-l-4 border-indigo-500 animate-fade-in flex flex-col justify-between min-h-[140px]">
@@ -3802,7 +3802,8 @@ Exemplo de formato JSON esperado:
             } catch (error) {
                 outputContainer.innerHTML = `<p class="md:col-span-2 text-red-500 text-sm">Falha ao gerar ideias: ${error.message}</p>`;
             } finally {
-                hideLoading(button);
+                // >>>>> MUDANÇA #2: Usando a nova função para esconder o loading <<<<<
+                hideButtonLoading(button);
             }
         };
     
@@ -4764,13 +4765,11 @@ window.regenerateSection = (fullSectionId) => {
             event.target.value = '';
         };
 
-        /**
-         * Analisa o tema e a descrição do vídeo para definir a estratégia de conteúdo. (VERSÃO CORRIGIDA PARA ABAS)
+                /**
+         * Analisa o tema e a descrição do vídeo para definir a estratégia de conteúdo.
+         * (VERSÃO COMPLETA E CORRIGIDA COM O LOADING CERTO)
          */
-                const analyzeAndSetStrategy = async () => {
-            // ==========================================================
-            // VERIFICAÇÃO DE PROJETO EM ANDAMENTO
-            // ==========================================================
+        const analyzeAndSetStrategy = async (button) => {
             const hasExistingWork = document.querySelector('#scriptSectionsContainer .accordion-item');
             if (hasExistingWork) {
                 const userConfirmed = await showConfirmationDialog(
@@ -4778,12 +4777,10 @@ window.regenerateSection = (fullSectionId) => {
                     "Isso limpará todo o roteiro e recursos gerados para criar uma nova estratégia do zero. Deseja continuar?"
                 );
                 if (!userConfirmed) {
-                    return; // Usuário cancelou, a função para aqui.
+                    return;
                 }
             }
-            // ==========================================================
-
-            // Se não havia trabalho ou se o usuário confirmou, a função continua...
+            
             resetProjectOutputs(); 
 
             const theme = elements.videoTheme.value.trim();
@@ -4793,14 +4790,9 @@ window.regenerateSection = (fullSectionId) => {
                 return;
             }
             
-            strategicOutline = null;
-            allImagePrompts = {};
-            generatedTitlesAndThumbnails = null;
-            totalScriptSeconds = 0;
-            promptPaginationState = {};
-            
-            const button = document.getElementById('analyzeStrategyBtn');
-            showLoading(button);
+            // >>>>> CORREÇÃO AQUI <<<<<
+            // Usando a nova e correta função de loading
+            showButtonLoading(button);
 
             const videoObjectiveOptions = Array.from(elements.videoObjective.options).map(o => `'${o.value}'`);
             const narrativeToneOptions = Array.from(document.getElementById('narrativeTone').options).map(o => `'${o.value}'`);
@@ -4832,23 +4824,12 @@ window.regenerateSection = (fullSectionId) => {
                 isSettingStrategy = true; 
 
                 const rawResult = await callGroqAPI(prompt, 2000);
-                
-                // ==========================================================
-                // AQUI ESTÁ A CORREÇÃO
-                // ==========================================================
-                // A função cleanGeneratedText agora retorna um objeto, não uma string.
-                // Portanto, não precisamos mais do JSON.parse().
                 const strategy = cleanGeneratedText(rawResult, true);
 
-                // Adicionamos uma verificação para garantir que a IA não retornou lixo.
                 if (!strategy || typeof strategy !== 'object') {
                     throw new Error("A IA não retornou uma resposta em formato JSON válido.");
                 }
-                // ==========================================================
-                // FIM DA CORREÇÃO
-                // ==========================================================
                 
-                // Preenchimento dos campos em todas as abas
                 if(strategy.target_audience) elements.targetAudience.value = strategy.target_audience;
                 if(strategy.video_objective) elements.videoObjective.value = strategy.video_objective;
                 if(strategy.narrative_goal) document.getElementById('narrativeGoal').value = strategy.narrative_goal;
@@ -4882,7 +4863,9 @@ window.regenerateSection = (fullSectionId) => {
                 console.error("Erro na análise estratégica:", error);
             } finally {
                 isSettingStrategy = false;
-                hideLoading(button);
+                // >>>>> CORREÇÃO AQUI <<<<<
+                // Usando a nova e correta função de loading
+                hideButtonLoading(button);
                 updateButtonStates();
             }
         };
