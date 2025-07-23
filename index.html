@@ -3710,61 +3710,55 @@ window.regenerateSection = (fullSectionId) => {
 // ==========================================================
 // >>>>> SUBSTITUA SEU EVENT LISTENER INTEIRO POR ESTE <<<<<
 // ==========================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            // Dark Mode Toggle
-            document.getElementById('darkModeToggle').addEventListener('click', () => {
-                document.body.classList.toggle('dark');
-                const isDarkMode = document.body.classList.contains('dark');
-                document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
-                document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
-                localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
-            });
-            if (localStorage.getItem('darkMode') === 'enabled') {
-                 document.body.classList.add('dark');
-                 document.getElementById('moonIcon').classList.add('hidden');
-                 document.getElementById('sunIcon').classList.remove('hidden');
+document.addEventListener('DOMContentLoaded', () => {
+    // ---- 1. INICIALIZAÇÃO GERAL ----
+    setupInputTabs();
+    setupTabs();
+    updateProgressBar();
+    updateButtonStates();
+    handleConclusionStrategyChange();
+    updateNarrativeStructureOptions();
+
+    // ---- 2. EVENTOS DIRETOS EM ELEMENTOS ESPECÍFICOS ----
+    document.getElementById('importFileInput')?.addEventListener('change', importProject);
+    
+    document.getElementById('darkModeToggle')?.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDarkMode = document.body.classList.contains('dark');
+        document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
+        document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
+        localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+    });
+
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark');
+        document.getElementById('moonIcon')?.classList.add('hidden');
+        document.getElementById('sunIcon')?.classList.remove('hidden');
+    }
+
+    document.getElementById('toggleZenModeBtn')?.addEventListener('click', () => document.body.classList.toggle('zen-mode'));
+    document.getElementById('exitZenModeBtn')?.addEventListener('click', () => document.body.classList.remove('zen-mode'));
+    document.getElementById('imageStyleSelect')?.addEventListener('change', toggleCustomImageStyleVisibility);
+    
+    document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
+        radio.addEventListener('change', handleConclusionStrategyChange);
+    });
+    
+    const speakingPaceSelect = document.getElementById('speakingPace');
+    if (speakingPaceSelect) {
+        speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
+    }
+
+    // ---- 3. EVENTOS DE INPUT PARA INVALIDAÇÃO ----
+    document.addEventListener('input', (event) => {
+        if (event.target.matches('.generated-content-wrapper[contenteditable="true"]')) {
+            const sectionElement = event.target.closest('.script-section');
+            if (sectionElement) {
+                invalidateAndClearPrompts(sectionElement);
+                invalidateAndClearPerformance(sectionElement);
             }
-
-            // Accordion
-            document.querySelectorAll('.accordion-header').forEach(header => {
-                header.addEventListener('click', (event) => {
-                    if (event.target.closest('button')) return;
-                    const item = header.parentElement;
-                    const icon = header.querySelector('i.fa-chevron-down, i.fa-chevron-up');
-                    
-                    item.classList.toggle('active');
-                    if(icon) {
-                        icon.classList.toggle('fa-chevron-down');
-                        icon.classList.toggle('fa-chevron-up');
-                    }
-                });
-            });
-
-            // Inicialização
-            updateProgressBar();
-
-            // Mapeamento e conexão dos botões
-            const buttonMap = {
-                'analyzeStrategyBtn': () => analyzeAndSetStrategy(document.getElementById('analyzeStrategyBtn')),
-                'generateIntroBtn': () => handleGenerateSection(document.getElementById('generateIntroBtn'), 'intro', 'Introdução', 'intro'),
-                'generateDevelopmentBtn': () => handleGenerateSection(document.getElementById('generateDevelopmentBtn'), 'development', 'Desenvolvimento', 'development'),
-                'climaxBtn': () => handleGenerateSection(document.getElementById('climaxBtn'), 'climax', 'Clímax', 'climax'),
-                'conclusionBtn': () => handleGenerateSection(document.getElementById('conclusionBtn'), 'conclusion', 'Conclusão', 'conclusion'),
-                'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(document.getElementById('generateTitlesAndThumbnailsBtn')),
-                'mapEmotionsBtn': () => mapEmotionsAndPacing(document.getElementById('mapEmotionsBtn'))
-                // Adicione os outros botões do novo layout aqui...
-            };
-
-            for (const [id, func] of Object.entries(buttonMap)) {
-                const button = document.getElementById(id);
-                if (button) {
-                    button.addEventListener('click', func);
-                } else {
-                    console.warn(`Botão com ID '${id}' não encontrado no novo layout.`);
-                }
-            }
-        });
-        
+        }
+    });
 
     let hideDetailsTimeout;
     document.getElementById('scriptSectionsContainer').addEventListener('mouseover', (event) => {
@@ -3828,7 +3822,6 @@ window.regenerateSection = (fullSectionId) => {
             }
             if (action === 'generate-prompts') {
                 const sectionId = button.dataset.sectionId;
-                // Passa o próprio botão para a função
                 if (sectionId) window.generatePromptsForSection(button, sectionId);
                 return;
             }
@@ -3855,9 +3848,7 @@ window.regenerateSection = (fullSectionId) => {
         }
 
         if (button) {
-            // Este é o objeto que mapeia IDs de botões para as funções corretas
             const clickActions = {
-                // Funções que agora recebem o 'button' para a animação
                 'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
                 'generateOutlineBtn': () => generateStrategicOutline(button),
                 'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
@@ -3865,13 +3856,9 @@ window.regenerateSection = (fullSectionId) => {
                 'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
                 'generateSoundtrackBtn': () => generateSoundtrack(button),
                 'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
-                
-                // Funções de geração principal
                 'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
                 'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
                 'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-
-                // Funções de Conclusão e CTA
                 'conclusionBtn': () => {
                     const conclusionModule = document.getElementById('conclusionStrategyModule');
                     if (conclusionModule && !conclusionModule.classList.contains('hidden')) {
@@ -3885,8 +3872,6 @@ window.regenerateSection = (fullSectionId) => {
                     }
                 },
                 'generateCTABtn': () => document.getElementById('conclusionBtn')?.click(),
-
-                // Outras funções
                 'generateIdeasBtn': () => generateVideoIdeas(button),
                 'downloadPdfBtn': downloadPdf,
                 'exportProjectBtn': exportProject,
@@ -3907,7 +3892,7 @@ window.regenerateSection = (fullSectionId) => {
                 document.getElementById(originalId)?.click();
             }
         }
-    });
+    }); // <<<<<<< ESTA É A CHAVE QUE PROVAVELMENTE ESTAVA FALTANDO OU FORA DO LUGAR
 
     // ---- 5. LÓGICA PARA RESETAR ROTEIRO ----
     const strategicInputIds = [
