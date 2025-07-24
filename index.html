@@ -333,7 +333,7 @@
                 <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
                 
 <div class="input-group">
-    <div class="flex items-center gap-2 mb-2"> <!-- Novo container para o label -->
+    <div class="flex items-center gap-2 mb-2">
         <label for="narrativeStructure">2. Estrutura Específica:</label>
         <i id="narrativeStructureTooltip" class="fas fa-question-circle text-gray-400 cursor-pointer tooltip-trigger"></i>
     </div>
@@ -1879,10 +1879,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
 
         const updateMainTooltip = () => {
             const tooltip = document.getElementById('narrativeStructureTooltip');
-            // Se o tooltip não estiver visível (aba escondida), a função não faz nada.
-            if (!tooltip) {
-                return;
-            }
+            if (!tooltip) return;
 
             const goal = document.getElementById('narrativeGoal').value;
             const structures = narrativeStructures[goal];
@@ -1911,7 +1908,6 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 structureSelect.appendChild(option);
             }
             
-            // Agora ela chama a função segura do tooltip
             updateMainTooltip();
         };
 
@@ -3947,10 +3943,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // --- 2. INICIALIZAÇÃO DE FUNÇÕES ---
             setupInputTabs();
-            // setupTabs(); // A função setupTabs parece não ser mais usada, podemos remover com segurança.
             updateProgressBar();
             updateButtonStates();
-            updateNarrativeStructureOptions(); // Chamada inicial para popular as opções e o tooltip
+            updateNarrativeStructureOptions(); // Chamada inicial para popular as opções
 
             // --- 3. EVENT LISTENERS ESPECÍFICOS ---
             const goalSelect = document.getElementById('narrativeGoal');
