@@ -2469,28 +2469,38 @@ Exemplo de formato JSON esperado:
             showButtonLoading(button);
 
             try {
+                // 1. Extrai o texto dos parágrafos existentes PRIMEIRO
                 const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
-                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphIndex", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion" in Portuguese (Brazil). Your entire response must be ONLY the JSON array.`;
+                
+                // 2. Envia para a IA
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphIndex", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion" in Portuguese (Brazil). Your entire response must be ONLY the JSON array.
+
+                Analyze this data:
+                ${JSON.stringify(paragraphsWithIndexes, null, 2)}`;
                 
                 const rawResult = await callGroqAPI(prompt, 2500);
                 const analysis = cleanGeneratedText(rawResult, true);
 
                 if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
+                // 3. Limpa a UI de análises anteriores
                 paragraphs.forEach(p => {
-                    p.classList.remove('retention-green', 'retention-yellow', 'retention-red', 'retention-paragraph-live');
+                    p.classList.remove('retention-green', 'retention-yellow', 'retention-red', 'retention-paragraph-live', 'highlight-group');
                     p.querySelector('.retention-tooltip')?.remove();
                     p.querySelector('.retention-action-btn')?.remove();
-                    // Remove listeners antigos para evitar duplicação
-                    p.replaceWith(p.cloneNode(true));
+                    // Limpa listeners antigos clonando o elemento e substituindo-o
+                    const newP = p.cloneNode(true);
+                    p.parentNode.replaceChild(newP, p);
                 });
                 
-                // >>>>> A MÁGICA DO AGRUPAMENTO ACONTECE AQUI <<<<<
+                // Pega a lista de parágrafos NOVAMENTE após a clonagem
+                const newParagraphs = Array.from(contentWrapper.querySelectorAll('div'));
+
+                // 4. Aplica a nova análise
                 analysis.forEach(item => {
-                    const p = contentWrapper.querySelectorAll('div')[item.paragraphIndex];
+                    const p = newParagraphs[item.paragraphIndex]; 
                     if (p) {
                         p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
-                        // Armazena a sugestão como um data-attribute para o CSS e JS usarem
                         p.dataset.suggestionGroup = item.suggestion;
 
                         if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
@@ -2500,16 +2510,18 @@ Exemplo de formato JSON esperado:
                             
                             if (!p.id) p.id = `temp-p-${item.paragraphIndex}`;
                             
-                            const buttonHtml = `<button class="retention-action-btn" onclick="event.stopPropagation(); window.optimizeParagraph('${p.id}', '${item.suggestion.replace(/'/g, "\\'")}')" title="Otimizar com IA"><svg>...</svg></button>`;
+                            const buttonHtml = `<button class="retention-action-btn" onclick="event.stopPropagation(); window.optimizeParagraph('${p.id}', '${item.suggestion.replace(/'/g, "\\'")}')" title="Otimizar com IA"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg></button>`;
                             p.insertAdjacentHTML('beforeend', tooltipHtml + buttonHtml);
                         }
                     }
                 });
 
-                // Adiciona os event listeners de mouseover/mouseout para o efeito de grupo
-                contentWrapper.querySelectorAll('.retention-paragraph-live[data-suggestion-group]').forEach(paragraph => {
-                    paragraph.addEventListener('mouseover', handleSuggestionMouseOver);
-                    paragraph.addEventListener('mouseout', handleSuggestionMouseOut);
+                // 5. Adiciona os novos event listeners
+                newParagraphs.forEach(paragraph => {
+                    if (paragraph.dataset.suggestionGroup) {
+                        paragraph.addEventListener('mouseover', handleSuggestionMouseOver);
+                        paragraph.addEventListener('mouseout', handleSuggestionMouseOut);
+                    }
                 });
 
                 window.showToast("Análise de retenção concluída!");
