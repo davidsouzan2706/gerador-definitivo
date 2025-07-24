@@ -1175,9 +1175,27 @@ const mapEmotionsAndPacing = async (button) => {
          * Gera a Conclusão e o CTA juntos, com base na estratégia final escolhida,
          * e formata o texto corretamente para análise posterior.
          */
-                const generateConclusionAndCta = async (button) => {
+           const generateConclusionAndCta = async (button) => {
             if (!validateInputs()) return;
             showButtonLoading(button);
+
+            // >>>>> AQUI ESTÁ A CORREÇÃO CRÍTICA <<<<<
+            // Garante que os containers de destino existam antes de tentar usá-los.
+            const scriptContainer = document.getElementById('scriptSectionsContainer');
+            if (scriptContainer) {
+                if (!document.getElementById('conclusionSection')) {
+                    const conclusionDiv = document.createElement('div');
+                    conclusionDiv.id = 'conclusionSection';
+                    scriptContainer.appendChild(conclusionDiv);
+                }
+                if (!document.getElementById('ctaSection')) {
+                    const ctaDiv = document.createElement('div');
+                    ctaDiv.id = 'ctaSection';
+                    ctaDiv.classList.add('hidden'); // Garante que comece escondido
+                    scriptContainer.appendChild(ctaDiv);
+                }
+            }
+            // >>>>> FIM DA CORREÇÃO <<<<<
 
             const conclusionType = document.querySelector('input[name="conclusionType"]:checked').value;
             const conclusionSpecifics = document.getElementById('conclusionSpecifics').value.trim();
@@ -1188,7 +1206,7 @@ const mapEmotionsAndPacing = async (button) => {
                     strategyDirective = `O objetivo é reforçar uma lição ou reflexão central. Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
                     break;
                 case 'answer':
-                    const question = elements.centralQuestion.value.trim() || 'a pergunta central do vídeo';
+                    const question = document.getElementById('centralQuestion').value.trim() || 'a pergunta central do vídeo';
                     strategyDirective = `O objetivo é responder de forma clara à pergunta central do vídeo ('${question}'). Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
                     break;
                 case 'cliffhanger':
@@ -1215,8 +1233,7 @@ const mapEmotionsAndPacing = async (button) => {
                 document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão e CTA', contentWithSpans);
                 document.getElementById('ctaSection').innerHTML = ''; 
 
-                markButtonAsCompleted('conclusionBtn');
-                markButtonAsCompleted('generateCTABtn');
+                markButtonAsCompleted('generateConclusionAndCtaBtn');
 
                 document.getElementById('conclusionStrategyModule').classList.add('hidden');
                 window.showToast("Conclusão e CTA gerados com sucesso!");
