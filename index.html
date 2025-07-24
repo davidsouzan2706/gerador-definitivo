@@ -594,6 +594,48 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 };
 
 
+
+// ==========================================================
+    // ================== FUNÇÕES DE UTILIDADE E UI ==================
+    // ==========================================================
+    
+    // ... (suas funções existentes como showToast, updateProgressBar, etc.)
+
+    const calculateReadingTime = (text) => {
+        // ... (corpo da sua função calculateReadingTime)
+    };
+
+    // >>>>> COLE O BLOCO INTEIRO ABAIXO AQUI <<<<<
+    /**
+     * Valida os inputs essenciais antes de gerar conteúdo.
+     * Busca os elementos no momento da execução para garantir que existam.
+     */
+    const validateInputs = () => {
+        const channelName = document.getElementById('channelName')?.value.trim();
+        const videoTheme = document.getElementById('videoTheme')?.value.trim();
+        const videoDescription = document.getElementById('videoDescription')?.value.trim();
+        const videoDuration = document.getElementById('videoDuration')?.value;
+
+        if (!channelName) {
+            window.showToast("Por favor, insira o nome do canal.");
+            return false;
+        }
+        if (!videoTheme) {
+            window.showToast("Por favor, insira o tema do vídeo.");
+            return false;
+        }
+        if (!videoDescription) {
+            window.showToast("Por favor, insira a descrição do vídeo (para inspiração).");
+            return false;
+        }
+        if (!videoDuration || videoDuration === "") {
+            window.showToast("Por favor, selecione a Duração Desejada do vídeo.");
+            return false;
+        }
+        return true;
+    };
+
+
         /**
          * Percorre todas as seções de roteiro geradas e atualiza o tempo de leitura exibido.
          */
