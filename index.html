@@ -1694,7 +1694,6 @@ const invalidateAndClearPrompts = (sectionElement) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
-            // 1. Extração Cirúrgica do Bloco JSON
             const startIndex = text.search(/[\{\[]/);
             if (startIndex === -1) {
                 console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.", text);
@@ -1718,42 +1717,28 @@ const invalidateAndClearPrompts = (sectionElement) => {
             }
             
             let jsonString = text.substring(startIndex, endIndex + 1);
+            let sanitizedJsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
 
-            // 2. Sanitização de Caracteres Invisíveis/Não-JSON
-            jsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
-
-            // 3. Tentativa de Parse "Caminho Feliz"
             try {
-                return JSON.parse(jsonString);
+                return JSON.parse(sanitizedJsonString);
             } catch (e) {
                 console.warn("Parse inicial (sanitizado) falhou. Tentando reparos estruturais...", e.message);
-
-                // 4. Cirurgias de Reparo como Fallback
                 try {
-                    let repairedString = jsonString;
+                    let repairedString = sanitizedJsonString;
 
-                    // A. Remove vírgulas extras no final de objetos/arrays.
+                    // >>>>> CIRURGIA INTELIGENTE DE ASPAS <<<<<
+                    // 1. Garante que todas as chaves (keys) estejam com aspas duplas.
+                    repairedString = repairedString.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
+                    repairedString = repairedString.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+
+                    // 2. Troca aspas simples por duplas APENAS em valores que são strings completas.
+                    // Isso preserva as aspas simples dentro das strings.
+                    repairedString = repairedString.replace(/:\s*'([^']*)'/g, ': "$1"');
+
+                    // 3. Remove vírgulas extras no final de objetos/arrays.
                     repairedString = repairedString.replace(/,\s*([}\]])/g, "$1");
                     
-                    // B. Adiciona vírgulas faltando entre objetos
-                    repairedString = repairedString.replace(/\}\s*\{/g, '},{');
-
-                    // C. Corrige objetos ou arrays não fechados no final (lógica melhorada)
-                    const openBraces = (repairedString.match(/{/g) || []).length;
-                    const closeBraces = (repairedString.match(/}/g) || []).length;
-                    const openBrackets = (repairedString.match(/\[/g) || []).length;
-                    const closeBrackets = (repairedString.match(/\]/g) || []).length;
-
-                    if (openBraces > closeBraces) {
-                        repairedString += '}'.repeat(openBraces - closeBraces);
-                    }
-                    if (openBrackets > closeBrackets) {
-                        repairedString += ']'.repeat(openBrackets - closeBrackets);
-                    }
-                    
-                    // D. Tenta o parse novamente
                     return JSON.parse(repairedString);
-
                 } catch (finalError) {
                     console.error("Falha ao fazer o parse do JSON, mesmo após todas as cirurgias:", finalError.message);
                     console.error("JSON problemático (original):", text);
