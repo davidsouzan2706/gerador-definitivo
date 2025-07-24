@@ -3951,6 +3951,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateProgressBar();
     updateButtonStates();
     updateNarrativeStructureOptions();
+
+    const goalSelect = document.getElementById('narrativeGoal');
+            if(goalSelect) {
+                goalSelect.addEventListener('change', updateNarrativeStructureOptions);
+            }
     
     // ---- 2. EVENTOS DIRETOS EM ELEMENTOS ESPECÍFICOS ----
     document.getElementById('importFileInput')?.addEventListener('change', importProject);
