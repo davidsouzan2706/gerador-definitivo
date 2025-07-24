@@ -392,111 +392,137 @@
 
 <!-- SEÇÃO 1: DEFINIR ESTRATÉGIA -->
 <section class="mb-10">
-    <div class="section-title">
-        <h2 class="text-xl font-bold">1. Definir Estratégia</h2>
-    </div>
-    <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
-        <nav id="inputTabsNav" class="-mb-px flex flex-wrap md:flex-nowrap space-x-6" aria-label="Tabs">
-            <button data-tab="input-tab-basico" class="tab-button active-tab">
-                <i class="fas fa-info-circle mr-2"></i> Básico
-            </button>
-            <button data-tab="input-tab-estrategia" class="tab-button">
-                <i class="fas fa-lightbulb mr-2"></i> Estratégia Narrativa
-            </button>
-            <button data-tab="input-tab-tecnicos" class="tab-button">
-                <i class="fas fa-sliders-h mr-2"></i> Detalhes Técnicos
-            </button>
-        </nav>
-    </div>
-    <div id="inputTabContent" class="card">
-        <!-- Aba 1: Básico -->
-        <div id="input-tab-basico" class="tab-pane active-pane">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="input-group"><label for="channelName">Nome do Canal:</label><input type="text" id="channelName" value="The Biblical Unveiling"></div>
-                <div class="input-group"><label for="videoTheme">Tema do Vídeo:</label><input type="text" id="videoTheme" placeholder="Ex: A Arca da Aliança Foi Encontrada?"></div>
-                <div class="input-group"><label for="languageSelect">Idioma do Roteiro:</label><select id="languageSelect"><option value="pt-br">Português (Brasil)</option><option value="en" selected>English</option></select></div>
-                <div class="input-group"><label for="videoDuration">Duração Desejada:</label><select id="videoDuration"><option value="">-- Selecione --</option><option value="short">Curto (~1-3 min)</option><option value="medium">Médio (~4-7 min)</option><option value="long">Longo (~8-12 min)</option></select></div>
-                <div class="input-group md:col-span-2"><label for="videoDescription">Descrição do Vídeo (para inspiração):</label><textarea id="videoDescription" rows="4" placeholder="Cole uma breve descrição do vídeo aqui..."></textarea></div>
-            </div>
-        </div>
-        <!-- Aba 2: Estratégia Narrativa -->
-        <div id="input-tab-estrategia" class="tab-pane">
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="input-group md:col-span-2"><label for="targetAudience">Público-Alvo:</label><input type="text" id="targetAudience" value="Interessados em mistérios e história." readonly></div>
-                <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
-                <div class="input-group"><label for="narrativeStructure">2. Estrutura Específica:</label><select id="narrativeStructure"></select></div>
-                <div class="input-group md:col-span-2"><label for="narrativeTheme">3. Tema Principal:</label><input type="text" id="narrativeTheme" placeholder="Ex: Superação, Luta contra injustiça..."></div>
-                <div class="input-group"><label for="narrativeTone">4. Tom da Narração:</label><select id="narrativeTone"><option value="inspirador" selected>Inspirador</option><option value="serio">Sério</option><option value="emocional">Emocional</option></select></div>
-                 <div class="input-group"><label for="narrativeVoice">5. Voz do Narrador:</label><input type="text" id="narrativeVoice" placeholder="Ex: Sábio e experiente..."></div>
-                <div class="input-group md:col-span-2"><label for="centralQuestion">Pergunta Central (Opcional):</label><textarea id="centralQuestion" rows="2" placeholder="Qual a pergunta que o seu vídeo deve responder?"></textarea></div>
-                <div class="input-group md:col-span-2"><label for="emotionalArc">Arco Emocional Desejado (Opcional):</label><textarea id="emotionalArc" rows="2" placeholder="Ex: Curiosidade -> Tensão -> Surpresa"></textarea></div>
-                <div class="input-group md:col-span-2"><label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):</label><input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada."></div>
-             </div>
-        </div>
-        <!-- Aba 3: Detalhes Técnicos -->
-        <div id="input-tab-tecnicos" class="tab-pane">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <div class="input-group"><label for="languageStyle">Estilo de Linguagem:</label><select id="languageStyle"><option value="inspirador" selected>Inspirador</option><option value="formal">Formal</option></select></div>
-                <div class="input-group"><label for="videoObjective">Objetivo do Vídeo:</label><select id="videoObjective"><option value="informar" selected>Informar</option><option value="emocionar">Emocionar</option></select></div>
-                 <div class="input-group"><label for="speakingPace">Ritmo de Fala:</label><select id="speakingPace"><option value="moderate" selected>Moderado</option><option value="slow">Lento</option><option value="fast">Rápido</option></select></div>
-                <div class="input-group md:col-span-2"><label for="imageDescriptionEngine">Motor de Descrição de Imagem:</label><textarea id="imageDescriptionEngine" rows="2" placeholder="Ex: 'fotografias reais', 'close-up emocional'"></textarea></div>
-                <div class="input-group md:col-span-2"><label for="imageStyleSelect">Motor de Qualidade de Imagem:</label><select id="imageStyleSelect"><option value="cinematic" selected>Cinematográfico</option><option value="custom">Personalizado</option><option value="none">Nenhum</option></select></div>
-            </div>
-        </div>
-    </div>
-    <div class="mt-6 text-center">
-        <button id="analyzeStrategyBtn" class="btn btn-primary"><i class="fas fa-cogs"></i> Definir Estratégia com IA</button>
-    </div>
-</section>
 
-<!-- PAINEL DO PROJETO (inicialmente escondido) -->
-<div id="projectDashboard" class="hidden mt-12">
-    <section class="mb-10">
-        <div class="section-title"><h2 class="text-xl font-bold">2. Criar Roteiro</h2></div>
-        <div id="scriptColumn">
-            <div id="strategicOutlineCard" class="card mb-6">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-semibold text-lg">Esboço Estratégico</h3>
-                    <button id="generateOutlineBtn" class="btn btn-secondary btn-small">Criar Esboço</button>
-                </div>
-                <div id="outlineContent"><div class="asset-card-placeholder">Clique para gerar o esboço.</div></div>
-            </div>
-            <div id="scriptSectionsContainer" class="space-y-4"></div>
-        </div>
-    </section>
+<!-- ================================================================= -->
+<!-- COLE ESTE BLOCO DENTRO DO <div id="inputTabContent" class="card"> -->
+<!-- ================================================================= -->
 
-    <section>
-        <div class="section-title"><h2 class="text-xl font-bold">3. Recursos e Metadados</h2></div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="card">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-semibold text-lg">Títulos & Thumbnails</h3>
-                    <button id="generateTitlesAndThumbnailsBtn" class="btn btn-secondary btn-small">Gerar</button>
-                </div>
-                <div id="titlesThumbnailsContent"><div class="asset-card-placeholder">Gere o roteiro para habilitar.</div></div>
-            </div>
-            <div class="card">
-                 <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-semibold text-lg">Mapa Emocional</h3>
-                    <button id="mapEmotionsBtn" class="btn btn-secondary btn-small">Mapear</button>
-                </div>
-                <div id="emotionalMapContent"><div class="asset-card-placeholder">Gere o roteiro para habilitar.</div></div>
-            </div>
-            <div class="card">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-semibold text-lg">Descrição & Hashtags</h3>
-                    <button id="generateDescriptionBtn" class="btn btn-secondary btn-small">Gerar</button>
-                </div>
-                <div id="videoDescriptionContent"><div class="asset-card-placeholder">Gere o roteiro para habilitar.</div></div>
-            </div>
-            <div class="card">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-semibold text-lg">Trilha Sonora</h3>
-                    <button id="generateSoundtrackBtn" class="btn btn-secondary btn-small">Gerar</button>
-                </div>
-                <div id="soundtrackContent"><div class="asset-card-placeholder">Gere o roteiro para habilitar.</div></div>
-            </div>
+<!-- Aba 1: Básico -->
+<div id="input-tab-basico" class="tab-pane active-pane">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="input-group">
+            <label for="channelName">Nome do Canal:</label>
+            <input type="text" id="channelName" value="The Biblical Unveiling">
         </div>
+        <div class="input-group">
+            <label for="videoTheme">Tema do Vídeo:</label>
+            <input type="text" id="videoTheme" placeholder="Ex: A Arca da Aliança Foi Encontrada?">
+        </div>
+        <div class="input-group">
+            <label for="languageSelect">Idioma do Roteiro:</label>
+            <select id="languageSelect">
+                <option value="pt-br">Português (Brasil)</option>
+                <option value="en" selected>English</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="videoDuration">Duração Desejada:</label>
+            <select id="videoDuration">
+                <option value="">-- Selecione --</option>
+                <option value="short">Curto (~1-3 min)</option>
+                <option value="medium">Médio (~4-7 min)</option>
+                <option value="long">Longo (~8-12 min)</option>
+                <option value="extra-long">Extra Longo (~12-20 min)</option>
+                <option value="documentary">Documentário (~20-45 min)</option>
+            </select>
+        </div>
+        <div class="input-group md:col-span-2">
+            <label for="videoDescription">Descrição do Vídeo (para inspiração):</label>
+            <textarea id="videoDescription" rows="4" placeholder="Cole uma breve descrição do vídeo aqui..."></textarea>
+        </div>
+    </div>
+</div>
+
+<!-- Aba 2: Estratégia Narrativa -->
+<div id="input-tab-estrategia" class="tab-pane">
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="input-group md:col-span-2">
+            <label for="targetAudience">Público-Alvo:</label>
+            <input type="text" id="targetAudience" value="Interessados em mistérios e história." readonly>
+        </div>
+        <div class="input-group">
+            <label for="narrativeGoal">1. Objetivo da Narrativa:</label>
+            <select id="narrativeGoal">
+                <option value="storytelling">Storytelling</option>
+                <option value="storyselling">Storyselling</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="narrativeStructure">2. Estrutura Específica:</label>
+            <select id="narrativeStructure"></select>
+        </div>
+        <div class="input-group md:col-span-2">
+            <label for="narrativeTheme">3. Tema Principal (a grande ideia):</label>
+            <input type="text" id="narrativeTheme" placeholder="Ex: Superação, Luta contra injustiça...">
+        </div>
+        <div class="input-group">
+            <label for="narrativeTone">4. Tom da Narração (a sensação):</label>
+            <select id="narrativeTone">
+                <option value="inspirador" selected>Inspirador</option>
+                <option value="serio">Sério</option>
+                <option value="emocional">Emocional</option>
+            </select>
+        </div>
+         <div class="input-group">
+            <label for="narrativeVoice">5. Voz do Narrador (a personalidade):</label>
+            <input type="text" id="narrativeVoice" placeholder="Ex: Sábio e experiente...">
+        </div>
+        <div class="input-group md:col-span-2">
+            <label for="centralQuestion">Pergunta Central (Opcional):</label>
+            <textarea id="centralQuestion" rows="2" placeholder="Qual a pergunta que o seu vídeo deve responder?"></textarea>
+        </div>
+        <div class="input-group md:col-span-2">
+            <label for="emotionalArc">Arco Emocional Desejado (Opcional):</label>
+            <textarea id="emotionalArc" rows="2" placeholder="Ex: Curiosidade -> Tensão -> Surpresa"></textarea>
+        </div>
+        <div class="input-group md:col-span-2">
+            <label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):</label>
+            <input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada.">
+        </div>
+     </div>
+</div>
+
+<!-- Aba 3: Detalhes Técnicos -->
+<div id="input-tab-tecnicos" class="tab-pane">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <div class="input-group">
+            <label for="languageStyle">Estilo de Linguagem:</label>
+            <select id="languageStyle">
+                <option value="inspirador" selected>Inspirador</option>
+                <option value="formal">Formal</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="videoObjective">Objetivo do Vídeo:</label>
+            <select id="videoObjective">
+                <option value="informar" selected>Informar</option>
+                <option value="emocionar">Emocionar</option>
+            </select>
+        </div>
+         <div class="input-group">
+            <label for="speakingPace">Ritmo de Fala:</label>
+            <select id="speakingPace">
+                <option value="moderate" selected>Moderado</option>
+                <option value="slow">Lento</option>
+                <option value="fast">Rápido</option>
+            </select>
+        </div>
+        <div class="input-group md:col-span-2">
+            <label for="imageDescriptionEngine">Motor de Descrição de Imagem:</label>
+            <textarea id="imageDescriptionEngine" rows="2" placeholder="Ex: 'fotografias reais', 'close-up emocional'"></textarea>
+        </div>
+        <div class="input-group md:col-span-2">
+            <label for="imageStyleSelect">Motor de Qualidade de Imagem:</label>
+            <select id="imageStyleSelect">
+                <option value="cinematic" selected>Cinematográfico</option>
+                <option value="custom">Personalizado</option>
+                <option value="none">Nenhum</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+        
     </section>
 </div>
         </main>
