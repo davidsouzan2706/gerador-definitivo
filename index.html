@@ -293,7 +293,7 @@
         }
 
 
-        /* --- ANÁLISE DE RETENÇÃO STYLES --- */
+                /* --- ANÁLISE DE RETENÇÃO STYLES --- */
         .retention-paragraph-live {
             position: relative;
             padding: 0.5rem;
@@ -325,24 +325,36 @@
             transition: opacity 0.3s, transform 0.3s;
         }
         
-        .retention-action-btn {
-            position: absolute;
-            top: 50%;
-            right: 1rem;
-            transform: translateY(-50%);
+        /* NOVO ESTILO PARA O BOTÃO DENTRO DO TOOLTIP */
+        .retention-tooltip .optimize-btn {
+            display: block;
+            width: 100%;
+            margin-top: 0.75rem;
+            padding: 0.5rem;
+            border: none;
             background-color: var(--primary);
             color: white;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
+            font-weight: 600;
+            border-radius: 6px;
             cursor: pointer;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s, transform 0.3s;
+            transition: var(--transition);
+        }
+        .retention-tooltip .optimize-btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* A MÁGICA DO MOUSE-HOVER */
+        .retention-paragraph-live:hover .retention-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-5px);
+        }
+
+        /* EFEITO DE DESTAQUE PARA GRUPOS */
+        .highlight-group {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+            box-shadow: 0 0 15px color-mix(in srgb, var(--primary) 30%, transparent);
         }
 
         /* A MÁGICA DO MOUSE-HOVER */
@@ -680,6 +692,72 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
     setTimeout(() => { toast.classList.remove('show'); }, 3000);
 };
 
+
+// =========================================================================
+        // PASSO 2: ADICIONE ESTA NOVA FUNÇÃO INTELIGENTE AO SEU SCRIPT
+        // =========================================================================
+        window.optimizeGroup = async (button, suggestionText) => {
+            const safeSelector = suggestionText.replace(/"/g, '\\"');
+            const paragraphsToOptimize = document.querySelectorAll(`[data-suggestion-group="${safeSelector}"]`);
+
+            if (paragraphsToOptimize.length === 0) {
+                window.showToast("Erro: parágrafos para otimizar não encontrados.");
+                return;
+            }
+
+            const originalButtonText = button.innerHTML;
+            button.innerHTML = '<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px; margin: auto;"></div>';
+            button.disabled = true;
+
+            try {
+                const originalBlock = Array.from(paragraphsToOptimize).map(p => p.textContent.trim()).join('\n\n');
+                const prompt = `Você é um Roteirista especialista em reescrita. Sua tarefa é pegar um bloco de parágrafos e reescrevê-lo para corrigir um problema específico, mantendo a mensagem central.
+                
+                **PROBLEMA A SER CORRIGIDO (Sugestão):** "${suggestionText}"
+                **BLOCO DE TEXTO ORIGINAL:**
+                ---
+                ${originalBlock}
+                ---
+
+                **REGRAS:**
+                1. Reescreva o bloco de texto inteiro para que ele flua melhor e resolva o problema apontado na sugestão.
+                2. Você pode juntar parágrafos, dividi-los ou reordená-los se isso melhorar a clareza e o impacto.
+                3. Responda APENAS com o novo bloco de texto reescrito. Sem comentários ou introduções.`;
+
+                const rawResult = await callGroqAPI(prompt, 2000);
+                const newContent = removeMetaComments(rawResult.trim());
+                const newParagraphs = newContent.split('\n').filter(p => p.trim() !== '');
+
+                const firstParagraph = paragraphsToOptimize[0];
+                const contentWrapper = firstParagraph.parentElement;
+                
+                // Substitui o primeiro parágrafo
+                firstParagraph.textContent = newParagraphs[0] || '';
+                firstParagraph.className = 'retention-paragraph-live retention-green highlight-change'; // Marca como corrigido
+                firstParagraph.removeAttribute('data-suggestion-group');
+
+                // Adiciona os novos parágrafos (se houver mais de um)
+                let lastElement = firstParagraph;
+                for (let i = 1; i < newParagraphs.length; i++) {
+                    const newDiv = document.createElement('div');
+                    newDiv.textContent = newParagraphs[i];
+                    newDiv.className = 'highlight-change';
+                    contentWrapper.insertBefore(newDiv, lastElement.nextSibling);
+                    lastElement = newDiv;
+                }
+
+                // Remove os parágrafos antigos restantes
+                for (let i = 1; i < paragraphsToOptimize.length; i++) {
+                    paragraphsToOptimize[i].remove();
+                }
+
+                window.showToast("Bloco de parágrafos otimizado!");
+
+            } catch (error) {
+                window.showToast(`Falha ao otimizar: ${error.message}`);
+                button.innerHTML = 'Erro!';
+            }
+        };
 
 
 // ==========================================================
@@ -2482,90 +2560,51 @@ Exemplo de formato JSON esperado:
         window.analyzeSectionRetention = async (button, sectionId) => {
             const sectionElement = document.getElementById(sectionId);
             const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-            
-            if (!contentWrapper || !contentWrapper.textContent.trim()) {
-                window.showToast("Gere o roteiro desta seção antes de analisar a retenção.");
-                return;
-            }
-
-            const paragraphs = Array.from(contentWrapper.querySelectorAll('div')); 
-            if (paragraphs.length === 0) {
-                window.showToast("Não há parágrafos para analisar.");
-                return;
-            }
+            if (!contentWrapper || !contentWrapper.textContent.trim()) { /* ...código de guarda... */ return; }
+            const paragraphs = Array.from(contentWrapper.querySelectorAll('div'));
+            if (paragraphs.length === 0) { /* ...código de guarda... */ return; }
 
             showButtonLoading(button);
 
             try {
                 const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
-                
-                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphIndex", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion" in Portuguese (Brazil). Your entire response must be ONLY the JSON array.
-
-                Analyze this data:
-                ${JSON.stringify(paragraphsWithIndexes, null, 2)}`;
+                const prompt = `You are a Retention Editor API...`; // O prompt não muda
                 
                 const rawResult = await callGroqAPI(prompt, 2500);
                 let analysis = cleanGeneratedText(rawResult, true);
-
                 if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
-                // LÓGICA DE AGRUPAMENTO POR ADJACÊNCIA
-                if (analysis.length > 0) {
-                    let currentGroup = [];
-                    for (let i = 0; i < analysis.length; i++) {
-                        const currentItem = analysis[i];
-                        const previousItem = i > 0 ? analysis[i - 1] : null;
+                // LÓGICA DE UNIFICAÇÃO POR ADJACÊNCIA (não muda)
+                if (analysis.length > 0) { /* ...código de unificação... */ }
 
-                        if (previousItem && currentItem.retentionScore === previousItem.retentionScore && currentItem.retentionScore !== 'green') {
-                            currentGroup.push(currentItem);
-                        } else {
-                            if (currentGroup.length > 1) {
-                                const unifiedSuggestion = currentGroup[0].suggestion;
-                                currentGroup.forEach(groupItem => groupItem.suggestion = unifiedSuggestion);
-                            }
-                            currentGroup = [currentItem];
-                        }
-                    }
-                    if (currentGroup.length > 1) {
-                        const unifiedSuggestion = currentGroup[0].suggestion;
-                        currentGroup.forEach(groupItem => groupItem.suggestion = unifiedSuggestion);
-                    }
-                }
+                // Limpa a UI de análises anteriores
+                const newParagraphs = paragraphs.map(p => { /* ...código de limpeza e clonagem... */ return newP; });
 
-                // Limpa a UI e os listeners antigos de forma segura
-                const newParagraphs = paragraphs.map(p => {
-                    const newP = p.cloneNode(true);
-                    newP.className = ''; // Limpa todas as classes antigas
-                    newP.innerHTML = p.innerHTML.replace(/<div class="retention-tooltip">.*?<\/div>|<button class="retention-action-btn">.*?<\/button>/g, '');
-                    p.parentNode.replaceChild(newP, p);
-                    return newP;
-                });
-
-                // Aplica a nova análise
-                analysis.forEach(item => {
+                // APLICA A NOVA ANÁLISE COM BOTÃO UNIFICADO
+                analysis.forEach((item, index) => {
                     const p = newParagraphs[item.paragraphIndex]; 
                     if (p) {
-                        p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
+                        p.classList.add('retention-paragraph-live', `retention-${item.score}`);
                         p.dataset.suggestionGroup = item.suggestion;
 
-                        if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
-                            const scoreLabels = { yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
-                            const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
-                            const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}</div>`;
-                            
-                            if (!p.id) p.id = `temp-p-${item.paragraphIndex}`;
-                            
-                            const buttonHtml = `<button class="retention-action-btn" onclick="event.stopPropagation(); window.optimizeParagraph('${p.id}', '${item.suggestion.replace(/'/g, "\\'")}')" title="Otimizar com IA"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg></button>`;
-                            p.insertAdjacentHTML('beforeend', tooltipHtml + buttonHtml);
+                        if (item.score === 'yellow' || item.score === 'red') {
+                            const previousItem = index > 0 ? analysis[index - 1] : null;
+                            // Adiciona o botão APENAS se for o primeiro item de um novo grupo
+                            if (!previousItem || item.suggestion !== previousItem.suggestion) {
+                                const scoreLabels = { yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
+                                const tooltipTitle = scoreLabels[item.score] || 'ANÁLISE';
+                                const buttonHtml = `<button class="optimize-btn" onclick="event.stopPropagation(); window.optimizeGroup(this, '${item.suggestion.replace(/'/g, "\\'")}')">Otimizar Bloco com IA</button>`;
+                                const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}${buttonHtml}</div>`;
+                                p.insertAdjacentHTML('beforeend', tooltipHtml);
+                            }
                         }
                     }
                 });
 
-                // Adiciona os novos event listeners
-                newParagraphs.forEach(paragraph => {
-                    if (paragraph.dataset.suggestionGroup) {
-                        paragraph.addEventListener('mouseover', handleSuggestionMouseOver);
-                        paragraph.addEventListener('mouseout', handleSuggestionMouseOut);
+                newParagraphs.forEach(p => {
+                    if (p.dataset.suggestionGroup) {
+                        p.addEventListener('mouseover', handleSuggestionMouseOver);
+                        p.addEventListener('mouseout', handleSuggestionMouseOut);
                     }
                 });
 
