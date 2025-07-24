@@ -2469,39 +2469,63 @@ Exemplo de formato JSON esperado:
             showButtonLoading(button);
 
             try {
-                // 1. Extrai o texto dos parágrafos existentes PRIMEIRO
                 const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
-                
-                // 2. Envia para a IA
-                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphIndex", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion" in Portuguese (Brazil). Your entire response must be ONLY the JSON array.
-
-                Analyze this data:
-                ${JSON.stringify(paragraphsWithIndexes, null, 2)}`;
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphIndex", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion" in Portuguese (Brazil). Your entire response must be ONLY the JSON array.`;
                 
                 const rawResult = await callGroqAPI(prompt, 2500);
-                const analysis = cleanGeneratedText(rawResult, true);
+                let analysis = cleanGeneratedText(rawResult, true);
 
                 if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
-                // 3. Limpa a UI de análises anteriores
+                // ==========================================================
+                // >>>>> INÍCIO DA NOVA LÓGICA DE AGRUPAMENTO POR ADJACÊNCIA <<<<<
+                // ==========================================================
+                if (analysis.length > 0) {
+                    let currentGroup = [];
+                    for (let i = 0; i < analysis.length; i++) {
+                        const currentItem = analysis[i];
+                        const previousItem = i > 0 ? analysis[i - 1] : null;
+
+                        // Se o item atual tem a mesma cor do anterior, adiciona ao grupo
+                        if (previousItem && currentItem.retentionScore === previousItem.retentionScore && currentItem.retentionScore !== 'green') {
+                            currentGroup.push(currentItem);
+                        } else {
+                            // Se a cor mudou, processa o grupo anterior (se houver)
+                            if (currentGroup.length > 1) {
+                                const unifiedSuggestion = currentGroup[0].suggestion;
+                                currentGroup.forEach(groupItem => {
+                                    groupItem.suggestion = unifiedSuggestion;
+                                });
+                            }
+                            // Inicia um novo grupo com o item atual
+                            currentGroup = [currentItem];
+                        }
+                    }
+                    // Processa o último grupo que sobrou no final do loop
+                    if (currentGroup.length > 1) {
+                        const unifiedSuggestion = currentGroup[0].suggestion;
+                        currentGroup.forEach(groupItem => {
+                            groupItem.suggestion = unifiedSuggestion;
+                        });
+                    }
+                }
+                // ==========================================================
+                // >>>>> FIM DA LÓGICA DE AGRUPAMENTO <<<<<
+                // ==========================================================
+
                 paragraphs.forEach(p => {
                     p.classList.remove('retention-green', 'retention-yellow', 'retention-red', 'retention-paragraph-live', 'highlight-group');
-                    p.querySelector('.retention-tooltip')?.remove();
-                    p.querySelector('.retention-action-btn')?.remove();
-                    // Limpa listeners antigos clonando o elemento e substituindo-o
                     const newP = p.cloneNode(true);
                     p.parentNode.replaceChild(newP, p);
                 });
                 
-                // Pega a lista de parágrafos NOVAMENTE após a clonagem
                 const newParagraphs = Array.from(contentWrapper.querySelectorAll('div'));
 
-                // 4. Aplica a nova análise
                 analysis.forEach(item => {
                     const p = newParagraphs[item.paragraphIndex]; 
                     if (p) {
                         p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
-                        p.dataset.suggestionGroup = item.suggestion;
+                        p.dataset.suggestionGroup = item.suggestion; // A sugestão já está unificada por bloco
 
                         if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
                             const scoreLabels = { yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
@@ -2516,7 +2540,6 @@ Exemplo de formato JSON esperado:
                     }
                 });
 
-                // 5. Adiciona os novos event listeners
                 newParagraphs.forEach(paragraph => {
                     if (paragraph.dataset.suggestionGroup) {
                         paragraph.addEventListener('mouseover', handleSuggestionMouseOver);
