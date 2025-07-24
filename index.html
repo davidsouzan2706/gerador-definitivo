@@ -191,6 +191,22 @@
             padding: 0.25rem !important;
         }
 
+        /* ========================================================== */
+        /* ============ ADICIONE ESTE BLOCO AO FINAL DO SEU CSS =========== */
+        /* ========================================================== */
+
+        /* Reduz a altura de QUALQUER card que seja um placeholder */
+        .card-placeholder {
+            padding-top: 0.75rem !important;
+            padding-bottom: 0.75rem !important;
+        }
+
+        /* Ajusta o conteúdo dos placeholders de Recursos e Metadados */
+        .card-placeholder .flex {
+            margin-bottom: 0.5rem !important;
+        }
+        
+
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -305,52 +321,59 @@
 <!-- PAINEL DO PROJETO (inicialmente escondido) -->
 <div id="projectDashboard" class="hidden mt-12">
 
-    <!-- SEÇÃO 2: CRIAR ROTEIRO (AGORA INCLUI O MAPA EMOCIONAL) -->
+    <!-- SEÇÃO 2: CRIAR ROTEIRO -->
     <section class="mb-10">
         <div class="section-title"><h2 class="text-xl font-bold">2. Criar Roteiro</h2></div>
         
         <!-- Card do Esboço Estratégico -->
-        <div id="strategicOutlineCard" class="card mb-6">
+        <div id="strategicOutlineCard" class="card card-placeholder mb-6"> <!-- CLASSE ADICIONADA AQUI -->
             <div class="flex justify-between items-center mb-3">
                 <h3 class="font-semibold text-lg">Esboço Estratégico</h3>
                 <button id="generateOutlineBtn" class="btn btn-secondary btn-small">Criar Esboço</button>
             </div>
             <div id="outlineContent"><div class="asset-card-placeholder">Clique para gerar o esboço.</div></div>
         </div>
+        
+        <!-- Container onde os placeholders do roteiro (Introdução, etc.) serão injetados -->
+        <div id="scriptSectionsContainer" class="space-y-4"></div>
+    </section>
 
-        <!-- Card do Mapa Emocional (MOVIDO PARA CÁ) -->
-        <div class="card mb-6">
+    <!-- SEÇÃO 3: RECURSOS E METADADOS -->
+    <section>
+        <div class="section-title"><h2 class="text-xl font-bold">3. Recursos e Metadados</h2></div>
+        
+        <!-- Mapa Emocional -->
+        <div class="card card-placeholder mb-6"> <!-- CLASSE ADICIONADA AQUI -->
              <div class="flex justify-between items-center mb-3">
                 <h3 class="font-semibold text-lg">Mapa Emocional</h3>
                 <button id="mapEmotionsBtn" class="btn btn-secondary btn-small">Mapear</button>
             </div>
             <div id="emotionalMapContent"><div class="asset-card-placeholder">Gere o roteiro completo para habilitar.</div></div>
         </div>
-        
-        <!-- Container onde os placeholders do roteiro (Introdução, etc.) serão injetados -->
-        <div id="scriptSectionsContainer" class="space-y-4"></div>
 
-    </section>
-
-    <!-- SEÇÃO 3: RECURSOS E METADADOS (RENUMERADO) -->
-    <section>
-        <div class="section-title"><h2 class="text-xl font-bold">3. Recursos e Metadados</h2></div>
+        <!-- Grid para os outros recursos -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="card">
+            
+            <!-- Títulos & Thumbnails -->
+            <div class="card card-placeholder"> <!-- CLASSE ADICIONADA AQUI -->
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="font-semibold text-lg">Títulos & Thumbnails</h3>
                     <button id="generateTitlesAndThumbnailsBtn" class="btn btn-secondary btn-small">Gerar</button>
                 </div>
                 <div id="titlesThumbnailsContent"><div class="asset-card-placeholder">Gere o roteiro para habilitar.</div></div>
             </div>
-            <div class="card">
+
+            <!-- Descrição & Hashtags -->
+            <div class="card card-placeholder"> <!-- CLASSE ADICIONADA AQUI -->
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="font-semibold text-lg">Descrição & Hashtags</h3>
                     <button id="generateDescriptionBtn" class="btn btn-secondary btn-small">Gerar</button>
                 </div>
                 <div id="videoDescriptionContent"><div class="asset-card-placeholder">Gere o roteiro para habilitar.</div></div>
             </div>
-            <div class="card md:col-span-2">
+
+            <!-- Trilha Sonora -->
+            <div class="card card-placeholder md:col-span-2"> <!-- CLASSE ADICIONADA AQUI -->
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="font-semibold text-lg">Trilha Sonora</h3>
                     <button id="generateSoundtrackBtn" class="btn btn-secondary btn-small">Gerar</button>
@@ -2091,9 +2114,9 @@ Exemplo de formato JSON esperado:
         const createScriptSectionPlaceholder = (sectionId, title, buttonId) => {
             const containerId = `${sectionId}Section`;
             
-            // Nova estrutura mais compacta: flex direto no card e padding reduzido (p-3)
+            // Adicionamos a classe 'card-placeholder' para que o CSS funcione
             return `
-                <div id="${containerId}" class="script-section card mb-4 animate-fade-in flex justify-between items-center p-3">
+                <div id="${containerId}" class="script-section card card-placeholder mb-4 animate-fade-in flex justify-between items-center">
                     <h3 class="font-semibold text-lg text-gray-700 dark:text-gray-300">${title}</h3>
                     <button id="${buttonId}" class="btn btn-primary">
                         <i class="fas fa-magic mr-2"></i>Gerar
