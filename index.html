@@ -606,6 +606,26 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
     };
 
 
+        /**
+         * Percorre todas as seções de roteiro geradas e atualiza o tempo de leitura exibido.
+         */
+        const updateAllReadingTimes = () => {
+            // Pega todas as seções de roteiro que já foram geradas
+            const scriptSections = document.querySelectorAll('#scriptSectionsContainer .accordion-item');
+            
+            scriptSections.forEach(item => {
+                const contentWrapper = item.querySelector('.generated-content-wrapper');
+                const timeDisplay = item.querySelector('.header-content .text-xs'); // Alvo específico do tempo
+
+                if (contentWrapper && timeDisplay) {
+                    const newTime = calculateReadingTime(contentWrapper.textContent);
+                    timeDisplay.textContent = newTime;
+                }
+            });
+        }
+
+
+
      /**
      * Valida os inputs essenciais antes de gerar conteúdo.
      * Busca os elementos no momento da execução para garantir que existam.
@@ -635,24 +655,6 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         return true;
     };
 
-
-        /**
-         * Percorre todas as seções de roteiro geradas e atualiza o tempo de leitura exibido.
-         */
-        const updateAllReadingTimes = () => {
-            // Pega todas as seções de roteiro que já foram geradas
-            const scriptSections = document.querySelectorAll('#scriptSectionsContainer .accordion-item');
-            
-            scriptSections.forEach(item => {
-                const contentWrapper = item.querySelector('.generated-content-wrapper');
-                const timeDisplay = item.querySelector('.header-content .text-xs'); // Alvo específico do tempo
-
-                if (contentWrapper && timeDisplay) {
-                    const newTime = calculateReadingTime(contentWrapper.textContent);
-                    timeDisplay.textContent = newTime;
-                }
-            });
-        }
 
 
 /**
