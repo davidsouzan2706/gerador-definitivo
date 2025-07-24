@@ -2447,31 +2447,36 @@ Exemplo de formato JSON esperado:
             const sectionElement = document.getElementById(sectionId);
             const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
             
-            // >>>>> AQUI ESTÁ A GUARDA DE PROTEÇÃO FINAL E CORRETA <<<<<
             if (!contentWrapper || !contentWrapper.textContent.trim()) {
                 window.showToast("Gere o roteiro desta seção antes de analisar a retenção.");
-                return; // Para a execução da função aqui
+                return;
             }
 
-            const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]'));
+            // >>> CORREÇÃO FUNDAMENTAL: Pega TODOS os divs, com ou sem ID <<<
+            const paragraphs = Array.from(contentWrapper.querySelectorAll('div')); 
+            
             if (paragraphs.length === 0) {
-                // Esta é uma segurança extra caso o texto exista mas não esteja nos divs corretos
-                window.showToast("Não há parágrafos estruturados para analisar.");
+                window.showToast("Não há parágrafos para analisar.");
                 return;
             }
 
             showButtonLoading(button);
 
             try {
-                const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
-                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion" in Portuguese (Brazil). Your entire response must be ONLY the JSON array.`;
+                // Envia o índice (posição) em vez do ID para a IA
+                const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
+                
+                // Prompt atualizado para usar o índice
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphIndex" (the original index), "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion" in Portuguese (Brazil). Your entire response must be ONLY the JSON array.
+
+                Analyze this data:
+                ${JSON.stringify(paragraphsWithIndexes, null, 2)}`;
                 
                 const rawResult = await callGroqAPI(prompt, 2500);
                 const analysis = cleanGeneratedText(rawResult, true);
 
                 if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
-                // Limpa estilos e elementos antigos antes de adicionar os novos
                 paragraphs.forEach(p => {
                     p.classList.remove('retention-green', 'retention-yellow', 'retention-red', 'retention-paragraph-live');
                     p.querySelector('.retention-tooltip')?.remove();
@@ -2479,15 +2484,20 @@ Exemplo de formato JSON esperado:
                 });
 
                 analysis.forEach(item => {
-                    const p = document.getElementById(item.paragraphId);
+                    // Encontra o parágrafo pelo seu índice na lista, não mais pelo ID
+                    const p = paragraphs[item.paragraphIndex]; 
                     if (p) {
                         p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
                         if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
                             const scoreLabels = { yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
                             const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
                             const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}</div>`;
+                            
+                            // Para o botão de otimizar, vamos precisar de um ID temporário se não houver um
+                            if (!p.id) p.id = `temp-p-${item.paragraphIndex}`;
+                            
                             const buttonHtml = `
-                                <button class="retention-action-btn" onclick="event.stopPropagation(); window.optimizeParagraph('${item.paragraphId}', '${item.suggestion.replace(/'/g, "\\'")}')" title="Otimizar com IA">
+                                <button class="retention-action-btn" onclick="event.stopPropagation(); window.optimizeParagraph('${p.id}', '${item.suggestion.replace(/'/g, "\\'")}')" title="Otimizar com IA">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
                                 </button>`;
                             p.insertAdjacentHTML('beforeend', tooltipHtml + buttonHtml);
