@@ -3670,14 +3670,16 @@ window.regenerateSection = (fullSectionId) => {
 // ==========================================================
 document.addEventListener('DOMContentLoaded', () => {
 
-document.querySelectorAll('[id]').forEach(el => {
+document.addEventListener('DOMContentLoaded', () => {
+     // >>>>> ADICIONE ESTE BLOCO AQUI <<<<<
+     // Mapeia todos os elementos e botões para os objetos globais
+     document.querySelectorAll('[id]').forEach(el => {
          if (el.tagName === 'BUTTON') {
              buttons[el.id] = el;
          } else {
              elements[el.id] = el;
          }
      });
-
 
     // ---- 1. INICIALIZAÇÃO GERAL ----
     setupInputTabs();
