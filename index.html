@@ -2447,7 +2447,7 @@ Exemplo de formato JSON esperado:
             const sectionElement = document.getElementById(sectionId);
             const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
             
-            // >>>>> AQUI ESTÁ A GUARDA DE PROTEÇÃO <<<<<
+            // >>>>> AQUI ESTÁ A GUARDA DE PROTEÇÃO FINAL E CORRETA <<<<<
             if (!contentWrapper || !contentWrapper.textContent.trim()) {
                 window.showToast("Gere o roteiro desta seção antes de analisar a retenção.");
                 return; // Para a execução da função aqui
@@ -2455,7 +2455,8 @@ Exemplo de formato JSON esperado:
 
             const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]'));
             if (paragraphs.length === 0) {
-                window.showToast("Não há parágrafos para analisar.");
+                // Esta é uma segurança extra caso o texto exista mas não esteja nos divs corretos
+                window.showToast("Não há parágrafos estruturados para analisar.");
                 return;
             }
 
@@ -2470,6 +2471,7 @@ Exemplo de formato JSON esperado:
 
                 if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
+                // Limpa estilos e elementos antigos antes de adicionar os novos
                 paragraphs.forEach(p => {
                     p.classList.remove('retention-green', 'retention-yellow', 'retention-red', 'retention-paragraph-live');
                     p.querySelector('.retention-tooltip')?.remove();
