@@ -253,6 +253,46 @@
             color: var(--secondary);
         }
 
+/* --- ESTILOS DO CONTEÚDO DO ACORDEÃO --- */
+        .generated-content-wrapper {
+            background-color: var(--dark-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--dark-border);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .accordion-body > div > div { /* Alvo: container de cada passo */
+            padding-top: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-top: 1px dashed var(--dark-border);
+        }
+
+        .accordion-body > div > div:first-child {
+            border-top: none; /* Remove a borda do primeiro item */
+            padding-top: 0;
+        }
+
+        .accordion-body h5 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dark-text-header);
+            margin-bottom: 0.25rem;
+        }
+
+        .accordion-body p.text-xs {
+            font-size: 0.8rem;
+            color: var(--dark-text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
