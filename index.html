@@ -627,20 +627,38 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 const btnYes = document.getElementById('confirmBtnYes');
                 const btnNo = document.getElementById('confirmBtnNo');
 
+                // Garante que todos os elementos existem antes de continuar
+                if (!overlay || !titleEl || !messageEl || !btnYes || !btnNo) {
+                    console.error("Elementos do pop-up de confirmação não foram encontrados no HTML.");
+                    resolve(false); // Resolve como 'false' para não travar a aplicação
+                    return;
+                }
+
                 titleEl.textContent = title;
                 messageEl.textContent = message;
                 overlay.style.display = 'flex';
 
+                // Função para limpar e fechar o diálogo
                 const closeDialog = (result) => {
                     overlay.style.display = 'none';
-                    // Remove os event listeners para evitar múltiplas chamadas
-                    btnYes.replaceWith(btnYes.cloneNode(true));
-                    btnNo.replaceWith(btnNo.cloneNode(true));
+                    // Remove os listeners para evitar chamadas duplicadas
+                    clonedBtnYes.replaceWith(btnYes);
+                    clonedBtnNo.replaceWith(btnNo);
                     resolve(result);
                 };
 
-                btnYes.onclick = () => closeDialog(true);
-                btnNo.onclick = () => closeDialog(false);
+                // TRUQUE PARA GARANTIR LISTENERS LIMPOS:
+                // Clonamos os botões para remover quaisquer event listeners antigos
+                const clonedBtnYes = btnYes.cloneNode(true);
+                const clonedBtnNo = btnNo.cloneNode(true);
+
+                // Adicionamos os novos listeners aos clones
+                clonedBtnYes.addEventListener('click', () => closeDialog(true));
+                clonedBtnNo.addEventListener('click', () => closeDialog(false));
+
+                // Substituímos os botões originais pelos clones com os novos listeners
+                btnYes.replaceWith(clonedBtnYes);
+                btnNo.replaceWith(clonedBtnNo);
             });
         };
 
