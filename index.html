@@ -558,27 +558,33 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 const firstParagraph = paragraphsToOptimize[0];
                 const contentWrapper = firstParagraph.parentElement;
                 
-                // Substitui o primeiro parágrafo e aplica as classes de sucesso
                 firstParagraph.textContent = newParagraphs[0] || '';
                 firstParagraph.className = 'retention-paragraph-live retention-green highlight-change';
                 firstParagraph.removeAttribute('data-suggestion-group');
 
-                // Adiciona os novos parágrafos (se houver mais de um)
                 let lastElement = firstParagraph;
                 for (let i = 1; i < newParagraphs.length; i++) {
                     const newDiv = document.createElement('div');
                     newDiv.textContent = newParagraphs[i];
-                    // >>>>> AQUI ESTÁ A CORREÇÃO MÁGICA <<<<<
-                    // Aplica as mesmas classes de sucesso aos parágrafos adicionais
                     newDiv.className = 'retention-paragraph-live retention-green highlight-change';
                     contentWrapper.insertBefore(newDiv, lastElement.nextSibling);
                     lastElement = newDiv;
                 }
 
-                // Remove os parágrafos antigos restantes
                 for (let i = 1; i < paragraphsToOptimize.length; i++) {
                     paragraphsToOptimize[i].remove();
                 }
+
+                // >>>>> AQUI ESTÁ A CORREÇÃO QUE FALTAVA <<<<<
+                // 1. Encontra o elemento da seção pai, a partir do primeiro parágrafo.
+                const sectionElement = firstParagraph.closest('.script-section');
+
+                // 2. Invalida os resultados de Performance e Prompts, pois o texto mudou.
+                if (sectionElement) {
+                    invalidateAndClearPerformance(sectionElement);
+                    invalidateAndClearPrompts(sectionElement);
+                }
+                // >>>>> FIM DA CORREÇÃO <<<<<
 
                 window.showToast("Bloco de parágrafos otimizado!");
 
