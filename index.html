@@ -9,6 +9,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         
+    
+        /* ================================================================= */
+        /* ============== ESTE É O CSS COMPLETO E FINAL ================== */
+        /* ============== SUBSTITUA TUDO NA SUA TAG <style> POR ISTO ===== */
+        /* ================================================================= */
+
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
@@ -110,10 +116,6 @@
         .tab-active { border-bottom-color: var(--primary); color: var(--primary); font-weight: 600; }
         .tab-pane.hidden { display: none; }
 
-        /* ========================================================== */
-        /* ============ A CORREÇÃO PRINCIPAL ESTÁ AQUI ============ */
-        /* ========================================================== */
-
         /* --- ACCORDION & SCRIPT SECTIONS --- */
         .accordion-item { border-bottom: 1px solid var(--dark-border); }
         .accordion-header {
@@ -150,7 +152,7 @@
         
         .accordion-body {
             padding: 0 1.5rem 1.5rem 1.5rem;
-            display: none; /* Inicia fechado */
+            display: none;
         }
         .accordion-body.open { display: block; }
 
@@ -178,35 +180,21 @@
         .progress-bar { height: 8px; background: var(--dark-border); border-radius: 4px; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s ease; }
 
-
-        /* Reduz a altura dos cards que são apenas placeholders */
-        .script-section-placeholder,
-        .card:has(.asset-card-placeholder) {
-            padding-top: 0.75rem;
-            padding-bottom: 0.75rem;
-        }
-
-        /* Ajusta o padding interno do placeholder do roteiro */
-        .script-section-placeholder > div {
-            padding: 0.25rem !important;
-        }
-
-        /* ========================================================== */
-        /* ============ ADICIONE ESTE BLOCO AO FINAL DO SEU CSS =========== */
-        /* ========================================================== */
-
-        /* Reduz a altura de QUALQUER card que seja um placeholder */
-        .card-placeholder {
+        /* --- PLACEHOLDER STYLES (A VERSÃO CORRETA E FINAL) --- */
+        .card-placeholder > .flex {
             padding-top: 0.75rem !important;
             padding-bottom: 0.75rem !important;
         }
-
-        /* Ajusta o conteúdo dos placeholders de Recursos e Metadados */
+        .script-section-placeholder {
+            padding: 0.75rem 1rem !important;
+        }
         .card-placeholder .flex {
-            margin-bottom: 0.5rem !important;
+            margin-bottom: 0 !important;
+        }
+        .card-placeholder .asset-card-placeholder {
+            display: none;
         }
         
-
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -1468,10 +1456,9 @@ const invalidateAndClearPrompts = (sectionElement) => {
             }
         };
     
-                 /**
-         * Gera o HTML para uma seção do roteiro, com layout e chamadas de função corrigidas.
-         * (VERSÃO FINAL COM MELHORIAS DE UI)
-         */
+        // ==========================================================
+        // >>>>> PASSO 1: SUBSTITUA A FUNÇÃO generateSectionHtmlContent <<<<<
+        // ==========================================================
         const generateSectionHtmlContent = (sectionId, title, content) => {
             const mainBodyId = `${sectionId}Body`;
             const mainArrowId = `${sectionId}Arrow`;
@@ -1516,17 +1503,20 @@ const invalidateAndClearPrompts = (sectionElement) => {
             `;
 
             const regenerateBtnHtml = `<button class="regenerate-btn" data-action="regenerate" data-section-id="${sectionId}Section" title="Re-gerar esta seção"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg></button>`;
-            const copyBtnHtml = `<button class="copy-btn" data-action="copy" title="Copiar Roteiro"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg></button>`;
-            const headerButtonsHtml = `${regenerateBtnHtml} ${copyBtnHtml}`;
-
-            return `<div class="accordion-item">
-                        <div class="accordion-header main-accordion-header">
+            const copyBtnHtml = `<button class="copy-btn" data-action="copy" title="Copiar Roteiro"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5-.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg></button>`;
+            
+            // >>>>> ESTRUTURA HTML DO CABEÇALHO CORRIGIDA <<<<<
+            return `<div class="accordion-item card !p-0"> <!-- Removendo padding do card principal -->
+                        <div class="accordion-header" onclick="window.toggleAccordion('${mainBodyId}', '${mainArrowId}')">
                             <div class="header-content">
                                 <h3>${title}</h3>
                                 <span class="text-xs font-normal text-gray-400 dark:text-gray-500">${calculateReadingTime(content)}</span>
+                            </div>
+                            <div class="header-buttons">
+                                ${regenerateBtnHtml}
+                                ${copyBtnHtml}
                                 <svg id="${mainArrowId}" class="accordion-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
                             </div>
-                            <div class="header-buttons">${headerButtonsHtml}</div>
                         </div>
                         <div id="${mainBodyId}" class="accordion-body">
                             <div class="generated-content-wrapper" contenteditable="true">${content}</div>
