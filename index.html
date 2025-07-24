@@ -574,17 +574,6 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
 
 
-        // Mapeamento de elementos do DOM para acesso fácil
-        const elements = {};
-        const buttons = {};
-        // Mapeia todos os elementos e botões com ID
-        document.querySelectorAll('[id]').forEach(el => {
-            if (el.tagName === 'BUTTON') {
-                buttons[el.id] = el;
-            } else {
-                elements[el.id] = el;
-            }
-        });
 
         // ==========================================================
         // ================== FUNÇÕES DE UTILIDADE ==================
@@ -863,7 +852,12 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
          */
         const updateButtonStates = () => {
             const allMainScriptGenerated = isScriptComplete();
-            // ... (o início da função continua o mesmo, com a lógica de desabilitar os botões de recursos)
+            const buttonsToToggle = ['generateTitlesAndThumbnailsBtn', 'mapEmotionsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn'];
+            
+            buttonsToToggle.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = !allMainScriptGenerated;
+            });
 
             // Lógica para mostrar/esconder o módulo de conclusão
             const introSec = document.getElementById('introSection');
@@ -888,13 +882,13 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                     conclusionModule.classList.add('animate-fade-in');
                     
                     // ==========================================================
-                    // >>>>> AQUI ESTÁ A CORREÇÃO MÁGICA <<<<<
+                    // >>>>> A CORREÇÃO CRÍTICA ESTÁ AQUI <<<<<
                     // ==========================================================
-                    // Agora que o módulo está visível, podemos configurar os listeners.
+                    // Agora que o módulo está visível, NÓS CONFIGURAMOS OS LISTENERS.
                     document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
                         radio.addEventListener('change', handleConclusionStrategyChange);
                     });
-                    // E chamamos a função uma vez para definir o estado inicial correto.
+                    // E chamamos a função uma vez para definir o estado inicial.
                     handleConclusionStrategyChange();
                     // ==========================================================
 
