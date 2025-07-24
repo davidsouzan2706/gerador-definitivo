@@ -3546,7 +3546,7 @@ window.regenerateSection = (fullSectionId) => {
 
                 /**
          * Analisa o tema e a descrição do vídeo para definir a estratégia de conteúdo.
-         * (VERSÃO COMPLETA E CORRIGIDA COM O LOADING CERTO)
+         * (VERSÃO FINAL, AUTO-SUFICIENTE E COMPLETA)
          */
         const analyzeAndSetStrategy = async (button) => {
             const hasExistingWork = document.querySelector('#scriptSectionsContainer .accordion-item');
@@ -3562,21 +3562,21 @@ window.regenerateSection = (fullSectionId) => {
             
             resetProjectOutputs(); 
 
-            const theme = elements.videoTheme.value.trim();
-            const description = elements.videoDescription.value.trim();
+            const themeElement = document.getElementById('videoTheme');
+            const descriptionElement = document.getElementById('videoDescription');
+            
+            const theme = themeElement ? themeElement.value.trim() : '';
+            const description = descriptionElement ? descriptionElement.value.trim() : '';
+
             if (!theme || !description) {
                 window.showToast("Por favor, preencha o Tema e a Descrição do Vídeo.");
                 return;
             }
             
-            // >>>>> CORREÇÃO AQUI <<<<<
-            // Usando a nova e correta função de loading
             showButtonLoading(button);
 
-            const videoObjectiveOptions = Array.from(elements.videoObjective.options).map(o => `'${o.value}'`);
+            const videoObjectiveOptions = Array.from(document.getElementById('videoObjective').options).map(o => `'${o.value}'`);
             const narrativeToneOptions = Array.from(document.getElementById('narrativeTone').options).map(o => `'${o.value}'`);
-            const allStructures = {...narrativeStructures.storytelling, ...narrativeStructures.storyselling};
-            const narrativeStructureOptions = Object.keys(allStructures).map(s => `'${s}'`);
 
             const prompt = `Você é um Estrategista de Conteúdo de IA para o YouTube, um especialista em engenharia de narrativas virais. Sua tarefa é analisar o tema e a descrição de um vídeo e definir a melhor e mais coesa estratégia de conteúdo.
 
@@ -3601,7 +3601,6 @@ window.regenerateSection = (fullSectionId) => {
 
             try {
                 isSettingStrategy = true; 
-
                 const rawResult = await callGroqAPI(prompt, 2000);
                 const strategy = cleanGeneratedText(rawResult, true);
 
@@ -3609,41 +3608,35 @@ window.regenerateSection = (fullSectionId) => {
                     throw new Error("A IA não retornou uma resposta em formato JSON válido.");
                 }
                 
-                if(strategy.target_audience) elements.targetAudience.value = strategy.target_audience;
-                if(strategy.video_objective) elements.videoObjective.value = strategy.video_objective;
-                if(strategy.narrative_goal) document.getElementById('narrativeGoal').value = strategy.narrative_goal;
+                Object.keys(strategy).forEach(key => {
+                    const elementId = key.replace(/_/g, '');
+                    const element = document.getElementById(elementId);
+                    if (element) {
+                        if (element.tagName === 'SELECT' && ![...element.options].some(o => o.value === strategy[key])) {
+                            const newOption = new Option(strategy[key].charAt(0).toUpperCase() + strategy[key].slice(1), strategy[key]);
+                            element.add(newOption);
+                        }
+                        element.value = strategy[key];
+                    }
+                });
                 
                 updateNarrativeStructureOptions(); 
-                
-                if(strategy.narrative_structure) document.getElementById('narrativeStructure').value = strategy.narrative_structure;
-                if(strategy.narrative_theme) document.getElementById('narrativeTheme').value = strategy.narrative_theme;
-                if (strategy.narrative_tone) {
-                    const toneSelect = document.getElementById('narrativeTone');
-                    const normalizedReturnedTone = strategy.narrative_tone.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                    toneSelect.value = normalizedReturnedTone;
+                const structureSelect = document.getElementById('narrativeStructure');
+                if (structureSelect && strategy.narrative_structure) {
+                    structureSelect.value = strategy.narrative_structure;
                 }
-                if(strategy.narrative_voice) document.getElementById('narrativeVoice').value = strategy.narrative_voice;
-                if(strategy.central_question) elements.centralQuestion.value = strategy.central_question;
-                if(strategy.emotional_arc) elements.emotionalArc.value = strategy.emotional_arc;
-                if(strategy.image_description_engine) elements.imageDescriptionEngine.value = strategy.image_description_engine;
-                if(strategy.languageSelect) elements.languageSelect.value = strategy.languageSelect;
-                if(strategy.languageStyle) elements.languageStyle.value = strategy.languageStyle;
-                if(strategy.videoDuration) elements.videoDuration.value = strategy.videoDuration;
-                if(strategy.speakingPace) elements.speakingPace.value = strategy.speakingPace;
-                if(strategy.imageStyleSelect) elements.imageStyleSelect.value = strategy.imageStyleSelect;
 
-                window.showToast("Estratégia definida com sucesso!");
-                elements.projectDashboard.classList.remove('hidden');
+                const dashboard = document.getElementById('projectDashboard');
+                if (dashboard) dashboard.classList.remove('hidden');
                 
                 document.querySelector('[data-tab="input-tab-estrategia"]').click();
+                window.showToast("Estratégia definida com sucesso!");
 
             } catch (error) {
                 window.showToast(`Falha ao definir estratégia: ${error.message}`);
                 console.error("Erro na análise estratégica:", error);
             } finally {
                 isSettingStrategy = false;
-                // >>>>> CORREÇÃO AQUI <<<<<
-                // Usando a nova e correta função de loading
                 hideButtonLoading(button);
                 updateButtonStates();
             }
