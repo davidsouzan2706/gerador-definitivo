@@ -181,17 +181,19 @@
         .progress-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s ease; }
 
         /* --- PLACEHOLDER STYLES (A VERSÃO CORRETA E FINAL) --- */
-        .card-placeholder > .flex {
-            padding-top: 0.75rem !important;
-            padding-bottom: 0.75rem !important;
+        /* 1. Reduz a altura do CARD quando ele é um placeholder */
+        .card.card-placeholder {
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
         }
-        .script-section-placeholder {
-            padding: 0.75rem 1rem !important;
-        }
-        .card-placeholder .flex {
+
+        /* 2. Remove a margem extra do título para um visual mais limpo */
+        .card.card-placeholder > .flex {
             margin-bottom: 0 !important;
         }
-        .card-placeholder .asset-card-placeholder {
+
+        /* 3. Esconde o texto descritivo para economizar espaço */
+        .card.card-placeholder .asset-card-placeholder {
             display: none;
         }
         
