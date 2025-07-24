@@ -213,6 +213,46 @@
             display: none;
         }
 
+        /* --- MAPA EMOCIONAL STYLES --- */
+        .emotional-map-item {
+            border-left: 4px solid var(--primary);
+            background-color: color-mix(in srgb, var(--dark-bg) 50%, var(--dark-surface));
+        }
+
+        .paragraph-preview {
+            font-style: italic;
+            color: var(--dark-text-muted);
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            border-bottom: 1px dashed var(--dark-border);
+            padding-bottom: 0.75rem;
+        }
+
+        .analysis-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px; /* pill shape */
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .tag-emotion {
+            background-color: color-mix(in srgb, var(--primary) 20%, transparent);
+            color: var(--primary);
+        }
+
+        .tag-pace {
+            background-color: color-mix(in srgb, var(--secondary) 20%, transparent);
+            color: var(--secondary);
+        }
+
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -994,7 +1034,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
          /**
          * Analisa o roteiro completo para criar um "mapa emocional" para guiar a produção.
          */
-                        const mapEmotionsAndPacing = async (button) => {
+const mapEmotionsAndPacing = async (button) => {
             const fullTranscript = getTranscriptOnly();
             if (!fullTranscript) {
                 showToast("Gere o roteiro completo primeiro para criar o mapa emocional.");
@@ -1013,9 +1053,9 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             **REGRAS CRÍTICAS:**
             1.  Sua resposta DEVE ser um array JSON.
             2.  O array deve ter um objeto para CADA um dos ${paragraphs.length} parágrafos do roteiro.
-            3.  Cada objeto deve ter TRÊS chaves: "paragraph_index" (o número do índice, começando em 0), "emotion" (string, ex: "Curiosidade Intensa", "Empatia Profunda"), e "pace" (string, ex: "Rápido e Incisivo", "Lento e Reflexivo").
+            3.  Cada objeto deve ter TRÊS chaves: "paragraph_index" (o número do índice, começando em 0), "emotion" (string, ex: "Curiosidade Intensa"), e "pace" (string, ex: "Rápido e Incisivo").
 
-            **ROTEIRO PARA ANALISAR (PARÁGRAFO POR PARÁGRAFO):**
+            **ROTEIRO PARA ANALISAR:**
             ${paragraphs.map((p, index) => `PARAGRAFO ${index}: "${p}"`).join('\n\n')}
 
             Responda apenas com o array JSON, garantindo um objeto para cada parágrafo de 0 a ${paragraphs.length - 1}.`;
@@ -1024,20 +1064,28 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 const rawResult = await callGroqAPI(prompt, 3000);
                 const analysis = cleanGeneratedText(rawResult, true);
 
-                if (!analysis || !Array.isArray(analysis) || analysis.length !== paragraphs.length) {
+                if (!analysis || !Array.isArray(analysis) || analysis.length > paragraphs.length) {
                     throw new Error("A IA retornou um mapa emocional em formato inválido ou incompleto.");
                 }
 
                 window.emotionalMap = analysis;
                 
-                let mapHtml = '<div class="space-y-2">';
+                // >>>>> GERAÇÃO DO HTML CORRIGIDA E MELHORADA <<<<<
+                let mapHtml = '<div class="space-y-4">';
                 analysis.forEach(item => {
+                    const paragraphText = paragraphs[item.paragraph_index];
+                    if (!paragraphText) return; // Pula se o parágrafo não existir
+
                     mapHtml += `
-                        <div class="emotional-map-item">
-                            <p class="paragraph-preview">"${paragraphs[item.paragraph_index]}"</p>
+                        <div class="emotional-map-item card !p-3">
+                            <p class="paragraph-preview">"${paragraphText}"</p>
                             <div class="analysis-tags">
-                                <span class="tag tag-emotion">${item.emotion}</span>
-                                <span class="tag tag-pace">${item.pace}</span>
+                                <span class="tag tag-emotion">
+                                    <i class="fas fa-theater-masks mr-2"></i>${item.emotion}
+                                </span>
+                                <span class="tag tag-pace">
+                                    <i class="fas fa-tachometer-alt mr-2"></i>${item.pace}
+                                </span>
                             </div>
                         </div>
                     `;
@@ -1053,7 +1101,6 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 hideButtonLoading(button);
             }
         };
-
 
 
 
