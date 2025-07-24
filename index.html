@@ -516,7 +516,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
     if (!toast || !toastMessage) return;
     toastMessage.textContent = message;
     toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 6000);
+    setTimeout(() => { toast.classList.remove('show'); }, 8000);
 };
 
 
@@ -1694,7 +1694,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
-            // 1. Extração Cirúrgica do Bloco JSON (mantida, já é robusta)
+            // 1. Extração Cirúrgica do Bloco JSON
             const startIndex = text.search(/[\{\[]/);
             if (startIndex === -1) {
                 console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.", text);
@@ -1713,52 +1713,50 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 }
             }
             if (endIndex === -1) {
-                console.error("O JSON retornado pela IA não foi fechado corretamente.", text);
-                throw new Error("A IA retornou um JSON malformado (não fechado).");
+                console.warn("JSON não foi fechado corretamente, tentando encontrar o final de forma aproximada.");
+                endIndex = text.length;
             }
-            const rawJsonCandidate = text.substring(startIndex, endIndex + 1);
+            
+            let jsonString = text.substring(startIndex, endIndex + 1);
 
-            // 2. Primeira Linha de Defesa: Sanitização de Caracteres Invisíveis/Não-JSON
-            // Remove todos os caracteres de controle, espaços em branco unicode especiais e BOM.
-            // Ex: \uFEFF (Zero Width No-Break Space), \u200B (Zero Width Space), etc.
-            let sanitizedJsonString = rawJsonCandidate.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
+            // 2. Sanitização de Caracteres Invisíveis/Não-JSON
+            jsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
 
             // 3. Tentativa de Parse "Caminho Feliz"
             try {
-                return JSON.parse(sanitizedJsonString);
+                return JSON.parse(jsonString);
             } catch (e) {
                 console.warn("Parse inicial (sanitizado) falhou. Tentando reparos estruturais...", e.message);
-                console.warn("JSON Sanitizado Problema:", sanitizedJsonString); // Log da string já sanitizada que falhou.
 
-                // 4. Segunda Linha de Defesa: Reparos Estruturais como Fallback
+                // 4. Cirurgias de Reparo como Fallback
                 try {
-                    let repairedString = sanitizedJsonString;
+                    let repairedString = jsonString;
 
-                    // A. Tenta corrigir aspas simples para duplas (se o problema for de delimitadores)
-                    // Este é um risco controlado, só ocorre se o parse original falhou.
-                    repairedString = repairedString.replace(/'/g, '"'); 
-                    
-                    // B. Remove vírgulas extras no final de objetos/arrays.
+                    // A. Remove vírgulas extras no final de objetos/arrays.
                     repairedString = repairedString.replace(/,\s*([}\]])/g, "$1");
                     
-                    // C. Corrige objetos ou arrays não fechados no final (se faltar uma } ou ]).
+                    // B. Adiciona vírgulas faltando entre objetos
+                    repairedString = repairedString.replace(/\}\s*\{/g, '},{');
+
+                    // C. Corrige objetos ou arrays não fechados no final (lógica melhorada)
                     const openBraces = (repairedString.match(/{/g) || []).length;
                     const closeBraces = (repairedString.match(/}/g) || []).length;
+                    const openBrackets = (repairedString.match(/\[/g) || []).length;
+                    const closeBrackets = (repairedString.match(/\]/g) || []).length;
+
                     if (openBraces > closeBraces) {
                         repairedString += '}'.repeat(openBraces - closeBraces);
                     }
-                    const openBrackets = (repairedString.match(/\[/g) || []).length;
-                    const closeBrackets = (repairedString.match(/\]/g) || []).length;
                     if (openBrackets > closeBrackets) {
                         repairedString += ']'.repeat(openBrackets - closeBrackets);
                     }
                     
+                    // D. Tenta o parse novamente
                     return JSON.parse(repairedString);
 
                 } catch (finalError) {
                     console.error("Falha ao fazer o parse do JSON, mesmo após todas as cirurgias:", finalError.message);
-                    console.error("JSON problemático (original):", text); // Loga o original
-                    console.error("JSON final tentado:", repairedString); // Loga a versão que quebrou no final
+                    console.error("JSON problemático (original):", text);
                     throw new Error("A IA retornou um JSON com sintaxe interna inválida que não pôde ser corrigido.");
                 }
             }
