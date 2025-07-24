@@ -1646,53 +1646,53 @@ const invalidateAndClearPrompts = (sectionElement) => {
         };
     
         // ==========================================================
-        // >>>>> SUBSTITUA SUA FUNÇÃO cleanGeneratedText POR ESTA VERSÃO BLINDADA <<<<<
+        // >>>>> SUBSTITUA SUA FUNÇÃO cleanGeneratedText INTEIRA POR ESTA VERSÃO FINAL <<<<<
         // ==========================================================
         const cleanGeneratedText = (text, expectJson = false) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
-            // 1. Extrai o conteúdo relevante (entre chaves ou colchetes)
-            let jsonString = text;
-            const firstBracket = text.indexOf('[');
-            const lastBracket = text.lastIndexOf(']');
-            const firstBrace = text.indexOf('{');
-            const lastBrace = text.lastIndexOf('}');
+            let jsonString = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
-            if (firstBracket !== -1 && lastBracket > firstBracket) {
-                jsonString = text.substring(firstBracket, lastBracket + 1);
-            } else if (firstBrace !== -1 && lastBrace > firstBrace) {
-                jsonString = text.substring(firstBrace, lastBrace + 1);
-            }
-
-            // 2. Remove marcações de código comuns
-            jsonString = jsonString.replace(/```json/g, '').replace(/```/g, '').trim();
-            
             try {
-                // 3. Tenta o parse direto. Se funcionar, ótimo!
                 return JSON.parse(jsonString);
             } catch (e) {
-                // 4. Se falhar, inicia a cirurgia defensiva.
-                console.warn("JSON inicial falhou o parse, tentando cirurgia...", e.message);
+                console.warn("JSON inicial falhou o parse. Tentando cirurgia de reparo...", e.message);
                 try {
-                    // CIRURGIA AVANÇADA
-                    // Passo A: Adiciona vírgulas faltando entre objetos
+                    // --- INÍCIO DA CIRURGIA AVANÇADA ---
+
+                    // 1. Adiciona vírgulas entre objetos.
                     let repairedString = jsonString.replace(/\}\s*\{/g, '},{');
-                    
-                    // Passo B: Se parece uma lista de objetos mas não é um array, envolve em colchetes
+
+                    // 2. Se for uma lista de objetos, garante que é um array.
                     if (repairedString.startsWith('{') && repairedString.endsWith('}') && repairedString.includes('},{')) {
                         repairedString = `[${repairedString}]`;
-                        console.warn("String envolvida em colchetes para formar um array.");
                     }
 
-                    // Passo C: Remove vírgulas extras no final (trailing commas)
+                    // 3. Remove vírgulas extras no final de arrays/objetos.
                     repairedString = repairedString.replace(/,\s*([}\]])/g, "$1");
+                    
+                    // 4. NOVA BLINDAGEM: Corrige objetos ou arrays não fechados no final.
+                    const openBraces = (repairedString.match(/{/g) || []).length;
+                    const closeBraces = (repairedString.match(/}/g) || []).length;
+                    const openBrackets = (repairedString.match(/\[/g) || []).length;
+                    const closeBrackets = (repairedString.match(/\]/g) || []).length;
 
-                    // 5. Tenta o parse novamente com a string reparada
+                    if (openBraces > closeBraces) {
+                        repairedString += '}'.repeat(openBraces - closeBraces);
+                        console.warn(`Cirurgia: Adicionadas ${openBraces - closeBraces} chaves '}' de fechamento.`);
+                    }
+                    if (openBrackets > closeBrackets) {
+                        repairedString += ']'.repeat(openBrackets - closeBrackets);
+                        console.warn(`Cirurgia: Adicionados ${openBrackets - closeBrackets} colchetes ']' de fechamento.`);
+                    }
+
+                    // 5. Tenta o parse novamente com a string totalmente reparada.
                     return JSON.parse(repairedString);
+
                 } catch (finalError) {
-                    console.error("Falha ao fazer o parse do JSON extraído, mesmo após a cirurgia:", finalError.message);
-                    console.error("JSON problemático (original):", text); // Mostra o texto original que causou o erro
+                    console.error("Falha ao fazer o parse do JSON, mesmo após a cirurgia:", finalError.message);
+                    console.error("JSON problemático (original):", text);
                     throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
                 }
             }
@@ -2487,24 +2487,34 @@ Exemplo de formato JSON esperado:
                         promptContext += `Parágrafo ${globalIndex} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
                     });
 
-                    // VERSÃO CORRIGIDA (SEM COMENTÁRIOS)
-                    const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON. Para cada um dos ${paragraphBatch.length} parágrafos no lote abaixo, crie um objeto com DUAS chaves: "general_annotation" e "emphasis_words".
+                    // ==========================================================
+        // >>>>> SUBSTITUA A VARIÁVEL 'prompt' DENTRO DE window.suggestPerformance <<<<<
+        // ==========================================================
+        const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON. Para cada um dos ${paragraphBatch.length} parágrafos no lote abaixo, crie um objeto com DUAS chaves: "general_annotation" e "emphasis_words".
 
-                    **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
-                    1.  A resposta final DEVE ser um array JSON contendo ${paragraphBatch.length} objetos.
-                    2.  O valor da chave "emphasis_words" DEVE ser um array de strings contendo **NO MÁXIMO 1** palavra ou frase curta.
-                    3.  **REGRA MAIS IMPORTANTE:** O valor da chave "general_annotation" DEVE ser uma **STRING** que começa e termina com colchetes.
+        **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E ESTRICTAS):**
+        1.  A resposta final DEVE ser um array JSON válido, começando com \`[\` e terminando com \`]\`.
+        2.  O array DEVE conter exatamente ${paragraphBatch.length} objetos.
+        3.  Cada objeto DEVE ser completamente fechado com uma chave \`}\` antes da próxima vírgula ou do colchete final.
+        4.  O valor da chave "emphasis_words" DEVE ser um array de strings contendo **NO MÁXIMO 1** palavra ou frase curta.
+        5.  O valor da chave "general_annotation" DEVE ser uma **STRING** que começa e termina com colchetes.
 
-                    **EXEMPLO DE OBJETO VÁLIDO:**
-                    {
-                    "general_annotation": "[Tom de surpresa, fazendo uma pausa dramática]",
-                     "emphasis_words": ["inacreditável"]
-                    }
+        **EXEMPLO DE RESPOSTA PERFEITA:**
+        [
+          {
+            "general_annotation": "[Tom de surpresa, fazendo uma pausa dramática]",
+            "emphasis_words": ["inacreditável"]
+          },
+          {
+            "general_annotation": "[Tom de suspense]",
+            "emphasis_words": ["segredo"]
+          }
+        ]
 
-                    Analise o lote a seguir e retorne o array JSON seguindo estas regras estritamente.
+        Analise o lote a seguir e retorne o array JSON seguindo estas regras estritamente.
 
-                    **ROTEIRO (LOTE ATUAL):**
-                    ${promptContext}`;
+        **ROTEIRO (LOTE ATUAL):**
+        ${promptContext}`;
                     // ==========================================================
 
                     apiPromises.push(callGroqAPI(prompt, 3000).then(res => cleanGeneratedText(res, true)));
