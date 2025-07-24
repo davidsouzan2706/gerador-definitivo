@@ -2295,7 +2295,7 @@ Exemplo de formato JSON esperado:
                 // ==========================================================
                 // >>>>> AQUI ESTÁ A CORREÇÃO DO PROBLEMA 2 (INVALIDAÇÃO) <<<<<
                 // ==========================================================
-                window.emotionalMap = null; // Invalida o mapa antigo
+                // window.emotionalMap = null; // Invalida o mapa antigo
                 invalidateAndClearPerformance(devSection); // Limpa a UI de performance
                 invalidateAndClearPrompts(devSection); // Limpa a UI de prompts
                 // ==========================================================
@@ -2362,7 +2362,7 @@ Exemplo de formato JSON esperado:
 
             try {
                 const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
-                
+
                 const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array.
         
             **ABSOLUTELY CRITICAL RULE: Your entire response must be ONLY the JSON array.** Do not include any introductory text, explanations, summaries, or any other words before or after the JSON code block. Your response must start with '[' and end with ']'.
@@ -2461,10 +2461,9 @@ Exemplo de formato JSON esperado:
             }
         };
     
-                 /**
-         * Gera anotações de performance, com ênfase limitada a 2 palavras.
-         * (VERSÃO FINAL COM CALIBRAGEM DE ÊNFASE)
-         */
+         // ==========================================================
+        // >>>>> SUBSTITUA SUA FUNÇÃO suggestPerformance INTEIRA POR ESTA VERSÃO <<<<<
+        // ==========================================================
         window.suggestPerformance = async (button, sectionId) => {
             const sectionElement = document.getElementById(sectionId);
             const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
@@ -2472,10 +2471,6 @@ Exemplo de formato JSON esperado:
 
             if (!contentWrapper || !contentWrapper.textContent.trim() || !outputContainer) {
                 window.showToast("Gere o roteiro desta seção primeiro.");
-                return;
-            }
-            if (!window.emotionalMap || window.emotionalMap.length === 0) {
-                window.showToast("Gere o Mapa Emocional primeiro na aba 'Roteiro'.");
                 return;
             }
 
@@ -2488,10 +2483,6 @@ Exemplo de formato JSON esperado:
 
                 if (originalParagraphs.length === 0) { throw new Error("Não foram encontrados parágrafos estruturados para análise."); }
 
-                const firstParagraphId = paragraphElements[0]?.id;
-                const baseIndexMatch = firstParagraphId?.match(/-p-(\d+)$/);
-                const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-                
                 const batchSize = 15;
                 const apiPromises = [];
 
@@ -2500,40 +2491,33 @@ Exemplo de formato JSON esperado:
                     let promptContext = '';
                     paragraphBatch.forEach((p, indexInBatch) => {
                         const globalIndex = i + indexInBatch;
-                        const mapIndex = baseIndex + globalIndex;
-                        const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
-                        promptContext += `Parágrafo ${globalIndex} (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace}): "${p}"\n\n`;
+                        // NÃO precisamos mais do mapa emocional. O prompt é mais simples.
+                        promptContext += `Parágrafo ${globalIndex}: "${p}"\n\n`;
                     });
 
-                    // ==========================================================
-        // >>>>> SUBSTITUA A VARIÁVEL 'prompt' DENTRO DE window.suggestPerformance <<<<<
-        // ==========================================================
-        const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON. Para cada um dos ${paragraphBatch.length} parágrafos no lote abaixo, crie um objeto com DUAS chaves: "general_annotation" e "emphasis_words".
+                    // >>>>> ESTE É O NOVO PROMPT, MAIS SIMPLES E INDEPENDENTE <<<<<
+                    const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON. Para cada um dos ${paragraphBatch.length} parágrafos no lote abaixo, crie um objeto com DUAS chaves: "general_annotation" e "emphasis_words".
 
-        **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E ESTRICTAS):**
-        1.  A resposta final DEVE ser um array JSON válido, começando com \`[\` e terminando com \`]\`.
-        2.  O array DEVE conter exatamente ${paragraphBatch.length} objetos.
-        3.  Cada objeto DEVE ser completamente fechado com uma chave \`}\` antes da próxima vírgula ou do colchete final.
-        4.  O valor da chave "emphasis_words" DEVE ser um array de strings contendo **NO MÁXIMO 1** palavra ou frase curta.
-        5.  O valor da chave "general_annotation" DEVE ser uma **STRING** que começa e termina com colchetes.
+                    **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E ESTRICTAS):**
+                    1.  A resposta final DEVE ser um array JSON válido, começando com \`[\` e terminando com \`]\`.
+                    2.  O array DEVE conter exatamente ${paragraphBatch.length} objetos.
+                    3.  Cada objeto DEVE ser completamente fechado com uma chave \`}\` antes da próxima vírgula ou do colchete final.
+                    4.  O valor da chave "emphasis_words" DEVE ser um array de strings contendo **NO MÁXIMO 1** palavra ou frase curta.
+                    5.  O valor da chave "general_annotation" DEVE ser uma **STRING** que começa e termina com colchetes.
 
-        **EXEMPLO DE RESPOSTA PERFEITA:**
-        [
-          {
-            "general_annotation": "[Tom de surpresa, fazendo uma pausa dramática]",
-            "emphasis_words": ["inacreditável"]
-          },
-          {
-            "general_annotation": "[Tom de suspense]",
-            "emphasis_words": ["segredo"]
-          }
-        ]
+                    **EXEMPLO DE RESPOSTA PERFEITA:**
+                    [
+                      {
+                        "general_annotation": "[Tom de surpresa, fazendo uma pausa dramática]",
+                        "emphasis_words": ["inacreditável"]
+                      }
+                    ]
 
-        Analise o lote a seguir e retorne o array JSON seguindo estas regras estritamente.
+                    Analise o lote a seguir e retorne o array JSON seguindo estas regras estritamente.
 
-        **ROTEIRO (LOTE ATUAL):**
-        ${promptContext}`;
-                    // ==========================================================
+                    **ROTEIRO (LOTE ATUAL):**
+                    ${promptContext}`;
+                    // Fim do novo prompt
 
                     apiPromises.push(callGroqAPI(prompt, 3000).then(res => cleanGeneratedText(res, true)));
                 }
@@ -2541,7 +2525,10 @@ Exemplo de formato JSON esperado:
                 const allBatchResults = await Promise.all(apiPromises);
                 const annotations = allBatchResults.flat();
 
-                if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) { throw new Error("A IA não retornou o número correto de anotações após juntar os lotes."); }
+                if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) { 
+                    console.error(`Falha na contagem: JS esperava ${originalParagraphs.length} anotações, mas a IA retornou ${annotations ? annotations.length : 0}.`);
+                    throw new Error("A IA não retornou o número correto de anotações após juntar os lotes."); 
+                }
                 
                 let annotatedParagraphs = [];
                 originalParagraphs.forEach((p, index) => {
