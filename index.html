@@ -907,54 +907,51 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         /**
          * Atualiza o estado de habilitação/desabilitação dos botões com base no estado do roteiro. (VERSÃO CORRIGIDA)
          */
-        const updateButtonStates = () => {
-            const allMainScriptGenerated = isScriptComplete();
-            const buttonsToToggle = ['generateTitlesAndThumbnailsBtn', 'mapEmotionsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn'];
+const updateButtonStates = () => {
+            const introGenerated = document.querySelector('#introSection .accordion-item');
+            const devGenerated = document.querySelector('#developmentSection .accordion-item');
+            const climaxGenerated = document.querySelector('#climaxSection .accordion-item');
             
-            buttonsToToggle.forEach(id => {
+            // Verifica se as 3 seções principais estão prontas
+            const allMainScriptGenerated = introGenerated && devGenerated && climaxGenerated;
+
+            // Habilita/desabilita os botões de Metadados
+            const metadataButtons = ['generateTitlesAndThumbnailsBtn', 'mapEmotionsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn'];
+            metadataButtons.forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) btn.disabled = !allMainScriptGenerated;
             });
 
-            // Lógica para mostrar/esconder o módulo de conclusão
-            const introSec = document.getElementById('introSection');
-            const devSec = document.getElementById('developmentSection');
-            const climaxSec = document.getElementById('climaxSection');
-
-            const mainSectionsDone = 
-                (introSec && introSec.innerHTML.trim() !== '') &&
-                (devSec && devSec.innerHTML.trim() !== '') &&
-                (climaxSec && climaxSec.innerHTML.trim() !== '');
-
             const conclusionModule = document.getElementById('conclusionStrategyModule');
+            const conclusionBtn = document.getElementById('generateConclusionAndCtaBtn');
+
             if (conclusionModule) {
-                if (mainSectionsDone && conclusionModule.classList.contains('hidden')) { 
-                    
-                    const climaxSection = document.getElementById('climaxSection');
-                    if (climaxSection) {
-                        climaxSection.parentNode.insertBefore(conclusionModule, climaxSection.nextSibling);
+                if (allMainScriptGenerated && conclusionModule.classList.contains('hidden')) {
+                    // Se o roteiro principal está pronto, mostra o módulo de conclusão
+                    const climaxContainer = document.getElementById('climaxSection');
+                    if (climaxContainer) {
+                        climaxContainer.insertAdjacentElement('afterend', conclusionModule);
                     }
-                    
                     conclusionModule.classList.remove('hidden');
-                    conclusionModule.classList.add('animate-fade-in');
+                    conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    window.showToast("Ótimo! Agora defina a estratégia para sua conclusão.");
                     
-                    // ==========================================================
-                    // >>>>> A CORREÇÃO CRÍTICA ESTÁ AQUI <<<<<
-                    // ==========================================================
-                    // Agora que o módulo está visível, NÓS CONFIGURAMOS OS LISTENERS.
+                    // Inicializa os listeners do módulo agora que ele está visível
                     document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
                         radio.addEventListener('change', handleConclusionStrategyChange);
                     });
-                    // E chamamos a função uma vez para definir o estado inicial.
-                    handleConclusionStrategyChange();
-                    // ==========================================================
+                    handleConclusionStrategyChange(); // Chama uma vez para o estado inicial
 
-                    conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    window.showToast("Último passo: Defina o objetivo da sua conclusão!");
-
-                } else if (!mainSectionsDone && !conclusionModule.classList.contains('hidden')) {
+                } else if (!allMainScriptGenerated && !conclusionModule.classList.contains('hidden')) {
+                    // Se o roteiro for resetado, esconde o módulo
                     conclusionModule.classList.add('hidden');
                 }
+            }
+
+            // >>>>> AQUI ESTÁ A LÓGICA DE VALIDAÇÃO QUE FALTAVA <<<<<
+            if (conclusionBtn) {
+                // O botão só fica ativo se o módulo estiver visível
+                conclusionBtn.disabled = !allMainScriptGenerated;
             }
         };
 
@@ -4005,6 +4002,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
                     'conclusionBtn': () => handleGenerateSection(button, 'conclusion', 'Conclusão e CTA', 'conclusion'),
                     'generateIdeasBtn': () => generateVideoIdeas(button),
+                    'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
                 };
                 if (clickActions[button.id]) {
                     event.preventDefault();
