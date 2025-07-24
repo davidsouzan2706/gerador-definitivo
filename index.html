@@ -1851,7 +1851,6 @@ const invalidateAndClearPrompts = (sectionElement) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
-            // 1. Encontra o primeiro caractere de início de um JSON ('{' ou '[')
             const startIndex = text.search(/[\{\[]/);
             if (startIndex === -1) {
                 console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.");
@@ -1865,7 +1864,6 @@ const invalidateAndClearPrompts = (sectionElement) => {
             let level = 1;
             let endIndex = -1;
 
-            // 2. Percorre o resto da string para encontrar o caractere de fechamento correspondente
             for (let i = startIndex + 1; i < text.length; i++) {
                 const char = text[i];
                 if (char === firstChar) {
@@ -1876,7 +1874,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 
                 if (level === 0) {
                     endIndex = i;
-                    break; // Encontramos o final do JSON
+                    break;
                 }
             }
 
@@ -1886,21 +1884,23 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 throw new Error("A IA retornou um JSON malformado (não fechado).");
             }
             
-            // 3. Extrai a string JSON com precisão cirúrgica
             const jsonString = text.substring(startIndex, endIndex + 1);
 
-            // 4. Tenta fazer o parse. Se falhar aqui, o problema é interno (ex: vírgulas)
             try {
-                return JSON.parse(jsonString);
+                // >>>>> A NOVA CIRURGIA CRÍTICA <<<<<
+                // Converte todas as aspas simples de delimitação em aspas duplas.
+                const correctedJsonString = jsonString.replace(/'/g, '"');
+                return JSON.parse(correctedJsonString);
             } catch (e) {
-                console.error("Falha ao fazer o parse do JSON extraído cirurgicamente:", e.message);
-                console.error("JSON extraído:", jsonString);
-                // Aqui podemos tentar uma última cirurgia para vírgulas, se necessário
+                console.warn("Parse com correção de aspas falhou. Tentando reparos adicionais...", e.message);
                 try {
-                    let repairedString = jsonString.replace(/,\s*([}\]])/g, "$1"); // Remove trailing commas
+                    let repairedString = jsonString.replace(/'/g, '"'); // Aplica a correção de aspas
+                    repairedString = repairedString.replace(/,\s*([}\]])/g, "$1"); // Remove trailing commas
                     return JSON.parse(repairedString);
                 } catch (finalError) {
-                    throw new Error("A IA retornou um JSON com sintaxe interna inválida.");
+                    console.error("Falha ao fazer o parse do JSON, mesmo após todas as cirurgias:", finalError.message);
+                    console.error("JSON problemático (original):", text);
+                    throw new Error("A IA retornou um JSON com sintaxe interna inválida que não pôde ser corrigido.");
                 }
             }
         };
