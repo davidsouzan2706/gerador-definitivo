@@ -150,7 +150,6 @@
             color: var(--dark-text-body);
         }
         
-        /* CORREÇÃO PARA O TEXTO DO PLACEHOLDER */
         .input-group input::placeholder,
         .input-group textarea::placeholder {
             color: var(--dark-text-muted);
@@ -193,6 +192,39 @@
         .tab-pane.hidden {
             display: none;
         }
+        
+        /* ========================================================== */
+        /* ================== A CORREÇÃO ESTÁ AQUI ================== */
+        /* ========================================================== */
+
+        /* --- TOAST NOTIFICATION --- */
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background-color: var(--dark-surface);
+            color: var(--dark-text-header);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            
+            /* Estado inicial: escondido abaixo da tela */
+            opacity: 0;
+            transform: translateY(100%);
+            transition: all 0.4s cubic-bezier(0.21, 1.05, 0.51, 1.04);
+            
+            border-left: 4px solid var(--primary);
+        }
+
+        .toast.show {
+            /* Estado final: visível na tela */
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* ========================================================== */
+        /* ========================================================== */
 
         /* --- OUTROS --- */
         .loading-spinner {
