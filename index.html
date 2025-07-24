@@ -863,59 +863,47 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
          */
         const updateButtonStates = () => {
             const allMainScriptGenerated = isScriptComplete();
-            const hasAnyContent = document.querySelector('#scriptColumn .accordion-item') != null; 
+            // ... (o início da função continua o mesmo, com a lógica de desabilitar os botões de recursos)
 
-            // Botões que dependem da conclusão do roteiro principal
-            ['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn'].forEach(id => { 
-                const originalBtn = document.getElementById(id);
-                const floatBtn = document.getElementById(`float_${id}`);
-                if (originalBtn) originalBtn.disabled = !allMainScriptGenerated;
-                if (floatBtn) floatBtn.disabled = !allMainScriptGenerated;
-            });
-
-        ['generateDescriptionBtn', 'generateTitlesAndThumbnailsBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'].forEach(id => { // <-- ADICIONE 'mapEmotionsBtn' AQUI
-            const originalBtn = document.getElementById(id);
-            if (originalBtn) originalBtn.disabled = !allMainScriptGenerated;
-     
-         });
-            
-            const resetBtn = document.getElementById('resetScriptBtn');
-            const floatResetBtn = document.getElementById('float_resetScriptBtn');
-            if (resetBtn) resetBtn.disabled = false; 
-            if (floatResetBtn) floatResetBtn.disabled = false;
-
-            // Lógica para mostrar/esconder o módulo de conclusão (AGORA MAIS SEGURA)
+            // Lógica para mostrar/esconder o módulo de conclusão
             const introSec = document.getElementById('introSection');
             const devSec = document.getElementById('developmentSection');
             const climaxSec = document.getElementById('climaxSection');
 
-            // A CORREÇÃO ESTÁ AQUI: Verificamos se os elementos existem ANTES de ler o innerHTML
             const mainSectionsDone = 
                 (introSec && introSec.innerHTML.trim() !== '') &&
                 (devSec && devSec.innerHTML.trim() !== '') &&
                 (climaxSec && climaxSec.innerHTML.trim() !== '');
 
             const conclusionModule = document.getElementById('conclusionStrategyModule');
-            if (conclusionModule) { // Adicionada verificação de segurança aqui também
-                if (conclusionModule) { // <-- DELETE ESTA LINHA
-                    if (mainSectionsDone && conclusionModule.classList.contains('hidden')) { 
-                        
-                        const climaxSection = document.getElementById('climaxSection');
-                        if (climaxSection) {
-                            climaxSection.parentNode.insertBefore(conclusionModule, climaxSection.nextSibling);
-                        }
-                        
-                        conclusionModule.classList.remove('hidden');
-                        conclusionModule.classList.add('animate-fade-in');
-                        handleConclusionStrategyChange();
-                        conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        
-                        window.showToast("Último passo: Defina o objetivo da sua conclusão!");
-
-                    } else if (!mainSectionsDone && !conclusionModule.classList.contains('hidden')) {
-                        conclusionModule.classList.add('hidden');
+            if (conclusionModule) {
+                if (mainSectionsDone && conclusionModule.classList.contains('hidden')) { 
+                    
+                    const climaxSection = document.getElementById('climaxSection');
+                    if (climaxSection) {
+                        climaxSection.parentNode.insertBefore(conclusionModule, climaxSection.nextSibling);
                     }
-                } // <-- DELETE ESTA LINHA
+                    
+                    conclusionModule.classList.remove('hidden');
+                    conclusionModule.classList.add('animate-fade-in');
+                    
+                    // ==========================================================
+                    // >>>>> AQUI ESTÁ A CORREÇÃO MÁGICA <<<<<
+                    // ==========================================================
+                    // Agora que o módulo está visível, podemos configurar os listeners.
+                    document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
+                        radio.addEventListener('change', handleConclusionStrategyChange);
+                    });
+                    // E chamamos a função uma vez para definir o estado inicial correto.
+                    handleConclusionStrategyChange();
+                    // ==========================================================
+
+                    conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    window.showToast("Último passo: Defina o objetivo da sua conclusão!");
+
+                } else if (!mainSectionsDone && !conclusionModule.classList.contains('hidden')) {
+                    conclusionModule.classList.add('hidden');
+                }
             }
         };
 
@@ -3674,7 +3662,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTabs();
     updateProgressBar();
     updateButtonStates();
-    handleConclusionStrategyChange();
     updateNarrativeStructureOptions();
 
     // ---- 2. EVENTOS DIRETOS EM ELEMENTOS ESPECÍFICOS ----
