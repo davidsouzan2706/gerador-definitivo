@@ -169,7 +169,68 @@
             color: var(--dark-text-muted);
         }
     
+/* --- ESTILOS PARA O TOOLTIP DE AJUDA --- */
+        .tooltip-trigger {
+            position: relative; /* Essencial para o posicionamento do tooltip */
+        }
 
+        /* O balão do tooltip */
+        .tooltip-trigger::before {
+            content: attr(data-tooltip); /* Pega o texto do atributo data-tooltip */
+            position: absolute;
+            bottom: 150%; /* Posiciona acima do ícone */
+            left: 50%;
+            transform: translateX(-50%);
+            
+            background-color: var(--dark-surface);
+            color: var(--dark-text-body);
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--dark-border);
+            box-shadow: var(--shadow);
+            
+            width: 300px; /* Largura do tooltip */
+            text-align: left;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: pre-wrap; /* Respeita as quebras de linha do texto */
+            
+            /* Animação */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 10;
+        }
+
+        /* A setinha do balão */
+        .tooltip-trigger::after {
+            content: '';
+            position: absolute;
+            bottom: 150%;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%); /* Posiciona abaixo do balão */
+            
+            border: 8px solid transparent;
+            border-top-color: var(--dark-surface);
+
+            /* Animação */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 11;
+        }
+
+        /* Efeito ao passar o mouse */
+        .tooltip-trigger:hover::before,
+        .tooltip-trigger:hover::after {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(-10px); /* Move o balão para cima */
+        }
+        
+        .tooltip-trigger:hover::after {
+             transform: translateX(-50%) translateY(calc(100% - 10px)); /* Move a setinha junto */
+        }
 
 
     </style>
@@ -284,7 +345,15 @@
              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="input-group md:col-span-2"><label for="targetAudience">Público-Alvo:</label><input type="text" id="targetAudience" value="Interessados em mistérios e história." readonly></div>
                 <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
-                <div class="input-group"><label for="narrativeStructure">2. Estrutura Específica:</label><select id="narrativeStructure"></select></div>
+                <div class="input-group">
+    
+                abel for="narrativeStructure" class="flex items-center gap-2">
+                        <span>2. Estrutura Específica:</span>
+                        <i id="narrativeStructureTooltip" class="fas fa-question-circle text-gray-400 cursor-pointer tooltip-trigger"></i>
+                        </label>
+                        <select id="narrativeStructure"></select>
+                    </div>
+                    
                 <div class="input-group md:col-span-2"><label for="narrativeTheme">3. Tema Principal:</label><input type="text" id="narrativeTheme" placeholder="Ex: Superação, Luta contra injustiça..."></div>
                 <div class="input-group"><label for="narrativeTone">4. Tom da Narração:</label><select id="narrativeTone"><option value="inspirador" selected>Inspirador</option><option value="serio">Sério</option><option value="emocional">Emocional</option></select></div>
                  <div class="input-group"><label for="narrativeVoice">5. Voz do Narrador:</label><input type="text" id="narrativeVoice" placeholder="Ex: Sábio e experiente..."></div>
