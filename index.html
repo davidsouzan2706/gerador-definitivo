@@ -1893,26 +1893,43 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 goalSelect.addEventListener('change', updateNarrativeStructureOptions);
             }
             
-            // Agora ela chama a função segura do tooltip
-            updateMainTooltip();
+            
         };
 
-        cconst updateMainTooltip = () => {
-            const tooltip = document.getElementById('narrativeStructureTooltip');
-            // >>> A GUARDA DE PROTEÇÃO <<<
-            // Se o elemento não for encontrado (porque a aba está escondida), a função para aqui.
-            if (!tooltip) return;
+        const updateMainTooltip = () => {
+        const tooltip = document.getElementById('narrativeStructureTooltip');
+        if (!tooltip) return; // Se não encontrar o elemento, para aqui.
 
-            const goal = document.getElementById('narrativeGoal').value;
-            const structures = narrativeStructures[goal];
-            
-            let tooltipContent = '';
-            for (const key in structures) {
-                tooltipContent += `${structures[key]}:\n${narrativeTooltips[key]}\n\n`;
-            }
-            
-            tooltip.setAttribute('data-tooltip', tooltipContent.trim());
-        };
+        const goal = document.getElementById('narrativeGoal').value;
+        const structures = narrativeStructures[goal];
+        
+        let tooltipContent = '';
+        for (const key in structures) {
+            tooltipContent += `${structures[key]}:\n${narrativeTooltips[key]}\n\n`;
+        }
+        
+        tooltip.setAttribute('data-tooltip', tooltipContent.trim());
+    };
+
+    const updateNarrativeStructureOptions = () => {
+        const goalSelect = document.getElementById('narrativeGoal');
+        const structureSelect = document.getElementById('narrativeStructure');
+        if (!goalSelect || !structureSelect) return;
+
+        const goal = goalSelect.value;
+        structureSelect.innerHTML = ''; 
+
+        const structures = narrativeStructures[goal];
+        for (const key in structures) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = structures[key];
+            structureSelect.appendChild(option);
+        }
+        
+        // Agora ela chama a função segura do tooltip
+        updateMainTooltip();
+    };
 
 
         // --- FIM DO NOVO MÓDULO DE NARRATIVA ---
@@ -3591,8 +3608,7 @@ window.regenerateSection = (fullSectionId) => {
             safeReset('speakingPace', 'moderate');
             
             safeReset('narrativeGoal', 'storytelling');
-            updateNarrativeStructureOptions();
-            
+                        
             safeReset('narrativeTheme');
             safeReset('narrativeTone', 'inspirador');
             safeReset('narrativeVoice');
@@ -3775,13 +3791,11 @@ window.regenerateSection = (fullSectionId) => {
                         }
                     });
                     
-                    // Atualiza os dropdowns da narrativa
-                    updateNarrativeStructureOptions();
                     const structureSelect = document.getElementById('narrativeStructure');
                     if (structureSelect && projectData.inputs['narrativeStructure']) {
                         structureSelect.value = projectData.inputs['narrativeStructure'];
                         // Ensure the tooltip is updated after setting the structure value
-                        updateMainTooltip();
+                        
                     }
 
                     // Restaura o conteúdo gerado
@@ -3916,7 +3930,6 @@ window.regenerateSection = (fullSectionId) => {
                     }
                 }
                 
-                updateNarrativeStructureOptions(); // Atualiza as estruturas narrativas após definir o objetivo
                 // Garante que o valor da estrutura seja definido APÓS as opções serem populadas
                 const structureSelect = document.getElementById('narrativeStructure');
                 if (structureSelect && strategy.narrative_structure) {
@@ -3957,8 +3970,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTabs();
     updateProgressBar();
     updateButtonStates();
-    updateNarrativeStructureOptions();
-
+    
     // ---- 2. EVENTOS DIRETOS EM ELEMENTOS ESPECÍFICOS ----
     document.getElementById('importFileInput')?.addEventListener('change', importProject);
     
