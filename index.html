@@ -664,7 +664,6 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
 
 
-
         // ==========================================================
         // ================== FUNÇÕES DE UTILIDADE ==================
         // ==========================================================
@@ -2451,7 +2450,32 @@ Exemplo de formato JSON esperado:
         // ================== FUNÇÕES PRINCIPAIS ====================
         // ==========================================================
         
-            window.analyzeSectionRetention = async (button, sectionId) => {
+            const handleSuggestionMouseOver = (event) => {
+            const targetParagraph = event.currentTarget;
+            const suggestionGroup = targetParagraph.dataset.suggestionGroup;
+            if (!suggestionGroup) return;
+
+            const contentWrapper = targetParagraph.closest('.generated-content-wrapper');
+            if (!contentWrapper) return;
+
+            // Encontra todos os parágrafos com a mesma sugestão e os destaca
+            contentWrapper.querySelectorAll(`[data-suggestion-group="${suggestionGroup}"]`).forEach(p => {
+                p.classList.add('highlight-group');
+            });
+        };
+
+        const handleSuggestionMouseOut = (event) => {
+            const targetParagraph = event.currentTarget;
+            const contentWrapper = targetParagraph.closest('.generated-content-wrapper');
+            if (!contentWrapper) return;
+            
+            // Remove o destaque de todos os parágrafos
+            contentWrapper.querySelectorAll('.highlight-group').forEach(p => {
+                p.classList.remove('highlight-group');
+            });
+        };
+
+        window.analyzeSectionRetention = async (button, sectionId) => {
             const sectionElement = document.getElementById(sectionId);
             const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
             
@@ -2460,9 +2484,7 @@ Exemplo de formato JSON esperado:
                 return;
             }
 
-            // >>> CORREÇÃO FUNDAMENTAL: Pega TODOS os divs, com ou sem ID <<<
             const paragraphs = Array.from(contentWrapper.querySelectorAll('div')); 
-            
             if (paragraphs.length === 0) {
                 window.showToast("Não há parágrafos para analisar.");
                 return;
@@ -2471,11 +2493,9 @@ Exemplo de formato JSON esperado:
             showButtonLoading(button);
 
             try {
-                // Envia o índice (posição) em vez do ID para a IA
                 const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
                 
-                // Prompt atualizado para usar o índice
-                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphIndex" (the original index), "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion" in Portuguese (Brazil). Your entire response must be ONLY the JSON array.
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphIndex", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion" in Portuguese (Brazil). Your entire response must be ONLY the JSON array.
 
                 Analyze this data:
                 ${JSON.stringify(paragraphsWithIndexes, null, 2)}`;
@@ -2485,9 +2505,7 @@ Exemplo de formato JSON esperado:
 
                 if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
-                // ==========================================================
-                // >>>>> LÓGICA DE AGRUPAMENTO POR ADJACÊNCIA (JÁ CORRETA) <<<<<
-                // ==========================================================
+                // LÓGICA DE AGRUPAMENTO POR ADJACÊNCIA
                 if (analysis.length > 0) {
                     let currentGroup = [];
                     for (let i = 0; i < analysis.length; i++) {
@@ -2509,16 +2527,17 @@ Exemplo de formato JSON esperado:
                         currentGroup.forEach(groupItem => groupItem.suggestion = unifiedSuggestion);
                     }
                 }
-                // ==========================================================
 
-                paragraphs.forEach(p => {
-                    p.classList.remove('retention-green', 'retention-yellow', 'retention-red', 'retention-paragraph-live', 'highlight-group');
+                // Limpa a UI e os listeners antigos de forma segura
+                const newParagraphs = paragraphs.map(p => {
                     const newP = p.cloneNode(true);
+                    newP.className = ''; // Limpa todas as classes antigas
+                    newP.innerHTML = p.innerHTML.replace(/<div class="retention-tooltip">.*?<\/div>|<button class="retention-action-btn">.*?<\/button>/g, '');
                     p.parentNode.replaceChild(newP, p);
+                    return newP;
                 });
-                
-                const newParagraphs = Array.from(contentWrapper.querySelectorAll('div'));
 
+                // Aplica a nova análise
                 analysis.forEach(item => {
                     const p = newParagraphs[item.paragraphIndex]; 
                     if (p) {
@@ -2538,6 +2557,7 @@ Exemplo de formato JSON esperado:
                     }
                 });
 
+                // Adiciona os novos event listeners
                 newParagraphs.forEach(paragraph => {
                     if (paragraph.dataset.suggestionGroup) {
                         paragraph.addEventListener('mouseover', handleSuggestionMouseOver);
@@ -4061,33 +4081,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
 
-        // =========================================================================
-        // PASSO 2: ADICIONE ESTAS DUAS NOVAS FUNÇÕES AO SEU SCRIPT
-        // =========================================================================
-        const handleSuggestionMouseOver = (event) => {
-            const targetParagraph = event.currentTarget;
-            const suggestionGroup = targetParagraph.dataset.suggestionGroup;
-            if (!suggestionGroup) return;
-
-            const contentWrapper = targetParagraph.closest('.generated-content-wrapper');
-            if (!contentWrapper) return;
-
-            // Encontra todos os parágrafos com a mesma sugestão e os destaca
-            contentWrapper.querySelectorAll(`[data-suggestion-group="${suggestionGroup}"]`).forEach(p => {
-                p.classList.add('highlight-group');
-            });
-        };
-
-        const handleSuggestionMouseOut = (event) => {
-            const targetParagraph = event.currentTarget;
-            const contentWrapper = targetParagraph.closest('.generated-content-wrapper');
-            if (!contentWrapper) return;
-            
-            // Remove o destaque de todos os parágrafos
-            contentWrapper.querySelectorAll('.highlight-group').forEach(p => {
-                p.classList.remove('highlight-group');
-            });
-        };
 
 
     // ---- 5. LÓGICA PARA RESETAR ROTEIRO ----
