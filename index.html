@@ -136,7 +136,7 @@
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            flex-grow: 1;
+            flex-grow: 1; /* Garante que o grupo do título ocupe todo o espaço */
         }
         .header-title-group h3 { font-weight: 600; font-size: 1.1rem; }
         .header-title-group .text-xs { color: var(--dark-text-muted); font-size: 0.75rem; white-space: nowrap; }
@@ -144,7 +144,7 @@
         .header-actions-group {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1rem; /* Espaço entre os botões e a seta */
         }
 
         .header-buttons {
@@ -161,7 +161,7 @@
         .accordion-arrow { 
             transition: transform 0.3s;
             transform-origin: center;
-        }
+         }
         .accordion-arrow.open { 
             transform: rotate(180deg);
         }
