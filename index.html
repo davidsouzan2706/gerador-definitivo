@@ -2452,14 +2452,18 @@ Exemplo de formato JSON esperado:
         
             const handleSuggestionMouseOver = (event) => {
             const targetParagraph = event.currentTarget;
-            const suggestionGroup = targetParagraph.dataset.suggestionGroup;
-            if (!suggestionGroup) return;
+            const suggestionGroupText = targetParagraph.dataset.suggestionGroup;
+            if (!suggestionGroupText) return;
 
             const contentWrapper = targetParagraph.closest('.generated-content-wrapper');
             if (!contentWrapper) return;
+            
+            // >>>>> AQUI ESTÁ A CORREÇÃO CRÍTICA <<<<<
+            // Escapa as aspas duplas no texto da sugestão antes de usá-lo no seletor
+            const safeSuggestionSelector = suggestionGroupText.replace(/"/g, '\\"');
 
-            // Encontra todos os parágrafos com a mesma sugestão e os destaca
-            contentWrapper.querySelectorAll(`[data-suggestion-group="${suggestionGroup}"]`).forEach(p => {
+            // Encontra todos os parágrafos com a mesma sugestão (usando o seletor seguro) e os destaca
+            contentWrapper.querySelectorAll(`[data-suggestion-group="${safeSuggestionSelector}"]`).forEach(p => {
                 p.classList.add('highlight-group');
             });
         };
