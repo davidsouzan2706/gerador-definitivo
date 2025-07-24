@@ -333,7 +333,7 @@
                 <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
                 
 <div class="input-group">
-    <div class="flex items-center gap-2 mb-2">
+    <div class="flex items-center gap-2 mb-2"> <!-- Novo container para o label -->
         <label for="narrativeStructure">2. Estrutura Específica:</label>
         <i id="narrativeStructureTooltip" class="fas fa-question-circle text-gray-400 cursor-pointer tooltip-trigger"></i>
     </div>
@@ -1879,7 +1879,10 @@ const invalidateAndClearPrompts = (sectionElement) => {
 
         const updateMainTooltip = () => {
             const tooltip = document.getElementById('narrativeStructureTooltip');
-            if (!tooltip) return;
+            // Se o tooltip não estiver visível (aba escondida), a função não faz nada.
+            if (!tooltip) {
+                return;
+            }
 
             const goal = document.getElementById('narrativeGoal').value;
             const structures = narrativeStructures[goal];
@@ -1908,6 +1911,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 structureSelect.appendChild(option);
             }
             
+            // Agora ela chama a função segura do tooltip
             updateMainTooltip();
         };
 
