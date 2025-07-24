@@ -250,7 +250,36 @@
             <!-- Estratégia Section -->
 
 
+<!-- SEÇÃO 0: INSPIRAÇÃO (BRAINSTORM) -->
+<section id="inspirationSection" class="mb-12">
+    <div class="text-center mb-8">
+        <h2 class="text-2xl font-bold mb-2">Precisa de Inspiração?</h2>
+        <p class="text-gray-600 dark:text-gray-400">Comece por aqui. Descreva o nicho ou os temas gerais do seu canal e deixe a IA sugerir vídeos com alto potencial.</p>
+    </div>
+    <div class="card">
+        <div class="input-group">
+            <label for="nicheDescription">Nicho do Canal ou Temas de Interesse:</label>
+            <textarea id="nicheDescription" rows="4" placeholder="Ex: Arqueologia Bíblica e mistérios não resolvidos; Finanças pessoais para jovens cristãos; Análise de sermões e teologia prática..."></textarea>
+        </div>
+        <div class="text-center mt-6">
+            <button id="generateIdeasBtn" class="btn btn-primary">
+                <i class="fas fa-lightbulb mr-2"></i>Gerar Ideias de Vídeo
+            </button>
+        </div>
+        
+        <!-- Container para a saída das ideias -->
+        <div id="ideasOutput" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- As ideias geradas pela IA aparecerão aqui -->
+        </div>
+    </div>
+</section>
 
+<!-- Linha divisória -->
+<div class="relative flex py-5 items-center">
+    <div class="flex-grow border-t border-gray-300 dark:border-gray-700"></div>
+    <span class="flex-shrink mx-4 text-gray-400 dark:text-gray-500 font-semibold">OU COMECE DIRETAMENTE AQUI</span>
+    <div class="flex-grow border-t border-gray-300 dark:border-gray-700"></div>
+</div>
 
 
 <!-- ================================================================= -->
@@ -3821,6 +3850,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
                     'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
                     'conclusionBtn': () => handleGenerateSection(button, 'conclusion', 'Conclusão e CTA', 'conclusion'),
+                    'generateIdeasBtn': () => generateVideoIdeas(button),
                 };
                 if (clickActions[button.id]) {
                     event.preventDefault();
