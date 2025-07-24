@@ -2646,12 +2646,17 @@ Exemplo de formato JSON esperado:
          * @param {object} idea - O objeto da ideia contendo título, descrição, etc.
          */
         window.selectIdea = (idea) => {
-            elements.videoTheme.value = idea.title;
-            elements.videoDescription.value = idea.videoDescription;
-            elements.targetAudience.value = idea.targetAudience;
+            // Usa o objeto 'elements' que já mapeamos no início para segurança
+            if (elements.videoTheme) elements.videoTheme.value = idea.title;
+            if (elements.videoDescription) elements.videoDescription.value = idea.videoDescription;
+            if (elements.targetAudience) elements.targetAudience.value = idea.targetAudience;
 
-            // Rola suavemente para o painel principal
-            document.getElementById('mainInputsTabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // >>>>> A CORREÇÃO ESTÁ AQUI <<<<<
+            // O ID correto do elemento de navegação das abas é 'inputTabsNav'
+            const targetElement = document.getElementById('inputTabsNav');
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' }); // Usei 'center' para um melhor alinhamento
+            }
             
             window.showToast("Ideia selecionada! Agora defina a estratégia completa.");
         };
