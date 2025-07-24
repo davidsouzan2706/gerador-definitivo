@@ -293,6 +293,71 @@
         }
 
 
+        /* --- ANÁLISE DE RETENÇÃO STYLES --- */
+        .retention-paragraph-live {
+            position: relative;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+            cursor: default;
+        }
+
+        .retention-green { background-color: color-mix(in srgb, var(--success) 10%, transparent); }
+        .retention-yellow { background-color: color-mix(in srgb, #f59e0b 15%, transparent); }
+        .retention-red { background-color: color-mix(in srgb, var(--danger) 15%, transparent); }
+
+        .retention-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            transform: translateY(-10px);
+            background-color: var(--dark-surface);
+            color: var(--dark-text-body);
+            padding: 0.75rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            width: 90%;
+            z-index: 10;
+            font-size: 0.8rem;
+            border: 1px solid var(--dark-border);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .retention-action-btn {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        /* A MÁGICA DO MOUSE-HOVER */
+        .retention-paragraph-live:hover .retention-tooltip,
+        .retention-paragraph-live:hover .retention-action-btn {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(-50%) scale(1); /* para o botão */
+        }
+        
+        .retention-paragraph-live:hover .retention-tooltip {
+             transform: translateY(-5px); /* para o tooltip */
+        }
+
+
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -2393,38 +2458,29 @@ Exemplo de formato JSON esperado:
 
             try {
                 const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
-
-                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array.
-        
-            **ABSOLUTELY CRITICAL RULE: Your entire response must be ONLY the JSON array.** Do not include any introductory text, explanations, summaries, or any other words before or after the JSON code block. Your response must start with '[' and end with ']'.
-
-            **CRITICAL LANGUAGE RULE: The "suggestion" value MUST be written in Portuguese (Brazil).**
-
-            For each paragraph, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion".
-
-            Analyze this data:
-            ${JSON.stringify(paragraphsWithIds, null, 2)}`;
-
-
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion" in Portuguese (Brazil). Your entire response must be ONLY the JSON array.`;
+                
                 const rawResult = await callGroqAPI(prompt, 2500);
                 const analysis = cleanGeneratedText(rawResult, true);
 
                 if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
-                // Limpa tooltips e botões antigos antes de adicionar os novos
+                // Limpa estilos e elementos antigos antes de adicionar os novos
                 paragraphs.forEach(p => {
                     p.classList.remove('retention-green', 'retention-yellow', 'retention-red');
                     p.querySelector('.retention-tooltip')?.remove();
                     p.querySelector('.retention-action-btn')?.remove();
                 });
 
+                // >>>>> A MÁGICA ACONTECE AQUI <<<<<
                 analysis.forEach(item => {
                     const p = document.getElementById(item.paragraphId);
                     if (p) {
                         p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
                         
+                        // Adiciona o tooltip e o botão de ação para pontos de atenção/risco
                         if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
-                            const scoreLabels = { green: "PONTO FORTE", yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
+                            const scoreLabels = { yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
                             const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
 
                             const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}</div>`;
@@ -2432,6 +2488,8 @@ Exemplo de formato JSON esperado:
                                 <button class="retention-action-btn" onclick="event.stopPropagation(); window.optimizeParagraph('${item.paragraphId}', '${item.suggestion.replace(/'/g, "\\'")}')" title="Otimizar com IA">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
                                 </button>`;
+                            
+                            // Adiciona os novos elementos dentro do parágrafo
                             p.insertAdjacentHTML('beforeend', tooltipHtml + buttonHtml);
                         }
                     }
