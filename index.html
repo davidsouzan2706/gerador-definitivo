@@ -1512,14 +1512,14 @@ const invalidateAndClearPrompts = (sectionElement) => {
                     <div class="prompt-container mt-4 text-left"></div>
                 </div>
             `;
-            const regenerateBtnHtml = `<button class="regenerate-btn" data-action="regenerate" data-section-id="${sectionId}Section" title="Re-gerar esta seção"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg></button>`;
-            const copyBtnHtml = `<button class="copy-btn" data-action="copy" title="Copiar Roteiro"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5-.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg></button>`;
+            const regenerateBtnHtml = `<button class="regenerate-btn" data-action="regenerate" data-section-id="${sectionId}Section" title="Re-gerar"><svg>...</svg></button>`;
+            const copyBtnHtml = `<button class="copy-btn" data-action="copy" title="Copiar"><svg>...</svg></button>`;
 
             return `<div class="accordion-item card !p-0 mb-4">
-                        <div class="accordion-header" onclick="window.toggleAccordion('${mainBodyId}', '${mainArrowId}')">
+                        <div class="accordion-header">
                             <div class="header-title-group">
                                 <h3>${title}</h3>
-                                <span class="text-xs font-normal text-gray-500">${calculateReadingTime(content)}</span>
+                                <span class="text-xs">${calculateReadingTime(content)}</span>
                             </div>
                             <div class="header-actions-group">
                                 <div class="header-buttons">
@@ -2685,36 +2685,29 @@ Exemplo de formato JSON esperado:
 // FUNÇÃO DE RE-GERAÇÃO CORRIGIDA
 // ==========================================================
 window.regenerateSection = (fullSectionId) => {
-    // 1. Extrai a base do ID (ex: "intro" de "introSection")
-    const sectionName = fullSectionId.replace('Section', '');
-    
-    // 2. Mapeia o nome da seção para o botão principal e o título
-    const sectionMap = {
-        'intro': { buttonId: 'generateIntroBtn', title: 'Introdução', elementId: 'intro' },
-        'development': { buttonId: 'generateDevelopmentBtn', title: 'Desenvolvimento', elementId: 'development' },
-        'climax': { buttonId: 'climaxBtn', title: 'Clímax', elementId: 'climax' },
-        'conclusion': { buttonId: 'generateConclusionAndCtaBtn', title: 'Conclusão e CTA', elementId: 'conclusion' }
-    };
+            const sectionName = fullSectionId.replace('Section', '');
+            
+            const sectionMap = {
+                'intro': { title: 'Introdução', elementId: 'intro' },
+                'development': { title: 'Desenvolvimento', elementId: 'development' },
+                'climax': { title: 'Clímax', elementId: 'climax' },
+                'conclusion': { title: 'Conclusão e CTA', elementId: 'conclusion' }
+            };
 
-    const sectionInfo = sectionMap[sectionName];
-
-    if (sectionInfo) {
-        const button = document.getElementById(sectionInfo.buttonId);
-        if (button) {
-            // 3. Chama a função principal com todos os argumentos corretos
-            if (sectionName === 'conclusion') {
-                 // A função de conclusão tem uma lógica diferente e é chamada diretamente
-                 generateConclusionAndCta();
+            const sectionInfo = sectionMap[sectionName];
+            
+            if (sectionInfo) {
+                // Encontra o botão de re-gerar que foi clicado, em vez de um botão antigo
+                const button = document.querySelector(`[data-action='regenerate'][data-section-id='${fullSectionId}']`);
+                if (button) {
+                     handleGenerateSection(button, sectionName, sectionInfo.title, sectionInfo.elementId);
+                } else {
+                    console.error(`Botão de re-gerar não encontrado para a seção: ${fullSectionId}`);
+                }
             } else {
-                 handleGenerateSection(button, sectionName, sectionInfo.title, sectionInfo.elementId);
+                console.error(`Informações da seção não encontradas para: ${sectionName}`);
             }
-        } else {
-            console.error(`Botão com ID '${sectionInfo.buttonId}' não encontrado para re-geração.`);
-        }
-    } else {
-        console.error(`Informações da seção não encontradas para: ${sectionName}`);
-    }
-};
+        };
 
 
 
@@ -3730,111 +3723,74 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ---- 4. O "GERENTE DE CLIQUES" - VERSÃO FINAL E CORRIGIDA ----
-    document.addEventListener('click', function(event) {
-        const target = event.target;
-        const button = target.closest('button');
+            // =========================================================================
+        // PASSO 1: SUBSTITUA SEU "GERENTE DE CLIQUES" INTEIRO POR ESTE BLOCO FINAL
+        // =========================================================================
+        document.addEventListener('click', function(event) {
+            const target = event.target;
+            const button = target.closest('button');
 
-        if (button && button.dataset.action) {
-            event.preventDefault();
-            const action = button.dataset.action;
-
-            if (action === 'regenerate') {
-                const sectionId = button.dataset.sectionId;
-                if (sectionId) window.regenerateSection(sectionId);
-                return;
-            }
-            if (action === 'copy') {
-                const accordionItem = button.closest('.accordion-item');
-                const contentWrapper = accordionItem?.querySelector('.generated-content-wrapper');
-                if (contentWrapper) {
-                    window.copyTextToClipboard(contentWrapper.textContent);
-                    window.showCopyFeedback(button);
-                }
-                return;
-            }
-            if (action === 'generate-prompts') {
-                const sectionId = button.dataset.sectionId;
-                // Passa o próprio botão para a função
-                if (sectionId) window.generatePromptsForSection(button, sectionId);
-                return;
-            }
-            if (action === 'optimize-paragraph') {
-                const paragraphId = button.dataset.paragraphId;
-                const detailsCard = button.closest('.retention-details-card');
-                const suggestion = detailsCard?.querySelector('p').textContent;
-                if (paragraphId && suggestion) {
-                    window.optimizeParagraph(paragraphId, suggestion);
-                }
-                return;
-            }
-        }
-
-        const header = target.closest('.accordion-header, .nested-accordion-header');
-        if (header && !target.closest('.header-buttons')) {
-            const body = header.nextElementSibling;
-            const arrow = header.querySelector('.accordion-arrow');
-            if (body && arrow) {
-                const isOpen = body.classList.toggle('open');
-                arrow.classList.toggle('open', isOpen);
-                header.classList.toggle('active', isOpen);
-            }
-        }
-
-        if (button) {
-            // Este é o objeto que mapeia IDs de botões para as funções corretas
-            const clickActions = {
-                // Funções que agora recebem o 'button' para a animação
-                'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
-                'generateOutlineBtn': () => generateStrategicOutline(button),
-                'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
-                'generateDescriptionBtn': () => generateVideoDescription(button),
-                'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
-                'generateSoundtrackBtn': () => generateSoundtrack(button),
-                'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
-                
-                // Funções de geração principal
-                'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
-                'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
-                'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-
-                // Funções de Conclusão e CTA
-                'conclusionBtn': () => {
-                    const conclusionModule = document.getElementById('conclusionStrategyModule');
-                    if (conclusionModule && !conclusionModule.classList.contains('hidden')) {
-                        conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        window.showToast("Ação necessária: Clique em 'Gerar Conclusão + CTA'");
-                        conclusionModule.style.transition = 'all 0.2s';
-                        conclusionModule.style.boxShadow = '0 0 0 3px var(--primary-color)';
-                        setTimeout(() => { conclusionModule.style.boxShadow = ''; }, 1500);
-                    } else {
-                        window.showToast("Por favor, gere a Introdução, Desenvolvimento e Clímax primeiro.");
+            // --- Lógica do Acordeão ---
+            const accordionHeader = target.closest('.accordion-header');
+            if (accordionHeader) {
+                // Previne que o clique nos botões de ação dispare o acordeão
+                if (!target.closest('.header-buttons')) {
+                    const accordionItem = accordionHeader.parentElement;
+                    const body = accordionItem.querySelector('.accordion-body');
+                    const arrow = accordionItem.querySelector('.accordion-arrow');
+                    
+                    if (body && arrow) {
+                        body.classList.toggle('open');
+                        arrow.classList.toggle('open');
                     }
-                },
-                'generateCTABtn': () => document.getElementById('conclusionBtn')?.click(),
-
-                // Outras funções
-                'generateIdeasBtn': () => generateVideoIdeas(button),
-                'downloadPdfBtn': downloadPdf,
-                'exportProjectBtn': exportProject,
-                'importProjectBtn': () => document.getElementById('importFileInput').click(),
-                'resetScriptBtn': resetApplicationState,
-                'copyTranscriptBtn': handleCopyAndDownloadTranscript,
-            };
-
-            if (clickActions[button.id]) {
-                event.preventDefault();
-                clickActions[button.id]();
-                return;
+                }
             }
 
-            if (button.id.startsWith('float_')) {
+            // --- Lógica dos Botões de Ação (data-action) ---
+            if (button && button.dataset.action) {
                 event.preventDefault();
-                const originalId = button.id.replace('float_', '');
-                document.getElementById(originalId)?.click();
+                const action = button.dataset.action;
+
+                if (action === 'regenerate') {
+                    const sectionId = button.dataset.sectionId;
+                    if (sectionId) window.regenerateSection(sectionId);
+                    return;
+                }
+                if (action === 'copy') {
+                    const contentWrapper = button.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
+                    if (contentWrapper) {
+                        window.copyTextToClipboard(contentWrapper.textContent);
+                        window.showCopyFeedback(button);
+                    }
+                    return;
+                }
+                if (action === 'generate-prompts') {
+                    const sectionId = button.dataset.sectionId;
+                    if (sectionId) window.generatePromptsForSection(button, sectionId);
+                    return;
+                }
             }
-        }
-    });
+
+            // --- Lógica dos Botões Principais (por ID) ---
+            if (button) {
+                const clickActions = {
+                    'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
+                    'generateOutlineBtn': () => generateStrategicOutline(button),
+                    'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
+                    'generateDescriptionBtn': () => generateVideoDescription(button),
+                    'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
+                    'generateSoundtrackBtn': () => generateSoundtrack(button),
+                    'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
+                    'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
+                    'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
+                    'conclusionBtn': () => handleGenerateSection(button, 'conclusion', 'Conclusão e CTA', 'conclusion'), // Mapeia para a função correta
+                };
+                if (clickActions[button.id]) {
+                    event.preventDefault();
+                    clickActions[button.id]();
+                }
+            }
+        });
 
     // ---- 5. LÓGICA PARA RESETAR ROTEIRO ----
     const strategicInputIds = [
