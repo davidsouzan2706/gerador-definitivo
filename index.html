@@ -3525,63 +3525,52 @@ window.regenerateSection = (fullSectionId) => {
             event.target.value = '';
         };
 
-                /**
-         * Analisa o tema e a descrição do vídeo para definir a estratégia de conteúdo.
-         * (VERSÃO FINAL, AUTO-SUFICIENTE E COMPLETA)
+                 /**
+         * Analisa o tema e a descrição para definir a estratégia de conteúdo.
+         * (VERSÃO FINAL COM PROMPT BLINDADO)
          */
         const analyzeAndSetStrategy = async (button) => {
-            const hasExistingWork = document.querySelector('#scriptSectionsContainer .accordion-item');
-            if (hasExistingWork) {
-                const userConfirmed = await showConfirmationDialog(
-                    "Redefinir Estratégia?",
-                    "Isso limpará todo o roteiro e recursos gerados para criar uma nova estratégia do zero. Deseja continuar?"
-                );
-                if (!userConfirmed) {
-                    return;
-                }
+            if (document.querySelector('#scriptSectionsContainer .accordion-item')) {
+                const userConfirmed = await showConfirmationDialog("Redefinir Estratégia?", "Isso limpará todo o roteiro. Deseja continuar?");
+                if (!userConfirmed) return;
             }
             
             resetProjectOutputs(); 
 
-            const themeElement = document.getElementById('videoTheme');
-            const descriptionElement = document.getElementById('videoDescription');
-            
-            const theme = themeElement ? themeElement.value.trim() : '';
-            const description = descriptionElement ? descriptionElement.value.trim() : '';
-
+            const theme = document.getElementById('videoTheme')?.value.trim();
+            const description = document.getElementById('videoDescription')?.value.trim();
             if (!theme || !description) {
-                window.showToast("Por favor, preencha o Tema e a Descrição do Vídeo.");
+                window.showToast("Preencha o Tema e a Descrição do Vídeo.");
                 return;
             }
             
             showButtonLoading(button);
+            isSettingStrategy = true;
+            
+            const videoObjectiveOptions = Array.from(document.getElementById('videoObjective').options).map(o => `'${o.value}'`).join(', ');
+            const narrativeToneOptions = Array.from(document.getElementById('narrativeTone').options).map(o => `'${o.value}'`).join(', ');
 
-            const videoObjectiveOptions = Array.from(document.getElementById('videoObjective').options).map(o => `'${o.value}'`);
-            const narrativeToneOptions = Array.from(document.getElementById('narrativeTone').options).map(o => `'${o.value}'`);
-
-            const prompt = `Você é um Estrategista de Conteúdo de IA para o YouTube, um especialista em engenharia de narrativas virais. Sua tarefa é analisar o tema e a descrição de um vídeo e definir a melhor e mais coesa estratégia de conteúdo.
+            const prompt = `Você é um Estrategista de Conteúdo de IA. Analise o tema e a descrição de um vídeo e defina a melhor estratégia de conteúdo.
 
             **Tema do Vídeo:** "${theme}"
             **Descrição:** "${description}"
 
-            Responda APENAS com um objeto JSON válido. Siga estritamente as regras para cada uma das seguintes 11 chaves:
+            Responda APENAS com um objeto JSON válido. Siga estritamente as regras para cada uma das seguintes chaves:
 
-            1.  **"target_audience"**: (string) Descreva em uma frase o público-alvo principal mais propenso a se engajar com este conteúdo.
-            2.  **"video_objective"**: (string) Escolha o objetivo principal mais adequado. Sua resposta DEVE ser um dos seguintes valores EXATOS: [${videoObjectiveOptions.join(', ')}].
-            3.  **"narrative_goal"**: (string) Determine se a abordagem mais forte é 'storytelling' (para conectar e entreter) ou 'storyselling' (para persuadir). Sua resposta DEVE ser 'storytelling' ou 'storyselling'.
-            4.  **"narrative_structure"**: (string) Escolha a estrutura narrativa mais poderosa da lista fornecida. **GUIA DE MAPEAMENTO OBRIGATÓRIO:** Se o 'narrative_goal' for 'storytelling', escolha entre ['documentary', 'heros_journey', 'pixar_spine', 'mystery_loop', 'twist']. Se for 'storyselling', escolha entre ['underdog_victory', 'discovery_mentor', 'if_not_found_create', 'pas', 'bab']. Sua resposta DEVE ser um valor EXATO deste guia.
-            5.  **"narrative_theme"**: (string) Defina a "grande ideia" ou o tema universal por trás da história em poucas palavras (Ex: A jornada contra a adversidade, A busca pela verdade oculta).
-            6.  **"narrative_tone"**: (string) Escolha o tom emocional que a narração deve evocar. Sua resposta DEVE ser um dos seguintes valores EXATOS: [${narrativeToneOptions.join(', ')}].
-            7.  **"narrative_voice"**: (string) Defina a "persona" do narrador em poucas palavras (Ex: Um historiador cético, Uma testemunha emocionada, Um guia experiente).
-            8.  **"central_question"**: (string) Formule a pergunta central mais intrigante que o roteiro inteiro deverá se esforçar para responder.
-            9.  **"emotional_arc"**: (string) Descreva o arco emocional que o espectador deve sentir, usando setas (Ex: Indignação -> Empatia -> Esperança).
-            10. **"image_description_engine"**: (string) Sugira 3 a 5 palavras-chave que guiarão o estilo visual do vídeo (Ex: fotorrealista, sombrio, cinematográfico, close-up emocional).
-            11. **"viral_elements"**: (string) Liste 2 ou 3 elementos virais que podem ser incorporados na narrativa (Ex: "Fato chocante nos primeiros 10s", "Plot twist inesperado", "Loop aberto para o final").
+            1.  **"target_audience"**: Descreva em uma frase o público-alvo principal.
+            2.  **"video_objective"**: Escolha o objetivo principal. O valor DEVE ser um dos seguintes: [${videoObjectiveOptions}].
+            3.  **"narrative_goal"**: Determine se a abordagem é 'storytelling' ou 'storyselling'.
+            4.  **"narrative_structure"**: Se 'narrative_goal' for 'storytelling', escolha entre 'documentary', 'heros_journey', 'mystery_loop'. Se for 'storyselling', escolha entre 'underdog_victory', 'pas', 'bab'.
+            5.  **"narrative_theme"**: Defina a "grande ideia" em poucas palavras.
+            6.  **"narrative_tone"**: Escolha o tom emocional. O valor DEVE ser um dos seguintes: [${narrativeToneOptions}].
+            7.  **"narrative_voice"**: Defina a "persona" do narrador.
+            8.  **"central_question"**: Formule a pergunta central que o roteiro deve responder.
+            9.  **"emotional_arc"**: Descreva o arco emocional do espectador (Ex: Curiosidade -> Tensão -> Surpresa).
+            10. **"image_description_engine"**: Sugira 3 a 5 palavras-chave visuais (Ex: fotorrealista, sombrio, cinematográfico).
             
             Seja coeso e eficaz.`;
 
             try {
-                isSettingStrategy = true; 
                 const rawResult = await callGroqAPI(prompt, 2000);
                 const strategy = cleanGeneratedText(rawResult, true);
 
@@ -3594,7 +3583,7 @@ window.regenerateSection = (fullSectionId) => {
                     const element = document.getElementById(elementId);
                     if (element) {
                         if (element.tagName === 'SELECT' && ![...element.options].some(o => o.value === strategy[key])) {
-                            const newOption = new Option(strategy[key].charAt(0).toUpperCase() + strategy[key].slice(1), strategy[key]);
+                            const newOption = new Option(strategy[key], strategy[key]);
                             element.add(newOption);
                         }
                         element.value = strategy[key];
@@ -3610,9 +3599,8 @@ window.regenerateSection = (fullSectionId) => {
                 const dashboard = document.getElementById('projectDashboard');
                 if (dashboard) dashboard.classList.remove('hidden');
                 
-                document.querySelector('[data-tab="input-tab-estrategia"]').click();
+                document.querySelector('[data-tab="input-tab-estrategia"]')?.click();
                 window.showToast("Estratégia definida com sucesso!");
-
             } catch (error) {
                 window.showToast(`Falha ao definir estratégia: ${error.message}`);
                 console.error("Erro na análise estratégica:", error);
