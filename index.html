@@ -625,7 +625,6 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         }
 
 
-
      /**
      * Valida os inputs essenciais antes de gerar conteúdo.
      * Busca os elementos no momento da execução para garantir que existam.
@@ -681,12 +680,14 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 const container = document.getElementById(id);
                 if (container) {
                     if (id === 'scriptSectionsContainer') {
+                        // RECONSTRÓI os placeholders em vez de apenas limpar
                         container.innerHTML = `
                             <div id="introSection" class="script-section"></div>
                             <div id="developmentSection" class="script-section"></div>
                             <div id="climaxSection" class="script-section"></div>
                             <div id="conclusionSection" class="script-section"></div>
-                            <div id="ctaSection" class="script-section hidden"></div>`;
+                            <div id="ctaSection" class="script-section hidden"></div> 
+                        `;
                     } else {
                         // Recria o placeholder se ele existir
                         const placeholderText = {
@@ -701,10 +702,12 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 }
             });
 
+            // Adiciona a lógica para resetar os botões
             resetCompletionIcons();
             updateProgressBar();
             
-            document.getElementById('conclusionStrategyModule')?.classList.add('hidden');
+            const conclusionModule = document.getElementById('conclusionStrategyModule');
+            if(conclusionModule) conclusionModule.classList.add('hidden');
         };
 
 
