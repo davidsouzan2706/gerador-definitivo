@@ -134,6 +134,40 @@
         .retention-tooltip .optimize-btn:hover { background-color: var(--primary-dark); }
         .retention-paragraph-live:hover .retention-tooltip { opacity: 1; visibility: visible; transform: translateY(-5px); }
         .highlight-group { outline: 2px solid var(--primary); outline-offset: 2px; box-shadow: 0 0 15px color-mix(in srgb, var(--primary) 30%, transparent); }
+
+        /* ========================================================== */
+        /* === PASSO 2: ADICIONE ESTE BLOCO AO FINAL DO SEU CSS === */
+        /* ========================================================== */
+
+        /* --- ESTILO PARA OS BOTÕES DE RÁDIO PERSONALIZADOS --- */
+        .radio-label {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            border: 2px solid var(--dark-border);
+            background-color: var(--dark-surface);
+            transition: var(--transition);
+        }
+        .radio-label:hover {
+            border-color: var(--secondary);
+        }
+        .radio-label input[type="radio"] {
+            display: none; /* Esconde o botão de rádio padrão */
+        }
+        .radio-label input[type="radio"]:checked + span {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .radio-label:has(input:checked) {
+            border-color: var(--primary);
+            background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+        }
+        .radio-label.opacity-50 {
+            cursor: not-allowed;
+            color: var(--dark-text-muted);
+        }
     
 
 
@@ -341,6 +375,39 @@
                 <div id="soundtrackContent"><div class="asset-card-placeholder">Gere o roteiro para habilitar.</div></div>
             </div>
         </div>
+
+
+            <!-- MÓDULO DE ESTRATÉGIA DA CONCLUSÃO (inicialmente escondido) -->
+<div id="conclusionStrategyModule" class="card mb-6 hidden">
+    <div class="text-center mb-4">
+        <h3 class="text-lg font-bold">Qual é o objetivo final do seu vídeo?</h3>
+    </div>
+    <div class="flex justify-center flex-wrap gap-4 mb-6">
+        <label class="radio-label">
+            <input type="radio" name="conclusionType" value="lesson" checked>
+            <span><i class="fas fa-graduation-cap mr-2"></i>Deixar uma Lição / Reflexão</span>
+        </label>
+        <label class="radio-label">
+            <input type="radio" name="conclusionType" value="answer">
+            <span><i class="fas fa-question-circle mr-2"></i>Responder uma Pergunta Central</span>
+        </label>
+        <label class="radio-label">
+            <input type="radio" name="conclusionType" value="cliffhanger">
+            <span><i class="fas fa-bolt mr-2"></i>Criar um Gancho / Mistério Contínuo</span>
+        </label>
+    </div>
+    <div id="conclusionInputContainer" class="input-group">
+        <label for="conclusionSpecifics">Detalhes para a Conclusão:</label>
+        <textarea id="conclusionSpecifics" rows="3" placeholder="Ex: A lição é que a resiliência é a nossa maior força..."></textarea>
+    </div>
+    <div class="text-center mt-6">
+        <button id="generateConclusionAndCtaBtn" class="btn btn-primary">
+            <i class="fas fa-pen-fancy mr-2"></i>Gerar Conclusão + CTA
+        </button>
+    </div>
+</div>
+
+
     </section>
 </div>
         </main>
@@ -3320,7 +3387,7 @@ window.regenerateSection = (fullSectionId) => {
                     scriptContainer.innerHTML += createScriptSectionPlaceholder('intro', 'Introdução', 'generateIntroBtn');
                     scriptContainer.innerHTML += createScriptSectionPlaceholder('development', 'Desenvolvimento', 'generateDevelopmentBtn');
                     scriptContainer.innerHTML += createScriptSectionPlaceholder('climax', 'Clímax', 'climaxBtn');
-                    scriptContainer.innerHTML += createScriptSectionPlaceholder('conclusion', 'Conclusão e CTA', 'conclusionBtn');
+                    // scriptContainer.innerHTML += createScriptSectionPlaceholder('conclusion', 'Conclusão e CTA', 'conclusionBtn');
                     
                     // Nota: O botão de CTA agora pode ser o mesmo da Conclusão, simplificando a UI.
                     // A função 'generateConclusionAndCta' já lida com os dois.
