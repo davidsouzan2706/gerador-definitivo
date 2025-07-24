@@ -8,24 +8,22 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
             --secondary: #8b5cf6;
             --accent: #ec4899;
             --success: #10b981;
-            --warning: #f59e0b;
             --danger: #ef4444;
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --dark-bg: #f8fafc;        /* Fundo principal (quase branco) */
+            --dark-surface: #ffffff;  /* Fundo dos cards (branco) */
+            --dark-border: #e2e8f0;    /* Bordas e divisórias */
+            --dark-text-header: #1e293b; /* Títulos principais */
+            --dark-text-body: #334155;   /* Texto comum */
+            --dark-text-muted: #64748b;  /* Texto mais claro, placeholders */
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --transition: all 0.2s ease-in-out;
         }
 
         .dark {
@@ -33,56 +31,71 @@
             --primary-dark: #6366f1;
             --secondary: #a78bfa;
             --accent: #f472b6;
-            --dark: #0f172a;
-            --light: #1e293b;
-            --gray-100: #1e293b;
-            --gray-200: #334155;
-            --gray-300: #475569;
-            --gray-700: #cbd5e1;
-            --gray-800: #f1f5f9;
+            --dark-bg: #0f172a;        /* Fundo principal (azul bem escuro) */
+            --dark-surface: #1e293b;  /* Fundo dos cards (azul-acinzentado) */
+            --dark-border: #334155;    /* Bordas e divisórias */
+            --dark-text-header: #f1f5f9; /* Títulos principais (quase branco) */
+            --dark-text-body: #cbd5e1;   /* Texto comum (cinza claro) */
+            --dark-text-muted: #94a3b8;  /* Texto mais claro, placeholders */
         }
 
+        /* --- ESTILOS GERAIS --- */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: var(--light);
-            color: var(--gray-800);
+            background-color: var(--dark-bg);
+            color: var(--dark-text-body);
             transition: var(--transition);
-        }
-
-        .dark body {
-            background-color: var(--dark);
-            color: var(--gray-100);
         }
 
         .container {
             max-width: 1024px;
-            margin: 2rem auto;
-            padding: 2rem;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
+            margin: 0 auto;
         }
 
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--dark-text-header);
+        }
+
+        /* --- COMPONENTES PRINCIPAIS --- */
         .card {
-            background: white;
+            background-color: var(--dark-surface);
+            border: 1px solid var(--dark-border);
             border-radius: 12px;
             box-shadow: var(--shadow);
             padding: 1.5rem;
             transition: var(--transition);
-            border: 1px solid var(--gray-200);
         }
 
-        .dark .card {
-            background: var(--gray-100);
-            border-color: var(--gray-300);
+        .section-title {
+            position: relative;
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--dark-border);
         }
 
+        .section-title h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 70px;
+            height: 2px;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+
+        /* --- BOTÕES --- */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            padding: 0.75rem 1.25rem;
+            padding: 0.65rem 1.25rem;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
@@ -95,7 +108,6 @@
             background-color: var(--primary);
             color: white;
         }
-
         .btn-primary:hover {
             background-color: var(--primary-dark);
             transform: translateY(-2px);
@@ -105,41 +117,25 @@
             background-color: var(--secondary);
             color: white;
         }
-
         .btn-secondary:hover {
             background-color: #7c3aed;
-            transform: translateY(-2px);
+        }
+        
+        .dark .btn-secondary:hover {
+             background-color: #9333ea;
         }
 
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .dark .btn-outline {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-outline:hover {
-            background-color: var(--primary);
-            color: white;
-        }
-
+        /* --- FORMULÁRIOS E INPUTS --- */
         .input-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .input-group label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 600;
-            color: var(--gray-700);
-        }
-
-        .dark .input-group label {
-            color: var(--gray-300);
+            font-size: 0.875rem;
+            color: var(--dark-text-header);
         }
 
         .input-group input,
@@ -148,18 +144,17 @@
             width: 100%;
             padding: 0.75rem;
             border-radius: 8px;
-            border: 1px solid var(--gray-300);
-            background: white;
+            border: 1px solid var(--dark-border);
+            background: var(--dark-surface);
             transition: var(--transition);
-            color: var(--gray-800);
+            color: var(--dark-text-body);
         }
-
-        .dark .input-group input,
-        .dark .input-group select,
-        .dark .input-group textarea {
-            background: var(--gray-100);
-            border-color: var(--gray-300);
-            color: var(--gray-100);
+        
+        /* CORREÇÃO PARA O TEXTO DO PLACEHOLDER */
+        .input-group input::placeholder,
+        .input-group textarea::placeholder {
+            color: var(--dark-text-muted);
+            opacity: 1; /* Firefox */
         }
 
         .input-group input:focus,
@@ -167,91 +162,43 @@
         .input-group textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
         }
 
-        .accordion-item {
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 1rem;
-            border: 1px solid var(--gray-200);
-            background: white;
+        /* --- ABAS (TABS) --- */
+        .tab-button {
+            padding: 0.5rem 0.25rem;
+            margin-bottom: 0.5rem;
+            border-bottom: 3px solid transparent;
+            color: var(--dark-text-muted);
+            font-weight: 500;
             transition: var(--transition);
+            background: none;
+            border-radius: 0;
+        }
+        
+        .tab-button:hover {
+            color: var(--primary);
         }
 
-        .dark .accordion-item {
-            background: var(--gray-100);
-            border-color: var(--gray-300);
-        }
-
-        .accordion-header {
-            padding: 1.25rem 1.5rem;
-            background: var(--gray-100);
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .tab-active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
             font-weight: 600;
         }
 
-        .dark .accordion-header {
-            background: var(--gray-200);
-        }
-
-        .accordion-body {
-            padding: 1.5rem;
-            border-top: 1px solid var(--gray-200);
-        }
-
-        .dark .accordion-body {
-            border-top-color: var(--gray-300);
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .badge-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .badge-success {
-            background-color: var(--success);
-            color: white;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 1rem;
-            right: 1rem;
-            padding: 1.5rem;
-            border-radius: 8px;
-            background: white;
-            box-shadow: var(--shadow-lg);
-            z-index: 1000;
-            transform: translateY(100%);
-            opacity: 0;
+        .tab-pane {
             transition: var(--transition);
         }
-
-        .dark .toast {
-            background: var(--gray-100);
+        .tab-pane.hidden {
+            display: none;
         }
 
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
+        /* --- OUTROS --- */
         .loading-spinner {
             width: 24px;
             height: 24px;
-            border: 3px solid rgba(99, 102, 241, 0.2);
+            border: 3px solid color-mix(in srgb, var(--primary) 20%, transparent);
             border-top-color: var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
@@ -260,18 +207,13 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
+        
         .progress-bar {
             height: 8px;
-            background: var(--gray-200);
+            background: var(--dark-border);
             border-radius: 4px;
             overflow: hidden;
         }
-
-        .dark .progress-bar {
-            background: var(--gray-300);
-        }
-
         .progress-fill {
             height: 100%;
             background: var(--primary);
@@ -279,74 +221,6 @@
             transition: width 0.3s ease;
         }
 
-        .tab-active {
-            border-bottom: 3px solid var(--primary);
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .floating-action-bar {
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            z-index: 50;
-        }
-
-        .theme-toggle {
-            background: white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .dark .theme-toggle {
-            background: var(--gray-100);
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.1);
-        }
-
-        .section-title {
-            position: relative;
-            padding-bottom: 0.75rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid var(--gray-200);
-        }
-
-        .dark .section-title {
-            border-color: var(--gray-300);
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 60px;
-            height: 2px;
-            background: var(--primary);
-        }
-
-        @media (max-width: 768px) {
-            .card {
-                padding: 1rem;
-            }
-            
-            .accordion-header {
-                padding: 1rem;
-            }
-            
-            .accordion-body {
-                padding: 1rem;
-            }
-        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -527,7 +401,7 @@
 
     <script type="module">
 
-        
+
         // ==========================================================
         // ==================== SETUP INICIAL =======================
         // ==========================================================
