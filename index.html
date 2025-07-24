@@ -1275,6 +1275,9 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             }
         };
 
+        // ==========================================================
+        // >>>>> SUBSTITUA SUA FUNÇÃO setupInputTabs POR ESTA <<<<<
+        // ==========================================================
         const setupInputTabs = () => {
             const nav = document.getElementById('inputTabsNav');
             if (!nav) return;
@@ -1286,14 +1289,20 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 const button = event.target.closest('.tab-button');
                 if (!button) return;
 
-                tabButtons.forEach(btn => btn.classList.remove('active-tab'));
-                tabPanes.forEach(pane => pane.classList.remove('active-pane'));
+                // 1. Remove a classe ativa de TODOS os botões
+                tabButtons.forEach(btn => btn.classList.remove('tab-active'));
+                
+                // 2. Esconde TODOS os painéis de conteúdo
+                tabPanes.forEach(pane => pane.classList.add('hidden'));
 
-                button.classList.add('active-tab');
+                // 3. Adiciona a classe ativa APENAS no botão clicado
+                button.classList.add('tab-active');
+                
+                // 4. Mostra APENAS o painel de conteúdo correspondente
                 const tabId = button.getAttribute('data-tab');
                 const activePane = document.getElementById(tabId);
                 if (activePane) {
-                    activePane.classList.add('active-pane');
+                    activePane.classList.remove('hidden');
                 }
             });
         };
