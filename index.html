@@ -2199,6 +2199,33 @@ Exemplo de formato JSON esperado:
         };
 
 
+                // ==========================================================
+        // >>>>> COLE ESTA NOVA FUNÇÃO AUXILIAR NO SEU SCRIPT <<<<<
+        // ==========================================================
+        /**
+         * Cria e retorna o HTML de um placeholder para uma seção do roteiro.
+         * @param {string} sectionId - O ID base da seção (ex: 'intro').
+         * @param {string} title - O título da seção (ex: 'Introdução').
+         * @param {string} buttonId - O ID do botão principal que gera esta seção (ex: 'generateIntroBtn').
+         * @returns {string} O HTML do placeholder da seção.
+         */
+        const createScriptSectionPlaceholder = (sectionId, title, buttonId) => {
+            // O ID do container da seção, como 'introSection', já é usado por outras funções.
+            const containerId = `${sectionId}Section`;
+            
+            return `
+                <div id="${containerId}" class="script-section-placeholder card mb-4 animate-fade-in">
+                    <div class="flex justify-between items-center p-4">
+                        <h3 class="font-semibold text-lg text-gray-700 dark:text-gray-300">${title}</h3>
+                        <button id="${buttonId}" class="btn btn-primary">
+                            <i class="fas fa-magic mr-2"></i>Gerar
+                        </button>
+                    </div>
+                </div>
+            `;
+        };
+
+
 
         /**
          * Adiciona um novo capítulo ao desenvolvimento, expandindo o roteiro. (VERSÃO CORRIGIDA)
@@ -3164,15 +3191,15 @@ window.regenerateSection = (fullSectionId) => {
             }
         };
 
-        /**
-         * Gera o esboço estratégico do roteiro, com a lógica de loading correta.
-         */
-                const generateStrategicOutline = async (button) => {
+        // ==========================================================
+        // >>>>> SUBSTITUA O BLOCO try DA SUA FUNÇÃO generateStrategicOutline POR ESTE <<<<<
+        // ==========================================================
+        const generateStrategicOutline = async (button) => {
             if (!validateInputs()) return;
             
             showButtonLoading(button);
             
-            const outlineContentDiv = elements.outlineContent;
+            const outlineContentDiv = document.getElementById('outlineContent'); // Corrigido para buscar o elemento aqui
             if (outlineContentDiv) {
                 outlineContentDiv.innerHTML = `<div class="loading-spinner-small mx-auto"></div>`;
             } else {
@@ -3209,8 +3236,8 @@ window.regenerateSection = (fullSectionId) => {
                         outlineHtml += `
                             <li>
                                 <div>
-                                    <strong class="outline-title">${translatedTitle}:</strong>
-                                    <span>${contentText}</span>
+                                    <strong class="text-indigo-600 dark:text-indigo-400">${translatedTitle}:</strong>
+                                    <span class="text-gray-600 dark:text-gray-300">${contentText}</span>
                                 </div>
                             </li>
                         `;
@@ -3220,6 +3247,29 @@ window.regenerateSection = (fullSectionId) => {
                 
                 outlineContentDiv.innerHTML = outlineHtml;
                 markButtonAsCompleted(button.id);
+
+                // ==========================================================
+                // >>>>> INÍCIO DA CORREÇÃO <<<
+                // Esta é a lógica que faltava!
+                // ==========================================================
+                const scriptContainer = document.getElementById('scriptSectionsContainer');
+                if (scriptContainer) {
+                    // Limpa qualquer conteúdo antigo e prepara para os placeholders
+                    scriptContainer.innerHTML = ''; 
+
+                    // Cria os placeholders para cada seção do roteiro
+                    scriptContainer.innerHTML += createScriptSectionPlaceholder('intro', 'Introdução', 'generateIntroBtn');
+                    scriptContainer.innerHTML += createScriptSectionPlaceholder('development', 'Desenvolvimento', 'generateDevelopmentBtn');
+                    scriptContainer.innerHTML += createScriptSectionPlaceholder('climax', 'Clímax', 'climaxBtn');
+                    scriptContainer.innerHTML += createScriptSectionPlaceholder('conclusion', 'Conclusão e CTA', 'conclusionBtn');
+                    
+                    // Nota: O botão de CTA agora pode ser o mesmo da Conclusão, simplificando a UI.
+                    // A função 'generateConclusionAndCta' já lida com os dois.
+                }
+                // ==========================================================
+                // >>>>> FIM DA CORREÇÃO <<<
+                // ==========================================================
+
 
             } catch (error) {
                 window.showToast(`Falha ao gerar Esboço: ${error.message}`);
