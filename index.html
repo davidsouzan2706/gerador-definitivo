@@ -1845,53 +1845,56 @@ const invalidateAndClearPrompts = (sectionElement) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
-            let jsonString = text;
-
-            const firstBracket = jsonString.indexOf('[');
-            const lastBracket = jsonString.lastIndexOf(']');
-            const firstBrace = jsonString.indexOf('{');
-            const lastBrace = jsonString.lastIndexOf('}');
-            
-            if (firstBracket !== -1 && lastBracket > firstBracket) {
-                 jsonString = jsonString.substring(firstBracket, lastBracket + 1);
-            } else if (firstBrace !== -1 && lastBrace > firstBrace) {
-                 jsonString = jsonString.substring(firstBrace, lastBrace + 1);
+            // 1. Encontra o primeiro caractere de início de um JSON ('{' ou '[')
+            const startIndex = text.search(/[\{\[]/);
+            if (startIndex === -1) {
+                console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.");
+                console.error("Texto problemático:", text);
+                throw new Error("A IA não retornou um formato JSON reconhecível.");
             }
 
-            jsonString = jsonString.trim();
+            const firstChar = text[startIndex];
+            const matchingLastChar = firstChar === '{' ? '}' : ']';
+            
+            let level = 1;
+            let endIndex = -1;
 
+            // 2. Percorre o resto da string para encontrar o caractere de fechamento correspondente
+            for (let i = startIndex + 1; i < text.length; i++) {
+                const char = text[i];
+                if (char === firstChar) {
+                    level++;
+                } else if (char === matchingLastChar) {
+                    level--;
+                }
+                
+                if (level === 0) {
+                    endIndex = i;
+                    break; // Encontramos o final do JSON
+                }
+            }
+
+            if (endIndex === -1) {
+                console.error("O JSON retornado pela IA não foi fechado corretamente.");
+                console.error("Texto problemático:", text);
+                throw new Error("A IA retornou um JSON malformado (não fechado).");
+            }
+            
+            // 3. Extrai a string JSON com precisão cirúrgica
+            const jsonString = text.substring(startIndex, endIndex + 1);
+
+            // 4. Tenta fazer o parse. Se falhar aqui, o problema é interno (ex: vírgulas)
             try {
                 return JSON.parse(jsonString);
             } catch (e) {
-                console.warn("JSON extraído falhou no parse. Tentando cirurgia de reparo...", e.message);
+                console.error("Falha ao fazer o parse do JSON extraído cirurgicamente:", e.message);
+                console.error("JSON extraído:", jsonString);
+                // Aqui podemos tentar uma última cirurgia para vírgulas, se necessário
                 try {
-                    let repairedString = jsonString;
-                    
-                    // CIRURGIA #1: Adiciona vírgulas entre objetos.
-                    repairedString = repairedString.replace(/\}\s*\{/g, '},{');
-                    
-                    // CIRURGIA #2: Remove vírgulas extras no final.
-                    repairedString = repairedString.replace(/,\s*([}\]])/g, "$1");
-
-                    // ==========================================================
-                    // >>>>> NOVA CIRURGIA INTELIGENTE <<<<<
-                    // ==========================================================
-                    // CIRURGIA #3: Procura por um objeto não fechado NO FINAL de um array.
-                    const lastOpenBrace = repairedString.lastIndexOf('{');
-                    const lastCloseBrace = repairedString.lastIndexOf('}');
-                    if (repairedString.endsWith(']') && lastOpenBrace > lastCloseBrace) {
-                        // Insere a chave '}' que falta ANTES do colchete ']' final.
-                        repairedString = repairedString.slice(0, -1) + '}]';
-                        console.warn(`Cirurgia Inteligente: Objeto final não fechado foi corrigido.`);
-                    }
-                    // ==========================================================
-                    
+                    let repairedString = jsonString.replace(/,\s*([}\]])/g, "$1"); // Remove trailing commas
                     return JSON.parse(repairedString);
-
                 } catch (finalError) {
-                    console.error("Falha ao fazer o parse do JSON, mesmo após a cirurgia:", finalError.message);
-                    console.error("JSON problemático (original):", text);
-                    throw new Error("A IA retornou um JSON em formato inválido que não pôde ser corrigido.");
+                    throw new Error("A IA retornou um JSON com sintaxe interna inválida.");
                 }
             }
         };
