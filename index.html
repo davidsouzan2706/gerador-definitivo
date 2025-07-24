@@ -1646,48 +1646,61 @@ const invalidateAndClearPrompts = (sectionElement) => {
         };
     
         // ==========================================================
-        // >>>>> SUBSTITUA SUA FUNÇÃO cleanGeneratedText INTEIRA POR ESTA VERSÃO FINAL <<<<<
+        // >>>>> SUBSTITUA SUA FUNÇÃO cleanGeneratedText INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
         // ==========================================================
         const cleanGeneratedText = (text, expectJson = false) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
-            let jsonString = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            let jsonString = text;
+
+            // --- INÍCIO DA NOVA LÓGICA DE EXTRAÇÃO ---
+            // A IA está "conversando". Vamos extrair apenas o bloco JSON.
+            const firstBracket = jsonString.indexOf('[');
+            const lastBracket = jsonString.lastIndexOf(']');
+            const firstBrace = jsonString.indexOf('{');
+            const lastBrace = jsonString.lastIndexOf('}');
+            
+            // Prioriza o array se ambos estiverem presentes, pois é o formato mais comum para listas.
+            if (firstBracket !== -1 && lastBracket > firstBracket) {
+                 jsonString = jsonString.substring(firstBracket, lastBracket + 1);
+            } else if (firstBrace !== -1 && lastBrace > firstBrace) {
+                 jsonString = jsonString.substring(firstBrace, lastBrace + 1);
+            }
+            // Se não encontrar nem um nem outro, a string provavelmente já está corrompida.
+            // Deixamos seguir para o try/catch dar o erro final.
+            // --- FIM DA NOVA LÓGICA DE EXTRAÇÃO ---
+
+            jsonString = jsonString.trim();
 
             try {
+                // Tenta o parse direto com a string extraída
                 return JSON.parse(jsonString);
             } catch (e) {
-                console.warn("JSON inicial falhou o parse. Tentando cirurgia de reparo...", e.message);
+                console.warn("JSON extraído falhou no parse. Tentando cirurgia de reparo...", e.message);
                 try {
                     // --- INÍCIO DA CIRURGIA AVANÇADA ---
 
                     // 1. Adiciona vírgulas entre objetos.
                     let repairedString = jsonString.replace(/\}\s*\{/g, '},{');
-
-                    // 2. Se for uma lista de objetos, garante que é um array.
-                    if (repairedString.startsWith('{') && repairedString.endsWith('}') && repairedString.includes('},{')) {
-                        repairedString = `[${repairedString}]`;
-                    }
-
-                    // 3. Remove vírgulas extras no final de arrays/objetos.
+                    
+                    // 2. Remove vírgulas extras no final de arrays/objetos.
                     repairedString = repairedString.replace(/,\s*([}\]])/g, "$1");
                     
-                    // 4. NOVA BLINDAGEM: Corrige objetos ou arrays não fechados no final.
+                    // 3. Corrige objetos ou arrays não fechados no final.
                     const openBraces = (repairedString.match(/{/g) || []).length;
                     const closeBraces = (repairedString.match(/}/g) || []).length;
-                    const openBrackets = (repairedString.match(/\[/g) || []).length;
-                    const closeBrackets = (repairedString.match(/\]/g) || []).length;
-
                     if (openBraces > closeBraces) {
                         repairedString += '}'.repeat(openBraces - closeBraces);
-                        console.warn(`Cirurgia: Adicionadas ${openBraces - closeBraces} chaves '}' de fechamento.`);
                     }
+                    
+                    const openBrackets = (repairedString.match(/\[/g) || []).length;
+                    const closeBrackets = (repairedString.match(/\]/g) || []).length;
                     if (openBrackets > closeBrackets) {
                         repairedString += ']'.repeat(openBrackets - closeBrackets);
-                        console.warn(`Cirurgia: Adicionados ${openBrackets - closeBrackets} colchetes ']' de fechamento.`);
                     }
 
-                    // 5. Tenta o parse novamente com a string totalmente reparada.
+                    // 4. Tenta o parse novamente com a string totalmente reparada.
                     return JSON.parse(repairedString);
 
                 } catch (finalError) {
@@ -2349,9 +2362,14 @@ Exemplo de formato JSON esperado:
 
             try {
                 const paragraphsWithIds = paragraphs.map(p => ({ id: p.id, text: p.textContent.trim() }));
-                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion".
+                
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array.
         
-            **CRITICAL RULE: The "suggestion" MUST be written in Portuguese (Brazil).**
+            **ABSOLUTELY CRITICAL RULE: Your entire response must be ONLY the JSON array.** Do not include any introductory text, explanations, summaries, or any other words before or after the JSON code block. Your response must start with '[' and end with ']'.
+
+            **CRITICAL LANGUAGE RULE: The "suggestion" value MUST be written in Portuguese (Brazil).**
+
+            For each paragraph, provide "paragraphId", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion".
 
             Analyze this data:
             ${JSON.stringify(paragraphsWithIds, null, 2)}`;
