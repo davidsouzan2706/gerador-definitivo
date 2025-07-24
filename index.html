@@ -1787,35 +1787,29 @@ const invalidateAndClearPrompts = (sectionElement) => {
 
         // --- FIM DO NOVO MÓDULO DE NARRATIVA ---
 
-        /**
+                /**
          * Constrói o contexto base do prompt com base nos inputs do usuário.
-         * @returns {string} O contexto do prompt.
+         * (VERSÃO FINAL AUTO-SUFICIENTE)
          */
         const getBasePromptContext = () => {
-            const channelName = elements.channelName.value.trim();
-            const videoTheme = elements.videoTheme.value.trim();
-            const targetAudience = elements.targetAudience.value.trim();
-            const language = elements.languageSelect.value;
-            const languageStyle = elements.languageStyle.value;
-            const videoObjective = elements.videoObjective.value;
-                        const speakingPace = elements.speakingPace.value;
-            const narrativeStructure = elements.narrativeStructure.value; // Corrected to use elements.narrativeStructure
-            
-            // --- INÍCIO DA LEITURA DOS NOVOS CAMPOS ---
-            const narrativeTheme = document.getElementById('narrativeTheme').value.trim();
-            const narrativeTone = document.getElementById('narrativeTone').value;
-            const narrativeVoice = document.getElementById('narrativeVoice').value.trim();
-            // Adicione a linha abaixo
-            const shockingEndingHook = document.getElementById('shockingEndingHook').value.trim();
-            // --- FIM DA LEITURA DOS NOVOS CAMPOS ---
-
-            const videoDescription = elements.videoDescription.value.trim();
-            const centralQuestion = elements.centralQuestion.value.trim();
-            const emotionalArc = elements.emotionalArc.value.trim();
-            // REMOVIDO: const viralElements = elements.viralElements.value.trim();
-            const imageDescriptionEngine = elements.imageDescriptionEngine.value.trim();
-            const imageStyleSelect = elements.imageStyleSelect.value;
-            const customImageStyle = elements.customImageStyle.value.trim();
+            const channelName = document.getElementById('channelName')?.value.trim() || "";
+            const videoTheme = document.getElementById('videoTheme')?.value.trim() || "";
+            const targetAudience = document.getElementById('targetAudience')?.value.trim() || "";
+            const language = document.getElementById('languageSelect')?.value || "en";
+            const languageStyle = document.getElementById('languageStyle')?.value || "";
+            const videoObjective = document.getElementById('videoObjective')?.value || "";
+            const speakingPace = document.getElementById('speakingPace')?.value || "";
+            const narrativeStructure = document.getElementById('narrativeStructure')?.value || "";
+            const narrativeTheme = document.getElementById('narrativeTheme')?.value.trim() || "";
+            const narrativeTone = document.getElementById('narrativeTone')?.value || "";
+            const narrativeVoice = document.getElementById('narrativeVoice')?.value.trim() || "";
+            const shockingEndingHook = document.getElementById('shockingEndingHook')?.value.trim() || "";
+            const videoDescription = document.getElementById('videoDescription')?.value.trim() || "";
+            const centralQuestion = document.getElementById('centralQuestion')?.value.trim() || "";
+            const emotionalArc = document.getElementById('emotionalArc')?.value.trim() || "";
+            const imageDescriptionEngine = document.getElementById('imageDescriptionEngine')?.value.trim() || "";
+            const imageStyleSelect = document.getElementById('imageStyleSelect')?.value || "";
+            const customImageStyle = document.getElementById('customImageStyle')?.value.trim() || "";
 
             let context = `
             You are an expert YouTube scriptwriter for the channel "${channelName}".
@@ -1832,7 +1826,6 @@ const invalidateAndClearPrompts = (sectionElement) => {
             - Speaking Pace: "${speakingPace}"
             `;
 
-            // --- INÍCIO DA INJEÇÃO DOS NOVOS DADOS NO CONTEXTO ---
             if (narrativeTheme) {
                 context += `\n- Core Theme (The Big Idea): "${narrativeTheme}"`;
             }
@@ -1842,24 +1835,26 @@ const invalidateAndClearPrompts = (sectionElement) => {
             if (narrativeVoice) {
                 context += `\n- Narrator's Voice (The Personality): "${narrativeVoice}"`;
             }
-            // --- FIM DA INJEÇÃO DOS NOVOS DADOS NO CONTEXTO ---
-
-            // Adicione o bloco if abaixo
             if (shockingEndingHook) {
                 context += `\n- Shocking Ending Hook to use: "${shockingEndingHook}"`;
             }
-
-            if (videoDescription) { context += `\n\n**Additional Information & Inspiration:**\n- Inspiration/Context: "${videoDescription}"`; }
-            if (centralQuestion) { context += `\n- Central Question to guide the entire script: "${centralQuestion}"`; }
-            if (emotionalArc) { context += `\n- Desired Emotional Arc: "${emotionalArc}"`; }
-            // REMOVIDO: if (viralElements) { context += `\n- Viral Elements to incorporate: "${viralElements}"`; }
+            if (videoDescription) {
+                context += `\n\n**Additional Information & Inspiration:**\n- Inspiration/Context: "${videoDescription}"`;
+            }
+            if (centralQuestion) {
+                context += `\n- Central Question to guide the entire script: "${centralQuestion}"`;
+            }
+            if (emotionalArc) {
+                context += `\n- Desired Emotional Arc: "${emotionalArc}"`;
+            }
             
             if (imageStyleSelect === 'cinematic' || imageStyleSelect === 'custom') {
                 context += `\n\n**Visual Style Instructions:**`;
-                if (imageDescriptionEngine) { context += `\n- Image Description Keywords: "${imageDescriptionEngine}"`; }
+                if (imageDescriptionEngine) {
+                    context += `\n- Image Description Keywords: "${imageDescriptionEngine}"`;
+                }
                 if (imageStyleSelect === 'cinematic') {
                     context += `\n- Image Style: ${CINEMATIC_STYLE_BLOCK}`;
-
                 } else if (imageStyleSelect === 'custom' && customImageStyle) {
                     context += `\n- Custom Image Style: ${customImageStyle}`;
                 }
