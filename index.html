@@ -3935,118 +3935,54 @@ window.regenerateSection = (fullSectionId) => {
 // >>>>> SUBSTITUA SEU EVENT LISTENER INTEIRO POR ESTE <<<<<
 // ==========================================================
 document.addEventListener('DOMContentLoaded', () => {
-     // >>>>> ADICIONE ESTE BLOCO AQUI <<<<<
-     // Mapeia todos os elementos e botões para os objetos globais
-     document.querySelectorAll('[id]').forEach(el => {
-         if (el.tagName === 'BUTTON') {
-             buttons[el.id] = el;
-         } else {
-             elements[el.id] = el;
-         }
-     });
+            // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
+            document.querySelectorAll('[id]').forEach(el => {
+                if (el.tagName === 'BUTTON') { buttons[el.id] = el; } 
+                else { elements[el.id] = el; }
+            });
 
-    // ---- 1. INICIALIZAÇÃO GERAL ----
-    setupInputTabs();
-    setupTabs();
-    updateProgressBar();
-    updateButtonStates();
-    updateNarrativeStructureOptions();
+            // --- 2. INICIALIZAÇÃO DE FUNÇÕES ---
+            setupInputTabs();
+            // setupTabs(); // A função setupTabs parece não ser mais usada, podemos remover com segurança.
+            updateProgressBar();
+            updateButtonStates();
+            updateNarrativeStructureOptions(); // Chamada inicial para popular as opções e o tooltip
 
-    const goalSelect = document.getElementById('narrativeGoal');
+            // --- 3. EVENT LISTENERS ESPECÍFICOS ---
+            const goalSelect = document.getElementById('narrativeGoal');
             if(goalSelect) {
                 goalSelect.addEventListener('change', updateNarrativeStructureOptions);
             }
-    
-    // ---- 2. EVENTOS DIRETOS EM ELEMENTOS ESPECÍFICOS ----
-    document.getElementById('importFileInput')?.addEventListener('change', importProject);
-    
-    document.getElementById('darkModeToggle')?.addEventListener('click', () => {
-        document.body.classList.toggle('dark');
-        const isDarkMode = document.body.classList.contains('dark');
-        document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
-        document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
-        localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
-    });
+            
+            const importInput = document.getElementById('importFileInput');
+            if (importInput) importInput.addEventListener('change', importProject);
+            
+            document.getElementById('darkModeToggle')?.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                const isDarkMode = document.body.classList.contains('dark');
+                document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
+                document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
+                localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+            });
 
-    if (localStorage.getItem('darkMode') === 'enabled') {
-        document.body.classList.add('dark');
-        document.getElementById('moonIcon')?.classList.add('hidden');
-        document.getElementById('sunIcon')?.classList.remove('hidden');
-    }
-
-    document.getElementById('toggleZenModeBtn')?.addEventListener('click', () => document.body.classList.toggle('zen-mode'));
-    document.getElementById('exitZenModeBtn')?.addEventListener('click', () => document.body.classList.remove('zen-mode'));
-    document.getElementById('imageStyleSelect')?.addEventListener('change', toggleCustomImageStyleVisibility);
-    
-    document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
-        radio.addEventListener('change', handleConclusionStrategyChange);
-    });
-    
-    const speakingPaceSelect = document.getElementById('speakingPace');
-    if (speakingPaceSelect) {
-        speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
-    }
-
-    // ---- 3. EVENTOS DE INPUT PARA INVALIDAÇÃO ----
-    document.addEventListener('input', (event) => {
-        if (event.target.matches('.generated-content-wrapper[contenteditable="true"]')) {
-            const sectionElement = event.target.closest('.script-section');
-            if (sectionElement) {
-                invalidateAndClearPrompts(sectionElement);
-                invalidateAndClearPerformance(sectionElement);
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark');
+                document.getElementById('moonIcon')?.classList.add('hidden');
+                document.getElementById('sunIcon')?.classList.remove('hidden');
             }
-        }
-    });
 
-    let hideDetailsTimeout;
-    document.getElementById('scriptSectionsContainer').addEventListener('mouseover', (event) => {
-        const paragraph = event.target.closest('.retention-paragraph-live');
-        if (!paragraph || !paragraph.dataset.suggestion) return;
-        clearTimeout(hideDetailsTimeout);
-        const sectionId = paragraph.closest('.script-section').id;
-        const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
-        if (!detailsArea) return;
-        const score = paragraph.dataset.score;
-        const suggestion = paragraph.dataset.suggestion;
-        const scoreLabels = { green: "Ponto Forte", yellow: "Ponto de Atenção", red: "Ponto de Risco" };
-        const scoreColors = { green: "green-500", yellow: "yellow-400", red: "red-500" };
-        let buttonHtml = (score === 'yellow' || score === 'red') ? `<button class="btn btn-secondary btn-small" data-action="optimize-paragraph" data-paragraph-id="${paragraph.id}">Otimizar com IA</button>` : '';
-        detailsArea.innerHTML = `<div class="retention-details-card border-l-${scoreColors[score]}"><strong class="text-${scoreColors[score]}">${scoreLabels[score]}</strong><p>${suggestion}</p>${buttonHtml}</div>`;
-        detailsArea.classList.remove('hidden');
-    });
-
-    document.getElementById('scriptSectionsContainer').addEventListener('mouseout', (event) => {
-        const paragraph = event.target.closest('.retention-paragraph-live');
-        if (paragraph) {
-            const sectionId = paragraph.closest('.script-section').id;
-            const detailsArea = document.getElementById(`analysis-output-${sectionId.replace('Section', '')}`);
-            if (detailsArea && !detailsArea.classList.contains('hidden')) {
-                hideDetailsTimeout = setTimeout(() => {
-                    detailsArea.classList.add('hidden');
-                    detailsArea.innerHTML = '';
-                }, 300);
+            const speakingPaceSelect = document.getElementById('speakingPace');
+            if (speakingPaceSelect) {
+                speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
             }
-        }
-    });
 
-    document.addEventListener('mouseover', (event) => {
-        if (event.target.closest('.section-analysis-output')) {
-            clearTimeout(hideDetailsTimeout);
-        }
-    });
+            // --- 4. O "GERENTE DE CLIQUES" (LÓGICA PRINCIPAL DE BOTÕES) ---
+            document.addEventListener('click', function(event) {
+                const target = event.target;
+                const button = target.closest('button');
 
-        // =========================================================================
-        // PASSO 2: SUBSTITUA SEU "GERENTE DE CLIQUES" INTEIRO POR ESTE BLOCO FINAL
-        // =========================================================================
-        document.addEventListener('click', function(event) {
-            const target = event.target;
-            const button = target.closest('button');
-
-            // --- Lógica do Acordeão (CORRIGIDA) ---
-            const accordionHeader = target.closest('.accordion-header');
-            if (accordionHeader) {
-                // Previne que o clique nos botões de ação dispare o acordeão
-                if (!target.closest('.header-buttons')) {
+                const accordionHeader = target.closest('.accordion-header');
+                if (accordionHeader && !target.closest('.header-buttons')) {
                     const body = accordionHeader.nextElementSibling;
                     const arrow = accordionHeader.querySelector('.accordion-arrow');
                     if (body && arrow) {
@@ -4054,69 +3990,60 @@ document.addEventListener('DOMContentLoaded', () => {
                         arrow.classList.toggle('open');
                     }
                 }
-            }
 
-            // --- Lógica dos Botões de Ação (data-action) ---
-            if (button && button.dataset.action) {
-                event.preventDefault();
-                const action = button.dataset.action;
-                if (action === 'regenerate') { window.regenerateSection(button.dataset.sectionId); return; }
-                if (action === 'copy') {
-                    const content = button.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
-                    if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(button); }
-                    return;
-                }
-                if (action === 'generate-prompts') { window.generatePromptsForSection(button, button.dataset.sectionId); return; }
-            }
-
-            // --- Lógica dos Botões Principais (por ID) ---
-            if (button) {
-                const clickActions = {
-                    'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
-                    'generateOutlineBtn': () => generateStrategicOutline(button),
-                    'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
-                    'generateDescriptionBtn': () => generateVideoDescription(button),
-                    'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
-                    'generateSoundtrackBtn': () => generateSoundtrack(button),
-                    'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
-                    'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
-                    'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-                    'conclusionBtn': () => handleGenerateSection(button, 'conclusion', 'Conclusão e CTA', 'conclusion'),
-                    'generateIdeasBtn': () => generateVideoIdeas(button),
-                    'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
-                };
-                if (clickActions[button.id]) {
+                if (button && button.dataset.action) {
                     event.preventDefault();
-                    clickActions[button.id]();
+                    const action = button.dataset.action;
+                    if (action === 'regenerate') { window.regenerateSection(button.dataset.sectionId); return; }
+                    if (action === 'copy') {
+                        const content = button.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
+                        if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(button); }
+                        return;
+                    }
+                    if (action === 'generate-prompts') { window.generatePromptsForSection(button, button.dataset.sectionId); return; }
                 }
-            }
-        });
 
-
-
-
-    // ---- 5. LÓGICA PARA RESETAR ROTEIRO ----
-    const strategicInputIds = [
-        'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
-        'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
-        'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect'
-    ];
-
-    strategicInputIds.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            const eventType = (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') ? 'change' : 'input';
-            element.addEventListener(eventType, (e) => {
-                if (!isSettingStrategy) {
-                    resetGeneratedScriptContent(e.target.id);
+                if (button) {
+                    const clickActions = {
+                        'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
+                        'generateOutlineBtn': () => generateStrategicOutline(button),
+                        'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
+                        'generateDescriptionBtn': () => generateVideoDescription(button),
+                        'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
+                        'generateSoundtrackBtn': () => generateSoundtrack(button),
+                        'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
+                        'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
+                        'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
+                        'conclusionBtn': () => handleGenerateSection(button, 'conclusion', 'Conclusão e CTA', 'conclusion'),
+                        'generateIdeasBtn': () => generateVideoIdeas(button),
+                        'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
+                    };
+                    if (clickActions[button.id]) {
+                        event.preventDefault();
+                        clickActions[button.id]();
+                    }
                 }
             });
-        }
-    });
 
-    // ---- 6. EVENTO DE SCROLL PARA BARRA FLUTUANTE ----
-    window.addEventListener('scroll', window.handleFloatingActionBar);
-});
+            // --- 5. LÓGICA PARA RESETAR ROTEIRO EM MUDANÇAS ESTRATÉGICAS ---
+            const strategicInputIds = [
+                'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
+                'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
+                'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect'
+            ];
+            strategicInputIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    const eventType = (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') ? 'change' : 'input';
+                    element.addEventListener(eventType, (e) => {
+                        if (!isSettingStrategy) { resetGeneratedScriptContent(e.target.id); }
+                    });
+                }
+            });
+
+            // --- 6. EVENTO DE SCROLL PARA BARRA FLUTUANTE ---
+            window.addEventListener('scroll', window.handleFloatingActionBar);
+        });
 
 </script>
 </body>
