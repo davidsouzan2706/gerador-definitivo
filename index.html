@@ -3168,13 +3168,19 @@ window.regenerateSection = (fullSectionId) => {
         /**
          * Gera o esboço estratégico do roteiro, com a lógica de loading correta.
          */
-        const generateStrategicOutline = async (button) => {
+                const generateStrategicOutline = async (button) => {
             if (!validateInputs()) return;
             
-            const outlineContentDiv = elements.outlineContent;
-            // >>>>> CORREÇÃO AQUI <<<<<
             showButtonLoading(button);
-            outlineContentDiv.innerHTML = `<div class="loading-spinner-small mx-auto"></div>`;
+            
+            const outlineContentDiv = elements.outlineContent;
+            if (outlineContentDiv) {
+                outlineContentDiv.innerHTML = `<div class="loading-spinner-small mx-auto"></div>`;
+            } else {
+                window.showToast("Erro: Container do esboço não encontrado.");
+                hideButtonLoading(button);
+                return;
+            }
 
             try {
                 const { prompt, maxTokens } = constructScriptPrompt('outline', 'Esboço Estratégico');
@@ -3188,8 +3194,11 @@ window.regenerateSection = (fullSectionId) => {
                 }
 
                 const titleTranslations = {
-                    'introduction': 'Introdução', 'development': 'Desenvolvimento',
-                    'climax': 'Clímax', 'conclusion': 'Conclusão', 'cta': 'CTA'
+                    'introduction': 'Introdução',
+                    'development': 'Desenvolvimento',
+                    'climax': 'Clímax',
+                    'conclusion': 'Conclusão',
+                    'cta': 'CTA'
                 };
                 
                 let outlineHtml = '<ul class="space-y-4 text-sm">';
@@ -3209,15 +3218,17 @@ window.regenerateSection = (fullSectionId) => {
                     }
                 }
                 outlineHtml += '</ul>';
+                
                 outlineContentDiv.innerHTML = outlineHtml;
                 markButtonAsCompleted(button.id);
 
             } catch (error) {
                 window.showToast(`Falha ao gerar Esboço: ${error.message}`);
                 console.error("Error generating Outline.", error);
-                outlineContentDiv.innerHTML = `<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`;
+                if (outlineContentDiv) {
+                    outlineContentDiv.innerHTML = `<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`;
+                }
             } finally {
-                // >>>>> CORREÇÃO AQUI <<<<<
                 hideButtonLoading(button);
                 updateButtonStates();
             }
@@ -3658,6 +3669,16 @@ window.regenerateSection = (fullSectionId) => {
 // >>>>> SUBSTITUA SEU EVENT LISTENER INTEIRO POR ESTE <<<<<
 // ==========================================================
 document.addEventListener('DOMContentLoaded', () => {
+
+document.querySelectorAll('[id]').forEach(el => {
+         if (el.tagName === 'BUTTON') {
+             buttons[el.id] = el;
+         } else {
+             elements[el.id] = el;
+         }
+     });
+
+
     // ---- 1. INICIALIZAÇÃO GERAL ----
     setupInputTabs();
     setupTabs();
