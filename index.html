@@ -1851,51 +1851,45 @@ const invalidateAndClearPrompts = (sectionElement) => {
             if (!text) return null;
             if (!expectJson) return text.trim();
 
+            // 1. Extração Cirúrgica (esta parte já está robusta)
             const startIndex = text.search(/[\{\[]/);
             if (startIndex === -1) {
-                console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.");
-                console.error("Texto problemático:", text);
+                console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.", text);
                 throw new Error("A IA não retornou um formato JSON reconhecível.");
             }
-
             const firstChar = text[startIndex];
             const matchingLastChar = firstChar === '{' ? '}' : ']';
-            
             let level = 1;
             let endIndex = -1;
-
             for (let i = startIndex + 1; i < text.length; i++) {
-                const char = text[i];
-                if (char === firstChar) {
-                    level++;
-                } else if (char === matchingLastChar) {
-                    level--;
-                }
-                
+                if (text[i] === firstChar) level++;
+                if (text[i] === matchingLastChar) level--;
                 if (level === 0) {
                     endIndex = i;
                     break;
                 }
             }
-
             if (endIndex === -1) {
-                console.error("O JSON retornado pela IA não foi fechado corretamente.");
-                console.error("Texto problemático:", text);
+                console.error("O JSON retornado pela IA não foi fechado corretamente.", text);
                 throw new Error("A IA retornou um JSON malformado (não fechado).");
             }
             
             const jsonString = text.substring(startIndex, endIndex + 1);
 
+            // 2. Tenta o "Caminho Feliz" primeiro
             try {
-                // >>>>> A NOVA CIRURGIA CRÍTICA <<<<<
-                // Converte todas as aspas simples de delimitação em aspas duplas.
-                const correctedJsonString = jsonString.replace(/'/g, '"');
-                return JSON.parse(correctedJsonString);
+                // Tenta fazer o parse da string extraída sem nenhuma modificação.
+                // Se o JSON for válido (mesmo com aspas simples internas), isso vai funcionar.
+                return JSON.parse(jsonString);
             } catch (e) {
-                console.warn("Parse com correção de aspas falhou. Tentando reparos adicionais...", e.message);
+                console.warn("Parse inicial falhou. Tentando cirurgias de reparo...", e.message);
+                // 3. Se falhar, inicia as cirurgias de reparo como fallback
                 try {
-                    let repairedString = jsonString.replace(/'/g, '"'); // Aplica a correção de aspas
-                    repairedString = repairedString.replace(/,\s*([}\]])/g, "$1"); // Remove trailing commas
+                    // Cirurgia A: Converte aspas simples de delimitação em aspas duplas.
+                    let repairedString = jsonString.replace(/'/g, '"');
+                    // Cirurgia B: Remove vírgulas extras no final.
+                    repairedString = repairedString.replace(/,\s*([}\]])/g, "$1");
+                    
                     return JSON.parse(repairedString);
                 } catch (finalError) {
                     console.error("Falha ao fazer o parse do JSON, mesmo após todas as cirurgias:", finalError.message);
@@ -1904,6 +1898,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 }
             }
         };
+
 
                 /**
          * Remove comentários meta da IA do texto gerado. (VERSÃO BLINDADA)
