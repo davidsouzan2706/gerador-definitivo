@@ -382,6 +382,55 @@
             background-color: color-mix(in srgb, var(--dark-bg) 50%, var(--dark-surface));
         }
 
+/* --- ESTILO PADRÃO PARA CONTEÚDO GERADO PELA IA --- */
+
+        /* 1. Estilo base para todas as caixas de resultado */
+        .generated-content-wrapper,
+        .generated-output-box {
+            background-color: color-mix(in srgb, var(--dark-bg) 50%, var(--dark-surface));
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+        
+        /* 2. Remove a margem extra do texto do roteiro no acordeão */
+        .generated-content-wrapper {
+            margin-bottom: 1.5rem;
+        }
+
+        /* 3. Estilos específicos para a seção "Títulos & Thumbnails" */
+        .generated-output-box .output-subtitle {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--dark-text-header);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed var(--dark-border);
+        }
+        
+        .generated-output-box .output-content-block {
+            margin-bottom: 1.5rem;
+        }
+
+        .generated-output-box .thumbnail-idea {
+            margin-bottom: 1rem;
+        }
+        .generated-output-box .thumbnail-idea h4 {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .generated-output-box .thumbnail-idea p {
+            font-size: 0.85rem;
+            color: var(--dark-text-muted);
+        }
+        
+        /* 4. Estilos para a lista de trilha sonora */
+        .soundtrack-list {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+        }
+
 
     </style>
 </head>
@@ -1339,7 +1388,8 @@ const mapEmotionsAndPacing = async (button) => {
                 });
                 suggestionsHtml += '</ul>';
                 
-                outputContainer.innerHTML = suggestionsHtml;
+                // >>> AQUI ESTÁ A MUDANÇA <<<
+                outputContainer.innerHTML = `<div class="generated-output-box">${suggestionsHtml}</div>`;
                 markButtonAsCompleted(button.id);
 
             } catch (error) {
@@ -3333,18 +3383,18 @@ window.regenerateSection = (fullSectionId) => {
                     `).join('');
 
                     targetContentElement.innerHTML = `
-                        <div class="space-y-4 text-sm">
+                        <div class="generated-output-box">
                             <div>
-                                <h4 class="font-bold text-base mb-2">Sugestões de Títulos:</h4>
-                                <div class="p-3 card-background rounded-md space-y-2">${titlesListHtml}</div>
+                                <h4 class="output-subtitle">Sugestões de Títulos:</h4>
+                                <div class="output-content-block">${titlesListHtml}</div>
                                 <div class="mt-3">
                                     <button class="btn btn-secondary btn-small" onclick="window.analyzeTitles()">Analisar CTR</button>
                                     <div id="ctrAnalysisResult" class="mt-3"></div>
                                 </div>
                             </div>
                             <div>
-                                <h4 class="font-bold text-base mb-2">Ideias de Thumbnail:</h4>
-                                <div class="p-3 card-background rounded-md space-y-3">${thumbnailsListHtml}</div>
+                                <h4 class="output-subtitle">Ideias de Thumbnail:</h4>
+                                <div class="output-content-block">${thumbnailsListHtml}</div>
                                 <div class="mt-3">
                                     <button class="btn btn-secondary btn-small" onclick="window.analyzeThumbnails()">Analisar Thumbnails</button>
                                     <div id="thumbnailAnalysisResult" class="mt-3"></div>
@@ -3470,7 +3520,7 @@ window.regenerateSection = (fullSectionId) => {
         /**
          * Gera a descrição do vídeo e hashtags.
          */
-                const generateVideoDescription = async (button) => {
+            const generateVideoDescription = async (button) => {
             if (!validateInputs()) return;
             showButtonLoading(button);
 
@@ -3481,7 +3531,8 @@ window.regenerateSection = (fullSectionId) => {
                 
                 const targetContentElement = document.getElementById('videoDescriptionContent');
                 if (targetContentElement) {
-                    targetContentElement.innerHTML = `<div class="p-3 text-sm card-background rounded-md whitespace-pre-wrap">${result}</div>`;
+                    // >>> AQUI ESTÁ A MUDANÇA <<<
+                    targetContentElement.innerHTML = `<div class="generated-output-box whitespace-pre-wrap">${result}</div>`;
                     markButtonAsCompleted(button.id);
                 }
             } catch (error) {
