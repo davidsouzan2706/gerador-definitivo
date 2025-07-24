@@ -2216,11 +2216,11 @@ Exemplo de formato JSON esperado:
          * @returns {string} O HTML do placeholder da seção.
          */
         const createScriptSectionPlaceholder = (sectionId, title, buttonId) => {
-            // O ID do container da seção, como 'introSection', já é usado por outras funções.
             const containerId = `${sectionId}Section`;
             
+            // ADICIONAMOS A CLASSE 'script-section' AQUI
             return `
-                <div id="${containerId}" class="script-section-placeholder card mb-4 animate-fade-in">
+                <div id="${containerId}" class="script-section script-section-placeholder card mb-4 animate-fade-in">
                     <div class="flex justify-between items-center p-4">
                         <h3 class="font-semibold text-lg text-gray-700 dark:text-gray-300">${title}</h3>
                         <button id="${buttonId}" class="btn btn-primary">
@@ -2693,6 +2693,8 @@ Exemplo de formato JSON esperado:
             window.showToast("Ideia selecionada! Agora defina a estratégia completa.");
         };
 
+        
+
         /**
          * Lida com a geração de uma secção específica do roteiro.
          * @param {HTMLElement} button - O botão que acionou a geração.
@@ -2701,10 +2703,8 @@ Exemplo de formato JSON esperado:
          * @param {string} elementId - O ID do elemento HTML onde o conteúdo será inserido (ex: 'intro').
          */
         // ==========================================================
-// FUNÇÃO handleGenerateSection CORRIGIDA E COMPLETA
-// ==========================================================
-
-
+        // >>>>> SUBSTITUA SUA FUNÇÃO handleGenerateSection POR ESTA <<<<<
+        // ==========================================================
         const handleGenerateSection = async (button, sectionName, sectionTitle, elementId) => {
             if (!validateInputs()) return;
             if (!strategicOutline) {
@@ -2716,6 +2716,7 @@ Exemplo de formato JSON esperado:
             
             const targetSectionElement = document.getElementById(`${elementId}Section`);
 
+            // Limpeza prévia (código existente, permanece igual)
             if (targetSectionElement) {
                 const analysisOutput = targetSectionElement.querySelector('.section-analysis-output');
                 const performanceOutput = targetSectionElement.querySelector('.section-performance-output');
@@ -2740,6 +2741,17 @@ Exemplo de formato JSON esperado:
                 if (targetSectionElement) {
                     const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
                     targetSectionElement.innerHTML = sectionHtml;
+
+                    // ==========================================================
+                    // >>>>> INÍCIO DA CORREÇÃO CRÍTICA <<<
+                    // ==========================================================
+                    // Nós removemos as classes antigas do placeholder e adicionamos a classe definitiva.
+                    targetSectionElement.classList.remove('script-section-placeholder', 'card', 'mb-4');
+                    targetSectionElement.classList.add('script-section'); // Garante que a classe exista para os outros listeners
+                    // ==========================================================
+                    // >>>>> FIM DA CORREÇÃO CRÍTICA <<<
+                    // ==========================================================
+
                     targetSectionElement.querySelector('.accordion-item')?.classList.add('animate-fade-in');
                 } else {
                     console.error(`Elemento alvo com ID '${elementId}Section' não encontrado.`);
