@@ -171,65 +171,51 @@
     
 /* --- ESTILOS PARA O TOOLTIP DE AJUDA --- */
         .tooltip-trigger {
-            position: relative; /* Essencial para o posicionamento do tooltip */
+            position: relative;
         }
-
-        /* O balão do tooltip */
         .tooltip-trigger::before {
-            content: attr(data-tooltip); /* Pega o texto do atributo data-tooltip */
+            content: attr(data-tooltip);
             position: absolute;
-            bottom: 150%; /* Posiciona acima do ícone */
+            bottom: 150%;
             left: 50%;
             transform: translateX(-50%);
-            
             background-color: var(--dark-surface);
             color: var(--dark-text-body);
             padding: 0.75rem;
             border-radius: 8px;
             border: 1px solid var(--dark-border);
             box-shadow: var(--shadow);
-            
-            width: 300px; /* Largura do tooltip */
+            width: 300px;
             text-align: left;
             font-size: 0.8rem;
             line-height: 1.5;
-            white-space: pre-wrap; /* Respeita as quebras de linha do texto */
-            
-            /* Animação */
+            white-space: pre-wrap;
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.2s, transform 0.2s;
             z-index: 10;
         }
-
-        /* A setinha do balão */
         .tooltip-trigger::after {
             content: '';
             position: absolute;
             bottom: 150%;
             left: 50%;
-            transform: translateX(-50%) translateY(100%); /* Posiciona abaixo do balão */
-            
+            transform: translateX(-50%) translateY(100%);
             border: 8px solid transparent;
             border-top-color: var(--dark-surface);
-
-            /* Animação */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.2s, transform 0.2s;
             z-index: 11;
         }
-
-        /* Efeito ao passar o mouse */
         .tooltip-trigger:hover::before,
         .tooltip-trigger:hover::after {
             opacity: 1;
             visibility: visible;
-            transform: translateX(-50%) translateY(-10px); /* Move o balão para cima */
+            transform: translateX(-50%) translateY(-10px);
         }
-        
         .tooltip-trigger:hover::after {
-             transform: translateX(-50%) translateY(calc(100% - 10px)); /* Move a setinha junto */
+             transform: translateX(-50%) translateY(calc(100% - 10px));
         }
 
 
@@ -347,7 +333,7 @@
                 <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
                 
 <div class="input-group">
-    <div class="flex items-center gap-2 mb-2"> <!-- Novo container para o label -->
+    <div class="flex items-center gap-2 mb-2">
         <label for="narrativeStructure">2. Estrutura Específica:</label>
         <i id="narrativeStructureTooltip" class="fas fa-question-circle text-gray-400 cursor-pointer tooltip-trigger"></i>
     </div>
@@ -1896,7 +1882,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
             if (!goalSelect || !structureSelect) return;
 
             const goal = goalSelect.value;
-            structureSelect.innerHTML = ''; // Limpa as opções atuais
+            structureSelect.innerHTML = ''; 
 
             const structures = narrativeStructures[goal];
             for (const key in structures) {
@@ -1904,28 +1890,30 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 option.value = key;
                 option.textContent = structures[key];
                 structureSelect.appendChild(option);
+                goalSelect.addEventListener('change', updateNarrativeStructureOptions);
             }
             
+            // Agora ela chama a função segura do tooltip
             updateMainTooltip();
         };
 
-        const updateMainTooltip = () => {
-            const goalSelect = document.getElementById('narrativeGoal');
+        cconst updateMainTooltip = () => {
             const tooltip = document.getElementById('narrativeStructureTooltip');
-            if (!goalSelect || !tooltip) return;
+            // >>> A GUARDA DE PROTEÇÃO <<<
+            // Se o elemento não for encontrado (porque a aba está escondida), a função para aqui.
+            if (!tooltip) return;
 
-            const goal = goalSelect.value;
+            const goal = document.getElementById('narrativeGoal').value;
             const structures = narrativeStructures[goal];
             
             let tooltipContent = '';
             for (const key in structures) {
-                tooltipContent += `${structures[key]}: ${narrativeTooltips[key]}
-
-`;
+                tooltipContent += `${structures[key]}:\n${narrativeTooltips[key]}\n\n`;
             }
             
             tooltip.setAttribute('data-tooltip', tooltipContent.trim());
         };
+
 
         // --- FIM DO NOVO MÓDULO DE NARRATIVA ---
 
