@@ -116,7 +116,7 @@
         .tab-active { border-bottom-color: var(--primary); color: var(--primary); font-weight: 600; }
         .tab-pane.hidden { display: none; }
 
-             /* --- ACCORDION & SCRIPT SECTIONS --- */
+         /* --- ACCORDION & SCRIPT SECTIONS --- */
         .accordion-item {
             border-bottom: 1px solid var(--dark-border);
         }
@@ -124,31 +124,31 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 1.5rem;
+            padding: 0.75rem 1.5rem; /* Padding vertical reduzido */
             transition: var(--transition);
         }
         
-        .header-content-wrapper {
+        .header-main-content {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            flex-grow: 1; /* Faz esta área ocupar todo o espaço disponível */
+            justify-content: space-between; /* Empurra a seta para a direita */
+            flex-grow: 1; /* Ocupa todo o espaço disponível */
             cursor: pointer;
+            padding-right: 1.5rem; /* Espaço antes dos botões de ação */
         }
 
-        .header-content {
+        .header-title-group {
             display: flex;
             align-items: center;
             gap: 0.75rem;
         }
-        .header-content h3 { font-weight: 600; font-size: 1.1rem; }
-        .header-content .text-xs { color: var(--dark-text-muted); font-size: 0.75rem; white-space: nowrap; }
+        .header-title-group h3 { font-weight: 600; font-size: 1.1rem; }
+        .header-title-group .text-xs { color: var(--dark-text-muted); font-size: 0.75rem; white-space: nowrap; }
         
         .header-buttons {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            margin-left: 1rem; /* Adiciona um espaço entre a seta e os botões */
         }
         .header-buttons button {
             background: none; border: none; padding: 0.25rem;
@@ -1467,8 +1467,8 @@ const invalidateAndClearPrompts = (sectionElement) => {
             }
         };
     
-        // ==========================================================
-        // >>>>> SUBSTITUA A FUNÇÃO generateSectionHtmlContent POR ESTA VERSÃO FINAL <<<<<
+                // ==========================================================
+        // >>>>> SUBSTITUA SUA FUNÇÃO generateSectionHtmlContent INTEIRA POR ESTA VERSÃO FINAL <<<<<
         // ==========================================================
         const generateSectionHtmlContent = (sectionId, title, content) => {
             const mainBodyId = `${sectionId}Body`;
@@ -1513,14 +1513,13 @@ const invalidateAndClearPrompts = (sectionElement) => {
                 </div>
             `;
 
-            const regenerateBtnHtml = `<button class="regenerate-btn" data-action="regenerate" data-section-id="${sectionId}Section" title="Re-gerar esta seção"><svg>...</svg></button>`; // O conteúdo interno continua o mesmo.
-            const copyBtnHtml = `<button class="copy-btn" data-action="copy" title="Copiar Roteiro"><svg>...</svg></button>`; // O conteúdo interno continua o mesmo.
+            const regenerateBtnHtml = `<button class="regenerate-btn" data-action="regenerate" data-section-id="${sectionId}Section" title="Re-gerar esta seção"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg></button>`;
+            const copyBtnHtml = `<button class="copy-btn" data-action="copy" title="Copiar Roteiro"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5-.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg></button>`;
             
-            // >>>>> ESTA É A ESTRUTURA HTML CORRIGIDA E FINAL <<<<<
             return `<div class="accordion-item card !p-0 mb-4">
                         <div class="accordion-header">
-                            <div class="header-content-wrapper" onclick="window.toggleAccordion('${mainBodyId}', '${mainArrowId}')">
-                                <div class="header-content">
+                            <div class="header-main-content" onclick="window.toggleAccordion('${mainBodyId}', '${mainArrowId}')">
+                                <div class="header-title-group">
                                     <h3>${title}</h3>
                                     <span class="text-xs font-normal text-gray-400 dark:text-gray-500">${calculateReadingTime(content)}</span>
                                 </div>
