@@ -3159,6 +3159,13 @@ window.regenerateSection = (fullSectionId) => {
                 const parsedContent = cleanedResult;
                 generatedTitlesAndThumbnails = parsedContent;
 
+
+                if (!Array.isArray(parsedContent.titles) || !Array.isArray(parsedContent.thumbnails)) {
+                    console.error("Formato de Títulos/Thumbnails inválido recebido da IA:", parsedContent);
+                    throw new Error("A IA retornou os dados de títulos em um formato inesperado. Tente novamente.");
+                }
+                                
+
                 const targetContentElement = document.getElementById('titlesThumbnailsContent');
                 if (targetContentElement) {
                     const titlesListHtml = parsedContent.titles.map((title, index) => `<p>${index + 1}. ${title}</p>`).join('');
