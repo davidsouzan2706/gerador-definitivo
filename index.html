@@ -516,7 +516,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
     if (!toast || !toastMessage) return;
     toastMessage.textContent = message;
     toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    setTimeout(() => { toast.classList.remove('show'); }, 6000);
 };
 
 
@@ -3164,7 +3164,7 @@ window.regenerateSection = (fullSectionId) => {
                     console.error("Formato de Títulos/Thumbnails inválido recebido da IA:", parsedContent);
                     throw new Error("A IA retornou os dados de títulos em um formato inesperado. Tente novamente.");
                 }
-                                
+
 
                 const targetContentElement = document.getElementById('titlesThumbnailsContent');
                 if (targetContentElement) {
