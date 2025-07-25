@@ -332,12 +332,26 @@
                 <div class="input-group md:col-span-2"><label for="targetAudience">Público-Alvo:</label><input type="text" id="targetAudience" value="Interessados em mistérios e história." readonly></div>
                 <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
                 
-<div class="input-group">
-    <div class="flex items-center gap-2 mb-2">
-        <label for="narrativeStructure">2. Estrutura Específica:</label>
-        <i id="narrativeStructureTooltip" class="fas fa-question-circle text-gray-400 cursor-pointer tooltip-trigger"></i>
+
+<div class="relative group"> <!-- 1. Novo container com "relative" e "group" -->
+    <div class="input-group">
+        <div class="flex items-center gap-2 mb-2">
+            <label for="narrativeStructure">2. Estrutura Específica:</label>
+            <!-- O ícone de ajuda não é mais necessário aqui, o próprio campo será o gatilho -->
+        </div>
+        <select id="narrativeStructure"></select>
     </div>
-    <select id="narrativeStructure"></select>
+
+    <!-- 2. Esta é a nossa "Caixa Verde" (o popover), inicialmente escondida -->
+    <div id="structurePopover" 
+         class="absolute bottom-full left-0 mb-2 w-[400px] p-4 rounded-lg shadow-lg 
+                bg-gray-800 border border-gray-700 text-gray-300 
+                opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                transition-all duration-300 z-20 pointer-events-none group-hover:pointer-events-auto">
+        
+        <h4 id="popoverTitle" class="font-bold text-lg text-indigo-400 mb-2"></h4>
+        <p id="popoverDescription" class="text-sm leading-relaxed"></p>
+    </div>
 </div>
 
                 <div class="input-group md:col-span-2"><label for="narrativeTheme">3. Tema Principal:</label><input type="text" id="narrativeTheme" placeholder="Ex: Superação, Luta contra injustiça..."></div>
@@ -1877,19 +1891,24 @@ const invalidateAndClearPrompts = (sectionElement) => {
         };
 
 
-        const updateMainTooltip = () => {
-    const tooltipIcon = document.getElementById('narrativeStructureTooltip');
+    const updateMainTooltip = () => {
+    // Busca os elementos do nosso novo popover
+    const popoverTitle = document.getElementById('popoverTitle');
+    const popoverDescription = document.getElementById('popoverDescription');
     const structureSelect = document.getElementById('narrativeStructure');
-    if (!tooltipIcon || !structureSelect) return;
 
-    // 1. Pega a CHAVE da opção atualmente selecionada (ex: 'mystery_loop')
-    const selectedStructureKey = structureSelect.value;
+    if (!popoverTitle || !popoverDescription || !structureSelect) return;
+
+    // Pega a chave e o texto da opção selecionada
+    const selectedKey = structureSelect.value; // Ex: 'mystery_loop'
+    const selectedText = structureSelect.options[structureSelect.selectedIndex].text; // Ex: 'Mistério (com Loop Aberto)'
+
+    // Busca a descrição correspondente no nosso "dicionário"
+    const descriptionText = narrativeTooltips[selectedKey] || "Passe o mouse sobre as opções para ver a descrição.";
     
-    // 2. Busca a descrição correspondente no nosso "dicionário" de tooltips
-    const tooltipText = narrativeTooltips[selectedStructureKey] || "Selecione uma estrutura para ver a descrição.";
-    
-    // 3. Define o atributo 'data-tooltip' do ícone com essa descrição
-    tooltipIcon.setAttribute('data-tooltip', tooltipText);
+    // Atualiza o conteúdo do popover
+    popoverTitle.textContent = selectedText;
+    popoverDescription.textContent = descriptionText;
 };
 
         const updateNarrativeStructureOptions = () => {
