@@ -224,6 +224,25 @@
             background-color: var(--dark-bg);
         }
 
+        /* ========================================================== */
+        /* >>>>> ADICIONE ESTE NOVO ESTILO AO SEU CSS <<<<< */
+        /* ========================================================== */
+        .theme-toggle {
+            background-color: transparent;
+            border: none;
+            padding: 0.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .theme-toggle:hover {
+            background-color: color-mix(in srgb, var(--dark-border) 50%, transparent);
+        }
+
 
     </style>
 </head>
@@ -1348,52 +1367,51 @@ const mapEmotionsAndPacing = async (button) => {
     // ==========================================================
         // NOVA FUNÇÃO PARA ATUALIZAR A BARRA DE PROGRESO
         // ==========================================================
-                const updateProgressBar = () => {
-            const progressFill = document.getElementById('progressFill');
-            const progressText = document.getElementById('progressText');
-            if (!progressFill || !progressText) return;
+            const updateProgressBar = () => {
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    if (!progressFill || !progressText) return;
 
-            const taskButtonIds = [
-                'analyzeStrategyBtn',
-                'generateOutlineBtn',
-                'generateIntroBtn',
-                'generateDevelopmentBtn',
-                'climaxBtn',
-                'conclusionBtn',
-                'generateTitlesAndThumbnailsBtn',
-                'mapEmotionsBtn',
-                'generateDescriptionBtn',
-                'generateSoundtrackBtn'
-            ];
-            const totalTasks = taskButtonIds.length;
-            let completedTasks = 0;
-            
-            taskButtonIds.forEach(id => {
-                const button = document.getElementById(id);
-                if (button && button.classList.contains('btn-success')) {
-                    completedTasks++;
-                }
-            });
+    const taskButtonIds = [
+        'analyzeStrategyBtn',
+        'generateOutlineBtn',
+        'generateIntroBtn',
+        'generateDevelopmentBtn',
+        'climaxBtn',
+        'generateConclusionAndCtaBtn', // Corrigido para o botão correto da conclusão
+        'generateTitlesAndThumbnailsBtn',
+        'mapEmotionsBtn',
+        'generateDescriptionBtn',
+        'generateSoundtrackBtn'
+    ];
+    const totalTasks = taskButtonIds.length;
+    let completedTasks = 0;
+    
+    taskButtonIds.forEach(id => {
+        const button = document.getElementById(id);
+        if (button && button.classList.contains('btn-success')) {
+            completedTasks++;
+        }
+    });
 
+    const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-            const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    // >>>>> INÍCIO DA CORREÇÃO <<<<<
+    // Usamos as variáveis corretas (progressFill e progressText) e as cores corretas do CSS.
+    progressFill.style.width = `${percentage}%`;
+    progressText.textContent = `${percentage}%`;
 
-            // Atualiza a UI
-            if (elements.progressBar && elements.progressText) {
-                elements.progressBar.style.width = `${percentage}%`;
-                elements.progressText.textContent = `${percentage}%`;
-
-                if (percentage === 100) {
-                    elements.progressBar.textContent = "Projeto Pronto!"; 
-                    elements.progressBar.style.color = '#ffffff';
-                    elements.progressBar.style.textAlign = 'center';
-                    elements.progressBar.style.backgroundColor = 'var(--primary-color)';
-                } else {
-                    elements.progressBar.textContent = '';
-                    elements.progressBar.style.backgroundColor = 'var(--success-color)';
-                }
-            }
-        };
+    if (percentage === 100) {
+        progressFill.textContent = "Projeto Pronto!"; 
+        progressFill.style.color = '#ffffff';
+        progressFill.style.textAlign = 'center';
+        progressFill.style.backgroundColor = 'var(--success)'; // Corrigido
+    } else {
+        progressFill.textContent = '';
+        progressFill.style.backgroundColor = 'var(--primary)'; // Corrigido
+    }
+    // >>>>> FIM DA CORREÇÃO <<<<<
+};
 
         // ==========================================================
         // >>>>> SUBSTITUA SUA FUNÇÃO setupInputTabs POR ESTA <<<<<
