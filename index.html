@@ -3143,9 +3143,34 @@ const generateVideoIdeas = async (button) => {
     }
 };
 
-        
 
-        // =========================================================================
+
+// =========================================================================
+// >>>>> AÇÃO 1: ADICIONE A FUNÇÃO `selectIdea` QUE ESTAVA FALTANDO <<<<<
+// =========================================================================
+/**
+ * Preenche os campos do formulário principal com a ideia de vídeo selecionada.
+ * @param {object} idea - O objeto da ideia contendo título, descrição, etc.
+ */
+const selectIdea = (idea) => {
+    // Garante que os campos sejam preenchidos de forma segura, mesmo se a IA não retornar um valor
+    document.getElementById('videoTheme').value = idea.title || '';
+    document.getElementById('videoDescription').value = idea.videoDescription || '';
+    document.getElementById('targetAudience').value = idea.targetAudience || '';
+
+    // Rola a página para que o usuário veja os campos que foram preenchidos
+    const targetElement = document.getElementById('inputTabsNav');
+    if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    // Notifica o usuário que a ação foi bem-sucedida
+    window.showToast("Ideia selecionada! Agora defina a estratégia completa.");
+};
+
+
+
+// =========================================================================
 // >>>>> SUBSTITUA handleGenerateSection PELA VERSÃO FINAL COM CONTEXTO TOTAL <<<<<
 // =========================================================================
 /**
@@ -4274,16 +4299,13 @@ const generateStrategicOutline = async (button) => {
 
 
 // =========================================================================
-// >>>>> VERSÃO FINAL E CORRIGIDA DO DOMContentLoaded <<<<<
+// >>>>> AÇÃO 2: SUBSTITUA O BLOCO DOMContentLoaded INTEIRO <<<<<
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
     document.querySelectorAll('[id]').forEach(el => {
-        if (el.tagName === 'BUTTON') {
-            buttons[el.id] = el;
-        } else {
-            elements[el.id] = el;
-        }
+        if (el.tagName === 'BUTTON') { buttons[el.id] = el; } 
+        else { elements[el.id] = el; }
     });
 
     // --- 2. INICIALIZAÇÃO DE FUNÇÕES DA INTERFACE ---
@@ -4294,25 +4316,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 3. EVENT LISTENERS ESPECÍFICOS ---
     const goalSelect = document.getElementById('narrativeGoal');
-    if (goalSelect) {
-        goalSelect.addEventListener('change', updateNarrativeStructureOptions);
-    }
-    
+    if (goalSelect) { goalSelect.addEventListener('change', updateNarrativeStructureOptions); }
     const structureSelect = document.getElementById('narrativeStructure');
-    if (structureSelect) {
-        structureSelect.addEventListener('change', updateMainTooltip);
-    }
-
+    if (structureSelect) { structureSelect.addEventListener('change', updateMainTooltip); }
     const imageStyleSelect = document.getElementById('imageStyleSelect');
-    if (imageStyleSelect) {
-        imageStyleSelect.addEventListener('change', toggleCustomImageStyleVisibility);
-    }
-
+    if (imageStyleSelect) { imageStyleSelect.addEventListener('change', toggleCustomImageStyleVisibility); }
     const importInput = document.getElementById('importFileInput');
-    if (importInput) {
-        importInput.addEventListener('change', importProject);
-    }
-    
+    if (importInput) { importInput.addEventListener('change', importProject); }
     const darkModeToggle = document.getElementById('darkModeToggle');
     if (darkModeToggle) {
         darkModeToggle.addEventListener('click', () => {
@@ -4323,7 +4333,6 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
         });
     }
-
     if (localStorage.getItem('darkMode') === 'enabled') {
         document.body.classList.add('dark');
         const moonIcon = document.getElementById('moonIcon');
@@ -4331,11 +4340,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if(moonIcon) moonIcon.classList.add('hidden');
         if(sunIcon) sunIcon.classList.remove('hidden');
     }
-
     const speakingPaceSelect = document.getElementById('speakingPace');
-    if (speakingPaceSelect) {
-        speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
-    }
+    if (speakingPaceSelect) { speakingPaceSelect.addEventListener('change', updateAllReadingTimes); }
 
     // --- 4. O "GERENTE DE CLIQUES" ---
     document.addEventListener('click', function(event) {
@@ -4346,28 +4352,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (accordionHeader && !target.closest('.header-buttons')) {
             const body = accordionHeader.nextElementSibling;
             const arrow = accordionHeader.querySelector('.accordion-arrow');
-            if (body && arrow) {
-                body.classList.toggle('open');
-                arrow.classList.toggle('open');
-            }
+            if (body && arrow) { body.classList.toggle('open'); arrow.classList.toggle('open'); }
         }
 
         if (button && button.dataset.action) {
             event.preventDefault();
             const action = button.dataset.action;
             
+            // LÓGICA CORRIGIDA E FINAL PARA O BOTÃO "USAR"
             if (action === 'select-idea') {
                 const ideaString = button.dataset.idea;
                 if (ideaString) {
                     try {
                         const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                        
-                        // ==========================================================
-                        // >>>>> AQUI ESTÁ A CORREÇÃO FINAL <<<<<
-                        // Chamamos a função pelo seu nome completo: window.selectIdea
-                        // ==========================================================
-                        window.selectIdea(ideaObject);
-
+                        // Chama a função que acabamos de recriar
+                        selectIdea(ideaObject);
                     } catch (e) {
                         console.error("Falha ao processar os dados da ideia:", e);
                         window.showToast("Erro ao selecionar a ideia.");
@@ -4402,13 +4401,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'exportPdfBtn': () => downloadPdf(),
                 'exportTranscriptBtn': () => handleCopyAndDownloadTranscript(),
                 'resetProjectBtn': async () => {
-                    const confirmed = await showConfirmationDialog(
-                        "Começar um Novo Projeto?",
-                        "Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?"
-                    );
-                    if (confirmed) {
-                        resetApplicationState();
-                    }
+                    const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
+                    if (confirmed) { resetApplicationState(); }
                 },
             };
             if (clickActions[button.id]) {
@@ -4418,20 +4412,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 5. LÓGICA PARA RESETAR ROTEIRO EM MUDANÇAS ESTRATÉGICAS ---
-    const strategicInputIds = [
-        'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
-        'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
-        'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect'
-    ];
+    // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
+    const strategicInputIds = ['videoTheme','videoDescription','videoDuration','speakingPace','narrativeGoal','narrativeStructure','narrativeTheme','narrativeTone','narrativeVoice','centralQuestion','emotionalArc','shockingEndingHook','imageDescriptionEngine','imageStyleSelect'];
     strategicInputIds.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
             const eventType = (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') ? 'change' : 'input';
             element.addEventListener(eventType, (e) => {
-                if (!isSettingStrategy) {
-                    resetGeneratedScriptContent(e.target.id);
-                }
+                if (!isSettingStrategy) { resetGeneratedScriptContent(e.target.id); }
             });
         }
     });
