@@ -2116,128 +2116,137 @@ const invalidateAndClearPrompts = (sectionElement) => {
          * @param {string|null} outlineDirective - Uma diretriz específica do esboço estratégico para esta secção.
          * @returns {{prompt: string, maxTokens: number}} O prompt e o limite de tokens.
          */
-        const constructScriptPrompt = (sectionName, sectionTitle, outlineDirective = null) => {
-            const baseContext = getBasePromptContext();
-            const videoDuration = elements.videoDuration.value;
-            const selectedLanguage = elements.languageSelect.value;
-            const narrativeStructure = elements.narrativeStructure.value; // Corrected to use elements.narrativeStructure
+// =========================================================================
+// >>>>> FUNÇÃO `constructScriptPrompt` COMPLETA E SEM ABREVIAÇÕES <<<<<
+// =========================================================================
+const constructScriptPrompt = (sectionName, sectionTitle, outlineDirective = null, contextText = null) => {
+    const baseContext = getBasePromptContext();
+    const videoDuration = document.getElementById('videoDuration').value;
+    const selectedLanguage = document.getElementById('languageSelect').value;
+    const narrativeStructure = document.getElementById('narrativeStructure').value;
 
-            const targetWords = wordCountMap[videoDuration]?.[sectionName];
+    const targetWords = wordCountMap[videoDuration]?.[sectionName];
+    let durationInstruction = '';
+    if (targetWords) {
+        durationInstruction = `\n\n**CRITICAL TIMING CONSTRAINT:** The generated text for this section MUST be approximately **${targetWords} words** long to fit the video's schedule. This is a strict requirement.`;
+    }
 
-            let durationInstruction = '';
-            if (targetWords) {
-                // Cria uma instrução MUITO MAIS FORTE e explícita para a IA
-                durationInstruction = `\n\n**CRITICAL TIMING CONSTRAINT:** The generated text for this section MUST be approximately **${targetWords} words** long to fit the video's schedule. This is a strict requirement.`;
-            }
+    let prompt = `${baseContext}
 
-            let prompt = `${baseContext}
-
-        Você é um mestre roteiro de YouTube. Sua tarefa é escrever o texto para a seção **"${sectionTitle}"** do roteiro.
-            ${durationInstruction}
+Você é um mestre roteirista de YouTube. Sua tarefa é escrever o texto para a seção **"${sectionTitle}"** do roteiro.
+    ${durationInstruction}
 
 **REGRAS CRÍTICAS E INEGOCIÁVEIS:**
 1.  **FOCO TOTAL:** Sua resposta deve ser APENAS e SOMENTE o texto para a seção **"${sectionTitle}"**.
 2.  **SEM EXTRAS:** É estritamente proibido incluir preâmbulos (como "Aqui está a introdução:"), resumos, traduções ou qualquer outro texto que não seja o próprio roteiro. A violação desta regra resultará em falha.
 3.  **FORMATO LIMPO:** Não inclua rótulos de cena, de áudio ou de narrador (como [CENA], (Música sobe), Narrador:). Apenas o texto a ser falado.
+`;
 
-Siga estas regras e gere o roteiro para a seção "${sectionTitle}" agora.`;
-            let maxTokens = 2000;
+    if (contextText) {
+        prompt += `
+**INSTRUÇÃO DE CONTINUIDADE (A REGRA MAIS IMPORTANTE):**
+Você está escrevendo a continuação de um roteiro. O texto abaixo é da seção ANTERIOR.
+- **NÃO REPITA** as ideias, frases ou o tom da seção anterior.
+- Sua tarefa é **AVANÇAR A NARRATIVA**. Comece de onde o texto anterior parou.
+- Introduza novas informações, aprofunde os argumentos ou inicie o próximo ponto da história.
 
-            if (outlineDirective) {
-                prompt += `\n\n**IMPORTANT STRATEGIC GUIDELINE:** For this specific section, you MUST follow this strategic plan: "${outlineDirective}"`;
-            }
+**TEXTO DA SEÇÃO ANTERIOR (PARA CONTEXTO):**
+---
+${contextText}
+---
 
-            prompt += `\n\nIMPORTANT: Do NOT include any scene descriptions, visual/audio cues (e.g., [SHOT], (Camera pan), (Music swells)), or speaker labels (e.g., "Narrator:", "Host:") in the generated script content. Provide only the spoken text.`;
-            prompt += `\n\nABSOLUTELY NO META-COMMENTS. Do not add any explanatory text about the script itself. Your entire response must be ONLY the text to be spoken in the video, and nothing else.`;
+Agora, escreva a seção "${sectionTitle}", garantindo que seja uma continuação fluida e sem repetições.`;
+    }
 
-            if (elements.centralQuestion.value.trim()) {
-                prompt += `\nIf a 'Central Question' is provided, ensure every section of the script (Introduction, Development, Climax) directly contributes to exploring or answering this question. The entire video must revolve around this central theme.`;
-            }
+    if (outlineDirective) {
+        prompt += `\n\n**IMPORTANT STRATEGIC GUIDELINE:** For this specific section, you MUST follow this strategic plan: "${outlineDirective}"`;
+    }
+    
+    prompt += `\n\nIMPORTANT: Do NOT include any scene descriptions, visual/audio cues (e.g., [SHOT], (Camera pan), (Music swells)), or speaker labels (e.g., "Narrator:", "Host:") in the generated script content. Provide only the spoken text.`;
+    prompt += `\n\nABSOLUTELY NO META-COMMENTS. Do not add any explanatory text about the script itself. Your entire response must be ONLY the text to be spoken in the video, and nothing else.`;
 
-            // --- INÍCIO DA NOVA LÓGICA DE NARRATIVA ---
-            switch (narrativeStructure) {
-                case 'documentary':
-                    prompt += `\n\nNARRATIVE STYLE: Use a 'Documentary' structure.
-                    - **Introduction:** Start with a powerful, factual statement or a thought-provoking question that establishes the central theme. Present the "thesis" of the documentary.
-                    - **Development:** Build the narrative by presenting evidence, data, and historical context in a logical sequence. Structure it like an an investigation, revealing information progressively. Use language that suggests authority and credibility (e.g., "Evidence suggests...", "Historical records show...", "Experts believe...").
-                    - **Climax:** Present the most compelling piece of evidence or the central conclusion of your argument. This should be the moment where the "thesis" from the introduction is proven or deeply explored.
-                    - **Conclusion:** Summarize the key findings and arguments. End with a broader reflection on the implications of the topic, leaving the viewer with a new understanding or perspective.`;
-                    break;
-                case 'pixar_spine':
-                    prompt += `\n\nNARRATIVE STYLE: Use the 'Pixar Spine' structure.
-                    - **Introduction:** Era uma vez... (Introduce the main character and their ordinary world). Todo dia... (Describe their routine and the status quo).
-                    - **Development:** Até que um dia... (The inciting incident that changes everything). E por causa disso... (The character's journey begins, facing a series of challenges and events). E por causa disso... (The stakes get higher).
-                    - **Climax:** Até que finalmente... (The character faces the final confrontation or overcomes the main obstacle).
-                    - **Conclusion:** E desde então... (Describe the new normal and the character's transformation).`;
-                    break;
-                case 'underdog_victory':
-                     prompt += `\n\nNARRATIVE STYLE: Use the 'Victory of the Underdog' structure.
-                    - **Introduction:** Present a character or entity in a disadvantaged, underestimated, or limited situation (the 'underdog').
-                    - **Development:** Detail the immense challenges, the unfair obstacles, and the moments of doubt and struggle they faced. Emphasize their resilience and determination.
-                    - **Climax:** The moment of ultimate triumph, where the underdog overcomes the final, greatest obstacle against all odds.
-                    - **Conclusion:** Reflect on the victory, connecting it to a universal message of hope, perseverance, or potential, inspiring the audience with a "if they can do it, so can I" feeling.`;
-                    break;
-                case 'discovery_mentor':
-                    prompt += `\n\nNARRATIVE STYLE: Use the 'Great Discovery / Secret Mentor' structure.
-                    - **Introduction:** Start with the "before" state - a life of struggle, confusion, or mediocrity. Hint that a breakthrough is coming.
-                    - **Development:** Describe the moment of discovery or the encounter with a mentor. Explain the 'secret' or the new perspective that was revealed. Show how this new knowledge was applied and the first signs of change.
-                    - **Climax:** Detail the peak result or the ultimate transformation achieved by applying this secret knowledge.
-                    - **Conclusion:** Share the core lesson of the discovery and offer it to the audience, positioning the content as a guide to achieve similar results.`;
-                    break;
-                case 'if_not_found_create':
-                     prompt += `\n\nNARRATIVE STYLE: Use the 'I Couldn't Find It, So I Created It' structure.
-                    - **Introduction (The Problem):** Describe a personal and relatable problem you (or the protagonist) faced. Explain the frustration of searching for a solution and finding nothing adequate.
-                    - **Development (The Creation):** Detail the journey of deciding to create your own solution. Describe the trial and error, the hard work, and the key insights learned along the way.
-                    - **Climax (The Solution):** Present the final, successful creation (the product, the service, the method). Show how it solved the original problem perfectly.
-                    - **Conclusion (The Offer):** Offer this solution to the audience, who likely share the same original problem.`;
-                    break;
-                case 'mystery_loop':
-                    prompt += `\n\nNARRATIVE STYLE: Use the 'Mystery/Open Loop' structure.
-                    - In the **Introduction**, present a compelling central question or mystery and promise the answer by the end.
-                    - In the **Development**, build suspense by exploring clues and theories, occasionally reminding the viewer of the central question.
-                    - In the **Climax**, deliver the satisfying answer to the question posed in the introduction.`;
-                    break;
-                case 'pas':
-                    prompt += `\n\nNARRATIVE STYLE: Use the 'Problem-Agitate-Solution' structure.
-                    - Frame the **Introduction** around a clear 'Problem' that the audience can relate to.
-                    - Use the first part of the **Development** to 'Agitate' this problem, explaining its importance and complexity.
-                    - Frame the rest of the **Development** and the **Climax** as the 'Solution' or the revealing insight that addresses the initial problem.`;
-                    break;
-                case 'twist':
-                    prompt += `\n\nNARRATIVE STYLE: Use the 'False Climax & Twist' structure.
-                    - In the **Development**, build evidence towards a seemingly obvious conclusion (the 'false climax').
-                    - In the **Climax**, introduce a surprising new piece of information or a counter-argument that completely changes the expected outcome (the 'twist').
-                    - The **Conclusion** should reflect on the implications of this new, unexpected truth.`;
-                    break;
-                case 'heros_journey':
-                    prompt += `\n\nNARRATIVE STYLE: Use the 'Hero's Journey' structure.
-                    - **Introduction:** Present the 'Ordinary World' and the 'Call to Adventure'. Introduce the central character or concept.
-                    - **Development:** This is the 'Special World'. Describe the trials, allies, and enemies. Build the character's transformation through challenges.
-                    - **Climax:** The 'Ordeal' or the final battle. The moment of greatest tension and the hero's ultimate test.
-                    - **Conclusion:** The 'Return with the Elixir'. Show the resolution, what was learned, and how the 'Ordinary World' has changed because of the journey.
-                    `;
-                    break;
-                case 'bab':
-                    prompt += `\n\nNARRATIVE STYLE: Use the 'Before-After-Bridge' (BAB) structure.
-                    - **Introduction (Before):** Describe the 'Before' state. A world without the knowledge or solution you're about to present. Paint a picture of the problem or the lack of understanding.
-                    - **Development (After):** Describe the 'After' state. A desirable world where the problem is solved or the knowledge is revealed. Show the benefits and the ideal outcome.
-                    - **Climax & Conclusion (The Bridge):** Present your content as 'The Bridge'. Explain how your video's information is the exact path to get from the 'Before' state to the 'After' state. This is the solution, the 'how-to'.`;
-                    break;
-            }
+    if (document.getElementById('centralQuestion').value.trim()) {
+        prompt += `\nIf a 'Central Question' is provided, ensure every section of the script (Introduction, Development, Climax) directly contributes to exploring or answering this question. The entire video must revolve around this central theme.`;
+    }
+    
+    switch (narrativeStructure) {
+        case 'documentary':
+            prompt += `\n\nNARRATIVE STYLE: Use a 'Documentary' structure.
+            - **Introduction:** Start with a powerful, factual statement or a thought-provoking question that establishes the central theme. Present the "thesis" of the documentary.
+            - **Development:** Build the narrative by presenting evidence, data, and historical context in a logical sequence. Structure it like an an investigation, revealing information progressively. Use language that suggests authority and credibility (e.g., "Evidence suggests...", "Historical records show...", "Experts believe...").
+            - **Climax:** Present the most compelling piece of evidence or the central conclusion of your argument. This should be the moment where the "thesis" from the introduction is proven or deeply explored.
+            - **Conclusion:** Summarize the key findings and arguments. End with a broader reflection on the implications of the topic, leaving the viewer with a new understanding or perspective.`;
+            break;
+        case 'pixar_spine':
+            prompt += `\n\nNARRATIVE STYLE: Use the 'Pixar Spine' structure.
+            - **Introduction:** Era uma vez... (Introduce the main character and their ordinary world). Todo dia... (Describe their routine and the status quo).
+            - **Development:** Até que um dia... (The inciting incident that changes everything). E por causa disso... (The character's journey begins, facing a series of challenges and events). E por causa disso... (The stakes get higher).
+            - **Climax:** Até que finalmente... (The character faces the final confrontation or overcomes the main obstacle).
+            - **Conclusion:** E desde então... (Describe the new normal and the character's transformation).`;
+            break;
+        case 'underdog_victory':
+             prompt += `\n\nNARRATIVE STYLE: Use the 'Victory of the Underdog' structure.
+            - **Introduction:** Present a character or entity in a disadvantaged, underestimated, or limited situation (the 'underdog').
+            - **Development:** Detail the immense challenges, the unfair obstacles, and the moments of doubt and struggle they faced. Emphasize their resilience and determination.
+            - **Climax:** The moment of ultimate triumph, where the underdog overcomes the final, greatest obstacle against all odds.
+            - **Conclusion:** Reflect on the victory, connecting it to a universal message of hope, perseverance, or potential, inspiring the audience with a "if they can do it, so can I" feeling.`;
+            break;
+        case 'discovery_mentor':
+            prompt += `\n\nNARRATIVE STYLE: Use the 'Great Discovery / Secret Mentor' structure.
+            - **Introduction:** Start with the "before" state - a life of struggle, confusion, or mediocrity. Hint that a breakthrough is coming.
+            - **Development:** Describe the moment of discovery or the encounter with a mentor. Explain the 'secret' or the new perspective that was revealed. Show how this new knowledge was applied and the first signs of change.
+            - **Climax:** Detail the peak result or the ultimate transformation achieved by applying this secret knowledge.
+            - **Conclusion:** Share the core lesson of the discovery and offer it to the audience, positioning the content as a guide to achieve similar results.`;
+            break;
+        case 'if_not_found_create':
+             prompt += `\n\nNARRATIVE STYLE: Use the 'I Couldn't Find It, So I Created It' structure.
+            - **Introduction (The Problem):** Describe a personal and relatable problem you (or the protagonist) faced. Explain the frustration of searching for a solution and finding nothing adequate.
+            - **Development (The Creation):** Detail the journey of deciding to create your own solution. Describe the trial and error, the hard work, and the key insights learned along the way.
+            - **Climax (The Solution):** Present the final, successful creation (the product, the service, the method). Show how it solved the original problem perfectly.
+            - **Conclusion (The Offer):** Offer this solution to the audience, who likely share the same original problem.`;
+            break;
+        case 'mystery_loop':
+            prompt += `\n\nNARRATIVE STYLE: Use the 'Mystery/Open Loop' structure.
+            - In the **Introduction**, present a compelling central question or mystery and promise the answer by the end.
+            - In the **Development**, build suspense by exploring clues and theories, occasionally reminding the viewer of the central question.
+            - In the **Climax**, deliver the satisfying answer to the question posed in the introduction.`;
+            break;
+        case 'pas':
+            prompt += `\n\nNARRATIVE STYLE: Use the 'Problem-Agitate-Solution' structure.
+            - Frame the **Introduction** around a clear 'Problem' that the audience can relate to.
+            - Use the first part of the **Development** to 'Agitate' this problem, explaining its importance and complexity.
+            - Frame the rest of the **Development** and the **Climax** as the 'Solution' or the revealing insight that addresses the initial problem.`;
+            break;
+        case 'twist':
+            prompt += `\n\nNARRATIVE STYLE: Use the 'False Climax & Twist' structure.
+            - In the **Development**, build evidence towards a seemingly obvious conclusion (the 'false climax').
+            - In the **Climax**, introduce a surprising new piece of information or a counter-argument that completely changes the expected outcome (the 'twist').
+            - The **Conclusion** should reflect on the implications of this new, unexpected truth.`;
+            break;
+        case 'heros_journey':
+            prompt += `\n\nNARRATIVE STYLE: Use the 'Hero's Journey' structure.
+            - **Introduction:** Present the 'Ordinary World' and the 'Call to Adventure'. Introduce the central character or concept.
+            - **Development:** This is the 'Special World'. Describe the trials, allies, and enemies. Build the character's transformation through challenges.
+            - **Climax:** The 'Ordeal' or the final battle. The moment of greatest tension and the hero's ultimate test.
+            - **Conclusion:** The 'Return with the Elixir'. Show the resolution, what was learned, and how the 'Ordinary World' has changed because of the journey.
+            `;
+            break;
+        case 'bab':
+            prompt += `\n\nNARRATIVE STYLE: Use the 'Before-After-Bridge' (BAB) structure.
+            - **Introduction (Before):** Describe the 'Before' state. A world without the knowledge or solution you're about to present. Paint a picture of the problem or the lack of understanding.
+            - **Development (After):** Describe the 'After' state. A desirable world where the problem is solved or the knowledge is revealed. Show the benefits and the ideal outcome.
+            - **Climax & Conclusion (The Bridge):** Present your content as 'The Bridge'. Explain how your video's information is the exact path to get from the 'Before' state to the 'After' state. This is the solution, the 'how-to'.`;
+            break;
+    }
 
-            // ==========================================================
-            // >>>>> CÓDIGO FINAL E CORRIGIDO PARA O SWITCH <<<<<
-            // ==========================================================
-            switch (sectionName) {
-                case 'outline': // Este não muda
-                    prompt = `${baseContext}
+    let maxTokens = 2000;
 
+    switch (sectionName) {
+        case 'outline':
+            prompt = `${baseContext}
 Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar um "beat sheet" ou um esboço estratégico detalhado para o vídeo. Analise todos os parâmetros fornecidos (tema, público, estilo narrativo, etc.) para criar a estrutura mais impactante possível.
-
 Responda APENAS com um objeto JSON. O objeto deve conter chaves para cada parte principal do roteiro: "introduction", "development", "climax", "conclusion", e "cta".
-
 O valor de cada chave deve ser uma string descrevendo o objetivo, o conteúdo e a emoção daquela secção específica. Seja conciso, mas estratégico.
-
 Exemplo de formato JSON esperado:
 {
   "introduction": "Começar com uma pergunta retórica chocante sobre a mortalidade, seguida por uma promessa de que a história de Lázaro detém uma resposta inesperada. Gancho emocional: curiosidade e um toque de medo existencial.",
@@ -2245,112 +2254,90 @@ Exemplo de formato JSON esperado:
   "climax": "O momento de maior tensão no túmulo. Descrever a ordem de Jesus com autoridade e o espanto da multidão. O milagre deve ser o pico emocional e visual do vídeo.",
   "conclusion": "Resumir a lição: o milagre não é sobre desafiar a morte, mas sobre o poder da fé. Conectar a história de Lázaro à jornada de fé pessoal do espectador.",
   "cta": "Fazer uma chamada para ação suave, pedindo para o espectador compartilhar sua própria história de superação ou fé nos comentários, criando uma comunidade."
-}
-`;
-                    maxTokens = 1500;
-                    break;
+}`;
+            maxTokens = 1500;
+            break;
 
-                case 'intro':
-                    const shockingHook = document.getElementById('shockingEndingHook')?.value.trim();
-                    if (shockingHook) {
-                        prompt += `
-                        \n\n**CRITICAL INSTRUCTION FOR THE INTRODUCTION:**
-                        You MUST start the script EXACLTY with the following "Shocking Ending" phrase, without any preamble: "${shockingHook}"
-                        After stating that phrase, use the rest of the introduction to build a deep sense of mystery and curiosity, making the audience desperate to know the chain of events that led to that ending. Do not explain the ending, only create the hook.
-                        `;
-                    } else {
-                        prompt += `
-                        The introduction should hook the viewer immediately, clearly state the video's intriguing question or mystery, and set the stage for what's to come. It must be captivating and create curiosity.
-                        `;
-                    }
-                    if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
-                        prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
-                    }
-                    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500; // CORRIGIDO
-                    break;
-
-                case 'development':
-                    prompt += `
-                    The development section should delve into the core topic, presenting facts, arguments, and historical context. It should maintain a strong narrative flow, building suspense and providing compelling information. Break down complex ideas into easily digestible parts.
-                    `;
-                    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 1500; // CORRIGIDO
-                    break;
-
-                case 'climax':
-                    prompt += `
-                    The climax should be the most impactful part of the video, revealing key insights, surprising twists, or the most compelling evidence related to the video theme. It should be dramatic and leave the viewer with a sense of awe or profound understanding.
-                    `;
-                    if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
-                        prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
-                    }
-                    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500; // CORRIGIDO
-                    break;
-
-                case 'conclusion':
-                    prompt += `
-                    The conclusion should summarize the main points, provide a final thought or reflection, and leave the viewer with a lasting impression. Ensure the conclusion is complete and well-rounded, providing a sense of closure.
-                    `;
-                    if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
-                        prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
-                    }
-                    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500; // CORRIGIDO
-                    break;
-
-                case 'cta':
-                    prompt += `
-                    The Call to Action (CTA) should be clear and concise, encouraging viewers to subscribe, like, comment, or share. It should be compelling and feel like a natural conclusion to the video, **but ensure it is a complete and well-rounded paragraph.**
-                    `;
-                    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 400; // CORRIGIDO
-                    break;
-
-                                case 'titles_thumbnails':
-                    // >>>>> PROMPT BLINDADO <<<<<
-                    prompt = `${baseContext}
-                    Você é uma API de geração de metadados. Sua única função é retornar um objeto JSON.
-
-                    **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E ESTRICTAS):**
-                    1.  Sua resposta DEVE ser APENAS e SOMENTE o código de um objeto JSON.
-                    2.  O objeto DEVE começar com uma chave de abertura \`{\` e terminar com uma chave de fechamento \`}\`.
-                    3.  O objeto DEVE conter EXATAMENTE duas chaves de nível superior: \`"titles"\` e \`"thumbnails"\`.
-                    4.  O valor de \`"titles"\` DEVE ser um array de strings.
-                    5.  O valor de \`"thumbnails"\` DEVE ser um array de objetos, onde cada objeto tem as chaves "title" e "description".
-
-                    **EXEMPLO DE RESPOSTA PERFEITA:**
-                    {
-                  "titles": [
-                  "Título de Exemplo 1",
-                  "Título de Exemplo 2"
-                    ],
-                    "thumbnails": [
-                     {
-                      "title": "THUMB 1",
-                  "description": "Descrição da thumbnail 1."
-                 }
-                ]
-                }
-
-                    Analise o contexto fornecido e gere 5 títulos e 5 ideias de thumbnail, seguindo as regras de formatação acima SEM QUALQUER DESVIO.`;
-                    maxTokens = 1500; // Aumentamos um pouco por segurança
-                    break;
-
-                case 'description':
-                const languageName = new Intl.DisplayNames([selectedLanguage], { type: 'language' }).of(selectedLanguage);
-                prompt = `${baseContext}\n\nGenerate a compelling YouTube video description (around 150-200 words) and 10 relevant hashtags.
-    
-                **CRITICAL LANGUAGE RULE: Your entire response, including the headers "Description:" and "Hashtags:", MUST be in ${languageName}.**
-
-                Output format:
-                Description:
-                [Your description here]
-
-                Hashtags:
-                #hashtag1 #hashtag2 ...
+        case 'intro':
+            const shockingHook = document.getElementById('shockingEndingHook')?.value.trim();
+            if (shockingHook) {
+                prompt += `
+                \n\n**CRITICAL INSTRUCTION FOR THE INTRODUCTION:**
+                You MUST start the script EXACLTY with the following "Shocking Ending" phrase, without any preamble: "${shockingHook}"
+                After stating that phrase, use the rest of the introduction to build a deep sense of mystery and curiosity, making the audience desperate to know the chain of events that led to that ending. Do not explain the ending, only create the hook.
                 `;
-                maxTokens = 700;
-                break;
+            } else {
+                prompt += `
+                The introduction should hook the viewer immediately, clearly state the video's intriguing question or mystery, and set the stage for what's to come. It must be captivating and create curiosity.
+                `;
             }
-            return { prompt, maxTokens };
-        };
+            if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
+                prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
+            }
+            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500;
+            break;
+
+        case 'development':
+            prompt += `
+            The development section should delve into the core topic, presenting facts, arguments, and historical context. It should maintain a strong narrative flow, building suspense and providing compelling information. Break down complex ideas into easily digestible parts.
+            `;
+            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 1500;
+            break;
+
+        case 'climax':
+            prompt += `
+            The climax should be the most impactful part of the video, revealing key insights, surprising twists, or the most compelling evidence related to the video theme. It should be dramatic and leave the viewer with a sense of awe or profound understanding.
+            `;
+            if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
+                prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
+            }
+            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500;
+            break;
+
+        case 'conclusion':
+            prompt += `
+            The conclusion should summarize the main points, provide a final thought or reflection, and leave the viewer with a lasting impression. Ensure the conclusion is complete and well-rounded, providing a sense of closure.
+            `;
+            if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
+                prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
+            }
+            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500;
+            break;
+
+        case 'cta':
+            prompt += `
+            The Call to Action (CTA) should be clear and concise, encouraging viewers to subscribe, like, comment, or share. It should be compelling and feel like a natural conclusion to the video, **but ensure it is a complete and well-rounded paragraph.**
+            `;
+            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 400;
+            break;
+
+        case 'titles_thumbnails':
+            prompt = `${baseContext}
+            Você é uma API de geração de metadados. Sua única função é retornar um objeto JSON.
+            **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E ESTRICTAS):**
+            1.  Sua resposta DEVE ser APENAS e SOMENTE o código de um objeto JSON...
+            // ... (resto do seu prompt para titles_thumbnails aqui)
+            `;
+            maxTokens = 1500;
+            break;
+
+        case 'description':
+        const languageName = new Intl.DisplayNames([selectedLanguage], { type: 'language' }).of(selectedLanguage);
+        prompt = `${baseContext}\n\nGenerate a compelling YouTube video description (around 150-200 words) and 10 relevant hashtags.
+**CRITICAL LANGUAGE RULE: Your entire response, including the headers "Description:" and "Hashtags:", MUST be in ${languageName}.**
+Output format:
+Description:
+[Your description here]
+
+Hashtags:
+#hashtag1 #hashtag2 ...
+`;
+        maxTokens = 700;
+        break;
+    }
+    
+    return { prompt, maxTokens };
+};
 
         /**
          * Faz uma chamada à API Groq através de uma função Netlify.
@@ -3004,83 +2991,108 @@ ${promptContext}`;
 
         
 
-        /**
-         * Lida com a geração de uma secção específica do roteiro.
-         * @param {HTMLElement} button - O botão que acionou a geração.
-         * @param {string} sectionName - O nome da secção (ex: 'intro').
-         * @param {string} sectionTitle - O título da secção para exibição.
-         * @param {string} elementId - O ID do elemento HTML onde o conteúdo será inserido (ex: 'intro').
-         */
-        // ==========================================================
-        // >>>>> SUBSTITUA SUA FUNÇÃO handleGenerateSection POR ESTA <<<<<
-        // ==========================================================
-        const handleGenerateSection = async (button, sectionName, sectionTitle, elementId) => {
-            if (!validateInputs()) return;
-            if (!strategicOutline) {
-                window.showToast("Crie o Esboço Estratégico primeiro!");
-                return;
-            }
-            
-            showButtonLoading(button);
-            
-            const targetSectionElement = document.getElementById(`${elementId}Section`);
+        // =========================================================================
+// >>>>> SUBSTITUA handleGenerateSection PELA VERSÃO FINAL COM CONTEXTO TOTAL <<<<<
+// =========================================================================
+/**
+ * Lida com a geração de uma secção do roteiro, passando o contexto de TODAS as seções anteriores.
+ * @param {HTMLElement} button - O botão que acionou a geração.
+ * @param {string} sectionName - O nome da secção (ex: 'intro', 'development', 'climax').
+ * @param {string} sectionTitle - O título da secção para exibição (ex: 'Introdução').
+ * @param {string} elementId - O ID do elemento HTML onde o conteúdo será inserido.
+ */
+const handleGenerateSection = async (button, sectionName, sectionTitle, elementId) => {
+    // 1. Validações iniciais
+    if (!validateInputs()) return;
+    if (!strategicOutline) {
+        window.showToast("Crie o Esboço Estratégico primeiro!");
+        return;
+    }
+    
+    showButtonLoading(button);
+    
+    const targetSectionElement = document.getElementById(`${elementId}Section`);
+    if (targetSectionElement) {
+        // Limpa saídas de análise anteriores
+        const analysisOutput = targetSectionElement.querySelector('.section-analysis-output');
+        const performanceOutput = targetSectionElement.querySelector('.section-performance-output');
+        if (analysisOutput) analysisOutput.innerHTML = '';
+        if (performanceOutput) performanceOutput.innerHTML = '';
+    }
 
-            // Limpeza prévia (código existente, permanece igual)
-            if (targetSectionElement) {
-                const analysisOutput = targetSectionElement.querySelector('.section-analysis-output');
-                const performanceOutput = targetSectionElement.querySelector('.section-performance-output');
-                if (analysisOutput) analysisOutput.innerHTML = '';
-                if (performanceOutput) performanceOutput.innerHTML = '';
-            }
+    try {
+        // 2. (A GRANDE MUDANÇA) Coleta o contexto de forma sequencial e cumulativa
+        let contextText = null;
+        const sectionOrder = ['introSection', 'developmentSection', 'climaxSection'];
+        const previousSectionsContent = [];
 
-            try {
-                const keyMap = { intro: 'introduction' };
-                const outlineKey = keyMap[sectionName] || sectionName;
-                const directive = strategicOutline[outlineKey];
-                const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive);
+        // Define quais seções são pré-requisitos para a seção atual
+        const requiredSections = {
+            'development': ['introSection'],
+            'climax': ['introSection', 'developmentSection'],
+            'conclusion': ['introSection', 'developmentSection', 'climaxSection']
+        };
+
+        // Verifica se a seção atual tem pré-requisitos
+        if (requiredSections[sectionName]) {
+            for (const reqId of requiredSections[sectionName]) {
+                const requiredWrapper = document.querySelector(`#${reqId} .generated-content-wrapper`);
                 
-                let rawResult = await callGroqAPI(prompt, maxTokens);
-                let cleanedResult = removeMetaComments(rawResult.trim());
-
-                const paragraphs = cleanedResult.split('\n').filter(p => p.trim() !== '');
-                const contentWithDivs = paragraphs.map((p, index) => 
-                    `<div id="${elementId}-p-${index}">${p}</div>`
-                ).join('');
-                
-                if (targetSectionElement) {
-                    const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
-                    targetSectionElement.innerHTML = sectionHtml;
-
-                   targetSectionElement.classList.remove(
-    'card',                       // Remove o estilo de card
-    'card-placeholder',           // Remove a classe de placeholder
-    'flex',                       // <<< Remove a formatação em linha
-    'justify-between',            // <<< Remove o alinhamento
-    'items-center',               // <<< Remove a centralização vertical
-    'animate-fade-in'             // Remove a animação que já aconteceu
-);
-
-// Garantimos que a classe 'script-section' (que pode ter sido removida) está presente.
-targetSectionElement.classList.add('script-section');
-
-                    targetSectionElement.querySelector('.accordion-item')?.classList.add('animate-fade-in');
-                } else {
-                    console.error(`Elemento alvo com ID '${elementId}Section' não encontrado.`);
-                    window.showToast("Erro interno: Seção do roteiro não encontrada.");
+                // Se um pré-requisito não foi gerado, avisa o usuário e para
+                if (!requiredWrapper || !requiredWrapper.textContent.trim()) {
+                    const reqTitle = document.querySelector(`#${reqId}`).closest('.script-section').querySelector('h3')?.textContent || reqId.replace('Section', '');
+                    window.showToast(`Por favor, gere a seção "${reqTitle}" primeiro.`);
+                    hideButtonLoading(button);
                     return;
                 }
-                
-                markButtonAsCompleted(button.id);
-                updateButtonStates();
-
-            } catch (error) {
-                window.showToast(`Falha ao gerar ${sectionTitle}: ${error.message}`);
-                console.error(`Error generating ${sectionTitle}.`, error);
-            } finally {
-                hideButtonLoading(button);
-                updateButtonStates();
+                // Adiciona o conteúdo do pré-requisito à nossa coleta
+                previousSectionsContent.push(requiredWrapper.textContent.trim());
             }
-        };
+            
+            // Junta todo o conteúdo coletado em um único texto de contexto
+            contextText = previousSectionsContent.join('\n\n---\n\n');
+        }
+
+        // 3. Constrói o prompt, passando o `contextText` cumulativo
+        const keyMap = { intro: 'introduction' };
+        const outlineKey = keyMap[sectionName] || sectionName;
+        const directive = strategicOutline[outlineKey];
+        const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive, contextText);
+        
+        // 4. Chama a API e processa o resultado (lógica existente)
+        let rawResult = await callGroqAPI(prompt, maxTokens);
+        let cleanedResult = removeMetaComments(rawResult.trim());
+
+        const paragraphs = cleanedResult.split('\n').filter(p => p.trim() !== '');
+        const contentWithDivs = paragraphs.map((p, index) => 
+            `<div id="${elementId}-p-${index}">${p}</div>`
+        ).join('');
+        
+        // 5. Insere o conteúdo gerado na página (lógica existente)
+        if (targetSectionElement) {
+            const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
+            targetSectionElement.innerHTML = sectionHtml;
+            targetSectionElement.classList.remove('card', 'card-placeholder', 'flex', 'justify-between', 'items-center', 'animate-fade-in');
+            targetSectionElement.classList.add('script-section');
+            targetSectionElement.querySelector('.accordion-item')?.classList.add('animate-fade-in');
+        } else {
+            console.error(`Elemento alvo com ID '${elementId}Section' não encontrado.`);
+            window.showToast("Erro interno: Seção do roteiro não encontrada.");
+            return;
+        }
+        
+        // 6. Finaliza e atualiza a UI (lógica existente)
+        markButtonAsCompleted(button.id);
+        updateButtonStates();
+
+    } catch (error) {
+        window.showToast(`Falha ao gerar ${sectionTitle}: ${error.message}`);
+        console.error(`Error generating ${sectionTitle}.`, error);
+    } finally {
+        hideButtonLoading(button);
+        updateButtonStates();
+    }
+};
 
 
 
