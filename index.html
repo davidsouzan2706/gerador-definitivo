@@ -1165,62 +1165,71 @@ const updateAllReadingTimes = () => {
             });
         };
 
-        /**
-         * Atualiza o estado de habilitação/desabilitação dos botões com base no estado do roteiro. (VERSÃO CORRIGIDA)
-         */
+// =========================================================================
+// >>>>> SUBSTITUA SUA FUNÇÃO updateButtonStates INTEIRA POR ESTA VERSÃO FINAL <<<<<
+// =========================================================================
+/**
+ * Atualiza o estado de todos os botões e a visibilidade de módulos dinâmicos (como o da Conclusão)
+ * com base no progresso atual da geração do roteiro.
+ */
 const updateButtonStates = () => {
-    // Verificações que já existem (permanecem iguais)
+    // 1. Verifica quais seções principais já foram geradas procurando pelo acordeão.
     const introGenerated = document.querySelector('#introSection .accordion-item');
     const devGenerated = document.querySelector('#developmentSection .accordion-item');
     const climaxGenerated = document.querySelector('#climaxSection .accordion-item');
-    
-    // >>>>> 1. ADICIONAMOS A VERIFICAÇÃO PARA A CONCLUSÃO <<<<<
     const conclusionGenerated = document.querySelector('#conclusionSection .accordion-item');
     
-    // Condição para o roteiro principal (permanece igual)
+    // 2. Define a condição principal: O roteiro base (até o Clímax) está pronto?
     const allMainScriptGenerated = introGenerated && devGenerated && climaxGenerated;
 
-    // >>>>> 2. CRIAMOS UMA NOVA CONDIÇÃO MAIS ESTRITA PARA O ROTEIRO COMPLETO <<<<<
-    const isFullScriptComplete = allMainScriptGenerated && conclusionGenerated;
-
-    // Habilita/desabilita os botões de Metadados (exceto o Mapear)
-    const metadataButtons = ['generateTitlesAndThumbnailsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn'];
+    // 3. Habilita/desabilita os botões de metadados.
+    const metadataButtons = ['generateTitlesAndThumbnailsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'];
     metadataButtons.forEach(id => {
         const btn = document.getElementById(id);
-        if (btn) btn.disabled = !allMainScriptGenerated;
+        if (btn) {
+            // O "Mapa Emocional" só faz sentido quando o roteiro está 100% completo (incluindo a conclusão).
+            if (id === 'mapEmotionsBtn') {
+                btn.disabled = !(allMainScriptGenerated && conclusionGenerated);
+            } else {
+                // Os outros metadados podem ser gerados após o clímax.
+                btn.disabled = !allMainScriptGenerated;
+            }
+        }
     });
 
-
-
-    // >>>>> 3. SEPARAMOS a lógica do botão "Mapear" dos outros <<<<<
-
-
-    // A lógica para o módulo de conclusão (permanece igual)
+    // 4. Lógica para exibir/esconder o Módulo de Estratégia da Conclusão.
     const conclusionModule = document.getElementById('conclusionStrategyModule');
-    const conclusionBtn = document.getElementById('generateConclusionAndCtaBtn');
-    if (conclusionModule) {
+    const climaxContainer = document.getElementById('climaxSection');
+
+    // Garante que os elementos necessários existem para evitar erros.
+    if (conclusionModule && climaxContainer) {
+
+        // CONDIÇÃO PARA MOSTRAR O MÓDULO:
+        // As 3 seções principais foram geradas E o módulo ainda está escondido.
         if (allMainScriptGenerated && conclusionModule.classList.contains('hidden')) {
-            const climaxContainer = document.getElementById('climaxSection');
-            if (climaxContainer) {
-                climaxContainer.insertAdjacentElement('afterend', conclusionModule);
-            }
+            // Move o módulo para o local correto na tela (logo após o Clímax).
+            climaxContainer.insertAdjacentElement('afterend', conclusionModule);
+            // Torna o módulo visível.
             conclusionModule.classList.remove('hidden');
+            // Rola a tela suavemente para que o usuário veja o novo módulo.
             conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            window.showToast("Ótimo! Agora defina a estratégia para sua conclusão.");
+            // Notifica o usuário.
+            window.showToast("Excelente! Agora, defina a estratégia para a sua conclusão.");
             
+            // Adiciona os event listeners aos botões de rádio para interatividade.
             document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
                 radio.addEventListener('change', handleConclusionStrategyChange);
             });
+            // Chama a função uma vez para configurar o estado inicial correto dos placeholders, etc.
             handleConclusionStrategyChange();
-        } else if (!allMainScriptGenerated && !conclusionModule.classList.contains('hidden')) {
+        } 
+        // CONDIÇÃO PARA ESCONDER O MÓDULO (caso o usuário reset o roteiro):
+        // Se alguma das 3 seções principais não estiver gerada E o módulo estiver visível.
+        else if (!allMainScriptGenerated && !conclusionModule.classList.contains('hidden')) {
             conclusionModule.classList.add('hidden');
         }
     }
-    if (conclusionBtn) {
-        conclusionBtn.disabled = !allMainScriptGenerated;
-    }
 };
-
         /**
          * Mostra um alerta em tela cheia com uma mensagem.
          * @param {string} message - A mensagem a ser exibida.
