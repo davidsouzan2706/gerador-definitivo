@@ -628,6 +628,12 @@
         let generatedTitlesAndThumbnails = null;
         let allImagePrompts = {}; 
         let strategicOutline = null;
+        let projectState = {
+        intro: false,
+        development: false,
+        climax: false,
+        conclusion: false
+    };
         let elements = {};
         let buttons = {};
         let totalScriptSeconds = 0;
@@ -917,59 +923,78 @@ const updateAllReadingTimes = () => {
 
 
 
-/**
-         * Limpa apenas os outputs gerados do projeto, mantendo os inputs principais.
-         */
-        const resetProjectOutputs = () => {
-            console.log("Resetando outputs do projeto para nova estratégia...");
+// =========================================================================
+// >>>>> AÇÃO 4: SUBSTITUA AS FUNÇÕES DE RESET COMPLETAS <<<<<
+// =========================================================================
+const resetProjectOutputs = () => {
+    console.log("Resetando outputs do projeto para nova estratégia...");
 
-            // Limpa variáveis de estado
-            strategicOutline = null;
-            allImagePrompts = {};
-            generatedTitlesAndThumbnails = null;
-            totalScriptSeconds = 0;
-            promptPaginationState = {};
-            window.emotionalMap = null;
+    // Zera o nosso "painel de controle".
+    projectState = { intro: false, development: false, climax: false, conclusion: false };
 
-            // Limpa a UI dos outputs
-            const contentContainers = [
-                'scriptSectionsContainer', 'outlineContent', 'titlesThumbnailsContent', 
-                'videoDescriptionContent', 'soundtrackContent', 'emotionalMapContent'
-            ];
-            
-            contentContainers.forEach(id => {
-                const container = document.getElementById(id);
-                if (container) {
-                    if (id === 'scriptSectionsContainer') {
-                        // RECONSTRÓI os placeholders em vez de apenas limpar
-                        container.innerHTML = `
-                            <div id="introSection" class="script-section"></div>
-                            <div id="developmentSection" class="script-section"></div>
-                            <div id="climaxSection" class="script-section"></div>
-                            <div id="conclusionSection" class="script-section"></div>
-                            <div id="ctaSection" class="script-section hidden"></div> 
-                        `;
-                    } else {
-                        // Recria o placeholder se ele existir
-                        const placeholderText = {
-                            'outlineContent': "Clique em 'Criar Esboço' para a IA planejar a estrutura do roteiro.",
-                            'titlesThumbnailsContent': "Clique em 'Gerar' para ver as sugestões",
-                            'videoDescriptionContent': "Clique em 'Gerar' para ver a descrição",
-                            'soundtrackContent': "Clique em 'Gerar' para criar sugestões de trilha para o roteiro completo.",
-                            'emotionalMapContent': "Clique em 'Mapear' para a IA analisar a jornada emocional do roteiro."
-                        };
-                        container.innerHTML = `<div class="asset-card-placeholder">${placeholderText[id] || ''}</div>`;
-                    }
-                }
-            });
+    // O resto da sua função continua o mesmo...
+    strategicOutline = null;
+    allImagePrompts = {};
+    generatedTitlesAndThumbnails = null;
+    totalScriptSeconds = 0;
+    promptPaginationState = {};
+    window.emotionalMap = null;
 
-            // Adiciona a lógica para resetar os botões
-            resetCompletionIcons();
-            updateProgressBar();
-            
-            const conclusionModule = document.getElementById('conclusionStrategyModule');
-            if(conclusionModule) conclusionModule.classList.add('hidden');
-        };
+    const contentContainers = ['scriptSectionsContainer', 'outlineContent', 'titlesThumbnailsContent', 'videoDescriptionContent', 'soundtrackContent', 'emotionalMapContent'];
+    
+    contentContainers.forEach(id => {
+        const container = document.getElementById(id);
+        if (container) {
+            if (id === 'scriptSectionsContainer') {
+                container.innerHTML = `
+                    <div id="introSection" class="script-section"></div>
+                    <div id="developmentSection" class="script-section"></div>
+                    <div id="climaxSection" class="script-section"></div>
+                    <div id="conclusionSection" class="script-section"></div>
+                    <div id="ctaSection" class="script-section hidden"></div> 
+                `;
+            } else {
+                const placeholderText = {
+                    'outlineContent': "Clique em 'Criar Esboço' para a IA planejar a estrutura do roteiro.",
+                    'titlesThumbnailsContent': "Clique em 'Gerar' para ver as sugestões",
+                    'videoDescriptionContent': "Clique em 'Gerar' para ver a descrição",
+                    'soundtrackContent': "Clique em 'Gerar' para criar sugestões de trilha para o roteiro completo.",
+                    'emotionalMapContent': "Clique em 'Mapear' para a IA analisar a jornada emocional do roteiro."
+                };
+                container.innerHTML = `<div class="asset-card-placeholder">${placeholderText[id] || ''}</div>`;
+            }
+        }
+    });
+
+    resetCompletionIcons();
+    updateProgressBar();
+    
+    const conclusionModule = document.getElementById('conclusionStrategyModule');
+    if(conclusionModule) conclusionModule.classList.add('hidden');
+};
+
+const resetApplicationState = () => {
+    // Zera o nosso "painel de controle".
+    projectState = { intro: false, development: false, climax: false, conclusion: false };
+
+    // O resto da sua função continua o mesmo...
+    const safeReset = (elementId, value = '') => {
+        const element = document.getElementById(elementId);
+        if (element) { element.value = value; }
+    };
+    
+    safeReset('channelName', 'The Biblical Unveiling');
+    // ... (adicione todos os seus outros `safeReset` aqui) ...
+
+    resetProjectOutputs(); // Chama a outra função de reset para evitar duplicação de código.
+
+    window.showToast("Pronto para um novo roteiro!");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+
+
+
 
 
         /**
@@ -1179,28 +1204,29 @@ const updateAllReadingTimes = () => {
 
 
 // =========================================================================
-// >>>>> AÇÃO 4: SUBSTITUA A FUNÇÃO updateButtonStates COMPLETA <<<<<
+// >>>>> AÇÃO 3: SUBSTITUA A FUNÇÃO updateButtonStates COMPLETA <<<<<
 // =========================================================================
 const updateButtonStates = () => {
-    const introGenerated = document.querySelector('#introSection .accordion-item');
-    const devGenerated = document.querySelector('#developmentSection .accordion-item');
-    const climaxGenerated = document.querySelector('#climaxSection .accordion-item');
-    const conclusionGenerated = document.querySelector('#conclusionSection .accordion-item');
+    // Em vez de olhar para o HTML, lemos nosso "painel de controle" (`projectState`).
+    const { intro, development, climax, conclusion } = projectState;
     
-    const allMainScriptGenerated = introGenerated && devGenerated && climaxGenerated;
+    // A condição principal agora é baseada em nosso objeto de estado. É 100% confiável.
+    const allMainScriptGenerated = intro && development && climax;
 
+    // A lógica de metadados agora é mais robusta.
     const metadataButtons = ['generateTitlesAndThumbnailsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'];
     metadataButtons.forEach(id => {
         const btn = document.getElementById(id);
         if (btn) {
             if (id === 'mapEmotionsBtn') {
-                btn.disabled = !(allMainScriptGenerated && conclusionGenerated);
+                btn.disabled = !(allMainScriptGenerated && conclusion);
             } else {
                 btn.disabled = !allMainScriptGenerated;
             }
         }
     });
 
+    // Lógica para exibir/esconder o Módulo da Conclusão.
     const conclusionModule = document.getElementById('conclusionStrategyModule');
     const climaxContainer = document.getElementById('climaxSection');
 
@@ -1221,6 +1247,10 @@ const updateButtonStates = () => {
         }
     }
 };
+
+
+
+
         /**
          * Mostra um alerta em tela cheia com uma mensagem.
          * @param {string} message - A mensagem a ser exibida.
@@ -3113,9 +3143,10 @@ const selectIdea = (idea) => {
 
 
 // =========================================================================
-// >>>>> AÇÃO 3: SUBSTITUA A FUNÇÃO handleGenerateSection COMPLETA <<<<<
+// >>>>> AÇÃO 2: SUBSTITUA A FUNÇÃO handleGenerateSection COMPLETA <<<<<
 // =========================================================================
 const handleGenerateSection = async (button, sectionName, sectionTitle, elementId) => {
+    // Validações iniciais
     if (!validateInputs()) return;
     if (!strategicOutline) {
         window.showToast("Crie o Esboço Estratégico primeiro!");
@@ -3125,6 +3156,7 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
     showButtonLoading(button);
     
     const targetSectionElement = document.getElementById(`${elementId}Section`);
+    // Limpeza de análises antigas
     if (targetSectionElement) {
         const analysisOutput = targetSectionElement.querySelector('.section-analysis-output');
         const performanceOutput = targetSectionElement.querySelector('.section-performance-output');
@@ -3133,6 +3165,7 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
     }
 
     try {
+        // Coleta o contexto de todas as seções anteriores
         let contextText = null;
         const previousSectionsContent = [];
         const requiredSections = {
@@ -3156,8 +3189,9 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
             contextText = previousSectionsContent.join('\n\n---\n\n');
         }
 
-        const keyMap = { intro: 'introduction' };
-        const outlineKey = keyMap[sectionName] || sectionName;
+        // Constrói o prompt e chama a IA
+        const keyMap = { intro: 'introduction', development: 'development', climax: 'climax', conclusion: 'conclusion' };
+        const outlineKey = keyMap[sectionName];
         const directive = strategicOutline[outlineKey];
         const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive, contextText);
         
@@ -3169,6 +3203,7 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
             `<div id="${elementId}-p-${index}">${p}</div>`
         ).join('');
         
+        // Renderiza o conteúdo na tela
         if (targetSectionElement) {
             const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
             targetSectionElement.innerHTML = sectionHtml;
@@ -3180,6 +3215,11 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
             return;
         }
         
+        // A MUDANÇA CRÍTICA: Atualiza o objeto de estado explícito
+        if (projectState.hasOwnProperty(sectionName)) {
+            projectState[sectionName] = true;
+        }
+
         markButtonAsCompleted(button.id);
         updateButtonStates();
 
