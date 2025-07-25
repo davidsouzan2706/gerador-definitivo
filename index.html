@@ -340,16 +340,40 @@
     
     <!-- O conteúdo das abas (AGORA CORRIGIDO) -->
     <div id="inputTabContent" class="card">
+        
         <!-- Aba 1: Básico -->
-        <div id="input-tab-basico" class="tab-pane active-pane">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="input-group"><label for="channelName">Nome do Canal:</label><input type="text" id="channelName" value="The Biblical Unveiling"></div>
-                <div class="input-group"><label for="videoTheme">Tema do Vídeo:</label><input type="text" id="videoTheme" placeholder="Ex: A Arca da Aliança Foi Encontrada?"></div>
-                <div class="input-group"><label for="languageSelect">Idioma do Roteiro:</label><select id="languageSelect"><option value="pt-br">Português (Brasil)</option><option value="en" selected>English</option></select></div>
-                <div class="input-group"><label for="videoDuration">Duração Desejada:</label><select id="videoDuration"><option value="">-- Selecione --</option><option value="short">Curto (~1-3 min)</option><option value="medium">Médio (~4-7 min)</option><option value="long">Longo (~8-12 min)</option></select></div>
-                <div class="input-group md:col-span-2"><label for="videoDescription">Descrição do Vídeo (para inspiração):</label><textarea id="videoDescription" rows="4" placeholder="Cole uma breve descrição do vídeo aqui..."></textarea></div>
-            </div>
+
+<div id="input-tab-basico" class="tab-pane active-pane">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="input-group"><label for="channelName">Nome do Canal:</label><input type="text" id="channelName" value="The Biblical Unveiling"></div>
+        <div class="input-group"><label for="videoTheme">Tema do Vídeo:</label><input type="text" id="videoTheme" placeholder="Ex: A Arca da Aliança Foi Encontrada?"></div>
+        <div class="input-group"><label for="languageSelect">Idioma do Roteiro:</label><select id="languageSelect"><option value="pt-br">Português (Brasil)</option><option value="en" selected>English</option></select></div>
+        
+        <!-- Duração e Ritmo agora ficam lado a lado -->
+        <div class="input-group">
+            <label for="videoDuration">Duração Desejada:</label>
+            <select id="videoDuration">
+                <option value="">-- Selecione --</option>
+                <option value="short">Curto (~1-3 min)</option>
+                <option value="medium">Médio (~4-7 min)</option>
+                <option value="long">Longo (~8-12 min)</option>
+            </select>
         </div>
+
+        <div class="input-group">
+            <label for="visualPacing">Ritmo Visual (Cenas):</label>
+            <select id="visualPacing">
+                <option value="">-- Selecione --</option> <!-- Adicionamos uma opção vazia -->
+                <option value="dinamico" selected>Dinâmico (3-8s)</option>
+                <option value="normal">Normal (8-15s)</option>
+                <option value="contemplativo">Contemplativo (15-25s)</option>
+            </select>
+        </div>
+
+        <div class="input-group md:col-span-2"><label for="videoDescription">Descrição do Vídeo (para inspiração):</label><textarea id="videoDescription" rows="4" placeholder="Cole uma breve descrição do vídeo aqui..."></textarea></div>
+    </div>
+</div>
+        
 
         <!-- Aba 2: Estratégia Narrativa -->
         <div id="input-tab-estrategia" class="tab-pane hidden"> <!-- A classe 'hidden' é importante -->
@@ -366,6 +390,7 @@
         </div>
         <select id="narrativeStructure"></select>
     </div>
+
 
     <!-- 2. Esta é a nossa "Caixa Verde" (o popover), inicialmente escondida -->
     <div id="structurePopover" 
@@ -395,14 +420,7 @@
         <div class="input-group"><label for="videoObjective">Objetivo do Vídeo:</label><select id="videoObjective"><option value="informar" selected>Informar</option><option value="emocionar">Emocionar</option></select></div>
         <div class="input-group"><label for="speakingPace">Ritmo de Fala:</label><select id="speakingPace"><option value="moderate" selected>Moderado</option><option value="slow">Lento</option><option value="fast">Rápido</option></select></div>
 
-            <div class="input-group">
-    <label for="visualPacing">Ritmo Visual (Duração das Cenas):</label>
-    <select id="visualPacing">
-        <option value="dinamico" selected>Dinâmico (3-8s)</option>
-        <option value="normal">Normal (8-15s)</option>
-        <option value="contemplativo">Contemplativo (15-25s)</option>
-    </select>
-</div>
+
 
         <div class="input-group md:col-span-2"><label for="imageDescriptionEngine">Motor de Descrição de Imagem:</label><textarea id="imageDescriptionEngine" rows="2" placeholder="Ex: 'fotografias reais', 'close-up emocional'"></textarea></div>
         <div class="input-group md:col-span-2"><label for="imageStyleSelect">Motor de Qualidade de Imagem:</label><select id="imageStyleSelect"><option value="cinematic" selected>Cinematográfico</option><option value="custom">Personalizado</option><option value="none">Nenhum</option></select></div>
@@ -892,34 +910,44 @@ const updateAllReadingTimes = () => {
 }
 
 
-     /**
-     * Valida os inputs essenciais antes de gerar conteúdo.
-     * Busca os elementos no momento da execução para garantir que existam.
-     */
-    const validateInputs = () => {
-        const channelName = document.getElementById('channelName')?.value.trim();
-        const videoTheme = document.getElementById('videoTheme')?.value.trim();
-        const videoDescription = document.getElementById('videoDescription')?.value.trim();
-        const videoDuration = document.getElementById('videoDuration')?.value;
+    // ==========================================================
+// >>>>> SUBSTITUA A FUNÇÃO validateInputs INTEIRA POR ESTA <<<<<
+// ==========================================================
+const validateInputs = () => {
+    const channelName = document.getElementById('channelName')?.value.trim();
+    const videoTheme = document.getElementById('videoTheme')?.value.trim();
+    const videoDescription = document.getElementById('videoDescription')?.value.trim();
+    const videoDuration = document.getElementById('videoDuration')?.value;
+    // Adicionamos a leitura do novo campo
+    const visualPacing = document.getElementById('visualPacing')?.value;
 
-        if (!channelName) {
-            window.showToast("Por favor, insira o nome do canal.");
-            return false;
-        }
-        if (!videoTheme) {
-            window.showToast("Por favor, insira o tema do vídeo.");
-            return false;
-        }
-        if (!videoDescription) {
-            window.showToast("Por favor, insira a descrição do vídeo (para inspiração).");
-            return false;
-        }
-        if (!videoDuration || videoDuration === "") {
-            window.showToast("Por favor, selecione a Duração Desejada do vídeo.");
-            return false;
-        }
-        return true;
-    };
+    if (!channelName) {
+        window.showToast("Por favor, insira o nome do canal.");
+        return false;
+    }
+    if (!videoTheme) {
+        window.showToast("Por favor, insira o tema do vídeo.");
+        return false;
+    }
+    if (!videoDescription) {
+        window.showToast("Por favor, insira a descrição do vídeo (para inspiração).");
+        return false;
+    }
+    if (!videoDuration || videoDuration === "") {
+        window.showToast("Por favor, selecione a Duração Desejada do vídeo.");
+        return false;
+    }
+    
+    // ==========================================================
+    // >>>>> AQUI ESTÁ A NOVA VALIDAÇÃO <<<<<
+    // ==========================================================
+    if (!visualPacing || visualPacing === "") {
+        window.showToast("Por favor, selecione o Ritmo Visual do vídeo.");
+        return false;
+    }
+    
+    return true;
+};
 
 
 
