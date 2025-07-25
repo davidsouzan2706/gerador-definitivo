@@ -2565,10 +2565,10 @@ Hashtags:
 
 
 // ==========================================================
-// >>>>> SUBSTITUA addDevelopmentChapter PELA VERSÃO REFINADA <<<<<
+// >>>>> VERSÃO FINAL DE addDevelopmentChapter COM CORREÇÃO DO TEMPO <<<<<
 // ==========================================================
 /**
- * Adiciona um novo capítulo ao desenvolvimento, com prompt refinado para evitar repetição do título.
+ * Adiciona um novo capítulo ao desenvolvimento, com sugestões da IA e atualização do tempo de leitura.
  * @param {HTMLElement} button - O botão que foi clicado.
  */
 window.addDevelopmentChapter = async (button) => {
@@ -2613,34 +2613,23 @@ window.addDevelopmentChapter = async (button) => {
 
         showButtonLoading(button);
 
-        // ==========================================================
-        // >>>>> INÍCIO DA MUDANÇA NO PROMPT <<<<<
-        // ==========================================================
         const basePrompt = getBasePromptContext();
         const continuationPrompt = `${basePrompt}
         
 Você está escrevendo um novo capítulo para um roteiro existente.
-
-**TEMA OBRIGATORIAL PARA ESTE CAPÍTULO:** "${chapterTheme}"
-
+**TEMA OBRIGATÓRIO PARA ESTE CAPÍTULO:** "${chapterTheme}"
 **INSTRUÇÃO CRÍTICA DE CONTINUIDADE:**
 - O texto abaixo é o roteiro escrito até agora. **NÃO REPITA** as informações contidas nele.
 - Sua tarefa é escrever um novo capítulo que avance a narrativa, focado **EXCLUSIVAMENTE** no tema "${chapterTheme}".
 - Comece o novo capítulo de forma fluida, como se fosse a continuação natural do texto anterior.
-
 **REGRA DE FORMATAÇÃO (MUITO IMPORTANTE):**
 - Sua resposta deve ser APENAS o texto do roteiro.
 - **NÃO inclua o título do capítulo ("${chapterTheme}") ou qualquer outro subtítulo no corpo do texto.** Apenas o conteúdo a ser falado.
-
 **ROTEIRO ESCRITO ATÉ AGORA (PARA CONTEXTO):**
 ---
 ${existingText}
 ---
-
 Agora, escreva o novo capítulo sobre "${chapterTheme}", seguindo TODAS as regras.`;
-        // ==========================================================
-        // >>>>> FIM DA MUDANÇA NO PROMPT <<<<<
-        // ==========================================================
 
         const rawResult = await callGroqAPI(continuationPrompt, 4000);
         const newChapter = removeMetaComments(rawResult.trim());
@@ -2655,9 +2644,12 @@ Agora, escreva o novo capítulo sobre "${chapterTheme}", seguindo TODAS as regra
 
         contentWrapper.insertAdjacentHTML('beforeend', chapterTitleHtml + newContentWithDivs);
         
+        // Invalida análises anteriores
         invalidateAndClearPerformance(devSection);
         invalidateAndClearPrompts(devSection);
-        updateAllReadingTimes();
+        
+        // >>>>> A LINHA QUE FALTAVA <<<<<
+        updateAllReadingTimes(); // Força a atualização de todos os cronômetros da página
         
         window.showToast("Novo capítulo adicionado com sucesso!");
         contentWrapper.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
