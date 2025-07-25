@@ -19,8 +19,8 @@
             --primary-dark: #4f46e5;
             --secondary: #8b5cf6;
             --accent: #ec4899;
-            --warning: #f97316; /* Laranja */
-            --warning-dark: #ea580c; /* Laranja Escuro para Hover */
+            --warning: #f97316;      /* Laranja Vibrante */
+            --warning-dark: #ea580c; /* Laranja mais escuro para o hover */
             --success: #10b981;
             --danger: #ef4444;
             --dark-bg: #f8fafc;
@@ -58,13 +58,29 @@
         .section-title::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 70px; height: 2px; background: var(--primary); transition: var(--transition); }
 
         /* --- BOTÕES --- */
-        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1.25rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); border: none; white-space: nowrap; }
-        .btn-primary { background-color: var(--primary); color: white; }
-        .btn-primary:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
-        .btn-secondary { background-color: var(--secondary); color: white; }
-        .btn-secondary:hover { background-color: #7c3aed; }
-        .dark .btn-secondary:hover { background-color: #9333ea; }
-        .btn-small { padding: 0.5rem 1rem; font-size: 0.875rem; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1.25rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition); border: none; white-space: nowrap; }
+
+/* Botão Primário (Azul/Índigo) */
+.btn-primary { background-color: var(--primary); color: white; }
+.btn-primary:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+
+/* Botão Secundário (Roxo/Violeta) */
+.btn-secondary { background-color: var(--secondary); color: white; }
+.btn-secondary:hover { background-color: #7c3aed; }
+.dark .btn-secondary:hover { background-color: #9333ea; }
+
+/* >>> NOSSA NOVA CLASSE DE BOTÃO LARANJA <<< */
+.btn-warning {
+    background-color: var(--warning);
+    color: white;
+}
+.btn-warning:hover {
+    background-color: var(--warning-dark);
+    transform: translateY(-2px);
+}
+
+/* Modificador de Tamanho Pequeno */
+.btn-small { padding: 0.5rem 1rem; font-size: 0.875rem; }
 
         /* --- FORMULÁRIOS E INPUTS --- */
         .input-group { margin-bottom: 1rem; }
@@ -123,7 +139,7 @@
         .tag { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
         .tag-emotion { background-color: color-mix(in srgb, var(--primary) 20%, transparent); color: var(--primary); }
         .tag-pace { background-color: color-mix(in srgb, var(--secondary) 20%, transparent); color: var(--secondary); }
-        .tag-scene { background-color: color-mix(in srgb, var(--warning) 20%, transparent); color: var(--warning); }
+        .tag-scene { background-color: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); }
         .tag-time { background-color: color-mix(in srgb, var(--dark-text-muted) 20%, transparent); color: var(--dark-text-muted); }
 
         /* --- ANÁLISE DE RETENÇÃO --- */
@@ -900,7 +916,7 @@ const showInputDialog = (title, message, label, placeholder, suggestions = []) =
         if (suggestions && suggestions.length > 0) {
             suggestions.forEach(suggestionText => {
                 const suggestionBtn = document.createElement('button');
-                suggestionBtn.className = 'btn btn-secondary w-full text-left justify-start';
+                suggestionBtn.className = 'btn btn-warning w-full text-left justify-start';
                 suggestionBtn.textContent = suggestionText;
                 // Ao clicar em um botão de sugestão, fecha o diálogo e retorna o texto da sugestão
                 suggestionBtn.onclick = () => {
