@@ -1893,23 +1893,30 @@ const invalidateAndClearPrompts = (sectionElement) => {
         };
 
         const updateNarrativeStructureOptions = () => {
-            const goalSelect = document.getElementById('narrativeGoal');
-            const structureSelect = document.getElementById('narrativeStructure');
-            if (!goalSelect || !structureSelect) return;
+    const goalSelect = document.getElementById('narrativeGoal');
+    const structureSelect = document.getElementById('narrativeStructure');
+    if (!goalSelect || !structureSelect) return;
 
-            const goal = goalSelect.value;
-            structureSelect.innerHTML = ''; 
+    const goal = goalSelect.value;
+    const savedValue = structureSelect.value; // Salva o valor atual, se houver
+    structureSelect.innerHTML = ''; 
 
-            const structures = narrativeStructures[goal];
-            for (const key in structures) {
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = structures[key];
-                structureSelect.appendChild(option);
-            }
-            
-            updateMainTooltip();
-        };
+    const structures = narrativeStructures[goal];
+    for (const key in structures) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = structures[key];
+        structureSelect.appendChild(option);
+    }
+    
+    // Tenta restaurar o valor que estava selecionado
+    if (Array.from(structureSelect.options).some(opt => opt.value === savedValue)) {
+        structureSelect.value = savedValue;
+    }
+    
+    // Chama a nossa nova função para atualizar o texto do tooltip!
+    updateMainTooltip();
+};
 
 
         // --- FIM DO NOVO MÓDULO DE NARRATIVA ---
