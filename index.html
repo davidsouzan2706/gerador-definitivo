@@ -373,7 +373,7 @@
         <div class="input-group md:col-span-2"><label for="videoDescription">Descrição do Vídeo (para inspiração):</label><textarea id="videoDescription" rows="4" placeholder="Cole uma breve descrição do vídeo aqui..."></textarea></div>
     </div>
 </div>
-        
+
 
         <!-- Aba 2: Estratégia Narrativa -->
         <div id="input-tab-estrategia" class="tab-pane hidden"> <!-- A classe 'hidden' é importante -->
@@ -796,6 +796,48 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 button.innerHTML = 'Erro!';
             }
         };
+
+
+
+// =========================================================================
+// >>>>> ADICIONE ESTA NOVA FUNÇÃO AO SEU SCRIPT <<<<<
+// =========================================================================
+/**
+ * Encontra e deleta todos os parágrafos pertencentes a um mesmo grupo de sugestão.
+ * @param {HTMLElement} button - O botão de deletar que foi clicado.
+ * @param {string} suggestionText - O texto da sugestão que identifica o grupo.
+ */
+window.deleteParagraphGroup = (button, suggestionText) => {
+    // 1. Pede confirmação ao usuário para evitar deleções acidentais.
+    if (!confirm("Tem certeza que deseja deletar este bloco de parágrafos? Esta ação não pode ser desfeita.")) {
+        return;
+    }
+
+    // 2. Encontra todos os parágrafos do mesmo grupo.
+    const safeSelector = suggestionText.replace(/"/g, '\\"');
+    const paragraphsToDelete = document.querySelectorAll(`[data-suggestion-group="${safeSelector}"]`);
+
+    if (paragraphsToDelete.length === 0) {
+        window.showToast("Erro: Parágrafos para deletar não encontrados.");
+        return;
+    }
+
+    const sectionElement = paragraphsToDelete[0].closest('.script-section');
+
+    // 3. Remove cada parágrafo do DOM.
+    paragraphsToDelete.forEach(p => p.remove());
+
+    // 4. Atualiza a UI para refletir a mudança.
+    if (sectionElement) {
+        invalidateAndClearPerformance(sectionElement);
+        invalidateAndClearPrompts(sectionElement);
+        updateAllReadingTimes();
+    }
+
+    window.showToast("Bloco de parágrafos deletado com sucesso!");
+};
+
+
 
 // =========================================================================
 // >>>>> PASSO 2: SUBSTITUA A FUNÇÃO showInputDialog COMPLETA <<<<<
@@ -2800,8 +2842,30 @@ Agora, escreva o novo capítulo sobre "${chapterTheme}", seguindo TODAS as regra
                             if (!previousItem || item.suggestion !== previousItem.suggestion) {
                                 const scoreLabels = { yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
                                 const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
-                                const buttonHtml = `<button class="optimize-btn" onclick="event.stopPropagation(); window.optimizeGroup(this, '${item.suggestion.replace(/'/g, "\\'")}')">Otimizar Bloco com IA</button>`;
-                                const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}${buttonHtml}</div>`;
+
+
+                                const suggestionTextEscaped = item.suggestion
+    .replace(/\\/g, '\\\\') // Escapa a própria barra invertida
+    .replace(/'/g, "\\'")   // Escapa aspas simples
+    .replace(/"/g, '\\"')   // Escapa aspas duplas
+    .replace(/`/g, '\\`');  // Escapa a crase
+
+// Cria o HTML para os dois botões, usando template literals (crases) para facilitar.
+const buttonsHtml = `
+    <div class="flex gap-2 mt-3">
+        <button class="flex-1 btn btn-primary btn-small py-1" onclick="event.stopPropagation(); window.optimizeGroup(this, \`${suggestionTextEscaped}\`)">
+            <i class="fas fa-magic mr-2"></i> Otimizar
+        </button>
+        <button class="flex-1 btn btn-danger bg-red-600 hover:bg-red-700 btn-small py-1" onclick="event.stopPropagation(); window.deleteParagraphGroup(this, \`${suggestionTextEscaped}\`)">
+            <i class="fas fa-trash-alt mr-2"></i> Deletar
+        </button>
+    </div>
+`;
+
+// Monta o HTML final do tooltip.
+const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}${buttonsHtml}</div>`;
+                                
+
                                 p.insertAdjacentHTML('beforeend', tooltipHtml);
                             }
                         }
