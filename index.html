@@ -218,6 +218,12 @@
              transform: translateX(-50%) translateY(calc(100% - 10px));
         }
 
+        /* >>>>> popov (balão) <<<<< */
+        /* ========================================================== */
+        .popover-bg {
+            background-color: var(--dark-bg);
+        }
+
 
     </style>
 </head>
@@ -344,7 +350,7 @@
 
     <!-- 2. Esta é a nossa "Caixa Verde" (o popover), inicialmente escondida -->
     <div id="structurePopover" 
-     class="card absolute bottom-full left-0 mb-2 w-[400px]
+     class="card popover-bg absolute bottom-full left-0 mb-2 w-[400px]
             opacity-0 invisible group-hover:opacity-100 group-hover:visible 
             transition-all duration-300 z-20 pointer-events-none group-hover:pointer-events-auto">
         
