@@ -973,6 +973,9 @@ const resetProjectOutputs = () => {
     if(conclusionModule) conclusionModule.classList.add('hidden');
 };
 
+
+
+
 const resetApplicationState = () => {
     // Zera o nosso "painel de controle".
     projectState = { intro: false, development: false, climax: false, conclusion: false };
@@ -3913,6 +3916,8 @@ const generateStrategicOutline = async (button) => {
                     }
                 }
             });
+
+
             // ==========================================================
             // FIM DA CORREÇÃO
             // ==========================================================
@@ -3930,7 +3935,7 @@ const generateStrategicOutline = async (button) => {
 
             window.showToast("Pronto para um novo roteiro!");
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        };
+        
 
         /**
          * Exporta o estado atual do projeto para um ficheiro JSON.
