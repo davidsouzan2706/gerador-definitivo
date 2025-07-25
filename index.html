@@ -2959,15 +2959,17 @@ Exemplo de formato JSON esperado:
                     const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
                     targetSectionElement.innerHTML = sectionHtml;
 
-                    // ==========================================================
-                    // >>>>> INÍCIO DA CORREÇÃO CRÍTICA <<<
-                    // ==========================================================
-                    // Nós removemos as classes antigas do placeholder e adicionamos a classe definitiva.
-                    targetSectionElement.classList.remove('script-section-placeholder', 'card', 'mb-4');
-                    targetSectionElement.classList.add('script-section'); // Garante que a classe exista para os outros listeners
-                    // ==========================================================
-                    // >>>>> FIM DA CORREÇÃO CRÍTICA <<<
-                    // ==========================================================
+                   targetSectionElement.classList.remove(
+    'card',                       // Remove o estilo de card
+    'card-placeholder',           // Remove a classe de placeholder
+    'flex',                       // <<< Remove a formatação em linha
+    'justify-between',            // <<< Remove o alinhamento
+    'items-center',               // <<< Remove a centralização vertical
+    'animate-fade-in'             // Remove a animação que já aconteceu
+);
+
+// Garantimos que a classe 'script-section' (que pode ter sido removida) está presente.
+targetSectionElement.classList.add('script-section');
 
                     targetSectionElement.querySelector('.accordion-item')?.classList.add('animate-fade-in');
                 } else {
