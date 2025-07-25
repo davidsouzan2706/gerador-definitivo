@@ -988,52 +988,65 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
          * Atualiza o estado de habilitação/desabilitação dos botões com base no estado do roteiro. (VERSÃO CORRIGIDA)
          */
 const updateButtonStates = () => {
-            const introGenerated = document.querySelector('#introSection .accordion-item');
-            const devGenerated = document.querySelector('#developmentSection .accordion-item');
-            const climaxGenerated = document.querySelector('#climaxSection .accordion-item');
+    // Verificações que já existem (permanecem iguais)
+    const introGenerated = document.querySelector('#introSection .accordion-item');
+    const devGenerated = document.querySelector('#developmentSection .accordion-item');
+    const climaxGenerated = document.querySelector('#climaxSection .accordion-item');
+    
+    // >>>>> 1. ADICIONAMOS A VERIFICAÇÃO PARA A CONCLUSÃO <<<<<
+    const conclusionGenerated = document.querySelector('#conclusionSection .accordion-item');
+    
+    // Condição para o roteiro principal (permanece igual)
+    const allMainScriptGenerated = introGenerated && devGenerated && climaxGenerated;
+
+    // >>>>> 2. CRIAMOS UMA NOVA CONDIÇÃO MAIS ESTRITA PARA O ROTEIRO COMPLETO <<<<<
+    const isFullScriptComplete = allMainScriptGenerated && conclusionGenerated;
+
+    // Habilita/desabilita os botões de Metadados (exceto o Mapear)
+    const metadataButtons = ['generateTitlesAndThumbnailsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn'];
+    metadataButtons.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = !allMainScriptGenerated;
+    });
+
+    // >>>>> 3. SEPARAMOS a lógica do botão "Mapear" dos outros <<<<<
+    const mapEmotionsBtn = document.getElementById('mapEmotionsBtn');
+    if (mapEmotionsBtn) {
+        mapEmotionsBtn.disabled = !isFullScriptComplete; // Só habilita se o ROTEIRO COMPLETO estiver pronto
+        
+        // Adiciona uma dica útil para o usuário
+        if (mapEmotionsBtn.disabled && allMainScriptGenerated) {
+            mapEmotionsBtn.title = "Gere a Conclusão e o CTA para habilitar o mapa emocional.";
+        } else {
+            mapEmotionsBtn.title = ""; // Limpa a dica quando o botão está habilitado
+        }
+    }
+
+    // A lógica para o módulo de conclusão (permanece igual)
+    const conclusionModule = document.getElementById('conclusionStrategyModule');
+    const conclusionBtn = document.getElementById('generateConclusionAndCtaBtn');
+    if (conclusionModule) {
+        if (allMainScriptGenerated && conclusionModule.classList.contains('hidden')) {
+            const climaxContainer = document.getElementById('climaxSection');
+            if (climaxContainer) {
+                climaxContainer.insertAdjacentElement('afterend', conclusionModule);
+            }
+            conclusionModule.classList.remove('hidden');
+            conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            window.showToast("Ótimo! Agora defina a estratégia para sua conclusão.");
             
-            // Verifica se as 3 seções principais estão prontas
-            const allMainScriptGenerated = introGenerated && devGenerated && climaxGenerated;
-
-            // Habilita/desabilita os botões de Metadados
-            const metadataButtons = ['generateTitlesAndThumbnailsBtn', 'mapEmotionsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn'];
-            metadataButtons.forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) btn.disabled = !allMainScriptGenerated;
+            document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
+                radio.addEventListener('change', handleConclusionStrategyChange);
             });
-
-            const conclusionModule = document.getElementById('conclusionStrategyModule');
-            const conclusionBtn = document.getElementById('generateConclusionAndCtaBtn');
-
-            if (conclusionModule) {
-                if (allMainScriptGenerated && conclusionModule.classList.contains('hidden')) {
-                    // Se o roteiro principal está pronto, mostra o módulo de conclusão
-                    const climaxContainer = document.getElementById('climaxSection');
-                    if (climaxContainer) {
-                        climaxContainer.insertAdjacentElement('afterend', conclusionModule);
-                    }
-                    conclusionModule.classList.remove('hidden');
-                    conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    window.showToast("Ótimo! Agora defina a estratégia para sua conclusão.");
-                    
-                    // Inicializa os listeners do módulo agora que ele está visível
-                    document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
-                        radio.addEventListener('change', handleConclusionStrategyChange);
-                    });
-                    handleConclusionStrategyChange(); // Chama uma vez para o estado inicial
-
-                } else if (!allMainScriptGenerated && !conclusionModule.classList.contains('hidden')) {
-                    // Se o roteiro for resetado, esconde o módulo
-                    conclusionModule.classList.add('hidden');
-                }
-            }
-
-            // >>>>> AQUI ESTÁ A LÓGICA DE VALIDAÇÃO QUE FALTAVA <<<<<
-            if (conclusionBtn) {
-                // O botão só fica ativo se o módulo estiver visível
-                conclusionBtn.disabled = !allMainScriptGenerated;
-            }
-        };
+            handleConclusionStrategyChange();
+        } else if (!allMainScriptGenerated && !conclusionModule.classList.contains('hidden')) {
+            conclusionModule.classList.add('hidden');
+        }
+    }
+    if (conclusionBtn) {
+        conclusionBtn.disabled = !allMainScriptGenerated;
+    }
+};
 
         /**
          * Mostra um alerta em tela cheia com uma mensagem.
