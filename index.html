@@ -361,14 +361,14 @@
         </div>
 
         <div class="input-group">
-            <label for="visualPacing">Ritmo Visual (Cenas):</label>
-            <select id="visualPacing">
-                <option value="">-- Selecione --</option> <!-- Adicionamos uma opção vazia -->
-                <option value="dinamico" selected>Dinâmico (3-8s)</option>
-                <option value="normal">Normal (8-15s)</option>
-                <option value="contemplativo">Contemplativo (15-25s)</option>
-            </select>
-        </div>
+    <label for="visualPacing">Ritmo Visual (Cenas):</label>
+    <select id="visualPacing">
+        <option value="" selected>-- Selecione --</option> <!-- Adicionado 'selected' aqui -->
+        <option value="dinamico">Dinâmico (3-8s)</option> <!-- Removido 'selected' daqui -->
+        <option value="normal">Normal (8-15s)</option>
+        <option value="contemplativo">Contemplativo (15-25s)</option>
+    </select>
+</div>
 
         <div class="input-group md:col-span-2"><label for="videoDescription">Descrição do Vídeo (para inspiração):</label><textarea id="videoDescription" rows="4" placeholder="Cole uma breve descrição do vídeo aqui..."></textarea></div>
     </div>
