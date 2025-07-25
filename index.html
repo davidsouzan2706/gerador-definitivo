@@ -2986,6 +2986,7 @@ targetSectionElement.classList.add('script-section');
                 console.error(`Error generating ${sectionTitle}.`, error);
             } finally {
                 hideButtonLoading(button);
+                updateButtonStates();
             }
         };
 
