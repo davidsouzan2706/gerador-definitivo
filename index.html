@@ -533,6 +533,11 @@
             <button id="exportPdfBtn" class="btn btn-secondary">
             <i class="fas fa-file-pdf mr-2"></i> Exportar PDF
             </button>
+
+            <!-- >>> Exportar Transcrição <<< -->
+            <button id="exportTranscriptBtn" class="btn btn-secondary">
+            <i class="fas fa-file-alt mr-2"></i> Exportar Transcrição (.rtf)
+            </button>
             
             <!-- Botão para Resetar -->
             <button id="resetProjectBtn" class="btn bg-red-600 hover:bg-red-700 text-white">
@@ -4146,6 +4151,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
                 'exportProjectBtn': () => exportProject(),
                 'exportPdfBtn': () => downloadPdf(),
+                'exportTranscriptBtn': () => handleCopyAndDownloadTranscript(),
                 'resetProjectBtn': async () => {
                     const confirmed = await showConfirmationDialog(
                         "Começar um Novo Projeto?",
