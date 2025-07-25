@@ -36,7 +36,7 @@
         .dark {
             --primary: #818cf8;
             --primary-dark: #6366f1;
-            --secondary: #a78bfa;
+            --secondary: #ea580c;
             --accent: #f472b6;
             --dark-bg: #0f172a;
             --dark-surface: #1e293b;
@@ -65,7 +65,7 @@
 .btn-primary:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
 
 /* Botão Secundário (Roxo/Violeta) */
-.btn-secondary { background-color: var(--secondary); color: white; }
+.btn-secondary { background-color: var(--warning); color: white; }
 .btn-secondary:hover { background-color: var(--warning-dark); }
 .dark .btn-secondary:hover { background-color: #9333ea; }
 
@@ -125,7 +125,7 @@
 
         /* --- ESTILOS DE CONTEÚDO GERADO (PADRONIZADO) --- */
         .generated-content-wrapper, .generated-output-box, .emotional-map-item, .prompt-item { background-color: color-mix(in srgb, var(--dark-bg) 50%, var(--dark-surface)); border-left: 4px solid var(--primary); padding: 1rem 1.5rem; border-radius: 8px; line-height: 1.6; }
-        .prompt-item { border-left-color: var(--secondary); }
+        .prompt-item { border-left-color: var(--warning); }
         .generated-content-wrapper { margin-bottom: 1.5rem; }
         .generated-output-box .output-subtitle { font-size: 1rem; font-weight: 700; color: var(--dark-text-header); margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px dashed var(--dark-border); }
         .generated-output-box .output-content-block { margin-bottom: 1.5rem; }
@@ -138,7 +138,7 @@
         .prompt-header { margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px dashed var(--dark-border); }
         .tag { display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
         .tag-emotion { background-color: color-mix(in srgb, var(--primary) 20%, transparent); color: var(--primary); }
-        .tag-pace { background-color: color-mix(in srgb, var(--secondary) 20%, transparent); color: var(--secondary); }
+        .tag-pace { background-color: color-mix(in srgb, var(--warning) 20%, transparent); color: var(--warning); }
         .tag-scene { background-color: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); }
         .tag-time { background-color: color-mix(in srgb, var(--dark-text-muted) 20%, transparent); color: var(--dark-text-muted); }
 
@@ -169,7 +169,7 @@
             transition: var(--transition);
         }
         .radio-label:hover {
-            border-color: var(--secondary);
+            border-color: var(--warning);
         }
         .radio-label input[type="radio"] {
             display: none; /* Esconde o botão de rádio padrão */
