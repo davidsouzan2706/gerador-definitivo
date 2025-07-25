@@ -1013,12 +1013,6 @@ const updateButtonStates = () => {
 
     // >>>>> 3. SEPARAMOS a lógica do botão "Mapear" dos outros <<<<<
 
-    const mapEmotionsBtn = document.getElementById('mapEmotionsBtn');
-if (mapEmotionsBtn) {
-    const isFullScriptComplete = allMainScriptGenerated && conclusionGenerated;
-    mapEmotionsBtn.disabled = !isFullScriptComplete;
-
-    }
 
     // A lógica para o módulo de conclusão (permanece igual)
     const conclusionModule = document.getElementById('conclusionStrategyModule');
@@ -4076,7 +4070,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     const clickActions = {
                         'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
                         'generateOutlineBtn': () => generateStrategicOutline(button),
-                        'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
+                        'mapEmotionsBtn': () => {
+        const isFullScriptComplete = 
+            document.querySelector('#introSection .accordion-item') &&
+            document.querySelector('#developmentSection .accordion-item') &&
+            document.querySelector('#climaxSection .accordion-item') &&
+            document.querySelector('#conclusionSection .accordion-item');
+
+        if (!isFullScriptComplete) {
+            // Se o roteiro NÃO estiver completo, mostra o aviso
+            window.showToast("Gere o roteiro completo (incluindo a Conclusão) antes de mapear as emoções.");
+        } else {
+            // Se estiver completo, executa a função normalmente
+            mapEmotionsAndPacing(button);
+        }
+    },
                         'generateDescriptionBtn': () => generateVideoDescription(button),
                         'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
                         'generateSoundtrackBtn': () => generateSoundtrack(button),
