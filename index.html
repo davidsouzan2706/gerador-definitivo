@@ -1878,45 +1878,45 @@ const invalidateAndClearPrompts = (sectionElement) => {
 
 
         const updateMainTooltip = () => {
-            const tooltip = document.getElementById('narrativeStructureTooltip');
-            if (!tooltip) return;
-
-            const goal = document.getElementById('narrativeGoal').value;
-            const structures = narrativeStructures[goal];
-            
-            let tooltipContent = '';
-            for (const key in structures) {
-                tooltipContent += `${structures[key]}:\n${narrativeTooltips[key]}\n\n`;
-            }
-            
-            tooltip.setAttribute('data-tooltip', tooltipContent.trim());
-        };
-
-        const updateNarrativeStructureOptions = () => {
-    const goalSelect = document.getElementById('narrativeGoal');
+    const tooltipIcon = document.getElementById('narrativeStructureTooltip');
     const structureSelect = document.getElementById('narrativeStructure');
-    if (!goalSelect || !structureSelect) return;
+    if (!tooltipIcon || !structureSelect) return;
 
-    const goal = goalSelect.value;
-    const savedValue = structureSelect.value; // Salva o valor atual, se houver
-    structureSelect.innerHTML = ''; 
+    // 1. Pega a CHAVE da opção atualmente selecionada (ex: 'mystery_loop')
+    const selectedStructureKey = structureSelect.value;
+    
+    // 2. Busca a descrição correspondente no nosso "dicionário" de tooltips
+    const tooltipText = narrativeTooltips[selectedStructureKey] || "Selecione uma estrutura para ver a descrição.";
+    
+    // 3. Define o atributo 'data-tooltip' do ícone com essa descrição
+    tooltipIcon.setAttribute('data-tooltip', tooltipText);
+};
 
-    const structures = narrativeStructures[goal];
-    for (const key in structures) {
-        const option = document.createElement('option');
-        option.value = key;
-        option.textContent = structures[key];
-        structureSelect.appendChild(option);
-    }
+ //       const updateNarrativeStructureOptions = () => {
+ //   const goalSelect = document.getElementById('narrativeGoal');
+ //   const structureSelect = document.getElementById('narrativeStructure');
+ //   if (!goalSelect || !structureSelect) return;
+
+ //   const goal = goalSelect.value;
+ //   const savedValue = structureSelect.value; // Salva o valor atual, se houver
+ //   structureSelect.innerHTML = ''; 
+
+ //   const structures = narrativeStructures[goal];
+ //   for (const key in structures) {
+ //      const option = document.createElement('option');
+ //       option.value = key;
+  //      option.textContent = structures[key];
+  //      structureSelect.appendChild(option);
+  //  }
     
     // Tenta restaurar o valor que estava selecionado
-    if (Array.from(structureSelect.options).some(opt => opt.value === savedValue)) {
+  //  if (Array.from(structureSelect.options).some(opt => opt.value === savedValue)) {
         structureSelect.value = savedValue;
-    }
+  //  }
     
     // Chama a nossa nova função para atualizar o texto do tooltip!
-    updateMainTooltip();
-};
+   // updateMainTooltip();
+// };
 
 
         // --- FIM DO NOVO MÓDULO DE NARRATIVA ---
@@ -3959,7 +3959,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if(goalSelect) {
                 goalSelect.addEventListener('change', updateNarrativeStructureOptions);
             }
-            
+
+            // =========================================================================
+            // >>>>> ADICIONE ESTE NOVO BLOCO DE CÓDIGO AQUI <<<<<
+            // =========================================================================
+            const structureSelect = document.getElementById('narrativeStructure');
+            if(structureSelect) {
+                // Toda vez que o usuário mudar a estrutura específica,
+                // atualizamos o texto do tooltip.
+                structureSelect.addEventListener('change', updateMainTooltip);
+            }
+            // =========================================================================
+
             const importInput = document.getElementById('importFileInput');
             if (importInput) importInput.addEventListener('change', importProject);
             
