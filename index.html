@@ -1340,80 +1340,74 @@ const mapEmotionsAndPacing = async (button) => {
 
 
 
-     /**
-         * Gera a Conclusão e o CTA juntos, com base na estratégia final escolhida,
-         * e formata o texto corretamente para análise posterior.
-         */
-           const generateConclusionAndCta = async (button) => {
-            if (!validateInputs()) return;
-            showButtonLoading(button);
+     // ==========================================================
+// >>>>> AÇÃO 3: SUBSTITUA A FUNÇÃO generateConclusionAndCta COMPLETA <<<<<
+// ==========================================================
+const generateConclusionAndCta = async (button) => {
+    if (!validateInputs()) return;
+    showButtonLoading(button);
 
-            // >>>>> AQUI ESTÁ A CORREÇÃO CRÍTICA <<<<<
-            // Garante que os containers de destino existam antes de tentar usá-los.
-            const scriptContainer = document.getElementById('scriptSectionsContainer');
-            if (scriptContainer) {
-                if (!document.getElementById('conclusionSection')) {
-                    const conclusionDiv = document.createElement('div');
-                    conclusionDiv.id = 'conclusionSection';
-                    scriptContainer.appendChild(conclusionDiv);
-                }
-                if (!document.getElementById('ctaSection')) {
-                    const ctaDiv = document.createElement('div');
-                    ctaDiv.id = 'ctaSection';
-                    ctaDiv.classList.add('hidden'); // Garante que comece escondido
-                    scriptContainer.appendChild(ctaDiv);
-                }
-            }
-            // >>>>> FIM DA CORREÇÃO <<<<<
+    // Garante que o container de destino exista antes de tentar usá-lo.
+    const scriptContainer = document.getElementById('scriptSectionsContainer');
+    if (scriptContainer && !document.getElementById('conclusionSection')) {
+        const conclusionDiv = document.createElement('div');
+        conclusionDiv.id = 'conclusionSection';
+        conclusionDiv.classList.add('script-section');
+        scriptContainer.appendChild(conclusionDiv);
+    }
 
-            const conclusionType = document.querySelector('input[name="conclusionType"]:checked').value;
-            const conclusionSpecifics = document.getElementById('conclusionSpecifics').value.trim();
+    const conclusionType = document.querySelector('input[name="conclusionType"]:checked').value;
+    const conclusionSpecifics = document.getElementById('conclusionSpecifics').value.trim();
 
-            let strategyDirective = '';
-            switch (conclusionType) {
-                case 'lesson':
-                    strategyDirective = `O objetivo é reforçar uma lição ou reflexão central. Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
-                    break;
-                case 'answer':
-                    const question = document.getElementById('centralQuestion').value.trim() || 'a pergunta central do vídeo';
-                    strategyDirective = `O objetivo é responder de forma clara à pergunta central do vídeo ('${question}'). Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
-                    break;
-                case 'cliffhanger':
-                    strategyDirective = `O objetivo é criar um gancho ou mistério para o próximo vídeo. Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
-                    break;
-            }
-            
-            const baseContext = getBasePromptContext();
-            const prompt = `${baseContext}
-            Você é um mestre roteirista. Sua tarefa é escrever a **Conclusão e o Call to Action (CTA)** do vídeo, JUNTOS, em um único bloco de texto fluido.
-            **Diretiva Estratégica para o Final:** ${strategyDirective}
-            **REGRAS CRÍTICAS:** Responda APENAS com o texto final para ser falado. Sem metadados, sem labels (como "Conclusão:", "CTA:"), apenas o texto.`;
+    let strategyDirective = '';
+    switch (conclusionType) {
+        case 'lesson':
+            strategyDirective = `O objetivo é reforçar uma lição ou reflexão central. Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
+            break;
+        case 'answer':
+            const question = document.getElementById('centralQuestion').value.trim() || 'a pergunta central do vídeo';
+            strategyDirective = `O objetivo é responder de forma clara à pergunta central do vídeo ('${question}'). Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
+            break;
+        case 'cliffhanger':
+            strategyDirective = `O objetivo é criar um gancho ou mistério para o próximo vídeo. Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
+            break;
+    }
+    
+    // Coleta o contexto de TODAS as seções anteriores
+    const fullContext = getTranscriptOnly(); 
 
-            try {
-                const maxTokens = 800;
-                let result = await callGroqAPI(prompt, maxTokens);
-                result = removeMetaComments(result.trim());
+    const basePromptContext = getBasePromptContext();
+    const prompt = `${basePromptContext}
+    ${fullContext ? `\n\n**ROTEIRO ESCRITO ATÉ AGORA (PARA CONTEXTO):**\n---\n${fullContext}\n---\n` : ''}
+    Você é um mestre roteirista. Sua tarefa é escrever a **Conclusão e o Call to Action (CTA)** do vídeo, JUNTOS, em um único bloco de texto fluido, continuando de onde o roteiro parou.
+    **Diretiva Estratégica para o Final:** ${strategyDirective}
+    **REGRAS CRÍTICAS:** Responda APENAS com o texto final para ser falado. Sem metadados, sem labels (como "Conclusão:", "CTA:"), apenas o texto.`;
 
-                const paragraphs = result.split('\n').filter(p => p.trim() !== '');
-                const contentWithSpans = paragraphs.map((p, index) => 
-                    `<div id="conclusion-p-${index}">${p}</div>`
-                ).join('');
+    try {
+        const maxTokens = 800;
+        let result = await callGroqAPI(prompt, maxTokens);
+        result = removeMetaComments(result.trim());
 
-                document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão e CTA', contentWithSpans);
-                document.getElementById('ctaSection').innerHTML = ''; 
+        const paragraphs = result.split('\n').filter(p => p.trim() !== '');
+        const contentWithSpans = paragraphs.map((p, index) => 
+            `<div id="conclusion-p-${index}">${p}</div>`
+        ).join('');
 
-                markButtonAsCompleted('generateConclusionAndCtaBtn');
+        document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão e CTA', contentWithSpans);
+        
+        markButtonAsCompleted('generateConclusionAndCtaBtn');
+        document.getElementById('conclusionStrategyModule').classList.add('hidden');
+        window.showToast("Conclusão e CTA gerados com sucesso!");
+        updateButtonStates();
 
-                document.getElementById('conclusionStrategyModule').classList.add('hidden');
-                window.showToast("Conclusão e CTA gerados com sucesso!");
-                updateButtonStates();
+    } catch(error) {
+        window.showToast(`Falha ao gerar a conclusão: ${error.message}`);
+    } finally {
+        hideButtonLoading(button);
+    }
+};
 
-            } catch(error) {
-                window.showToast(`Falha ao gerar a conclusão: ${error.message}`);
-            } finally {
-                hideButtonLoading(button);
-            }
-        };
+
 
     // ==========================================================
         // NOVA FUNÇÃO PARA ATUALIZAR A BARRA DE PROGRESO
@@ -3533,96 +3527,83 @@ window.regenerateSection = (fullSectionId) => {
         };
 
         // ==========================================================
-        // >>>>> SUBSTITUA O BLOCO try DA SUA FUNÇÃO generateStrategicOutline POR ESTE <<<<<
-        // ==========================================================
-        const generateStrategicOutline = async (button) => {
-            if (!validateInputs()) return;
-            
-            showButtonLoading(button);
-            
-            const outlineContentDiv = document.getElementById('outlineContent'); // Corrigido para buscar o elemento aqui
-            if (outlineContentDiv) {
-                outlineContentDiv.innerHTML = `<div class="loading-spinner-small mx-auto"></div>`;
-            } else {
-                window.showToast("Erro: Container do esboço não encontrado.");
-                hideButtonLoading(button);
-                return;
-            }
+// >>>>> AÇÃO 1: SUBSTITUA A FUNÇÃO generateStrategicOutline COMPLETA <<<<<
+// ==========================================================
+const generateStrategicOutline = async (button) => {
+    if (!validateInputs()) return;
+    
+    showButtonLoading(button);
+    
+    const outlineContentDiv = document.getElementById('outlineContent');
+    if (outlineContentDiv) {
+        outlineContentDiv.innerHTML = `<div class="loading-spinner-small mx-auto"></div>`;
+    } else {
+        window.showToast("Erro: Container do esboço não encontrado.");
+        hideButtonLoading(button);
+        return;
+    }
 
-            try {
-                const { prompt, maxTokens } = constructScriptPrompt('outline', 'Esboço Estratégico');
-                const rawResult = await callGroqAPI(prompt, maxTokens);
-                
-                strategicOutline = cleanGeneratedText(rawResult, true);
+    try {
+        const { prompt, maxTokens } = constructScriptPrompt('outline', 'Esboço Estratégico');
+        const rawResult = await callGroqAPI(prompt, maxTokens);
+        
+        strategicOutline = cleanGeneratedText(rawResult, true);
 
-                if (!strategicOutline || typeof strategicOutline !== 'object') {
-                    console.error("A IA retornou um esboço em formato inválido:", rawResult);
-                    throw new Error("A IA falhou em gerar um esboço válido.");
-                }
+        if (!strategicOutline || typeof strategicOutline !== 'object') {
+            console.error("A IA retornou um esboço em formato inválido:", rawResult);
+            throw new Error("A IA falhou em gerar um esboço válido.");
+        }
 
-                const titleTranslations = {
-                    'introduction': 'Introdução',
-                    'development': 'Desenvolvimento',
-                    'climax': 'Clímax',
-                    'conclusion': 'Conclusão',
-                    'cta': 'CTA'
-                };
-                
-                let outlineHtml = '<ul class="space-y-4 text-sm">';
-                for (const key in strategicOutline) {
-                    if (Object.hasOwnProperty.call(strategicOutline, key)) {
-                        const translatedTitle = titleTranslations[key] || (key.charAt(0).toUpperCase() + key.slice(1));
-                        let contentText = strategicOutline[key] || '';
-                        
-                        outlineHtml += `
-                            <li>
-                                <div>
-                                    <strong class="text-indigo-600 dark:text-indigo-400">${translatedTitle}:</strong>
-                                    <span class="text-gray-600 dark:text-gray-300">${contentText}</span>
-                                </div>
-                            </li>
-                        `;
-                    }
-                }
-                outlineHtml += '</ul>';
-                
-                outlineContentDiv.innerHTML = outlineHtml;
-                markButtonAsCompleted(button.id);
-
-                // ==========================================================
-                // >>>>> INÍCIO DA CORREÇÃO <<<
-                // Esta é a lógica que faltava!
-                // ==========================================================
-                const scriptContainer = document.getElementById('scriptSectionsContainer');
-                if (scriptContainer) {
-                    // Limpa qualquer conteúdo antigo e prepara para os placeholders
-                    scriptContainer.innerHTML = ''; 
-
-                    // Cria os placeholders para cada seção do roteiro
-                    scriptContainer.innerHTML += createScriptSectionPlaceholder('intro', 'Introdução', 'generateIntroBtn');
-                    scriptContainer.innerHTML += createScriptSectionPlaceholder('development', 'Desenvolvimento', 'generateDevelopmentBtn');
-                    scriptContainer.innerHTML += createScriptSectionPlaceholder('climax', 'Clímax', 'climaxBtn');
-                    // scriptContainer.innerHTML += createScriptSectionPlaceholder('conclusion', 'Conclusão e CTA', 'conclusionBtn');
-                    
-                    // Nota: O botão de CTA agora pode ser o mesmo da Conclusão, simplificando a UI.
-                    // A função 'generateConclusionAndCta' já lida com os dois.
-                }
-                // ==========================================================
-                // >>>>> FIM DA CORREÇÃO <<<
-                // ==========================================================
-
-
-            } catch (error) {
-                window.showToast(`Falha ao gerar Esboço: ${error.message}`);
-                console.error("Error generating Outline.", error);
-                if (outlineContentDiv) {
-                    outlineContentDiv.innerHTML = `<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`;
-                }
-            } finally {
-                hideButtonLoading(button);
-                updateButtonStates();
-            }
+        const titleTranslations = {
+            'introduction': 'Introdução',
+            'development': 'Desenvolvimento',
+            'climax': 'Clímax',
+            'conclusion': 'Conclusão',
+            'cta': 'CTA'
         };
+        
+        let outlineHtml = '<ul class="space-y-4 text-sm">';
+        for (const key in strategicOutline) {
+            if (Object.hasOwnProperty.call(strategicOutline, key)) {
+                const translatedTitle = titleTranslations[key] || (key.charAt(0).toUpperCase() + key.slice(1));
+                let contentText = strategicOutline[key] || '';
+                
+                outlineHtml += `
+                    <li>
+                        <div>
+                            <strong class="text-indigo-600 dark:text-indigo-400">${translatedTitle}:</strong>
+                            <span class="text-gray-600 dark:text-gray-300">${contentText}</span>
+                        </div>
+                    </li>
+                `;
+            }
+        }
+        outlineHtml += '</ul>';
+        
+        outlineContentDiv.innerHTML = outlineHtml;
+        markButtonAsCompleted(button.id);
+
+        const scriptContainer = document.getElementById('scriptSectionsContainer');
+        if (scriptContainer) {
+            scriptContainer.innerHTML = ''; 
+
+            // Cria os placeholders APENAS para as seções principais que vêm antes da Conclusão.
+            scriptContainer.innerHTML += createScriptSectionPlaceholder('intro', 'Introdução', 'generateIntroBtn');
+            scriptContainer.innerHTML += createScriptSectionPlaceholder('development', 'Desenvolvimento', 'generateDevelopmentBtn');
+            scriptContainer.innerHTML += createScriptSectionPlaceholder('climax', 'Clímax', 'climaxBtn');
+        }
+
+    } catch (error) {
+        window.showToast(`Falha ao gerar Esboço: ${error.message}`);
+        console.error("Error generating Outline.", error);
+        if (outlineContentDiv) {
+            outlineContentDiv.innerHTML = `<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`;
+        }
+    } finally {
+        hideButtonLoading(button);
+        updateButtonStates();
+    }
+};
 
 
         /**
@@ -4088,7 +4069,7 @@ window.regenerateSection = (fullSectionId) => {
 
 
 // =========================================================================
-//    SUBSTITUA SEU BLOCO DOMContentLoaded INTEIRO POR ESTE              -->
+// >>>>> AÇÃO 2: SUBSTITUA SEU BLOCO DOMContentLoaded INTEIRO <<<<<
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
@@ -4101,7 +4082,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupInputTabs();
     updateProgressBar();
     updateButtonStates();
-    updateNarrativeStructureOptions(); // Chamada inicial para popular as opções
+    updateNarrativeStructureOptions();
 
     // --- 3. EVENT LISTENERS ESPECÍFICOS ---
     const goalSelect = document.getElementById('narrativeGoal');
@@ -4114,7 +4095,6 @@ document.addEventListener('DOMContentLoaded', () => {
         structureSelect.addEventListener('change', updateMainTooltip);
     }
 
-    // Listener para o campo de estilo de imagem (CORREÇÃO)
     const imageStyleSelect = document.getElementById('imageStyleSelect');
     if (imageStyleSelect) {
         imageStyleSelect.addEventListener('change', toggleCustomImageStyleVisibility);
@@ -4142,7 +4122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
     }
 
-    // --- 4. O "GERENTE DE CLIQUES" (LÓGICA PRINCIPAL DE BOTÕES) ---
+    // --- 4. O "GERENTE DE CLIQUES" ---
     document.addEventListener('click', function(event) {
         const target = event.target;
         const button = target.closest('button');
@@ -4180,7 +4160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
                 'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
                 'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-                'conclusionBtn': () => handleGenerateSection(button, 'conclusion', 'Conclusão e CTA', 'conclusion'),
+                // A linha 'conclusionBtn' foi removida daqui
                 'generateIdeasBtn': () => generateVideoIdeas(button),
                 'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
                 'exportProjectBtn': () => exportProject(),
@@ -4203,7 +4183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 5. LÓGICA PARA RESETAR ROTEIRO EM MUDANÇAS ESTRATÉGICAS ---
+    // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
     const strategicInputIds = [
         'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
         'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
@@ -4219,9 +4199,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 6. EVENTO DE SCROLL PARA BARRA FLUTUANTE ---
-    // A função handleFloatingActionBar precisa ser definida ou o listener precisa ser removido
-    // window.addEventListener('scroll', window.handleFloatingActionBar); // Descomente se tiver a função
 });
 
 </script>
