@@ -3846,17 +3846,7 @@ const generateStrategicOutline = async (button) => {
             }, 500); // 500ms de atraso
         };
 
-        /**
-         * Reseta o estado da aplicação para um novo roteiro. (VERSÃO CORRIGIDA E RECONSTRUTIVA)
-         */
-        const resetApplicationState = () => {
-            // Função para resetar um elemento de forma segura
-            const safeReset = (elementId, value = '') => {
-                const element = document.getElementById(elementId);
-                if (element) {
-                    element.value = value;
-                }
-            };
+
 
             // Reseta todos os inputs para seus valores padrão de forma segura
             safeReset('channelName', 'The Biblical Unveiling');
