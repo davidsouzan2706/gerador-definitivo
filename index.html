@@ -976,27 +976,6 @@ const resetProjectOutputs = () => {
 
 
 
-const resetApplicationState = () => {
-    // Zera o nosso "painel de controle".
-    projectState = { intro: false, development: false, climax: false, conclusion: false };
-
-    // O resto da sua função continua o mesmo...
-    const safeReset = (elementId, value = '') => {
-        const element = document.getElementById(elementId);
-        if (element) { element.value = value; }
-    };
-    
-    safeReset('channelName', 'The Biblical Unveiling');
-    // ... (adicione todos os seus outros `safeReset` aqui) ...
-
-    resetProjectOutputs(); // Chama a outra função de reset para evitar duplicação de código.
-
-    window.showToast("Pronto para um novo roteiro!");
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
-
-
-
 
 
 
@@ -3851,90 +3830,61 @@ const generateStrategicOutline = async (button) => {
 
 
 
-            // Reseta todos os inputs para seus valores padrão de forma segura
-            safeReset('channelName', 'The Biblical Unveiling');
-            safeReset('videoTheme');
-            safeReset('videoDescription');
-            safeReset('targetAudience', 'Pessoas Interessadas em Arqueologia Bíblica e História Antiga, Cristãos e Pessoas de Fé, Entusiastas de Ciência e Ceticismo (com mente aberta), Curiosos em Geral e Amantes de Mistérios.');
-            safeReset('languageSelect', 'en');
-            safeReset('videoObjective', 'informar');
-            safeReset('videoDuration', '');
-            safeReset('speakingPace', 'moderate');
-            
-            safeReset('narrativeGoal', 'storytelling');
-                        
-            safeReset('narrativeTheme');
-            safeReset('narrativeTone', 'inspirador');
-            safeReset('narrativeVoice');
-            
-            safeReset('centralQuestion');
-            safeReset('emotionalArc');
-            safeReset('shockingEndingHook');
-            safeReset('imageDescriptionEngine');
-            safeReset('imageStyleSelect', 'cinematic');
-            safeReset('customImageStyle');
-            toggleCustomImageStyleVisibility();
-            
-            const nicheDesc = document.getElementById('nicheDescription');
-            const ideasOut = document.getElementById('ideasOutput');
-            if (nicheDesc) nicheDesc.value = '';
-            if (ideasOut) ideasOut.innerHTML = '';
+// =========================================================================
+// >>>>> SUBSTITUA TODAS AS VERSÕES DE resetApplicationState POR ESTA <<<<<
+// =========================================================================
+const resetApplicationState = () => {
+    // 1. Zera o nosso "painel de controle" de estado do projeto.
+    projectState = { intro: false, development: false, climax: false, conclusion: false };
 
-            strategicOutline = null;
-            allImagePrompts = {};
-            generatedTitlesAndThumbnails = null;
-            totalScriptSeconds = 0;
-            promptPaginationState = {}; // Reset pagination state
+    // 2. Função interna para resetar um campo do formulário de forma segura.
+    const safeReset = (elementId, value = '') => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.value = value;
+        }
+    };
 
-            // ==========================================================
-            // A CORREÇÃO CRÍTICA ESTÁ AQUI
-            // ==========================================================
-            const contentContainers = [
-                'scriptSectionsContainer', 'outlineContent', 
-                'titlesThumbnailsContent', 'videoDescriptionContent'
-            ];
-            contentContainers.forEach(id => {
-                const container = document.getElementById(id);
-                if (container) {
-                    if (id === 'scriptSectionsContainer') {
-                        // RECONSTRÓI os placeholders em vez de apenas limpar
-                        container.innerHTML = `
-                            <div id="introSection" class="script-section"></div>
-                            <div id="developmentSection" class="script-section"></div>
-                            <div id="climaxSection" class="script-section"></div>
-                            <div id="conclusionSection" class="script-section"></div>
-                            <div id="ctaSection" class="script-section hidden"></div> 
-                        `;
-                    } else if (id === 'outlineContent') {
-                        container.innerHTML = `<div class="asset-card-placeholder">Clique em 'Criar Esboço' para a IA planejar a estrutura do roteiro.</div>`;
-                    } else if (id === 'titlesThumbnailsContent') {
-                        container.innerHTML = `<div class="asset-card-placeholder">Clique em 'Gerar' para ver as sugestões</div>`;
-                    } else if (id === 'videoDescriptionContent') {
-                        container.innerHTML = `<div class="asset-card-placeholder">Clique em 'Gerar' para ver a descrição</div>`;
-                    } else {
-                        container.innerHTML = '';
-                    }
-                }
-            });
+    // 3. Reseta todos os inputs para seus valores padrão (código da sua segunda imagem).
+    safeReset('channelName', 'The Biblical Unveiling');
+    safeReset('videoTheme');
+    safeReset('videoDescription');
+    safeReset('targetAudience', 'Pessoas Interessadas em Arqueologia Bíblica e História Antiga, Cristãos e Pessoas de Fé, Entusiastas de Ciência e Ceticismo (com mente aberta), Curiosos em Geral e Amantes de Mistérios.');
+    safeReset('languageSelect', 'en');
+    safeReset('videoObjective', 'informar');
+    safeReset('videoDuration', '');
+    safeReset('speakingPace', 'moderate');
+    safeReset('narrativeGoal', 'storytelling');
+    safeReset('narrativeTheme');
+    safeReset('narrativeTone', 'inspirador');
+    safeReset('narrativeVoice');
+    safeReset('centralQuestion');
+    safeReset('emotionalArc');
+    safeReset('shockingEndingHook');
+    safeReset('imageDescriptionEngine');
+    safeReset('imageStyleSelect', 'cinematic');
+    safeReset('customImageStyle');
+    
+    toggleCustomImageStyleVisibility();
+    
+    const nicheDesc = document.getElementById('nicheDescription');
+    const ideasOut = document.getElementById('ideasOutput');
+    if (nicheDesc) nicheDesc.value = '';
+    if (ideasOut) ideasOut.innerHTML = '';
 
+    strategicOutline = null;
+    allImagePrompts = {};
+    generatedTitlesAndThumbnails = null;
+    totalScriptSeconds = 0;
+    promptPaginationState = {};
 
-            // ==========================================================
-            // FIM DA CORREÇÃO
-            // ==========================================================
+    // A lógica de limpar os containers foi movida para resetProjectOutputs, o que está correto.
+    // Vamos garantir que a chamada esteja aqui, como na sua primeira imagem.
+    resetProjectOutputs(); 
 
-            document.querySelectorAll('.section-analysis-output, .section-performance-output').forEach(output => {
-                output.innerHTML = '';
-            });
-
-            resetCompletionIcons();
-            updateProgressBar();
-            
-            if (elements.projectDashboard) {
-                 elements.projectDashboard.classList.add('hidden');
-            }
-
-            window.showToast("Pronto para um novo roteiro!");
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.showToast("Pronto para um novo roteiro!");
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
         
 
         /**
