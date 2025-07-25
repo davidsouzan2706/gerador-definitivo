@@ -1009,17 +1009,15 @@ const updateButtonStates = () => {
         if (btn) btn.disabled = !allMainScriptGenerated;
     });
 
+
+
     // >>>>> 3. SEPARAMOS a lógica do botão "Mapear" dos outros <<<<<
+
     const mapEmotionsBtn = document.getElementById('mapEmotionsBtn');
-    if (mapEmotionsBtn) {
-        mapEmotionsBtn.disabled = !isFullScriptComplete; // Só habilita se o ROTEIRO COMPLETO estiver pronto
-        
-        // Adiciona uma dica útil para o usuário
-        if (mapEmotionsBtn.disabled && allMainScriptGenerated) {
-            mapEmotionsBtn.title = "Gere a Conclusão e o CTA para habilitar o mapa emocional.";
-        } else {
-            mapEmotionsBtn.title = ""; // Limpa a dica quando o botão está habilitado
-        }
+if (mapEmotionsBtn) {
+    const isFullScriptComplete = allMainScriptGenerated && conclusionGenerated;
+    mapEmotionsBtn.disabled = !isFullScriptComplete;
+
     }
 
     // A lógica para o módulo de conclusão (permanece igual)
@@ -1144,11 +1142,25 @@ const updateButtonStates = () => {
          * Analisa o roteiro completo para criar um "mapa emocional" para guiar a produção.
          */
 const mapEmotionsAndPacing = async (button) => {
-            const fullTranscript = getTranscriptOnly();
-            if (!fullTranscript) {
-                showToast("Gere o roteiro completo primeiro para criar o mapa emocional.");
-                return;
-            }
+    // 1. A condição de verificação que já criamos antes
+    const isFullScriptComplete = 
+        document.querySelector('#introSection .accordion-item') &&
+        document.querySelector('#developmentSection .accordion-item') &&
+        document.querySelector('#climaxSection .accordion-item') &&
+        document.querySelector('#conclusionSection .accordion-item');
+
+    // 2. Se a condição não for atendida, mostra o TOAST e para a função.
+    if (!isFullScriptComplete) {
+        window.showToast("Por favor, gere o roteiro completo (incluindo a Conclusão) antes de mapear as emoções.");
+        return;
+    }
+
+    const fullTranscript = getTranscriptOnly();
+    // A verificação abaixo é uma segunda camada de segurança, podemos mantê-la.
+    if (!fullTranscript) {
+        window.showToast("Gere o roteiro completo primeiro para criar o mapa emocional.");
+        return;
+    }
 
             const outputContainer = document.getElementById('emotionalMapContent');
             
