@@ -4277,11 +4277,10 @@ const generateStrategicOutline = async (button) => {
 
 
 // =========================================================================
-// >>>>> COLE ESTE BLOCO INTEIRO NO FINAL DO SEU SCRIPT JAVASCRIPT <<<<<
+// >>>>> VERSÃO FINAL E CORRIGIDA DO DOMContentLoaded <<<<<
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
-    // Mapeia todos os elementos com um ID para os objetos `buttons` ou `elements` para fácil acesso.
     document.querySelectorAll('[id]').forEach(el => {
         if (el.tagName === 'BUTTON') {
             buttons[el.id] = el;
@@ -4290,33 +4289,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- EXPORTAÇÃO DE FUNÇÕES PARA O ESCOPO GLOBAL ---
-    // Cria uma "ponte" para que funções dentro do módulo possam ser chamadas por `onclick` no HTML.
-    // Isso deve ser feito aqui para garantir que as funções já foram definidas quando o script foi lido.
-    window.selectIdea = selectIdea;
-    window.toggleAccordion = toggleAccordion;
-    window.navigatePrompts = navigatePrompts;
-    window.copyTextToClipboard = copyTextToClipboard;
-    window.showCopyFeedback = showCopyFeedback;
-    window.analyzeSectionRetention = analyzeSectionRetention;
-    window.optimizeGroup = optimizeGroup;
-    window.enrichText = enrichText;
-    window.addDevelopmentChapter = addDevelopmentChapter;
-    window.suggestPerformance = suggestPerformance;
-    window.regenerateSection = regenerateSection;
-    window.generatePromptsForSection = generatePromptsForSection;
-    window.analyzeTitles = analyzeTitles;
-    window.analyzeThumbnails = analyzeThumbnails;
-    
     // --- 2. INICIALIZAÇÃO DE FUNÇÕES DA INTERFACE ---
-    // Executa as funções de configuração inicial da UI.
     setupInputTabs();
     updateProgressBar();
     updateButtonStates();
     updateNarrativeStructureOptions();
 
     // --- 3. EVENT LISTENERS ESPECÍFICOS ---
-    // Adiciona "ouvintes" a elementos específicos que precisam de reações a eventos como 'change' ou 'click'.
     const goalSelect = document.getElementById('narrativeGoal');
     if (goalSelect) {
         goalSelect.addEventListener('change', updateNarrativeStructureOptions);
@@ -4348,7 +4327,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Verifica o estado salvo do dark mode ao carregar a página
     if (localStorage.getItem('darkMode') === 'enabled') {
         document.body.classList.add('dark');
         const moonIcon = document.getElementById('moonIcon');
@@ -4362,13 +4340,11 @@ document.addEventListener('DOMContentLoaded', () => {
         speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
     }
 
-    // --- 4. O "GERENTE DE CLIQUES" (DELEGAÇÃO DE EVENTOS GERAL) ---
-    // Um único "ouvinte" para todos os cliques no documento, que decide o que fazer.
+    // --- 4. O "GERENTE DE CLIQUES" ---
     document.addEventListener('click', function(event) {
         const target = event.target;
         const button = target.closest('button');
 
-        // Lógica para abrir/fechar o acordeão
         const accordionHeader = target.closest('.accordion-header');
         if (accordionHeader && !target.closest('.header-buttons')) {
             const body = accordionHeader.nextElementSibling;
@@ -4379,7 +4355,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Lógica para botões com `data-action` (ex: copiar, regenerar)
         if (button && button.dataset.action) {
             event.preventDefault();
             const action = button.dataset.action;
@@ -4392,7 +4367,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (action === 'generate-prompts') { window.generatePromptsForSection(button, button.dataset.sectionId); return; }
         }
 
-        // Lógica para botões com IDs específicos (ações principais)
         if (button) {
             const clickActions = {
                 'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
@@ -4419,7 +4393,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 },
             };
-            // Se o ID do botão clicado corresponder a uma ação, executa-a
             if (clickActions[button.id]) {
                 event.preventDefault();
                 clickActions[button.id]();
@@ -4428,7 +4401,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- 5. LÓGICA PARA RESETAR ROTEIRO EM MUDANÇAS ESTRATÉGICAS ---
-    // Adiciona "ouvintes" aos campos de input estratégicos para resetar o roteiro se forem alterados.
     const strategicInputIds = [
         'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
         'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
