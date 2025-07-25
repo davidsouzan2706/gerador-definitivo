@@ -576,7 +576,25 @@
             </div>
         </div>
 
+<!-- ========================================================== -->
+<!--     NOVO MODAL PARA INPUT DE TEMA DO CAPÍTULO         -->
+<!-- ========================================================== -->
+<div id="inputDialogOverlay" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+    <div class="card max-w-md w-full animate-fade-in">
+        <h3 id="inputDialogTitle" class="text-xl font-bold mb-4">Título do Diálogo</h3>
+        <p id="inputDialogMessage" class="text-sm text-gray-500 dark:text-gray-400 mb-4">Mensagem de ajuda.</p>
+        
+        <div class="input-group">
+            <label id="inputDialogLabel" for="inputDialogField">Label do Campo</label>
+            <textarea id="inputDialogField" rows="3" placeholder="Placeholder..."></textarea>
+        </div>
 
+        <div class="flex justify-end gap-4 mt-6">
+            <button id="inputBtnCancel" class="btn btn-secondary">Cancelar</button>
+            <button id="inputBtnConfirm" class="btn btn-primary">Confirmar</button>
+        </div>
+    </div>
+</div>
 
 
     <script type="module">
@@ -732,6 +750,62 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 button.innerHTML = 'Erro!';
             }
         };
+
+// ==========================================================
+//     NOVA FUNÇÃO PARA DIÁLOGO DE INPUT NO JAVASCRIPT      -->
+// ==========================================================
+/**
+ * Exibe uma caixa de diálogo com um campo de texto e aguarda a entrada do usuário.
+ * @param {string} title - O título da caixa de diálogo.
+ * @param {string} message - A mensagem de ajuda/descrição.
+ * @param {string} label - A label para o campo de texto.
+ * @param {string} placeholder - O placeholder para o campo de texto.
+ * @returns {Promise<string|null>} - Retorna o texto digitado se o usuário confirmar, ou null se cancelar.
+ */
+const showInputDialog = (title, message, label, placeholder) => {
+    return new Promise(resolve => {
+        const overlay = document.getElementById('inputDialogOverlay');
+        const titleEl = document.getElementById('inputDialogTitle');
+        const messageEl = document.getElementById('inputDialogMessage');
+        const labelEl = document.getElementById('inputDialogLabel');
+        const fieldEl = document.getElementById('inputDialogField');
+        const btnConfirm = document.getElementById('inputBtnConfirm');
+        const btnCancel = document.getElementById('inputBtnCancel');
+
+        if (!overlay || !titleEl || !messageEl || !labelEl || !fieldEl || !btnConfirm || !btnCancel) {
+            console.error("Elementos do pop-up de input não foram encontrados no HTML.");
+            resolve(null);
+            return;
+        }
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        labelEl.textContent = label;
+        fieldEl.value = ''; // Limpa o campo
+        fieldEl.placeholder = placeholder;
+        overlay.style.display = 'flex';
+        fieldEl.focus();
+
+        const closeDialog = (result) => {
+            overlay.style.display = 'none';
+            // Usa 'replaceWith' para limpar os event listeners antigos de forma segura
+            clonedBtnConfirm.replaceWith(btnConfirm);
+
+clonedBtnCancel.replaceWith(btnCancel);
+            resolve(result);
+        };
+
+        const clonedBtnConfirm = btnConfirm.cloneNode(true);
+        const clonedBtnCancel = btnCancel.cloneNode(true);
+
+        clonedBtnConfirm.addEventListener('click', () => closeDialog(fieldEl.value.trim()));
+        clonedBtnCancel.addEventListener('click', () => closeDialog(null));
+
+        btnConfirm.replaceWith(clonedBtnConfirm);
+        btnCancel.replaceWith(clonedBtnCancel);
+    });
+};
+
 
 
 // ==========================================================
@@ -2448,70 +2522,89 @@ Hashtags:
 
 
 
-        /**
-         * Adiciona um novo capítulo ao desenvolvimento, expandindo o roteiro. (VERSÃO CORRIGIDA)
-         * @param {HTMLElement} button - O botão que foi clicado.
-         */
-        window.addDevelopmentChapter = async (button) => {
-            const devSection = document.getElementById('developmentSection');
-            const contentWrapper = devSection.querySelector('.generated-content-wrapper');
-            const existingText = contentWrapper.textContent;
+        // ==========================================================
+//     SUBSTITUA SUA FUNÇÃO addDevelopmentChapter POR ESTA     -->
+// ==========================================================
+/**
+ * Adiciona um novo capítulo ao desenvolvimento, pedindo um tema ao usuário para guiar a IA.
+ * @param {HTMLElement} button - O botão que foi clicado.
+ */
+window.addDevelopmentChapter = async (button) => {
+    const devSection = document.getElementById('developmentSection');
+    const contentWrapper = devSection?.querySelector('.generated-content-wrapper');
+    const existingText = contentWrapper?.textContent.trim();
 
-            if (!existingText) {
-                showToast("Gere o desenvolvimento inicial primeiro.");
-                return;
-            }
+    if (!existingText) {
+        window.showToast("Gere o desenvolvimento inicial primeiro.");
+        return;
+    }
 
-            button.disabled = true;
-            button.innerHTML = '<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px;"></div>';
+    // 1. Chama nosso novo diálogo de input
+    const chapterTheme = await showInputDialog(
+        'Adicionar Novo Capítulo',
+        'Descreva o foco principal deste novo capítulo para guiar a IA e evitar repetições.',
+        'Tema do Capítulo:',
+        'Ex: A Batalha dos Números, Momentos Decisivos, O Legado Fora de Campo...'
+    );
 
-            try {
-                // ==========================================================
-                // >>>>> AQUI ESTÁ A CORREÇÃO DO PROBLEMA 1 (PROMPT) <<<<<
-                // ==========================================================
-                const basePrompt = constructScriptPrompt('development', 'Desenvolvimento').prompt;
-                const continuationPrompt = `${basePrompt}
-                \n\n**CRITICAL CONTINUATION INSTRUCTION: THIS IS THE MOST IMPORTANT RULE.**
-                You are writing the NEXT chapter of a script that already exists. 
-                - **DO NOT** repeat, rephrase, or summarize previous information.
-                - You **MUST** introduce new information, new evidence, a new event, or a deeper analysis that moves the story forward.
-                - Assume the viewer already knows everything written so far. Your task is to build upon it.
-                
-                **Here is the END of the current script, to give you context on where to continue from:**
-                \n"...${existingText.slice(-700)}" 
-                
-                Now, write the next chapter of the development section, ensuring it is entirely new content.`;
-                // ==========================================================
-                
-                const rawResult = await callGroqAPI(continuationPrompt, 4000); // Aumentamos os tokens para garantir que não corte
-                const newChapter = removeMetaComments(rawResult.trim());
-                
-                const existingParagraphsCount = contentWrapper.querySelectorAll('div[id]').length;
-                const newParagraphs = newChapter.split('\n').filter(p => p.trim() !== '');
-                const newContentWithDivs = newParagraphs.map((p, index) => 
-                    `<div id="development-p-${existingParagraphsCount + index}">${p}</div>`
-                ).join('');
+    // 2. Se o usuário cancelou ou não digitou nada, interrompe a função
+    if (!chapterTheme) {
+        window.showToast("Operação cancelada.");
+        return;
+    }
 
-                contentWrapper.insertAdjacentHTML('beforeend', `<br>${newContentWithDivs}`); // Adiciona espaço
-                
-                // ==========================================================
-                // >>>>> AQUI ESTÁ A CORREÇÃO DO PROBLEMA 2 (INVALIDAÇÃO) <<<<<
-                // ==========================================================
-                // window.emotionalMap = null; // Invalida o mapa antigo
-                invalidateAndClearPerformance(devSection); // Limpa a UI de performance
-                invalidateAndClearPrompts(devSection); // Limpa a UI de prompts
-                // ==========================================================
+    showButtonLoading(button);
 
-                updateAllReadingTimes();
-                showToast("Novo capítulo adicionado!");
+    try {
+        // 3. Monta um prompt muito mais específico usando o tema
+        const basePrompt = getBasePromptContext();
+        const continuationPrompt = `${basePrompt}
+        
+Você está escrevendo um novo capítulo para um roteiro existente.
 
-            } catch (error) {
-                showToast(`Falha ao adicionar capítulo: ${error.message}`);
-            } finally {
-                button.disabled = false;
-                button.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/></svg> Adicionar Capítulo`;
-            }
-        };
+**TEMA OBRIGATÓRIO PARA ESTE CAPÍTULO:** "${chapterTheme}"
+
+**INSTRUÇÃO CRÍTICA DE CONTINUIDADE:**
+- O texto abaixo é o roteiro escrito até agora. **NÃO REPITA** as informações contidas nele.
+- Sua tarefa é escrever um novo capítulo que avance a narrativa, focado **EXCLUSIVAMENTE** no tema "${chapterTheme}".
+- Comece o novo capítulo de forma fluida, como se fosse a continuação natural do texto anterior.
+
+**ROTEIRO ESCRITO ATÉ AGORA (PARA CONTEXTO):**
+---
+${existingText}
+---
+
+Agora, escreva o novo capítulo sobre "${chapterTheme}".`;
+
+        const rawResult = await callGroqAPI(continuationPrompt, 4000);
+        const newChapter = removeMetaComments(rawResult.trim());
+        
+        // Insere um título para o capítulo e depois o conteúdo
+        const chapterTitleHtml = `<div class="font-bold text-lg mt-4 mb-2">Capítulo: ${chapterTheme}</div>`;
+        
+        const existingParagraphsCount = contentWrapper.querySelectorAll('div[id]').length;
+        const newParagraphs = newChapter.split('\n').filter(p => p.trim() !== '');
+        const newContentWithDivs = newParagraphs.map((p, index) => 
+            `<div id="development-p-${existingParagraphsCount + index}">${p}</div>`
+        ).join('');
+
+        contentWrapper.insertAdjacentHTML('beforeend', chapterTitleHtml + newContentWithDivs);
+        
+        // Invalida análises anteriores
+        invalidateAndClearPerformance(devSection);
+        invalidateAndClearPrompts(devSection);
+        updateAllReadingTimes();
+        
+        window.showToast("Novo capítulo adicionado com sucesso!");
+        contentWrapper.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+
+    } catch (error) {
+        window.showToast(`Falha ao adicionar capítulo: ${error.message}`);
+    } finally {
+        hideButtonLoading(button);
+    }
+};
 
 
 
