@@ -4277,35 +4277,53 @@ const generateStrategicOutline = async (button) => {
 
 
 // =========================================================================
-// >>>>> AÇÃO 2: SUBSTITUA SEU BLOCO DOMContentLoaded INTEIRO <<<<<
+// >>>>> COLE ESTE BLOCO INTEIRO NO FINAL DO SEU SCRIPT JAVASCRIPT <<<<<
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
+    // Mapeia todos os elementos com um ID para os objetos `buttons` ou `elements` para fácil acesso.
     document.querySelectorAll('[id]').forEach(el => {
-        if (el.tagName === 'BUTTON') { buttons[el.id] = el; } 
-        else { elements[el.id] = el; }
+        if (el.tagName === 'BUTTON') {
+            buttons[el.id] = el;
+        } else {
+            elements[el.id] = el;
+        }
     });
 
-    // "Exporta" a função selectIdea para o escopo global para que o onclick funcione
+    // --- EXPORTAÇÃO DE FUNÇÕES PARA O ESCOPO GLOBAL ---
+    // Cria uma "ponte" para que funções dentro do módulo possam ser chamadas por `onclick` no HTML.
+    // Isso deve ser feito aqui para garantir que as funções já foram definidas quando o script foi lido.
     window.selectIdea = selectIdea;
+    window.toggleAccordion = toggleAccordion;
+    window.navigatePrompts = navigatePrompts;
+    window.copyTextToClipboard = copyTextToClipboard;
+    window.showCopyFeedback = showCopyFeedback;
+    window.analyzeSectionRetention = analyzeSectionRetention;
+    window.optimizeGroup = optimizeGroup;
+    window.enrichText = enrichText;
+    window.addDevelopmentChapter = addDevelopmentChapter;
+    window.suggestPerformance = suggestPerformance;
+    window.regenerateSection = regenerateSection;
+    window.generatePromptsForSection = generatePromptsForSection;
+    window.analyzeTitles = analyzeTitles;
+    window.analyzeThumbnails = analyzeThumbnails;
     
-
-    // --- 2. INICIALIZAÇÃO DE FUNÇÕES ---
+    // --- 2. INICIALIZAÇÃO DE FUNÇÕES DA INTERFACE ---
+    // Executa as funções de configuração inicial da UI.
     setupInputTabs();
     updateProgressBar();
     updateButtonStates();
     updateNarrativeStructureOptions();
 
-
-
     // --- 3. EVENT LISTENERS ESPECÍFICOS ---
+    // Adiciona "ouvintes" a elementos específicos que precisam de reações a eventos como 'change' ou 'click'.
     const goalSelect = document.getElementById('narrativeGoal');
-    if(goalSelect) {
+    if (goalSelect) {
         goalSelect.addEventListener('change', updateNarrativeStructureOptions);
     }
     
     const structureSelect = document.getElementById('narrativeStructure');
-    if(structureSelect) {
+    if (structureSelect) {
         structureSelect.addEventListener('change', updateMainTooltip);
     }
 
@@ -4315,20 +4333,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const importInput = document.getElementById('importFileInput');
-    if (importInput) importInput.addEventListener('change', importProject);
+    if (importInput) {
+        importInput.addEventListener('change', importProject);
+    }
     
-    document.getElementById('darkModeToggle')?.addEventListener('click', () => {
-        document.body.classList.toggle('dark');
-        const isDarkMode = document.body.classList.contains('dark');
-        document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
-        document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
-        localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
-    });
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDarkMode = document.body.classList.contains('dark');
+            document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
+            document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
+            localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+        });
+    }
 
+    // Verifica o estado salvo do dark mode ao carregar a página
     if (localStorage.getItem('darkMode') === 'enabled') {
         document.body.classList.add('dark');
-        document.getElementById('moonIcon')?.classList.add('hidden');
-        document.getElementById('sunIcon')?.classList.remove('hidden');
+        const moonIcon = document.getElementById('moonIcon');
+        const sunIcon = document.getElementById('sunIcon');
+        if(moonIcon) moonIcon.classList.add('hidden');
+        if(sunIcon) sunIcon.classList.remove('hidden');
     }
 
     const speakingPaceSelect = document.getElementById('speakingPace');
@@ -4336,11 +4362,13 @@ document.addEventListener('DOMContentLoaded', () => {
         speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
     }
 
-    // --- 4. O "GERENTE DE CLIQUES" ---
+    // --- 4. O "GERENTE DE CLIQUES" (DELEGAÇÃO DE EVENTOS GERAL) ---
+    // Um único "ouvinte" para todos os cliques no documento, que decide o que fazer.
     document.addEventListener('click', function(event) {
         const target = event.target;
         const button = target.closest('button');
 
+        // Lógica para abrir/fechar o acordeão
         const accordionHeader = target.closest('.accordion-header');
         if (accordionHeader && !target.closest('.header-buttons')) {
             const body = accordionHeader.nextElementSibling;
@@ -4351,6 +4379,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Lógica para botões com `data-action` (ex: copiar, regenerar)
         if (button && button.dataset.action) {
             event.preventDefault();
             const action = button.dataset.action;
@@ -4363,6 +4392,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (action === 'generate-prompts') { window.generatePromptsForSection(button, button.dataset.sectionId); return; }
         }
 
+        // Lógica para botões com IDs específicos (ações principais)
         if (button) {
             const clickActions = {
                 'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
@@ -4374,7 +4404,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
                 'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
                 'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-                // A linha 'conclusionBtn' foi removida daqui
                 'generateIdeasBtn': () => generateVideoIdeas(button),
                 'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
                 'exportProjectBtn': () => exportProject(),
@@ -4390,6 +4419,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 },
             };
+            // Se o ID do botão clicado corresponder a uma ação, executa-a
             if (clickActions[button.id]) {
                 event.preventDefault();
                 clickActions[button.id]();
@@ -4397,10 +4427,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
-
-
-    // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
+    // --- 5. LÓGICA PARA RESETAR ROTEIRO EM MUDANÇAS ESTRATÉGICAS ---
+    // Adiciona "ouvintes" aos campos de input estratégicos para resetar o roteiro se forem alterados.
     const strategicInputIds = [
         'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
         'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
@@ -4411,11 +4439,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (element) {
             const eventType = (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') ? 'change' : 'input';
             element.addEventListener(eventType, (e) => {
-                if (!isSettingStrategy) { resetGeneratedScriptContent(e.target.id); }
+                if (!isSettingStrategy) {
+                    resetGeneratedScriptContent(e.target.id);
+                }
             });
         }
     });
-
 });
 
 </script>
