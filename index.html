@@ -4286,6 +4286,10 @@ document.addEventListener('DOMContentLoaded', () => {
         else { elements[el.id] = el; }
     });
 
+    // "Exporta" a função selectIdea para o escopo global para que o onclick funcione
+    window.selectIdea = selectIdea;
+    
+
     // --- 2. INICIALIZAÇÃO DE FUNÇÕES ---
     setupInputTabs();
     updateProgressBar();
@@ -4394,9 +4398,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-// "Exporta" a função selectIdea para o escopo global para que o onclick funcione
-    window.selectIdea = selectIdea;
-    
+
 
     // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
     const strategicInputIds = [
