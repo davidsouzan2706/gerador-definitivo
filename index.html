@@ -388,16 +388,21 @@
         </div>
 
         <!-- Aba 3: Detalhes Técnicos -->
-        <div id="input-tab-tecnicos" class="tab-pane hidden"> <!-- A classe 'hidden' é importante -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <div class="input-group"><label for="languageStyle">Estilo de Linguagem:</label><select id="languageStyle"><option value="inspirador" selected>Inspirador</option><option value="formal">Formal</option></select></div>
-                <div class="input-group"><label for="videoObjective">Objetivo do Vídeo:</label><select id="videoObjective"><option value="informar" selected>Informar</option><option value="emocionar">Emocionar</option></select></div>
-                 <div class="input-group"><label for="speakingPace">Ritmo de Fala:</label><select id="speakingPace"><option value="moderate" selected>Moderado</option><option value="slow">Lento</option><option value="fast">Rápido</option></select></div>
-                <div class="input-group md:col-span-2"><label for="imageDescriptionEngine">Motor de Descrição de Imagem:</label><textarea id="imageDescriptionEngine" rows="2" placeholder="Ex: 'fotografias reais', 'close-up emocional'"></textarea></div>
-                <div class="input-group md:col-span-2"><label for="imageStyleSelect">Motor de Qualidade de Imagem:</label><select id="imageStyleSelect"><option value="cinematic" selected>Cinematográfico</option><option value="custom">Personalizado</option><option value="none">Nenhum</option></select></div>
-            </div>
+<div id="input-tab-tecnicos" class="tab-pane hidden"> <!-- A classe 'hidden' é importante -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div class="input-group"><label for="languageStyle">Estilo de Linguagem:</label><select id="languageStyle"><option value="inspirador" selected>Inspirador</option><option value="formal">Formal</option></select></div>
+        <div class="input-group"><label for="videoObjective">Objetivo do Vídeo:</label><select id="videoObjective"><option value="informar" selected>Informar</option><option value="emocionar">Emocionar</option></select></div>
+        <div class="input-group"><label for="speakingPace">Ritmo de Fala:</label><select id="speakingPace"><option value="moderate" selected>Moderado</option><option value="slow">Lento</option><option value="fast">Rápido</option></select></div>
+        <div class="input-group md:col-span-2"><label for="imageDescriptionEngine">Motor de Descrição de Imagem:</label><textarea id="imageDescriptionEngine" rows="2" placeholder="Ex: 'fotografias reais', 'close-up emocional'"></textarea></div>
+        <div class="input-group md:col-span-2"><label for="imageStyleSelect">Motor de Qualidade de Imagem:</label><select id="imageStyleSelect"><option value="cinematic" selected>Cinematográfico</option><option value="custom">Personalizado</option><option value="none">Nenhum</option></select></div>
+        <!-- O campo que estava faltando, agora na posição correta -->
+        <div id="customImageStyleContainer" class="input-group md:col-span-2" style="display: none;">
+            <label for="customImageStyle">Estilo de Imagem Personalizado:</label>
+            <textarea id="customImageStyle" rows="3" placeholder="Descreva o seu estilo de imagem aqui... Ex: 'estilo de arte de Van Gogh', 'preto e branco com alto contraste'..."></textarea>
         </div>
     </div>
+</div>
     
     <!-- O botão final (continua o mesmo) -->
     <div class="mt-6 text-center">
@@ -1111,8 +1116,13 @@ const updateButtonStates = () => {
 
         /** Alterna a visibilidade do campo de estilo de imagem personalizado. */
         const toggleCustomImageStyleVisibility = () => {
-            elements.customImageStyleContainer.style.display = elements.imageStyleSelect.value === 'custom' ? 'block' : 'none';
-        };
+    // Adiciona uma verificação para garantir que os elementos existem antes de usá-los
+    const container = document.getElementById('customImageStyleContainer');
+    const select = document.getElementById('imageStyleSelect');
+    if (container && select) {
+        container.style.display = select.value === 'custom' ? 'block' : 'none';
+    }
+};
 
         /**
          * Coleta e concatena o texto puro de todas as seções do roteiro na ordem correta.
@@ -4038,157 +4048,141 @@ window.regenerateSection = (fullSectionId) => {
             }
         };
 
-// ==========================================================
-// >>>>> SUBSTITUA SEU EVENT LISTENER INTEIRO POR ESTE <<<<<
-// ==========================================================
+// =========================================================================
+//    SUBSTITUA SEU BLOCO DOMContentLoaded INTEIRO POR ESTE              -->
+// =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
-            // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
-            document.querySelectorAll('[id]').forEach(el => {
-                if (el.tagName === 'BUTTON') { buttons[el.id] = el; } 
-                else { elements[el.id] = el; }
-            });
+    // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
+    document.querySelectorAll('[id]').forEach(el => {
+        if (el.tagName === 'BUTTON') { buttons[el.id] = el; } 
+        else { elements[el.id] = el; }
+    });
 
-            // --- 2. INICIALIZAÇÃO DE FUNÇÕES ---
-            setupInputTabs();
-            updateProgressBar();
-            updateButtonStates();
-            updateNarrativeStructureOptions(); // Chamada inicial para popular as opções
+    // --- 2. INICIALIZAÇÃO DE FUNÇÕES ---
+    setupInputTabs();
+    updateProgressBar();
+    updateButtonStates();
+    updateNarrativeStructureOptions(); // Chamada inicial para popular as opções
 
-            // --- 3. EVENT LISTENERS ESPECÍFICOS ---
-            const goalSelect = document.getElementById('narrativeGoal');
-            if(goalSelect) {
-                goalSelect.addEventListener('change', updateNarrativeStructureOptions);
+    // --- 3. EVENT LISTENERS ESPECÍFICOS ---
+    const goalSelect = document.getElementById('narrativeGoal');
+    if(goalSelect) {
+        goalSelect.addEventListener('change', updateNarrativeStructureOptions);
+    }
+    
+    const structureSelect = document.getElementById('narrativeStructure');
+    if(structureSelect) {
+        structureSelect.addEventListener('change', updateMainTooltip);
+    }
+
+    // Listener para o campo de estilo de imagem (CORREÇÃO)
+    const imageStyleSelect = document.getElementById('imageStyleSelect');
+    if (imageStyleSelect) {
+        imageStyleSelect.addEventListener('change', toggleCustomImageStyleVisibility);
+    }
+
+    const importInput = document.getElementById('importFileInput');
+    if (importInput) importInput.addEventListener('change', importProject);
+    
+    document.getElementById('darkModeToggle')?.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+        const isDarkMode = document.body.classList.contains('dark');
+        document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
+        document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
+        localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+    });
+
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark');
+        document.getElementById('moonIcon')?.classList.add('hidden');
+        document.getElementById('sunIcon')?.classList.remove('hidden');
+    }
+
+    const speakingPaceSelect = document.getElementById('speakingPace');
+    if (speakingPaceSelect) {
+        speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
+    }
+
+    // --- 4. O "GERENTE DE CLIQUES" (LÓGICA PRINCIPAL DE BOTÕES) ---
+    document.addEventListener('click', function(event) {
+        const target = event.target;
+        const button = target.closest('button');
+
+        const accordionHeader = target.closest('.accordion-header');
+        if (accordionHeader && !target.closest('.header-buttons')) {
+            const body = accordionHeader.nextElementSibling;
+            const arrow = accordionHeader.querySelector('.accordion-arrow');
+            if (body && arrow) {
+                body.classList.toggle('open');
+                arrow.classList.toggle('open');
             }
-
-            // =========================================================================
-            // >>>>> ADICIONE ESTE NOVO BLOCO DE CÓDIGO AQUI <<<<<
-            // =========================================================================
-            const structureSelect = document.getElementById('narrativeStructure');
-            if(structureSelect) {
-                // Toda vez que o usuário mudar a estrutura específica,
-                // atualizamos o texto do tooltip.
-                structureSelect.addEventListener('change', updateMainTooltip);
-            }
-            // =========================================================================
-
-            const importInput = document.getElementById('importFileInput');
-            if (importInput) importInput.addEventListener('change', importProject);
-            
-            document.getElementById('darkModeToggle')?.addEventListener('click', () => {
-                document.body.classList.toggle('dark');
-                const isDarkMode = document.body.classList.contains('dark');
-                document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
-                document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
-                localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
-            });
-
-            if (localStorage.getItem('darkMode') === 'enabled') {
-                document.body.classList.add('dark');
-                document.getElementById('moonIcon')?.classList.add('hidden');
-                document.getElementById('sunIcon')?.classList.remove('hidden');
-            }
-
-            const speakingPaceSelect = document.getElementById('speakingPace');
-            if (speakingPaceSelect) {
-                speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
-            }
-
-            // --- 4. O "GERENTE DE CLIQUES" (LÓGICA PRINCIPAL DE BOTÕES) ---
-            document.addEventListener('click', function(event) {
-                const target = event.target;
-                const button = target.closest('button');
-
-                const accordionHeader = target.closest('.accordion-header');
-                if (accordionHeader && !target.closest('.header-buttons')) {
-                    const body = accordionHeader.nextElementSibling;
-                    const arrow = accordionHeader.querySelector('.accordion-arrow');
-                    if (body && arrow) {
-                        body.classList.toggle('open');
-                        arrow.classList.toggle('open');
-                    }
-                }
-
-                if (button && button.dataset.action) {
-                    event.preventDefault();
-                    const action = button.dataset.action;
-                    if (action === 'regenerate') { window.regenerateSection(button.dataset.sectionId); return; }
-                    if (action === 'copy') {
-                        const content = button.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
-                        if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(button); }
-                        return;
-                    }
-                    if (action === 'generate-prompts') { window.generatePromptsForSection(button, button.dataset.sectionId); return; }
-                }
-
-                if (button) {
-                    const clickActions = {
-                        'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
-                        'generateOutlineBtn': () => generateStrategicOutline(button),
-                        'mapEmotionsBtn': () => {
-        const isFullScriptComplete = 
-            document.querySelector('#introSection .accordion-item') &&
-            document.querySelector('#developmentSection .accordion-item') &&
-            document.querySelector('#climaxSection .accordion-item') &&
-            document.querySelector('#conclusionSection .accordion-item');
-
-        if (!isFullScriptComplete) {
-            // Se o roteiro NÃO estiver completo, mostra o aviso
-            window.showToast("Gere o roteiro completo (incluindo a Conclusão) antes de mapear as emoções.");
-        } else {
-            // Se estiver completo, executa a função normalmente
-            mapEmotionsAndPacing(button);
         }
-    },
 
+        if (button && button.dataset.action) {
+            event.preventDefault();
+            const action = button.dataset.action;
+            if (action === 'regenerate') { window.regenerateSection(button.dataset.sectionId); return; }
+            if (action === 'copy') {
+                const content = button.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
+                if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(button); }
+                return;
+            }
+            if (action === 'generate-prompts') { window.generatePromptsForSection(button, button.dataset.sectionId); return; }
+        }
 
+        if (button) {
+            const clickActions = {
+                'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
+                'generateOutlineBtn': () => generateStrategicOutline(button),
+                'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
+                'generateDescriptionBtn': () => generateVideoDescription(button),
+                'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
+                'generateSoundtrackBtn': () => generateSoundtrack(button),
+                'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
+                'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
+                'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
+                'conclusionBtn': () => handleGenerateSection(button, 'conclusion', 'Conclusão e CTA', 'conclusion'),
+                'generateIdeasBtn': () => generateVideoIdeas(button),
+                'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
                 'exportProjectBtn': () => exportProject(),
                 'exportPdfBtn': () => downloadPdf(),
-'resetProjectBtn': async () => {
-    const confirmed = await showConfirmationDialog(
-        "Começar um Novo Projeto?", 
-        "Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?"
-    );
-    if (confirmed) {
-        resetApplicationState();
-    }
-},
-
-                        'generateDescriptionBtn': () => generateVideoDescription(button),
-                        'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
-                        'generateSoundtrackBtn': () => generateSoundtrack(button),
-                        'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
-                        'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
-                        'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-                        'conclusionBtn': () => handleGenerateSection(button, 'conclusion', 'Conclusão e CTA', 'conclusion'),
-                        'generateIdeasBtn': () => generateVideoIdeas(button),
-                        'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
-                    };
-                    if (clickActions[button.id]) {
-                        event.preventDefault();
-                        clickActions[button.id]();
+                'resetProjectBtn': async () => {
+                    const confirmed = await showConfirmationDialog(
+                        "Começar um Novo Projeto?",
+                        "Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?"
+                    );
+                    if (confirmed) {
+                        resetApplicationState();
                     }
-                }
-            });
+                },
+            };
+            if (clickActions[button.id]) {
+                event.preventDefault();
+                clickActions[button.id]();
+            }
+        }
+    });
 
-            // --- 5. LÓGICA PARA RESETAR ROTEIRO EM MUDANÇAS ESTRATÉGICAS ---
-            const strategicInputIds = [
-                'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
-                'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
-                'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect'
-            ];
-            strategicInputIds.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    const eventType = (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') ? 'change' : 'input';
-                    element.addEventListener(eventType, (e) => {
-                        if (!isSettingStrategy) { resetGeneratedScriptContent(e.target.id); }
-                    });
-                }
+    // --- 5. LÓGICA PARA RESETAR ROTEIRO EM MUDANÇAS ESTRATÉGICAS ---
+    const strategicInputIds = [
+        'videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'narrativeGoal',
+        'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice',
+        'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect'
+    ];
+    strategicInputIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            const eventType = (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') ? 'change' : 'input';
+            element.addEventListener(eventType, (e) => {
+                if (!isSettingStrategy) { resetGeneratedScriptContent(e.target.id); }
             });
+        }
+    });
 
-            // --- 6. EVENTO DE SCROLL PARA BARRA FLUTUANTE ---
-            window.addEventListener('scroll', window.handleFloatingActionBar);
-        });
+    // --- 6. EVENTO DE SCROLL PARA BARRA FLUTUANTE ---
+    // A função handleFloatingActionBar precisa ser definida ou o listener precisa ser removido
+    // window.addEventListener('scroll', window.handleFloatingActionBar); // Descomente se tiver a função
+});
 
 </script>
 </body>
