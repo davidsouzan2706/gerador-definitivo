@@ -4274,7 +4274,7 @@ const generateStrategicOutline = async (button) => {
 
 
 // =========================================================================
-// >>>>> AÇÃO 2: SUBSTITUA O BLOCO DOMContentLoaded INTEIRO <<<<<
+// >>>>> VERSÃO FINAL E CORRIGIDA DO DOMContentLoaded <<<<<
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
@@ -4337,7 +4337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
     }
 
-    // --- 4. O "GERENTE DE CLIQUES" (DELEGAÇÃO DE EVENTOS GERAL) ---
+    // --- 4. O "GERENTE DE CLIQUES" ---
     document.addEventListener('click', function(event) {
         const target = event.target;
         const button = target.closest('button');
@@ -4352,29 +4352,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Lógica para botões com `data-action`
         if (button && button.dataset.action) {
             event.preventDefault();
             const action = button.dataset.action;
             
-            // A NOVA LÓGICA PARA O BOTÃO "USAR"
             if (action === 'select-idea') {
                 const ideaString = button.dataset.idea;
                 if (ideaString) {
                     try {
-                        // Converte a string de dados de volta para um objeto JavaScript
                         const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                        // Chama a função `selectIdea` diretamente do nosso código
-                        selectIdea(ideaObject);
+                        
+                        // ==========================================================
+                        // >>>>> AQUI ESTÁ A CORREÇÃO FINAL <<<<<
+                        // Chamamos a função pelo seu nome completo: window.selectIdea
+                        // ==========================================================
+                        window.selectIdea(ideaObject);
+
                     } catch (e) {
                         console.error("Falha ao processar os dados da ideia:", e);
                         window.showToast("Erro ao selecionar a ideia.");
                     }
                 }
-                return; // Encerra a execução aqui para não acionar outras lógicas
+                return;
             }
 
-            // Lógica para outros botões com `data-action`
             if (action === 'regenerate') { window.regenerateSection(button.dataset.sectionId); return; }
             if (action === 'copy') {
                 const content = button.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
@@ -4384,7 +4385,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (action === 'generate-prompts') { window.generatePromptsForSection(button, button.dataset.sectionId); return; }
         }
 
-        // Lógica para botões com IDs específicos
         if (button && button.id) {
             const clickActions = {
                 'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
