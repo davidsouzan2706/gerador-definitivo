@@ -850,30 +850,30 @@ const showInputDialog = (title, message, label, placeholder, suggestions = []) =
 
 
 
-// ==========================================================
-    // ================== FUNÇÕES DE UTILIDADE E UI ==================
-    // ==========================================================
+// =========================================================================
+// >>>>> VERSÃO FINAL DE updateAllReadingTimes COM O SELETOR CORRIGIDO <<<<<
+// =========================================================================
+/**
+ * Percorre todas as seções de roteiro geradas e atualiza o tempo de leitura exibido.
+ */
+const updateAllReadingTimes = () => {
+    // Pega todas as seções de roteiro que já foram geradas
+    const scriptSections = document.querySelectorAll('#scriptSectionsContainer .accordion-item');
     
-    // ... (suas funções existentes como showToast, updateProgressBar, etc.)
+    scriptSections.forEach(item => {
+        const contentWrapper = item.querySelector('.generated-content-wrapper');
+        
+        // >>>>> A CORREÇÃO ESTÁ AQUI: Trocamos '.header-content' por '.header-title-group' <<<<<
+        const timeDisplay = item.querySelector('.header-title-group .text-xs');
 
-
-        /**
-         * Percorre todas as seções de roteiro geradas e atualiza o tempo de leitura exibido.
-         */
-        const updateAllReadingTimes = () => {
-            // Pega todas as seções de roteiro que já foram geradas
-            const scriptSections = document.querySelectorAll('#scriptSectionsContainer .accordion-item');
-            
-            scriptSections.forEach(item => {
-                const contentWrapper = item.querySelector('.generated-content-wrapper');
-                const timeDisplay = item.querySelector('.header-content .text-xs'); // Alvo específico do tempo
-
-                if (contentWrapper && timeDisplay) {
-                    const newTime = calculateReadingTime(contentWrapper.textContent);
-                    timeDisplay.textContent = newTime;
-                }
-            });
+        if (contentWrapper && timeDisplay) {
+            // Recalcula o tempo de leitura com base no conteúdo atualizado
+            const newTime = calculateReadingTime(contentWrapper.textContent);
+            // Atualiza o texto do elemento span com o novo tempo
+            timeDisplay.textContent = newTime;
         }
+    });
+}
 
 
      /**
@@ -2564,11 +2564,11 @@ Hashtags:
 
 
 
-// ==========================================================
-// >>>>> VERSÃO FINAL DE addDevelopmentChapter COM CORREÇÃO DO TEMPO <<<<<
-// ==========================================================
+// =========================================================================
+// >>>>> VERSÃO FINAL DE addDevelopmentChapter COM PROMPT "ANTI-ECO" <<<<<
+// =========================================================================
 /**
- * Adiciona um novo capítulo ao desenvolvimento, com sugestões da IA e atualização do tempo de leitura.
+ * Adiciona um novo capítulo ao desenvolvimento, com prompt refinado para evitar repetição do título e "ecos".
  * @param {HTMLElement} button - O botão que foi clicado.
  */
 window.addDevelopmentChapter = async (button) => {
@@ -2616,19 +2616,32 @@ window.addDevelopmentChapter = async (button) => {
         const basePrompt = getBasePromptContext();
         const continuationPrompt = `${basePrompt}
         
-Você está escrevendo um novo capítulo para um roteiro existente.
+Você é um roteirista de documentários investigativos. Sua tarefa é escrever um novo capítulo para um roteiro existente.
+
 **TEMA OBRIGATÓRIO PARA ESTE CAPÍTULO:** "${chapterTheme}"
+
 **INSTRUÇÃO CRÍTICA DE CONTINUIDADE:**
 - O texto abaixo é o roteiro escrito até agora. **NÃO REPITA** as informações contidas nele.
 - Sua tarefa é escrever um novo capítulo que avance a narrativa, focado **EXCLUSIVAMENTE** no tema "${chapterTheme}".
-- Comece o novo capítulo de forma fluida, como se fosse a continuação natural do texto anterior.
+
 **REGRA DE FORMATAÇÃO (MUITO IMPORTANTE):**
 - Sua resposta deve ser APENAS o texto do roteiro.
 - **NÃO inclua o título do capítulo ("${chapterTheme}") ou qualquer outro subtítulo no corpo do texto.** Apenas o conteúdo a ser falado.
+
+// ==========================================================
+// >>>>> AQUI ESTÁ A NOVA REGRA "ANTI-ECO" <<<<<
+// ==========================================================
+**REGRA DE FOCO (A MAIS IMPORTANTE):**
+- Mantenha um tom **factual e investigativo** durante todo o capítulo.
+- Concentre-se em apresentar informações, eventos e a narrativa específica do tema "${chapterTheme}".
+- **É ESTRITAMENTE PROIBIDO adicionar conclusões gerais, opiniões pessoais, sermões ou chamadas para ação genéricas no final do capítulo.** Deixe as conclusões e as chamadas para mudança para a seção final do roteiro.
+// ==========================================================
+
 **ROTEIRO ESCRITO ATÉ AGORA (PARA CONTEXTO):**
 ---
 ${existingText}
 ---
+
 Agora, escreva o novo capítulo sobre "${chapterTheme}", seguindo TODAS as regras.`;
 
         const rawResult = await callGroqAPI(continuationPrompt, 4000);
@@ -2644,12 +2657,9 @@ Agora, escreva o novo capítulo sobre "${chapterTheme}", seguindo TODAS as regra
 
         contentWrapper.insertAdjacentHTML('beforeend', chapterTitleHtml + newContentWithDivs);
         
-        // Invalida análises anteriores
         invalidateAndClearPerformance(devSection);
         invalidateAndClearPrompts(devSection);
-        
-        // >>>>> A LINHA QUE FALTAVA <<<<<
-        updateAllReadingTimes(); // Força a atualização de todos os cronômetros da página
+        updateAllReadingTimes();
         
         window.showToast("Novo capítulo adicionado com sucesso!");
         contentWrapper.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
