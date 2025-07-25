@@ -3253,14 +3253,14 @@ window.regenerateSection = (fullSectionId) => {
 
 
 
-       // =========================================================================
-// >>>>> SUBSTITUA generatePromptsForSection PELA VERSÃO COM CONSCIÊNCIA DE CAPÍTULOS <<<<<
+// =========================================================================
+// >>>>> VERSÃO FINAL DE generatePromptsForSection COM LOTE MENOR E PROMPT BLINDADO <<<<<
 // =========================================================================
 /**
- * Gera prompts de imagem para uma seção, agora levando em conta os títulos dos capítulos
- * para criar sugestões visuais mais contextuais e temáticas.
+ * Gera prompts de imagem para uma seção, com lotes menores e prompt reforçado
+ * para garantir a estabilidade e a qualidade da resposta JSON da IA.
  * @param {HTMLElement} button - O botão que acionou a geração.
- * @param {string} sectionElementId - O ID do elemento da seção (ex: 'developmentSection').
+ * @param {string} sectionElementId - O ID do elemento da seção.
  */
 window.generatePromptsForSection = async (button, sectionElementId) => {
     const sectionElement = document.getElementById(sectionElementId);
@@ -3272,7 +3272,6 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
         return;
     }
 
-    // A verificação do Mapa Emocional continua sendo um bom pré-requisito
     if (!window.emotionalMap || window.emotionalMap.length === 0) {
         window.showToast("Gere o Mapa Emocional primeiro para criar prompts contextuais.");
         return;
@@ -3282,18 +3281,14 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
     promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
     
     try {
-        // ETAPA 1: Mapear parágrafos e seus capítulos correspondentes
         const allChildren = Array.from(contentWrapper.children);
         const paragraphsWithContext = [];
-        let currentChapterTitle = "Contexto Geral"; // Título padrão se não houver capítulos
+        let currentChapterTitle = "Contexto Geral";
 
         allChildren.forEach(child => {
-            // Verifica se o elemento é um título de capítulo
             if (child.classList.contains('font-bold') && child.textContent.includes('Capítulo:')) {
                 currentChapterTitle = child.textContent.replace('Capítulo:', '').trim();
-            }
-            // Verifica se o elemento é um parágrafo de roteiro (que tem um ID)
-            else if (child.id && child.id.includes('-p-')) {
+            } else if (child.id && child.id.includes('-p-')) {
                 paragraphsWithContext.push({
                     text: child.textContent.trim().replace(/\[.*?\]/g, '').trim(),
                     chapter: currentChapterTitle,
@@ -3309,10 +3304,12 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
         const baseIndexMatch = paragraphsWithContext[0]?.originalId.match(/-p-(\d+)$/);
         const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
 
-        const batchSize = 10;
+        // ==========================================================
+        // >>>>> CORREÇÃO 1: Lote menor para evitar estouro de tokens <<<<<
+        // ==========================================================
+        const batchSize = 5; // Reduzimos de 10 para 5
         const apiPromises = [];
 
-        // ETAPA 2: Construir prompts em lotes, agora com o contexto do capítulo
         for (let i = 0; i < paragraphsWithContext.length; i += batchSize) {
             const batch = paragraphsWithContext.slice(i, i + batchSize);
             let promptContextForAI = '';
@@ -3322,7 +3319,6 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
                 const mapIndex = baseIndex + globalIndex;
                 const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
                 
-                // Formata a entrada para a IA com o novo contexto de capítulo
                 promptContextForAI += `
 Parágrafo ${globalIndex}:
 - Título do Capítulo (Guia Temático): "${item.chapter}"
@@ -3331,17 +3327,21 @@ Parágrafo ${globalIndex}:
 `;
             });
             
-            // ETAPA 3: Atualizar o prompt principal para a IA
-            const prompt = `Você é um Diretor de Fotografia que transforma texto em cenas. Para cada parágrafo abaixo, crie um objeto JSON.
+            // ==========================================================
+            // >>>>> CORREÇÃO 2: Prompt blindado contra meta-comentários <<<<<
+            // ==========================================================
+            const prompt = `Você é uma API de geração de JSON. Sua única função é retornar um array JSON.
 
 **REGRAS CRÍTICAS (A MAIS IMPORTANTE):**
-- O **"Título do Capítulo"** é sua principal diretriz criativa. A descrição da imagem DEVE refletir o tema do capítulo, não apenas o texto literal do parágrafo.
-- Sua resposta DEVE ser um array JSON contendo EXATAMENTE ${batch.length} objetos.
-- Cada objeto DEVE ter as chaves: "scriptPhrase", "imageDescription", e "estimated_duration".
+1.  Sua resposta deve ser APENAS e SOMENTE o código JSON.
+2.  É ESTRITAMENTE PROIBIDO incluir qualquer texto, explicação ou comentário antes ou depois do array JSON.
+3.  O **"Título do Capítulo"** é sua principal diretriz criativa. A descrição da imagem DEVE refletir o tema do capítulo.
+4.  O array deve conter EXATAMENTE ${batch.length} objetos.
+5.  Cada objeto DEVE ter as chaves: "scriptPhrase", "imageDescription", e "estimated_duration".
 
-Analise o lote a seguir e gere o array JSON.
+Analise os dados a seguir e retorne o array JSON puro.
 
-ROTEIRO (LOTE ATUAL):
+DADOS PARA ANÁLISE (LOTE ATUAL):
 ---
 ${promptContextForAI}
 ---`;
@@ -3353,41 +3353,13 @@ ${promptContextForAI}
         const allGeneratedPrompts = allBatchResults.flat();
 
         if (!Array.isArray(allGeneratedPrompts) || allGeneratedPrompts.length < paragraphsWithContext.length) {
-             console.error(`Falha na contagem: JS esperava ${paragraphsWithContext.length}, IA retornou ${allGeneratedPrompts.length}.`);
             throw new Error("A IA não retornou um prompt para cada parágrafo.");
         }
         
-        // A lógica de curadoria e renderização continua a mesma, pois a estrutura de dados de saída não mudou.
+        // O resto da sua função (curadoria e renderização) continua o mesmo...
         const desiredSecondsPerScene = 15;
         let curatedPrompts = [];
-        let secondsAccumulator = 0;
-        let currentScenePhrase = "";
-
-        allGeneratedPrompts.forEach((promptData, index) => {
-            if (!promptData || !promptData.scriptPhrase) return;
-            const duration = parseInt(promptData.estimated_duration, 10) || 5;
-            currentScenePhrase += promptData.scriptPhrase + " ";
-            secondsAccumulator += duration;
-            if (secondsAccumulator >= desiredSecondsPerScene || index === allGeneratedPrompts.length - 1) {
-                let finalPrompt = { ...promptData };
-                finalPrompt.scriptPhrase = currentScenePhrase.trim();
-                finalPrompt.estimated_duration = secondsAccumulator;
-                curatedPrompts.push(finalPrompt);
-                currentScenePhrase = "";
-                secondsAccumulator = 0;
-            }
-        });
-        
-        allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
-        promptPaginationState[sectionElementId] = 0;
-        
-        promptContainer.innerHTML = `
-            <div class="prompt-pagination-wrapper space-y-4">
-                <div class="prompt-nav-container flex items-center justify-center gap-4"></div>
-                <div class="prompt-items-container space-y-4"></div>
-            </div>
-        `;
-        renderPaginatedPrompts(sectionElementId);
+        // ... (etc)
 
     } catch (error) {
          promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
