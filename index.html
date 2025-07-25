@@ -3058,10 +3058,11 @@ ${promptContext}`;
 
     
 // =========================================================================
-// >>>>> VERSÃO FINAL DE generateVideoIdeas COM TRATAMENTO DE ERRO CORRIGIDO <<<<<
+// >>>>> AÇÃO 1: SUBSTITUA A FUNÇÃO generateVideoIdeas COMPLETA <<<<<
 // =========================================================================
 /**
- * Gera e valida ideias de vídeo com base no nicho fornecido, com tratamento de erro finalizado.
+ * Gera e valida ideias de vídeo com base no nicho fornecido. A nova versão
+ * usa data-attributes em vez de onclick para os botões "Usar".
  * @param {HTMLElement} button - O botão que acionou a geração.
  */
 const generateVideoIdeas = async (button) => {
@@ -3104,12 +3105,15 @@ const generateVideoIdeas = async (button) => {
             const angle = idea.angle || "Sem um ângulo definido.";
             const viralityScore = idea.viralityScore || "N/A";
 
+            // A MUDANÇA ESTÁ AQUI: O botão agora tem data-action e data-idea.
             const ideaCard = `
                 <div class="card-background p-4 rounded-lg shadow-md border-l-4 border-indigo-500 animate-fade-in flex flex-col justify-between min-h-[140px]">
                     <div>
                         <div class="flex justify-between items-start gap-4">
                             <h4 class="font-bold text-base text-gray-800 dark:text-gray-200 flex-grow">${index + 1}. ${title}</h4>
-                            <button class="btn btn-primary btn-small flex-shrink-0 py-1 px-3" onclick="window.selectIdea(${escapeIdeaForOnclick(idea)})">
+                            <button class="btn btn-primary btn-small flex-shrink-0 py-1 px-3" 
+                                    data-action="select-idea" 
+                                    data-idea='${escapeIdeaForOnclick(idea)}'>
                                 Usar
                             </button>
                         </div>
@@ -3124,11 +3128,6 @@ const generateVideoIdeas = async (button) => {
         });
 
     } catch (error) {
-        
-        // ==========================================================
-        // >>>>> AQUI ESTÁ A CORREÇÃO CRÍTICA <<<<<
-        // A "senha" agora corresponde à mensagem de erro real.
-        // ==========================================================
         if (error.message.includes("A IA não retornou um formato JSON reconhecível")) {
             outputContainer.innerHTML = `<p class="md:col-span-2 text-yellow-500 text-sm p-4 bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
                 <strong>A IA se recusou a gerar conteúdo para este tema.</strong><br><br>
@@ -3138,9 +3137,7 @@ const generateVideoIdeas = async (button) => {
         } else {
             outputContainer.innerHTML = `<p class="md:col-span-2 text-red-500 text-sm">Falha ao gerar ideias: ${error.message}</p>`;
         }
-        
         console.error("Erro em generateVideoIdeas:", error); 
-        
     } finally {
         hideButtonLoading(button);
     }
@@ -4277,7 +4274,7 @@ const generateStrategicOutline = async (button) => {
 
 
 // =========================================================================
-// >>>>> VERSÃO FINAL E CORRIGIDA DO DOMContentLoaded <<<<<
+// >>>>> AÇÃO 2: SUBSTITUA O BLOCO DOMContentLoaded INTEIRO <<<<<
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
@@ -4340,7 +4337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
     }
 
-    // --- 4. O "GERENTE DE CLIQUES" ---
+    // --- 4. O "GERENTE DE CLIQUES" (DELEGAÇÃO DE EVENTOS GERAL) ---
     document.addEventListener('click', function(event) {
         const target = event.target;
         const button = target.closest('button');
@@ -4355,9 +4352,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Lógica para botões com `data-action`
         if (button && button.dataset.action) {
             event.preventDefault();
             const action = button.dataset.action;
+            
+            // A NOVA LÓGICA PARA O BOTÃO "USAR"
+            if (action === 'select-idea') {
+                const ideaString = button.dataset.idea;
+                if (ideaString) {
+                    try {
+                        // Converte a string de dados de volta para um objeto JavaScript
+                        const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                        // Chama a função `selectIdea` diretamente do nosso código
+                        selectIdea(ideaObject);
+                    } catch (e) {
+                        console.error("Falha ao processar os dados da ideia:", e);
+                        window.showToast("Erro ao selecionar a ideia.");
+                    }
+                }
+                return; // Encerra a execução aqui para não acionar outras lógicas
+            }
+
+            // Lógica para outros botões com `data-action`
             if (action === 'regenerate') { window.regenerateSection(button.dataset.sectionId); return; }
             if (action === 'copy') {
                 const content = button.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
@@ -4367,7 +4384,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (action === 'generate-prompts') { window.generatePromptsForSection(button, button.dataset.sectionId); return; }
         }
 
-        if (button) {
+        // Lógica para botões com IDs específicos
+        if (button && button.id) {
             const clickActions = {
                 'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
                 'generateOutlineBtn': () => generateStrategicOutline(button),
