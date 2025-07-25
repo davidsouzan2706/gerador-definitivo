@@ -2746,116 +2746,120 @@ Exemplo de formato JSON esperado:
         // >>>>> SUBSTITUA SUA FUNÇÃO suggestPerformance INTEIRA POR ESTA VERSÃO <<<<<
         // ==========================================================
         window.suggestPerformance = async (button, sectionId) => {
-            const sectionElement = document.getElementById(sectionId);
-            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-            const outputContainer = sectionElement?.querySelector('.section-performance-output');
+    const sectionElement = document.getElementById(sectionId);
+    const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+    const outputContainer = sectionElement?.querySelector('.section-performance-output');
 
-            if (!contentWrapper || !contentWrapper.textContent.trim() || !outputContainer) {
-                window.showToast("Gere o roteiro desta seção primeiro.");
-                return;
-            }
+    if (!contentWrapper || !contentWrapper.textContent.trim() || !outputContainer) {
+        window.showToast("Gere o roteiro desta seção primeiro.");
+        return;
+    }
 
-            showButtonLoading(button);
-            outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-            
-            try {
-                const paragraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
-                const originalParagraphs = paragraphElements.map(p => p.textContent.trim().replace(/\[.*?\]/g, '').trim());
+    showButtonLoading(button);
+    outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
+    
+    try {
+        const paragraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
+        const originalParagraphs = paragraphElements.map(p => p.textContent.trim().replace(/\[.*?\]/g, '').trim());
 
-                if (originalParagraphs.length === 0) { throw new Error("Não foram encontrados parágrafos estruturados para análise."); }
+        if (originalParagraphs.length === 0) { throw new Error("Não foram encontrados parágrafos estruturados para análise."); }
 
-                const batchSize = 15;
-                const apiPromises = [];
+        const batchSize = 15;
+        const apiPromises = [];
 
-                for (let i = 0; i < originalParagraphs.length; i += batchSize) {
-                    const paragraphBatch = originalParagraphs.slice(i, i + batchSize);
-                    let promptContext = '';
-                    paragraphBatch.forEach((p, indexInBatch) => {
-                        const globalIndex = i + indexInBatch;
-                        // NÃO precisamos mais do mapa emocional. O prompt é mais simples.
-                        promptContext += `Parágrafo ${globalIndex}: "${p}"\n\n`;
-                    });
+        for (let i = 0; i < originalParagraphs.length; i += batchSize) {
+            const paragraphBatch = originalParagraphs.slice(i, i + batchSize);
+            let promptContext = '';
+            paragraphBatch.forEach((p, indexInBatch) => {
+                const globalIndex = i + indexInBatch;
+                promptContext += `Parágrafo ${globalIndex}: "${p}"\n\n`;
+            });
 
-                    // >>>>> ESTE É O NOVO PROMPT, MAIS SIMPLES E INDEPENDENTE <<<<<
-                            const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON.
+            // ==========================================================
+            // >>>>> INÍCIO DA MUDANÇA NO PROMPT <<<<<
+            // ==========================================================
+            const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON.
 
-        **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E ESTRICTAS):**
-        1.  Sua resposta final DEVE ser um array JSON válido, começando com \`[\` e terminando com \`]\`.
-        2.  Sua resposta NÃO PODE conter nenhum texto, comentário ou explicação antes ou depois do JSON.
-        3.  O array deve conter EXATAMENTE ${paragraphBatch.length} objetos.
-        4.  Cada objeto DEVE ter duas chaves: "general_annotation" (uma string) e "emphasis_words" (um array com no máximo 1 string).
-        5.  **VERIFICAÇÃO FINAL:** Antes de responder, verifique se cada objeto JSON \`{...}\` está completamente fechado com sua chave \`}\` antes da próxima vírgula ou do colchete final \`]\`.
+**REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E CRÍTICAS):**
+1.  Sua resposta final DEVE ser um array JSON válido, começando com \`[\` e terminando com \`]\`.
+2.  Sua resposta NÃO PODE conter nenhum texto, comentário ou explicação antes ou depois do JSON.
+3.  O array deve conter EXATAMENTE ${paragraphBatch.length} objetos.
+4.  Cada objeto DEVE ter duas chaves: "general_annotation" (uma string) e "emphasis_words" (um array com no máximo 1 string).
+5.  **REGRA DA VÍRGULA (A MAIS IMPORTANTE):** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último. Exemplo: \`[ { ... }, { ... } ]\`
+6.  **VERIFICAÇÃO FINAL:** Antes de responder, verifique se cada objeto JSON \`{...}\` está completamente fechado com sua chave \`}\` antes da próxima vírgula ou do colchete final \`]\`.
 
-        **EXEMPLO DE RESPOSTA PERFEITA:**
-        [
-          {
-            "general_annotation": "[Tom de surpresa]",
-            "emphasis_words": ["inacreditável"]
-          },
-          {
-            "general_annotation": "[Tom de suspense]",
-            "emphasis_words": ["segredo"]
-          }
-        ]
+**EXEMPLO DE RESPOSTA PERFEITA:**
+[
+  {
+    "general_annotation": "[Tom de surpresa]",
+    "emphasis_words": ["inacreditável"]
+  },
+  {
+    "general_annotation": "[Tom de suspense]",
+    "emphasis_words": ["segredo"]
+  }
+]
 
-        Analise os ${paragraphBatch.length} parágrafos a seguir e retorne o array JSON.
+Analise os ${paragraphBatch.length} parágrafos a seguir e retorne o array JSON, seguindo TODAS as regras.
 
-        **ROTEIRO (LOTE ATUAL):**
-        ${promptContext}`;
-                    // Fim do novo prompt
+**ROTEIRO (LOTE ATUAL):**
+${promptContext}`;
+            // ==========================================================
+            // >>>>> FIM DA MUDANÇA NO PROMPT <<<<<
+            // ==========================================================
 
-                    apiPromises.push(callGroqAPI(prompt, 3000).then(res => cleanGeneratedText(res, true)));
-                }
+            apiPromises.push(callGroqAPI(prompt, 3000).then(res => cleanGeneratedText(res, true)));
+        }
 
-                const allBatchResults = await Promise.all(apiPromises);
-                const annotations = allBatchResults.flat();
+        const allBatchResults = await Promise.all(apiPromises);
+        const annotations = allBatchResults.flat();
 
-                if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) { 
-                    console.error(`Falha na contagem: JS esperava ${originalParagraphs.length} anotações, mas a IA retornou ${annotations ? annotations.length : 0}.`);
-                    throw new Error("A IA não retornou o número correto de anotações após juntar os lotes."); 
-                }
-                
-                let annotatedParagraphs = [];
-                originalParagraphs.forEach((p, index) => {
-                    const annotationData = annotations[index];
-                    let annotatedParagraph = p;
+        if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) { 
+            console.error(`Falha na contagem: JS esperava ${originalParagraphs.length} anotações, mas a IA retornou ${annotations ? annotations.length : 0}.`);
+            throw new Error("A IA não retornou o número correto de anotações após juntar os lotes."); 
+        }
+        
+        let annotatedParagraphs = [];
+        originalParagraphs.forEach((p, index) => {
+            const annotationData = annotations[index];
+            let annotatedParagraph = p;
 
-                    if (annotationData && annotationData.emphasis_words && Array.isArray(annotationData.emphasis_words) && annotationData.emphasis_words.length > 0) {
-                        annotationData.emphasis_words.forEach(word => {
-                            const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                            const wordRegex = new RegExp(`\\b(${escapedWord})\\b`, 'gi');
-                            annotatedParagraph = annotatedParagraph.replace(wordRegex, `[ênfase em '${word}']$1`);
-                        });
-                    }
-                    const finalParagraph = `${annotationData.general_annotation || ''}\n${annotatedParagraph}`;
-                    annotatedParagraphs.push(finalParagraph.trim());
+            if (annotationData && annotationData.emphasis_words && Array.isArray(annotationData.emphasis_words) && annotationData.emphasis_words.length > 0) {
+                annotationData.emphasis_words.forEach(word => {
+                    const escapedWord = word.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                    const wordRegex = new RegExp(`\\b(${escapedWord})\\b`, 'gi');
+                    annotatedParagraph = annotatedParagraph.replace(wordRegex, `[ênfase em '${word}']$1`);
                 });
-
-                const finalAnnotatedText = annotatedParagraphs.join('\n');
-                
-                const originalTextForAudit = originalParagraphs.join('\n');
-                const { isValid } = auditGeneratedText(originalTextForAudit.replace(/\n/g, ' '), finalAnnotatedText.replace(/\n/g, ' '));
-
-                if (!isValid) { throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem."); }
-                
-                const highlightedText = finalAnnotatedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
-
-                outputContainer.innerHTML = `
-                    <div class="card-background p-4 mt-2 rounded-lg border-l-4 border-indigo-500">
-                        <h5 class="font-bold text-sm mb-2 text-gray-700 dark:text-gray-200">Sugestão de Performance:</h5>
-                        <div class="performance-output-scrollable">
-                            <p class="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">${highlightedText}</p>
-                        </div>
-                    </div>`;
-
-                if (sectionElement) { invalidateAndClearPrompts(sectionElement); }
-
-            } catch (error) {
-                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
-            } finally {
-                hideButtonLoading(button);
             }
-        };
+            const finalParagraph = `${annotationData.general_annotation || ''}\n${annotatedParagraph}`;
+            annotatedParagraphs.push(finalParagraph.trim());
+        });
+
+        const finalAnnotatedText = annotatedParagraphs.join('\n');
+        
+        const originalTextForAudit = originalParagraphs.join('\n');
+        const { isValid } = auditGeneratedText(originalTextForAudit.replace(/\n/g, ' '), finalAnnotatedText.replace(/\n/g, ' '));
+
+        if (!isValid) { throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem."); }
+        
+        const highlightedText = finalAnnotatedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
+
+        outputContainer.innerHTML = `
+            <div class="card-background p-4 mt-2 rounded-lg border-l-4 border-indigo-500">
+                <h5 class="font-bold text-sm mb-2 text-gray-700 dark:text-gray-200">Sugestão de Performance:</h5>
+                <div class="performance-output-scrollable">
+                    <p class="text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">${highlightedText}</p>
+                </div>
+            </div>`;
+
+        if (sectionElement) { invalidateAndClearPrompts(sectionElement); }
+
+    } catch (error) {
+        outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
+    } finally {
+        hideButtonLoading(button);
+    }
+};
 
     
         /**
