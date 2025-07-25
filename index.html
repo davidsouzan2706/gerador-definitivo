@@ -3057,11 +3057,12 @@ ${promptContext}`;
         };
 
     
-// =========================================================================
-// >>>>> VERSÃO FINAL DE generateVideoIdeas COM TRATAMENTO DE ERRO CORRIGIDO <<<<<
+       // =========================================================================
+// >>>>> SUBSTITUA generateVideoIdeas PELA VERSÃO COMPLETA E SEM ABREVIAÇÕES <<<<<
 // =========================================================================
 /**
- * Gera e valida ideias de vídeo com base no nicho fornecido, com tratamento de erro finalizado.
+ * Gera e valida ideias de vídeo com base no nicho fornecido, agora com tratamento
+ * aprimorado para recusas da IA baseadas em filtros de conteúdo.
  * @param {HTMLElement} button - O botão que acionou a geração.
  */
 const generateVideoIdeas = async (button) => {
@@ -3091,15 +3092,19 @@ const generateVideoIdeas = async (button) => {
         Responda APENAS com um array JSON. Cada objeto no array deve conter exatamente as chaves acima.`;
 
         const rawResult = await callGroqAPI(prompt, 4000);
+        // A função cleanGeneratedText já lança um erro se não encontrar um JSON, que será pego pelo bloco catch.
         const ideas = cleanGeneratedText(rawResult, true);
 
+        // Adiciona uma verificação extra para garantir que o JSON não está vazio.
         if (!ideas || !Array.isArray(ideas) || ideas.length === 0) {
             throw new Error("A IA retornou uma resposta vazia ou em formato inesperado, mesmo sendo um JSON válido.");
         }
 
+        // Limpa o spinner e prepara para renderizar os cards
         outputContainer.innerHTML = ''; 
 
         ideas.forEach((idea, index) => {
+            // Garante que o objeto `idea` tenha as propriedades esperadas para evitar erros
             const title = idea.title || "Ideia sem título";
             const angle = idea.angle || "Sem um ângulo definido.";
             const viralityScore = idea.viralityScore || "N/A";
@@ -3124,24 +3129,28 @@ const generateVideoIdeas = async (button) => {
         });
 
     } catch (error) {
+        // Bloco de tratamento de erro aprimorado
         
-        // ==========================================================
-        // >>>>> AQUI ESTÁ A CORREÇÃO CRÍTICA <<<<<
-        // A "senha" agora corresponde à mensagem de erro real.
-        // ==========================================================
-        if (error.message.includes("A IA não retornou um formato JSON reconhecível")) {
+        // Verifica se a mensagem de erro é a que nossa função `cleanGeneratedText` lança
+        // quando não encontra um JSON. Isso indica uma provável recusa da IA.
+        if (error.message.includes("Nenhum caractere de início JSON")) {
+            // Mostra uma mensagem amigável e útil para o usuário na interface
             outputContainer.innerHTML = `<p class="md:col-span-2 text-yellow-500 text-sm p-4 bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
                 <strong>A IA se recusou a gerar conteúdo para este tema.</strong><br><br>
                 Isso geralmente acontece com tópicos considerados sensíveis ou controversos. Tente reformular sua descrição com termos mais neutros ou uma abordagem diferente.
             </p>`;
             window.showToast("O tema foi considerado sensível pela IA.");
         } else {
+            // Para todos os outros tipos de erro (falha de rede, JSON malformado, etc.),
+            // mostra a mensagem de erro técnica padrão.
             outputContainer.innerHTML = `<p class="md:col-span-2 text-red-500 text-sm">Falha ao gerar ideias: ${error.message}</p>`;
         }
         
+        // Mantém o log do erro completo no console para fins de depuração.
         console.error("Erro em generateVideoIdeas:", error); 
         
     } finally {
+        // Garante que o loading do botão seja removido, não importa se deu sucesso ou erro.
         hideButtonLoading(button);
     }
 };
