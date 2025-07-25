@@ -577,21 +577,33 @@
         </div>
 
 <!-- ========================================================== -->
-<!--     NOVO MODAL PARA INPUT DE TEMA DO CAPÍTULO         -->
+<!--     MODAL ATUALIZADO COM ÁREA PARA SUGESTÕES         -->
 <!-- ========================================================== -->
 <div id="inputDialogOverlay" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
     <div class="card max-w-md w-full animate-fade-in">
         <h3 id="inputDialogTitle" class="text-xl font-bold mb-4">Título do Diálogo</h3>
         <p id="inputDialogMessage" class="text-sm text-gray-500 dark:text-gray-400 mb-4">Mensagem de ajuda.</p>
         
-        <div class="input-group">
+        <!-- Container para as sugestões da IA -->
+        <div id="inputDialogSuggestions" class="space-y-2 mb-4">
+            <!-- As sugestões (botões) serão injetadas aqui pelo JavaScript -->
+        </div>
+
+        <!-- Divisor opcional -->
+        <div class="relative flex py-2 items-center">
+            <div class="flex-grow border-t border-gray-300 dark:border-gray-700"></div>
+            <span class="flex-shrink mx-4 text-xs text-gray-400">OU</span>
+            <div class="flex-grow border-t border-gray-300 dark:border-gray-700"></div>
+        </div>
+        
+        <div class="input-group mt-2">
             <label id="inputDialogLabel" for="inputDialogField">Label do Campo</label>
-            <textarea id="inputDialogField" rows="3" placeholder="Placeholder..."></textarea>
+            <textarea id="inputDialogField" rows="2" placeholder="Placeholder..."></textarea>
         </div>
 
         <div class="flex justify-end gap-4 mt-6">
             <button id="inputBtnCancel" class="btn btn-secondary">Cancelar</button>
-            <button id="inputBtnConfirm" class="btn btn-primary">Confirmar</button>
+            <button id="inputBtnConfirm" class="btn btn-primary">Usar Tema Personalizado</button>
         </div>
     </div>
 </div>
@@ -751,19 +763,21 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             }
         };
 
-// ==========================================================
-//     NOVA FUNÇÃO PARA DIÁLOGO DE INPUT NO JAVASCRIPT      -->
-// ==========================================================
+// =========================================================================
+// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO showInputDialog COMPLETA <<<<<
+// =========================================================================
 /**
- * Exibe uma caixa de diálogo com um campo de texto e aguarda a entrada do usuário.
+ * Exibe uma caixa de diálogo com um campo de texto e sugestões, e aguarda a entrada do usuário.
  * @param {string} title - O título da caixa de diálogo.
  * @param {string} message - A mensagem de ajuda/descrição.
  * @param {string} label - A label para o campo de texto.
  * @param {string} placeholder - O placeholder para o campo de texto.
- * @returns {Promise<string|null>} - Retorna o texto digitado se o usuário confirmar, ou null se cancelar.
+ * @param {string[]} suggestions - (NOVO) Um array de strings para criar botões de sugestão.
+ * @returns {Promise<string|null>} - Retorna o texto escolhido ou null se cancelar.
  */
-const showInputDialog = (title, message, label, placeholder) => {
+const showInputDialog = (title, message, label, placeholder, suggestions = []) => {
     return new Promise(resolve => {
+        // Mapeia todos os elementos do DOM necessários para o diálogo
         const overlay = document.getElementById('inputDialogOverlay');
         const titleEl = document.getElementById('inputDialogTitle');
         const messageEl = document.getElementById('inputDialogMessage');
@@ -771,38 +785,66 @@ const showInputDialog = (title, message, label, placeholder) => {
         const fieldEl = document.getElementById('inputDialogField');
         const btnConfirm = document.getElementById('inputBtnConfirm');
         const btnCancel = document.getElementById('inputBtnCancel');
+        const suggestionsContainer = document.getElementById('inputDialogSuggestions');
 
-        if (!overlay || !titleEl || !messageEl || !labelEl || !fieldEl || !btnConfirm || !btnCancel) {
+        // Garante que todos os elementos existem antes de continuar para evitar erros
+        if (!overlay || !titleEl || !messageEl || !labelEl || !fieldEl || !btnConfirm || !btnCancel || !suggestionsContainer) {
             console.error("Elementos do pop-up de input não foram encontrados no HTML.");
-            resolve(null);
+            resolve(null); // Resolve como nulo para não travar a aplicação
             return;
         }
 
+        // Limpa o conteúdo de interações anteriores
+        suggestionsContainer.innerHTML = '';
+        fieldEl.value = '';
+
+        // Preenche os textos do diálogo com os parâmetros recebidos
         titleEl.textContent = title;
         messageEl.textContent = message;
         labelEl.textContent = label;
-        fieldEl.value = ''; // Limpa o campo
         fieldEl.placeholder = placeholder;
-        overlay.style.display = 'flex';
-        fieldEl.focus();
-
+        
+        // Função centralizada para fechar o diálogo e resolver a Promise
         const closeDialog = (result) => {
             overlay.style.display = 'none';
-            // Usa 'replaceWith' para limpar os event listeners antigos de forma segura
-            clonedBtnConfirm.replaceWith(btnConfirm);
-
-clonedBtnCancel.replaceWith(btnCancel);
+            // Remove os event listeners para evitar chamadas duplicadas em futuras aberturas
+            btnConfirm.onclick = null;
+            btnCancel.onclick = null;
             resolve(result);
         };
 
-        const clonedBtnConfirm = btnConfirm.cloneNode(true);
-        const clonedBtnCancel = btnCancel.cloneNode(true);
+        // Cria e adiciona os botões de sugestão, se houver sugestões
+        if (suggestions && suggestions.length > 0) {
+            suggestions.forEach(suggestionText => {
+                const suggestionBtn = document.createElement('button');
+                suggestionBtn.className = 'btn btn-secondary w-full text-left justify-start';
+                suggestionBtn.textContent = suggestionText;
+                // Ao clicar em um botão de sugestão, fecha o diálogo e retorna o texto da sugestão
+                suggestionBtn.onclick = () => {
+                    closeDialog(suggestionText);
+                };
+                suggestionsContainer.appendChild(suggestionBtn);
+            });
+        }
 
-        clonedBtnConfirm.addEventListener('click', () => closeDialog(fieldEl.value.trim()));
-        clonedBtnCancel.addEventListener('click', () => closeDialog(null));
+        // Configura o botão de confirmação (para o texto personalizado)
+        btnConfirm.onclick = () => {
+            const customText = fieldEl.value.trim();
+            if (customText) {
+                // Se o usuário digitou algo, fecha o diálogo e retorna o texto digitado
+                closeDialog(customText);
+            } else {
+                // Se o campo estiver vazio, avisa o usuário
+                window.showToast("Por favor, digite um tema ou escolha uma das sugestões.");
+            }
+        };
 
-        btnConfirm.replaceWith(clonedBtnConfirm);
-        btnCancel.replaceWith(clonedBtnCancel);
+        // Configura o botão de cancelar
+        btnCancel.onclick = () => closeDialog(null);
+
+        // Exibe o diálogo
+        overlay.style.display = 'flex';
+        fieldEl.focus(); // Coloca o foco no campo de texto para facilitar a digitação
     });
 };
 
@@ -2522,11 +2564,12 @@ Hashtags:
 
 
 
-        // ==========================================================
-//     SUBSTITUA SUA FUNÇÃO addDevelopmentChapter POR ESTA     -->
-// ==========================================================
+// =========================================================================
+// >>>>> PASSO 3: SUBSTITUA A FUNÇÃO addDevelopmentChapter COMPLETA <<<<<
+// =========================================================================
 /**
- * Adiciona um novo capítulo ao desenvolvimento, pedindo um tema ao usuário para guiar a IA.
+ * Adiciona um novo capítulo ao desenvolvimento, primeiro pedindo sugestões de temas à IA
+ * e depois deixando o usuário escolher ou criar um tema.
  * @param {HTMLElement} button - O botão que foi clicado.
  */
 window.addDevelopmentChapter = async (button) => {
@@ -2534,29 +2577,51 @@ window.addDevelopmentChapter = async (button) => {
     const contentWrapper = devSection?.querySelector('.generated-content-wrapper');
     const existingText = contentWrapper?.textContent.trim();
 
+    // Validação inicial
     if (!existingText) {
         window.showToast("Gere o desenvolvimento inicial primeiro.");
         return;
     }
 
-    // 1. Chama nosso novo diálogo de input
-    const chapterTheme = await showInputDialog(
-        'Adicionar Novo Capítulo',
-        'Descreva o foco principal deste novo capítulo para guiar a IA e evitar repetições.',
-        'Tema do Capítulo:',
-        'Ex: A Batalha dos Números, Momentos Decisivos, O Legado Fora de Campo...'
-    );
-
-    // 2. Se o usuário cancelou ou não digitou nada, interrompe a função
-    if (!chapterTheme) {
-        window.showToast("Operação cancelada.");
-        return;
-    }
-
+    // Mostra o loading no botão principal enquanto a IA gera as sugestões
     showButtonLoading(button);
 
     try {
-        // 3. Monta um prompt muito mais específico usando o tema
+        // ETAPA 1: Gerar sugestões de temas para o próximo capítulo.
+        const suggestionPrompt = `Você é um Estrategista de Roteiro. Baseado no roteiro abaixo, sugira 3 temas distintos e lógicos para o próximo capítulo. Responda APENAS com um array JSON de 3 strings.
+
+        ROTEIRO ATUAL:
+        ---
+        ${existingText.slice(-2000)}
+        ---
+        
+        Exemplo de resposta: ["A Batalha dos Números", "O Legado Fora de Campo", "Momentos Decisivos"]`;
+
+        const rawSuggestions = await callGroqAPI(suggestionPrompt, 300);
+        const chapterSuggestions = cleanGeneratedText(rawSuggestions, true) || [];
+        
+        // Esconde o loading do botão principal antes de mostrar o pop-up
+        hideButtonLoading(button);
+
+        // ETAPA 2: Chamar o diálogo de input, agora passando as sugestões geradas.
+        const chapterTheme = await showInputDialog(
+            'Adicionar Novo Capítulo',
+            'Escolha uma sugestão da IA ou digite seu próprio tema abaixo.',
+            'Ou crie um tema personalizado:',
+            'Digite seu tema aqui...',
+            chapterSuggestions
+        );
+
+        // Se o usuário cancelou a operação no diálogo, a função para aqui.
+        if (!chapterTheme) {
+            window.showToast("Operação cancelada.");
+            return;
+        }
+
+        // Mostra o loading novamente, desta vez para a geração do capítulo em si.
+        showButtonLoading(button);
+
+        // ETAPA 3: Gerar o capítulo com o tema escolhido (lógica que já tínhamos).
         const basePrompt = getBasePromptContext();
         const continuationPrompt = `${basePrompt}
         
@@ -2579,29 +2644,28 @@ Agora, escreva o novo capítulo sobre "${chapterTheme}".`;
         const rawResult = await callGroqAPI(continuationPrompt, 4000);
         const newChapter = removeMetaComments(rawResult.trim());
         
-        // Insere um título para o capítulo e depois o conteúdo
+        // Injeta o HTML do novo capítulo na página
         const chapterTitleHtml = `<div class="font-bold text-lg mt-4 mb-2">Capítulo: ${chapterTheme}</div>`;
-        
         const existingParagraphsCount = contentWrapper.querySelectorAll('div[id]').length;
         const newParagraphs = newChapter.split('\n').filter(p => p.trim() !== '');
         const newContentWithDivs = newParagraphs.map((p, index) => 
             `<div id="development-p-${existingParagraphsCount + index}">${p}</div>`
         ).join('');
-
         contentWrapper.insertAdjacentHTML('beforeend', chapterTitleHtml + newContentWithDivs);
         
-        // Invalida análises anteriores
+        // Atualiza o estado da UI
         invalidateAndClearPerformance(devSection);
         invalidateAndClearPrompts(devSection);
         updateAllReadingTimes();
         
         window.showToast("Novo capítulo adicionado com sucesso!");
+        // Rola a tela para que o novo capítulo fique visível
         contentWrapper.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
 
     } catch (error) {
         window.showToast(`Falha ao adicionar capítulo: ${error.message}`);
     } finally {
+        // Garante que o loading seja removido, mesmo em caso de erro.
         hideButtonLoading(button);
     }
 };
