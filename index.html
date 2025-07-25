@@ -2564,12 +2564,11 @@ Hashtags:
 
 
 
-// =========================================================================
-// >>>>> PASSO 3: SUBSTITUA A FUNÇÃO addDevelopmentChapter COMPLETA <<<<<
-// =========================================================================
+// ==========================================================
+// >>>>> SUBSTITUA addDevelopmentChapter PELA VERSÃO REFINADA <<<<<
+// ==========================================================
 /**
- * Adiciona um novo capítulo ao desenvolvimento, primeiro pedindo sugestões de temas à IA
- * e depois deixando o usuário escolher ou criar um tema.
+ * Adiciona um novo capítulo ao desenvolvimento, com prompt refinado para evitar repetição do título.
  * @param {HTMLElement} button - O botão que foi clicado.
  */
 window.addDevelopmentChapter = async (button) => {
@@ -2577,17 +2576,14 @@ window.addDevelopmentChapter = async (button) => {
     const contentWrapper = devSection?.querySelector('.generated-content-wrapper');
     const existingText = contentWrapper?.textContent.trim();
 
-    // Validação inicial
     if (!existingText) {
         window.showToast("Gere o desenvolvimento inicial primeiro.");
         return;
     }
 
-    // Mostra o loading no botão principal enquanto a IA gera as sugestões
     showButtonLoading(button);
 
     try {
-        // ETAPA 1: Gerar sugestões de temas para o próximo capítulo.
         const suggestionPrompt = `Você é um Estrategista de Roteiro. Baseado no roteiro abaixo, sugira 3 temas distintos e lógicos para o próximo capítulo. Responda APENAS com um array JSON de 3 strings.
 
         ROTEIRO ATUAL:
@@ -2600,10 +2596,8 @@ window.addDevelopmentChapter = async (button) => {
         const rawSuggestions = await callGroqAPI(suggestionPrompt, 300);
         const chapterSuggestions = cleanGeneratedText(rawSuggestions, true) || [];
         
-        // Esconde o loading do botão principal antes de mostrar o pop-up
         hideButtonLoading(button);
 
-        // ETAPA 2: Chamar o diálogo de input, agora passando as sugestões geradas.
         const chapterTheme = await showInputDialog(
             'Adicionar Novo Capítulo',
             'Escolha uma sugestão da IA ou digite seu próprio tema abaixo.',
@@ -2612,60 +2606,65 @@ window.addDevelopmentChapter = async (button) => {
             chapterSuggestions
         );
 
-        // Se o usuário cancelou a operação no diálogo, a função para aqui.
         if (!chapterTheme) {
             window.showToast("Operação cancelada.");
             return;
         }
 
-        // Mostra o loading novamente, desta vez para a geração do capítulo em si.
         showButtonLoading(button);
 
-        // ETAPA 3: Gerar o capítulo com o tema escolhido (lógica que já tínhamos).
+        // ==========================================================
+        // >>>>> INÍCIO DA MUDANÇA NO PROMPT <<<<<
+        // ==========================================================
         const basePrompt = getBasePromptContext();
         const continuationPrompt = `${basePrompt}
         
 Você está escrevendo um novo capítulo para um roteiro existente.
 
-**TEMA OBRIGATÓRIO PARA ESTE CAPÍTULO:** "${chapterTheme}"
+**TEMA OBRIGATORIAL PARA ESTE CAPÍTULO:** "${chapterTheme}"
 
 **INSTRUÇÃO CRÍTICA DE CONTINUIDADE:**
 - O texto abaixo é o roteiro escrito até agora. **NÃO REPITA** as informações contidas nele.
 - Sua tarefa é escrever um novo capítulo que avance a narrativa, focado **EXCLUSIVAMENTE** no tema "${chapterTheme}".
 - Comece o novo capítulo de forma fluida, como se fosse a continuação natural do texto anterior.
 
+**REGRA DE FORMATAÇÃO (MUITO IMPORTANTE):**
+- Sua resposta deve ser APENAS o texto do roteiro.
+- **NÃO inclua o título do capítulo ("${chapterTheme}") ou qualquer outro subtítulo no corpo do texto.** Apenas o conteúdo a ser falado.
+
 **ROTEIRO ESCRITO ATÉ AGORA (PARA CONTEXTO):**
 ---
 ${existingText}
 ---
 
-Agora, escreva o novo capítulo sobre "${chapterTheme}".`;
+Agora, escreva o novo capítulo sobre "${chapterTheme}", seguindo TODAS as regras.`;
+        // ==========================================================
+        // >>>>> FIM DA MUDANÇA NO PROMPT <<<<<
+        // ==========================================================
 
         const rawResult = await callGroqAPI(continuationPrompt, 4000);
         const newChapter = removeMetaComments(rawResult.trim());
         
-        // Injeta o HTML do novo capítulo na página
         const chapterTitleHtml = `<div class="font-bold text-lg mt-4 mb-2">Capítulo: ${chapterTheme}</div>`;
+        
         const existingParagraphsCount = contentWrapper.querySelectorAll('div[id]').length;
         const newParagraphs = newChapter.split('\n').filter(p => p.trim() !== '');
         const newContentWithDivs = newParagraphs.map((p, index) => 
             `<div id="development-p-${existingParagraphsCount + index}">${p}</div>`
         ).join('');
+
         contentWrapper.insertAdjacentHTML('beforeend', chapterTitleHtml + newContentWithDivs);
         
-        // Atualiza o estado da UI
         invalidateAndClearPerformance(devSection);
         invalidateAndClearPrompts(devSection);
         updateAllReadingTimes();
         
         window.showToast("Novo capítulo adicionado com sucesso!");
-        // Rola a tela para que o novo capítulo fique visível
         contentWrapper.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     } catch (error) {
         window.showToast(`Falha ao adicionar capítulo: ${error.message}`);
     } finally {
-        // Garante que o loading seja removido, mesmo em caso de erro.
         hideButtonLoading(button);
     }
 };
