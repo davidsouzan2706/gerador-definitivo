@@ -3254,7 +3254,7 @@ window.regenerateSection = (fullSectionId) => {
 
 
 // =========================================================================
-// >>>>> VERSÃO FINAL DE generatePromptsForSection COM LOTE MENOR E PROMPT BLINDADO <<<<<
+// >>>>> SUBSTITUA generatePromptsForSection PELA VERSÃO COMPLETA E CORRIGIDA <<<<<
 // =========================================================================
 /**
  * Gera prompts de imagem para uma seção, com lotes menores e prompt reforçado
@@ -3304,10 +3304,8 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
         const baseIndexMatch = paragraphsWithContext[0]?.originalId.match(/-p-(\d+)$/);
         const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
 
-        // ==========================================================
-        // >>>>> CORREÇÃO 1: Lote menor para evitar estouro de tokens <<<<<
-        // ==========================================================
-        const batchSize = 5; // Reduzimos de 10 para 5
+        // CORREÇÃO 1: Lote menor para evitar estouro de tokens e respostas cortadas.
+        const batchSize = 5;
         const apiPromises = [];
 
         for (let i = 0; i < paragraphsWithContext.length; i += batchSize) {
@@ -3327,9 +3325,7 @@ Parágrafo ${globalIndex}:
 `;
             });
             
-            // ==========================================================
-            // >>>>> CORREÇÃO 2: Prompt blindado contra meta-comentários <<<<<
-            // ==========================================================
+            // CORREÇÃO 2: Prompt blindado para forçar a IA a responder apenas com o JSON.
             const prompt = `Você é uma API de geração de JSON. Sua única função é retornar um array JSON.
 
 **REGRAS CRÍTICAS (A MAIS IMPORTANTE):**
@@ -3353,13 +3349,41 @@ ${promptContextForAI}
         const allGeneratedPrompts = allBatchResults.flat();
 
         if (!Array.isArray(allGeneratedPrompts) || allGeneratedPrompts.length < paragraphsWithContext.length) {
+             console.error(`Falha na contagem: JS esperava ${paragraphsWithContext.length}, IA retornou ${allGeneratedPrompts.length}.`);
             throw new Error("A IA não retornou um prompt para cada parágrafo.");
         }
         
-        // O resto da sua função (curadoria e renderização) continua o mesmo...
+        // Lógica de curadoria e renderização (permanece a mesma)
         const desiredSecondsPerScene = 15;
         let curatedPrompts = [];
-        // ... (etc)
+        let secondsAccumulator = 0;
+        let currentScenePhrase = "";
+
+        allGeneratedPrompts.forEach((promptData, index) => {
+            if (!promptData || !promptData.scriptPhrase) return;
+            const duration = parseInt(promptData.estimated_duration, 10) || 5;
+            currentScenePhrase += promptData.scriptPhrase + " ";
+            secondsAccumulator += duration;
+            if (secondsAccumulator >= desiredSecondsPerScene || index === allGeneratedPrompts.length - 1) {
+                let finalPrompt = { ...promptData };
+                finalPrompt.scriptPhrase = currentScenePhrase.trim();
+                finalPrompt.estimated_duration = secondsAccumulator;
+                curatedPrompts.push(finalPrompt);
+                currentScenePhrase = "";
+                secondsAccumulator = 0;
+            }
+        });
+        
+        allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
+        promptPaginationState[sectionElementId] = 0;
+        
+        promptContainer.innerHTML = `
+            <div class="prompt-pagination-wrapper space-y-4">
+                <div class="prompt-nav-container flex items-center justify-center gap-4"></div>
+                <div class="prompt-items-container space-y-4"></div>
+            </div>
+        `;
+        renderPaginatedPrompts(sectionElementId);
 
     } catch (error) {
          promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
