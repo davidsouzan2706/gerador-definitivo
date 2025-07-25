@@ -1165,66 +1165,47 @@ const updateAllReadingTimes = () => {
             });
         };
 
+
+        
+
 // =========================================================================
-// >>>>> SUBSTITUA SUA FUNÇÃO updateButtonStates INTEIRA POR ESTA VERSÃO FINAL <<<<<
+// >>>>> AÇÃO 4: SUBSTITUA A FUNÇÃO updateButtonStates COMPLETA <<<<<
 // =========================================================================
-/**
- * Atualiza o estado de todos os botões e a visibilidade de módulos dinâmicos (como o da Conclusão)
- * com base no progresso atual da geração do roteiro.
- */
 const updateButtonStates = () => {
-    // 1. Verifica quais seções principais já foram geradas procurando pelo acordeão.
     const introGenerated = document.querySelector('#introSection .accordion-item');
     const devGenerated = document.querySelector('#developmentSection .accordion-item');
     const climaxGenerated = document.querySelector('#climaxSection .accordion-item');
     const conclusionGenerated = document.querySelector('#conclusionSection .accordion-item');
     
-    // 2. Define a condição principal: O roteiro base (até o Clímax) está pronto?
     const allMainScriptGenerated = introGenerated && devGenerated && climaxGenerated;
 
-    // 3. Habilita/desabilita os botões de metadados.
     const metadataButtons = ['generateTitlesAndThumbnailsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'];
     metadataButtons.forEach(id => {
         const btn = document.getElementById(id);
         if (btn) {
-            // O "Mapa Emocional" só faz sentido quando o roteiro está 100% completo (incluindo a conclusão).
             if (id === 'mapEmotionsBtn') {
                 btn.disabled = !(allMainScriptGenerated && conclusionGenerated);
             } else {
-                // Os outros metadados podem ser gerados após o clímax.
                 btn.disabled = !allMainScriptGenerated;
             }
         }
     });
 
-    // 4. Lógica para exibir/esconder o Módulo de Estratégia da Conclusão.
     const conclusionModule = document.getElementById('conclusionStrategyModule');
     const climaxContainer = document.getElementById('climaxSection');
 
-    // Garante que os elementos necessários existem para evitar erros.
     if (conclusionModule && climaxContainer) {
-
-        // CONDIÇÃO PARA MOSTRAR O MÓDULO:
-        // As 3 seções principais foram geradas E o módulo ainda está escondido.
         if (allMainScriptGenerated && conclusionModule.classList.contains('hidden')) {
-            // Move o módulo para o local correto na tela (logo após o Clímax).
             climaxContainer.insertAdjacentElement('afterend', conclusionModule);
-            // Torna o módulo visível.
             conclusionModule.classList.remove('hidden');
-            // Rola a tela suavemente para que o usuário veja o novo módulo.
             conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Notifica o usuário.
             window.showToast("Excelente! Agora, defina a estratégia para a sua conclusão.");
             
-            // Adiciona os event listeners aos botões de rádio para interatividade.
             document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
                 radio.addEventListener('change', handleConclusionStrategyChange);
             });
-            // Chama a função uma vez para configurar o estado inicial correto dos placeholders, etc.
             handleConclusionStrategyChange();
         } 
-        // CONDIÇÃO PARA ESCONDER O MÓDULO (caso o usuário reset o roteiro):
-        // Se alguma das 3 seções principais não estiver gerada E o módulo estiver visível.
         else if (!allMainScriptGenerated && !conclusionModule.classList.contains('hidden')) {
             conclusionModule.classList.add('hidden');
         }
@@ -1253,6 +1234,9 @@ const updateButtonStates = () => {
         container.style.display = select.value === 'custom' ? 'block' : 'none';
     }
 };
+
+
+
 
         /**
          * Coleta e concatena o texto puro de todas as seções do roteiro na ordem correta.
@@ -2487,29 +2471,28 @@ Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar u
         };
 
 
-         // ==========================================================
-        // >>>>> PASSO 1: SUBSTITUA A FUNÇÃO createScriptSectionPlaceholder <<<<<
-        // ==========================================================
-        /**
-         * Cria e retorna o HTML de um placeholder para uma seção do roteiro.
-         * @param {string} sectionId - O ID base da seção (ex: 'intro').
-         * @param {string} title - O título da seção (ex: 'Introdução').
-         * @param {string} buttonId - O ID do botão principal que gera esta seção (ex: 'generateIntroBtn').
-         * @returns {string} O HTML do placeholder da seção.
-         */
-        const createScriptSectionPlaceholder = (sectionId, title, buttonId) => {
-            const containerId = `${sectionId}Section`;
-            
-            // Adicionamos a classe 'card-placeholder' para que o CSS funcione
-            return `
-                <div id="${containerId}" class="script-section card card-placeholder mb-4 animate-fade-in flex justify-between items-center">
-                    <h3 class="font-semibold text-lg text-gray-700 dark:text-gray-300">${title}</h3>
-                    <button id="${buttonId}" class="btn btn-primary">
-                        <i class="fas fa-magic mr-2"></i>Gerar
-                    </button>
-                </div>
-            `;
-        };
+        // =========================================================================
+// >>>>> AÇÃO 1: SUBSTITUA A FUNÇÃO createScriptSectionPlaceholder COMPLETA <<<<<
+// =========================================================================
+/**
+ * Cria e retorna o HTML de um placeholder para uma seção do roteiro.
+ * @param {string} sectionId - O ID base da seção (ex: 'intro').
+ * @param {string} title - O título da seção (ex: 'Introdução').
+ * @param {string} buttonId - O ID do botão principal que gera esta seção (ex: 'generateIntroBtn').
+ * @returns {string} O HTML do placeholder da seção.
+ */
+const createScriptSectionPlaceholder = (sectionId, title, buttonId) => {
+    const containerId = `${sectionId}Section`;
+    
+    return `
+        <div id="${containerId}" class="script-section card card-placeholder mb-4 animate-fade-in flex justify-between items-center">
+            <h3 class="font-semibold text-lg text-gray-700 dark:text-gray-300">${title}</h3>
+            <button id="${buttonId}" class="btn btn-primary">
+                <i class="fas fa-magic mr-2"></i>Gerar
+            </button>
+        </div>
+    `;
+};
 
 
 
@@ -3120,17 +3103,9 @@ const selectIdea = (idea) => {
 
 
 // =========================================================================
-// >>>>> SUBSTITUA handleGenerateSection PELA VERSÃO FINAL COM CONTEXTO TOTAL <<<<<
+// >>>>> AÇÃO 3: SUBSTITUA A FUNÇÃO handleGenerateSection COMPLETA <<<<<
 // =========================================================================
-/**
- * Lida com a geração de uma secção do roteiro, passando o contexto de TODAS as seções anteriores.
- * @param {HTMLElement} button - O botão que acionou a geração.
- * @param {string} sectionName - O nome da secção (ex: 'intro', 'development', 'climax').
- * @param {string} sectionTitle - O título da secção para exibição (ex: 'Introdução').
- * @param {string} elementId - O ID do elemento HTML onde o conteúdo será inserido.
- */
 const handleGenerateSection = async (button, sectionName, sectionTitle, elementId) => {
-    // 1. Validações iniciais
     if (!validateInputs()) return;
     if (!strategicOutline) {
         window.showToast("Crie o Esboço Estratégico primeiro!");
@@ -3141,7 +3116,6 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
     
     const targetSectionElement = document.getElementById(`${elementId}Section`);
     if (targetSectionElement) {
-        // Limpa saídas de análise anteriores
         const analysisOutput = targetSectionElement.querySelector('.section-analysis-output');
         const performanceOutput = targetSectionElement.querySelector('.section-performance-output');
         if (analysisOutput) analysisOutput.innerHTML = '';
@@ -3149,45 +3123,34 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
     }
 
     try {
-        // 2. (A GRANDE MUDANÇA) Coleta o contexto de forma sequencial e cumulativa
         let contextText = null;
-        const sectionOrder = ['introSection', 'developmentSection', 'climaxSection'];
         const previousSectionsContent = [];
-
-        // Define quais seções são pré-requisitos para a seção atual
         const requiredSections = {
             'development': ['introSection'],
             'climax': ['introSection', 'developmentSection'],
             'conclusion': ['introSection', 'developmentSection', 'climaxSection']
         };
 
-        // Verifica se a seção atual tem pré-requisitos
         if (requiredSections[sectionName]) {
             for (const reqId of requiredSections[sectionName]) {
                 const requiredWrapper = document.querySelector(`#${reqId} .generated-content-wrapper`);
-                
-                // Se um pré-requisito não foi gerado, avisa o usuário e para
                 if (!requiredWrapper || !requiredWrapper.textContent.trim()) {
-                    const reqTitle = document.querySelector(`#${reqId}`).closest('.script-section').querySelector('h3')?.textContent || reqId.replace('Section', '');
+                    const sectionContainer = document.getElementById(reqId);
+                    const reqTitle = sectionContainer?.querySelector('h3')?.textContent || reqId.replace('Section', '');
                     window.showToast(`Por favor, gere a seção "${reqTitle}" primeiro.`);
                     hideButtonLoading(button);
                     return;
                 }
-                // Adiciona o conteúdo do pré-requisito à nossa coleta
                 previousSectionsContent.push(requiredWrapper.textContent.trim());
             }
-            
-            // Junta todo o conteúdo coletado em um único texto de contexto
             contextText = previousSectionsContent.join('\n\n---\n\n');
         }
 
-        // 3. Constrói o prompt, passando o `contextText` cumulativo
         const keyMap = { intro: 'introduction' };
         const outlineKey = keyMap[sectionName] || sectionName;
         const directive = strategicOutline[outlineKey];
         const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive, contextText);
         
-        // 4. Chama a API e processa o resultado (lógica existente)
         let rawResult = await callGroqAPI(prompt, maxTokens);
         let cleanedResult = removeMetaComments(rawResult.trim());
 
@@ -3196,12 +3159,10 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
             `<div id="${elementId}-p-${index}">${p}</div>`
         ).join('');
         
-        // 5. Insere o conteúdo gerado na página (lógica existente)
         if (targetSectionElement) {
             const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
             targetSectionElement.innerHTML = sectionHtml;
-            targetSectionElement.classList.remove('card', 'card-placeholder', 'flex', 'justify-between', 'items-center', 'animate-fade-in');
-            targetSectionElement.classList.add('script-section');
+            targetSectionElement.classList.remove('card', 'card-placeholder', 'flex', 'justify-between', 'items-center');
             targetSectionElement.querySelector('.accordion-item')?.classList.add('animate-fade-in');
         } else {
             console.error(`Elemento alvo com ID '${elementId}Section' não encontrado.`);
@@ -3209,7 +3170,6 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
             return;
         }
         
-        // 6. Finaliza e atualiza a UI (lógica existente)
         markButtonAsCompleted(button.id);
         updateButtonStates();
 
@@ -3701,9 +3661,9 @@ ${promptContextForAI}
             }
         };
 
-        // ==========================================================
-// >>>>> AÇÃO 1: SUBSTITUA A FUNÇÃO generateStrategicOutline COMPLETA <<<<<
-// ==========================================================
+// =========================================================================
+// >>>>> AÇÃO 2: SUBSTITUA A FUNÇÃO generateStrategicOutline COMPLETA <<<<<
+// =========================================================================
 const generateStrategicOutline = async (button) => {
     if (!validateInputs()) return;
     
@@ -3761,8 +3721,6 @@ const generateStrategicOutline = async (button) => {
         const scriptContainer = document.getElementById('scriptSectionsContainer');
         if (scriptContainer) {
             scriptContainer.innerHTML = ''; 
-
-            // Cria os placeholders APENAS para as seções principais que vêm antes da Conclusão.
             scriptContainer.innerHTML += createScriptSectionPlaceholder('intro', 'Introdução', 'generateIntroBtn');
             scriptContainer.innerHTML += createScriptSectionPlaceholder('development', 'Desenvolvimento', 'generateDevelopmentBtn');
             scriptContainer.innerHTML += createScriptSectionPlaceholder('climax', 'Clímax', 'climaxBtn');
