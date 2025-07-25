@@ -4292,6 +4292,10 @@ document.addEventListener('DOMContentLoaded', () => {
     updateButtonStates();
     updateNarrativeStructureOptions();
 
+// "Exporta" a função selectIdea para o escopo global para que o onclick funcione
+    window.selectIdea = selectIdea;
+    
+
     // --- 3. EVENT LISTENERS ESPECÍFICOS ---
     const goalSelect = document.getElementById('narrativeGoal');
     if(goalSelect) {
