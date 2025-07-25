@@ -1166,7 +1166,7 @@ const updateAllReadingTimes = () => {
         };
 
 
-        
+
 
 // =========================================================================
 // >>>>> AÇÃO 4: SUBSTITUA A FUNÇÃO updateButtonStates COMPLETA <<<<<
@@ -3274,7 +3274,7 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
         const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
 
         // CORREÇÃO 1: Lote menor para evitar estouro de tokens e respostas cortadas.
-        const batchSize = 5;
+        const batchSize = 3;
         const apiPromises = [];
 
         for (let i = 0; i < paragraphsWithContext.length; i += batchSize) {
