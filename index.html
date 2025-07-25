@@ -523,6 +523,11 @@
             <button id="exportProjectBtn" class="btn btn-secondary">
                 <i class="fas fa-download mr-2"></i> Exportar Projeto
             </button>
+
+            <!-- >>> NOSSO NOVO BOTÃO AQUI <<< -->
+            <button id="exportPdfBtn" class="btn btn-secondary">
+            <i class="fas fa-file-pdf mr-2"></i> Exportar PDF
+            </button>
             
             <!-- Botão para Resetar -->
             <button id="resetProjectBtn" class="btn bg-red-600 hover:bg-red-700 text-white">
@@ -4137,6 +4142,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
                 'exportProjectBtn': () => exportProject(),
+                'exportPdfBtn': () => downloadPdf(),
 'resetProjectBtn': async () => {
     const confirmed = await showConfirmationDialog(
         "Começar um Novo Projeto?", 
