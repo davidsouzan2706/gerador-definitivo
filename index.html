@@ -803,17 +803,24 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 // >>>>> ADICIONE ESTA NOVA FUNÇÃO AO SEU SCRIPT <<<<<
 // =========================================================================
 /**
- * Encontra e deleta todos os parágrafos pertencentes a um mesmo grupo de sugestão.
+ * Encontra e deleta todos os parágrafos pertencentes a um mesmo grupo de sugestão,
+ * usando o modal de confirmação personalizado da aplicação.
  * @param {HTMLElement} button - O botão de deletar que foi clicado.
  * @param {string} suggestionText - O texto da sugestão que identifica o grupo.
  */
-window.deleteParagraphGroup = (button, suggestionText) => {
-    // 1. Pede confirmação ao usuário para evitar deleções acidentais.
-    if (!confirm("Tem certeza que deseja deletar este bloco de parágrafos? Esta ação não pode ser desfeita.")) {
+window.deleteParagraphGroup = async (button, suggestionText) => {
+    // 1. CHAMA O NOSSO MODAL PERSONALIZADO e aguarda a resposta (true/false).
+    const userConfirmed = await showConfirmationDialog(
+        'Confirmar Deleção',
+        'Tem certeza que deseja deletar este bloco de parágrafos? Esta ação não pode ser desfeita.'
+    );
+
+    // 2. Se o usuário clicou em "Não" (ou fechou), a função para aqui.
+    if (!userConfirmed) {
         return;
     }
 
-    // 2. Encontra todos os parágrafos do mesmo grupo.
+    // 3. O resto da lógica continua exatamente como antes.
     const safeSelector = suggestionText.replace(/"/g, '\\"');
     const paragraphsToDelete = document.querySelectorAll(`[data-suggestion-group="${safeSelector}"]`);
 
@@ -824,10 +831,8 @@ window.deleteParagraphGroup = (button, suggestionText) => {
 
     const sectionElement = paragraphsToDelete[0].closest('.script-section');
 
-    // 3. Remove cada parágrafo do DOM.
     paragraphsToDelete.forEach(p => p.remove());
 
-    // 4. Atualiza a UI para refletir a mudança.
     if (sectionElement) {
         invalidateAndClearPerformance(sectionElement);
         invalidateAndClearPrompts(sectionElement);
