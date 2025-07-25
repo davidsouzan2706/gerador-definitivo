@@ -1471,14 +1471,14 @@ const mapEmotionsAndPacing = async (button) => {
 
 
 
-     // ==========================================================
-// >>>>> AÇÃO 3: SUBSTITUA A FUNÇÃO generateConclusionAndCta COMPLETA <<<<<
-// ==========================================================
+// =========================================================================
+// >>>>> SUBSTITUA A FUNÇÃO generateConclusionAndCta INTEIRA POR ESTA VERSÃO FINAL <<<<<
+// =========================================================================
 const generateConclusionAndCta = async (button) => {
     if (!validateInputs()) return;
     showButtonLoading(button);
 
-    // Garante que o container de destino exista antes de tentar usá-lo.
+    // Garante que o container de destino da conclusão exista antes de tentar usá-lo.
     const scriptContainer = document.getElementById('scriptSectionsContainer');
     if (scriptContainer && !document.getElementById('conclusionSection')) {
         const conclusionDiv = document.createElement('div');
@@ -1487,9 +1487,11 @@ const generateConclusionAndCta = async (button) => {
         scriptContainer.appendChild(conclusionDiv);
     }
 
+    // Coleta as escolhas do usuário no módulo de estratégia.
     const conclusionType = document.querySelector('input[name="conclusionType"]:checked').value;
     const conclusionSpecifics = document.getElementById('conclusionSpecifics').value.trim();
 
+    // Monta a diretiva estratégica para o prompt com base na escolha do usuário.
     let strategyDirective = '';
     switch (conclusionType) {
         case 'lesson':
@@ -1504,9 +1506,10 @@ const generateConclusionAndCta = async (button) => {
             break;
     }
     
-    // Coleta o contexto de TODAS as seções anteriores
+    // Coleta o contexto de TODAS as seções anteriores para garantir a continuidade.
     const fullContext = getTranscriptOnly(); 
 
+    // Monta o prompt final para a IA.
     const basePromptContext = getBasePromptContext();
     const prompt = `${basePromptContext}
     ${fullContext ? `\n\n**ROTEIRO ESCRITO ATÉ AGORA (PARA CONTEXTO):**\n---\n${fullContext}\n---\n` : ''}
@@ -1524,12 +1527,17 @@ const generateConclusionAndCta = async (button) => {
             `<div id="conclusion-p-${index}">${p}</div>`
         ).join('');
 
+        // Renderiza o conteúdo gerado na seção de conclusão.
         document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão e CTA', contentWithSpans);
         
+        // A CORREÇÃO CRÍTICA: Atualiza o nosso "painel de controle" para a conclusão.
+        projectState.conclusion = true;
+        
+        // Finaliza e atualiza a UI.
         markButtonAsCompleted('generateConclusionAndCtaBtn');
         document.getElementById('conclusionStrategyModule').classList.add('hidden');
         window.showToast("Conclusão e CTA gerados com sucesso!");
-        updateButtonStates();
+        updateButtonStates(); // Reavalia o estado de todos os botões, habilitando o "Mapear".
 
     } catch(error) {
         window.showToast(`Falha ao gerar a conclusão: ${error.message}`);
