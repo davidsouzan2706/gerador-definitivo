@@ -394,6 +394,16 @@
         <div class="input-group"><label for="languageStyle">Estilo de Linguagem:</label><select id="languageStyle"><option value="inspirador" selected>Inspirador</option><option value="formal">Formal</option></select></div>
         <div class="input-group"><label for="videoObjective">Objetivo do Vídeo:</label><select id="videoObjective"><option value="informar" selected>Informar</option><option value="emocionar">Emocionar</option></select></div>
         <div class="input-group"><label for="speakingPace">Ritmo de Fala:</label><select id="speakingPace"><option value="moderate" selected>Moderado</option><option value="slow">Lento</option><option value="fast">Rápido</option></select></div>
+
+            <div class="input-group">
+    <label for="visualPacing">Ritmo Visual (Duração das Cenas):</label>
+    <select id="visualPacing">
+        <option value="dinamico" selected>Dinâmico (3-8s)</option>
+        <option value="normal">Normal (8-15s)</option>
+        <option value="contemplativo">Contemplativo (15-25s)</option>
+    </select>
+</div>
+
         <div class="input-group md:col-span-2"><label for="imageDescriptionEngine">Motor de Descrição de Imagem:</label><textarea id="imageDescriptionEngine" rows="2" placeholder="Ex: 'fotografias reais', 'close-up emocional'"></textarea></div>
         <div class="input-group md:col-span-2"><label for="imageStyleSelect">Motor de Qualidade de Imagem:</label><select id="imageStyleSelect"><option value="cinematic" selected>Cinematográfico</option><option value="custom">Personalizado</option><option value="none">Nenhum</option></select></div>
         <!-- O campo que estava faltando, agora na posição correta -->
@@ -3223,14 +3233,9 @@ window.regenerateSection = (fullSectionId) => {
 
 
 // =========================================================================
-// >>>>> SUBSTITUA generatePromptsForSection PELA VERSÃO COMPLETA E CORRIGIDA <<<<<
+// >>>>> VERSÃO FINAL E DEFINITIVA DE generatePromptsForSection <<<<<
+// (Com Controlador de Ritmo e Correção do bug "undefined")
 // =========================================================================
-/**
- * Gera prompts de imagem para uma seção, com lotes menores e prompt reforçado
- * para garantir a estabilidade e a qualidade da resposta JSON da IA.
- * @param {HTMLElement} button - O botão que acionou a geração.
- * @param {string} sectionElementId - O ID do elemento da seção.
- */
 window.generatePromptsForSection = async (button, sectionElementId) => {
     const sectionElement = document.getElementById(sectionElementId);
     const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
@@ -3240,7 +3245,6 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
         window.showToast("Gere o conteúdo do roteiro desta seção primeiro.");
         return;
     }
-
     if (!window.emotionalMap || window.emotionalMap.length === 0) {
         window.showToast("Gere o Mapa Emocional primeiro para criar prompts contextuais.");
         return;
@@ -3250,10 +3254,10 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
     promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
     
     try {
+        // ETAPA 1: Mapear parágrafos e seus capítulos (lógica existente)
         const allChildren = Array.from(contentWrapper.children);
         const paragraphsWithContext = [];
         let currentChapterTitle = "Contexto Geral";
-
         allChildren.forEach(child => {
             if (child.classList.contains('font-bold') && child.textContent.includes('Capítulo:')) {
                 currentChapterTitle = child.textContent.replace('Capítulo:', '').trim();
@@ -3266,35 +3270,33 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
             }
         });
 
-        if (paragraphsWithContext.length === 0) {
-            throw new Error("Não foram encontrados parágrafos estruturados para análise.");
-        }
+        if (paragraphsWithContext.length === 0) { throw new Error("Não foram encontrados parágrafos estruturados para análise."); }
 
         const baseIndexMatch = paragraphsWithContext[0]?.originalId.match(/-p-(\d+)$/);
         const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-
-        // CORREÇÃO 1: Lote menor para evitar estouro de tokens e respostas cortadas.
         const batchSize = 3;
         const apiPromises = [];
+
+        // ETAPA 2: LER O NOVO CONTROLADOR DE RITMO
+        const visualPacing = document.getElementById('visualPacing').value;
+        const durationMap = {
+            'dinamico': '3 e 8',
+            'normal': '8 e 15',
+            'contemplativo': '15 e 25'
+        };
+        const durationRange = durationMap[visualPacing] || '3 e 8';
 
         for (let i = 0; i < paragraphsWithContext.length; i += batchSize) {
             const batch = paragraphsWithContext.slice(i, i + batchSize);
             let promptContextForAI = '';
-
             batch.forEach((item, indexInBatch) => {
                 const globalIndex = i + indexInBatch;
                 const mapIndex = baseIndex + globalIndex;
                 const emotionalContext = window.emotionalMap[mapIndex] || { emotion: 'Neutro', pace: 'Normal' };
-                
-                promptContextForAI += `
-Parágrafo ${globalIndex}:
-- Título do Capítulo (Guia Temático): "${item.chapter}"
-- Texto do Parágrafo: "${item.text}"
-- Contexto Emocional: (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})
-`;
+                promptContextForAI += `\nParágrafo ${globalIndex}:\n- Título do Capítulo (Guia Temático): "${item.chapter}"\n- Texto do Parágrafo: "${item.text}"\n- Contexto Emocional: (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})`;
             });
             
-            // CORREÇÃO 2: Prompt blindado para forçar a IA a responder apenas com o JSON.
+            // ETAPA 3: ATUALIZAR O PROMPT COM O NOVO CONTROLE DE DURAÇÃO
             const prompt = `Você é um Diretor de Fotografia premiado, gerando um storyboard. Sua resposta deve ser APENAS um array JSON.
 
 **REGRAS CRÍTICAS:**
@@ -3303,7 +3305,7 @@ Parágrafo ${globalIndex}:
     - **Ângulo da Câmera:** (ex: Close-up extremo, Câmera lenta, Visão de cima)
     - **Iluminação:** (ex: Dramática e sombria, Luz suave de janela)
     - **Foco e Composição:** (ex: Foco nítido no primeiro plano com fundo desfocado)
-3.  **DURAÇÃO REALISTA:** O valor de "estimated_duration" DEVE ser um número entre **3 e 8**, representando a duração em segundos de cada imagem na tela.
+3.  **DURAÇÃO REALISTA:** O valor de "estimated_duration" DEVE ser um número entre **${durationRange}**, representando a duração em segundos de cada imagem na tela.
 4.  **SEM META-COMENTÁRIOS:** Sua resposta inteira deve ser APENAS o código JSON.
 
 **DADOS PARA ANÁLISE (LOTE ATUAL):**
@@ -3315,18 +3317,21 @@ ${promptContextForAI}
         }
 
         const allBatchResults = await Promise.all(apiPromises);
-        const allGeneratedPrompts = allBatchResults.flat();
+        let allGeneratedPrompts = allBatchResults.flat();
 
         if (!Array.isArray(allGeneratedPrompts) || allGeneratedPrompts.length < paragraphsWithContext.length) {
-             console.error(`Falha na contagem: JS esperava ${paragraphsWithContext.length}, IA retornou ${allGeneratedPrompts.length}.`);
             throw new Error("A IA não retornou um prompt para cada parágrafo.");
         }
         
-        // ==========================================================
-// >>>>> MODIFICAÇÃO 1: REMOVA O BLOCO ACIMA E USE ESTA LINHA <<<<<
-// ==========================================================
-const curatedPrompts = allGeneratedPrompts;
-        
+        // ETAPA 4: CORREÇÃO DO BUG "undefined"
+        const curatedPrompts = allGeneratedPrompts.map((promptData, index) => {
+            return {
+                scriptPhrase: paragraphsWithContext[index].text, // Pega o texto do nosso array local seguro
+                imageDescription: promptData.imageDescription || "Falha ao gerar descrição.",
+                estimated_duration: promptData.estimated_duration || 5
+            };
+        });
+
         allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
         promptPaginationState[sectionElementId] = 0;
         
