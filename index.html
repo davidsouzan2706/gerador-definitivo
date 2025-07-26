@@ -378,7 +378,7 @@
         <!-- Aba 2: Estratégia Narrativa -->
         <div id="input-tab-estrategia" class="tab-pane hidden"> <!-- A classe 'hidden' é importante -->
              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="input-group md:col-span-2"><label for="targetAudience">Público-Alvo:</label><input type="text" id="targetAudience" value="Interessados em mistérios e história." readonly></div>
+                <div class="input-group md:col-span-2"><label for="targetAudience">Público-Alvo:</label><input type="text" id="targetAudience" value="Interessados em mistérios e história." ></div>
                 <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
                 
 
@@ -2203,22 +2203,29 @@ const invalidateAndClearPrompts = (sectionElement) => {
         };
 
 
-    const updateMainTooltip = () => {
-    // Busca os elementos do nosso novo popover
+   // ==========================================================
+// >>>>> AÇÃO 1: SUBSTITUA A FUNÇÃO updateMainTooltip INTEIRA <<<<<
+// ==========================================================
+const updateMainTooltip = () => {
     const popoverTitle = document.getElementById('popoverTitle');
     const popoverDescription = document.getElementById('popoverDescription');
     const structureSelect = document.getElementById('narrativeStructure');
 
     if (!popoverTitle || !popoverDescription || !structureSelect) return;
 
-    // Pega a chave e o texto da opção selecionada
-    const selectedKey = structureSelect.value; // Ex: 'mystery_loop'
-    const selectedText = structureSelect.options[structureSelect.selectedIndex].text; // Ex: 'Mistério (com Loop Aberto)'
+    // AQUI ESTÁ A CORREÇÃO:
+    // Se nenhuma opção estiver selecionada (selectedIndex === -1), a função para aqui.
+    if (structureSelect.selectedIndex === -1) {
+        // Opcional: Limpa o popover para não mostrar informação antiga.
+        popoverTitle.textContent = "Selecione uma Estrutura";
+        popoverDescription.textContent = "Passe o mouse sobre uma opção para ver sua descrição.";
+        return; 
+    }
 
-    // Busca a descrição correspondente no nosso "dicionário"
-    const descriptionText = narrativeTooltips[selectedKey] || "Passe o mouse sobre as opções para ver a descrição.";
+    const selectedKey = structureSelect.value;
+    const selectedText = structureSelect.options[structureSelect.selectedIndex].text;
+    const descriptionText = narrativeTooltips[selectedKey] || "Descrição não encontrada.";
     
-    // Atualiza o conteúdo do popover
     popoverTitle.textContent = selectedText;
     popoverDescription.textContent = descriptionText;
 };
