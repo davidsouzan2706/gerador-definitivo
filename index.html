@@ -4170,10 +4170,9 @@ const resetApplicationState = () => {
             event.target.value = '';
         };
 
- // =========================================================================
-// >>>>> AÇÃO 2: SUBSTITUA a função analyzeAndSetStrategy POR ESTAS DUAS <<<<<
 // =========================================================================
-
+// >>>>> SUBSTITUA SUA FUNÇÃO suggestStrategy INTEIRA POR ESTA VERSÃO FINAL <<<<<
+// =========================================================================
 /**
  * Chama a IA para analisar o tema/descrição e preencher os campos de estratégia como uma SUGESTÃO.
  * Esta função é OPCIONAL para o usuário.
@@ -4200,10 +4199,20 @@ const suggestStrategy = async (button) => {
     }
     
     showButtonLoading(button);
-    isSettingStrategy = true; // Sinalizador para evitar que o reset seja acionado ao preencher os campos
+    isSettingStrategy = true;
     
-    // O prompt para a IA continua o mesmo que já tínhamos.
-    const prompt = `Você é um Estrategista de Conteúdo de IA. Analise o tema e a descrição de um vídeo e defina a melhor estratégia de conteúdo... (seu prompt completo aqui)`;
+    // O PROMPT "BLINDADO" E À PROVA DE FALHAS
+    const prompt = `Você é uma API de geração de JSON. Sua única função é analisar um tema de vídeo e retornar um objeto JSON com a melhor estratégia de conteúdo.
+
+    **Tema do Vídeo:** "${theme}"
+    **Descrição:** "${description}"
+
+    **REGRAS CRÍTICAS E INEGOCIÁVEIS:**
+    1.  Sua resposta deve ser APENAS e SOMENTE o código de um objeto JSON.
+    2.  É ESTRITAMENTE PROIBIDO incluir qualquer texto, explicação ou comentário antes ou depois do JSON.
+    3.  O JSON deve conter EXATAMENTE as seguintes chaves, com valores apropriados baseados na análise: "target_audience", "narrative_goal", "narrative_structure", "narrative_theme", "narrative_tone", "narrative_voice", "central_question", "emotional_arc", "language_style", "video_objective", "speaking_pace", "image_description_engine".
+
+    Analise os dados e retorne o objeto JSON puro agora.`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 2000);
@@ -4214,21 +4223,39 @@ const suggestStrategy = async (button) => {
         }
         
         // Lógica para preencher todos os campos do formulário com a resposta da IA.
-        // (Aqui entraria toda a sua lógica `keyToElementIdMap` e de atualização dos dropdowns)
         const narrativeGoalSelect = document.getElementById('narrativeGoal');
+        const narrativeStructureSelect = document.getElementById('narrativeStructure');
         if (narrativeGoalSelect && strategy.narrative_goal) {
             narrativeGoalSelect.value = strategy.narrative_goal;
             updateNarrativeStructureOptions();
         }
-        const narrativeStructureSelect = document.getElementById('narrativeStructure');
         if (narrativeStructureSelect && strategy.narrative_structure) {
             narrativeStructureSelect.value = strategy.narrative_structure;
             updateMainTooltip();
         }
-        // ... e assim por diante para todos os outros campos ...
-
+        const keyToElementIdMap = {
+            'target_audience': 'targetAudience',
+            'narrative_theme': 'narrativeTheme',
+            'narrative_tone': 'narrativeTone',
+            'narrative_voice': 'narrativeVoice',
+            'central_question': 'centralQuestion',
+            'emotional_arc': 'emotionalArc',
+            'language_style': 'languageStyle',
+            'video_objective': 'videoObjective',
+            'speaking_pace': 'speakingPace',
+            'image_description_engine': 'imageDescriptionEngine'
+        };
+        for (const key in keyToElementIdMap) {
+            if (strategy[key]) {
+                const element = document.getElementById(keyToElementIdMap[key]);
+                if (element) {
+                    element.value = strategy[key];
+                }
+            }
+        }
+        
         window.showToast("Estratégia sugerida pela IA! Revise e edite como desejar.");
-        document.querySelector('[data-tab="input-tab-estrategia"]')?.click(); // Muda para a aba de estratégia
+        document.querySelector('[data-tab="input-tab-estrategia"]')?.click();
         
     } catch (error) {
         window.showToast(`Falha ao sugerir estratégia: ${error.message}`);
