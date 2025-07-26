@@ -4,7 +4,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Roteiros Virais v3.4</title>
+    <title>Gerador de Roteiros Virais v3.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -252,7 +252,7 @@
         <header class="bg-white dark:bg-gray-800 shadow-sm">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                    <i class="fas fa-video mr-2"></i>Gerador de Roteiros Virais v3.4
+                    <i class="fas fa-video mr-2"></i>Gerador de Roteiros Virais v3.5
                 </h1>
                 <div class="flex items-center space-x-4">
                     <button id="darkModeToggle" class="theme-toggle">
@@ -2492,23 +2492,47 @@ Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar u
             break;
 
         case 'titles_thumbnails':
-            prompt = `${baseContext}
-            Você é uma API de geração de metadados. Sua única função é retornar um objeto JSON.
-            **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E ESTRICTAS):**
-            // ... (seu prompt completo para titles_thumbnails aqui)
-            `;
-            maxTokens = 1500;
-            break;
+    prompt = `${baseContext}
 
-        case 'description':
-            const languageName = new Intl.DisplayNames([selectedLanguage], { type: 'language' }).of(selectedLanguage);
-            prompt = `${baseContext}\n\nGenerate a compelling YouTube video description (around 150-200 words) and 10 relevant hashtags...`; // Seu prompt aqui
-            maxTokens = 700;
-            break;
+Você é uma API de geração de JSON. Sua única função é analisar os dados de um vídeo e retornar um objeto JSON com sugestões de títulos e thumbnails.
+
+**REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E CRÍTICAS):**
+1.  Sua resposta deve ser APENAS e SOMENTE o código de um objeto JSON.
+2.  É ESTRITAMENTE PROIBIDO incluir qualquer texto, explicação ou comentário antes ou depois do JSON.
+3.  O objeto JSON deve ter EXATAMENTE duas chaves de nível superior: \`"titles"\` e \`"thumbnails"\`. Ambas no plural.
+4.  O valor da chave \`"titles"\` DEVE ser um array contendo 5 strings.
+5.  O valor da chave \`"thumbnails"\` DEVE ser um array contendo 5 objetos.
+6.  Cada objeto dentro do array \`"thumbnails"\` DEVE ter as chaves \`"title"\` e \`"description"\`.
+
+**EXEMPLO DE RESPOSTA PERFEITA:**
+{
+  "titles": [
+    "Título Sugerido 1",
+    "Título Sugerido 2",
+    "Título Sugerido 3",
+    "Título Sugerido 4",
+    "Título Sugerido 5"
+  ],
+  "thumbnails": [
+    {
+      "title": "TEXTO DA THUMB 1",
+      "description": "Descrição visual da thumbnail 1."
+    },
+    {
+      "title": "TEXTO DA THUMB 2",
+      "description": "Descrição visual da thumbnail 2."
     }
-    
-    return { prompt, maxTokens };
-};
+  ]
+}
+
+Analise os dados do vídeo fornecidos no contexto e retorne o objeto JSON agora, seguindo TODAS as regras.`;
+    maxTokens = 2000;
+    break;
+
+
+
+
+
 
         /**
          * Faz uma chamada à API Groq através de uma função Netlify.
