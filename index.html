@@ -420,7 +420,10 @@
         <div class="input-group"><label for="videoObjective">Objetivo do Vídeo:</label><select id="videoObjective"><option value="informar" selected>Informar</option><option value="emocionar">Emocionar</option></select></div>
         <div class="input-group"><label for="speakingPace">Ritmo de Fala:</label><select id="speakingPace"><option value="moderate" selected>Moderado</option><option value="slow">Lento</option><option value="fast">Rápido</option></select></div>
 
-
+<div class="input-group md:col-span-2">
+    <label for="researchData">Fontes e Dados de Pesquisa (Opcional):</label>
+    <textarea id="researchData" rows="4" placeholder="Para aumentar a credibilidade, cole aqui dados, fontes, nomes e links que a IA deve citar e contextualizar no roteiro. Ex: Fonte: Atlas da Violência 2023; Maria da Silva, coordenadora do Instituto Odara..."></textarea>
+</div>
 
         <div class="input-group md:col-span-2"><label for="imageDescriptionEngine">Motor de Descrição de Imagem:</label><textarea id="imageDescriptionEngine" rows="2" placeholder="Ex: 'fotografias reais', 'close-up emocional'"></textarea></div>
         <div class="input-group md:col-span-2"><label for="imageStyleSelect">Motor de Qualidade de Imagem:</label><select id="imageStyleSelect"><option value="cinematic" selected>Cinematográfico</option><option value="custom">Personalizado</option><option value="none">Nenhum</option></select></div>
@@ -2257,84 +2260,88 @@ const updateMainTooltip = () => {
  };
 
 
-        // --- FIM DO NOVO MÓDULO DE NARRATIVA ---
-
-                /**
-         * Constrói o contexto base do prompt com base nos inputs do usuário.
-         * (VERSÃO FINAL AUTO-SUFICIENTE)
-         */
-        const getBasePromptContext = () => {
-            const channelName = document.getElementById('channelName')?.value.trim() || "";
-            const videoTheme = document.getElementById('videoTheme')?.value.trim() || "";
-            const targetAudience = document.getElementById('targetAudience')?.value.trim() || "";
-            const language = document.getElementById('languageSelect')?.value || "en";
-            const languageStyle = document.getElementById('languageStyle')?.value || "";
-            const videoObjective = document.getElementById('videoObjective')?.value || "";
-            const speakingPace = document.getElementById('speakingPace')?.value || "";
-            const narrativeStructure = document.getElementById('narrativeStructure')?.value || "";
-            const narrativeTheme = document.getElementById('narrativeTheme')?.value.trim() || "";
-            const narrativeTone = document.getElementById('narrativeTone')?.value || "";
-            const narrativeVoice = document.getElementById('narrativeVoice')?.value.trim() || "";
-            const shockingEndingHook = document.getElementById('shockingEndingHook')?.value.trim() || "";
-            const videoDescription = document.getElementById('videoDescription')?.value.trim() || "";
-            const centralQuestion = document.getElementById('centralQuestion')?.value.trim() || "";
-            const emotionalArc = document.getElementById('emotionalArc')?.value.trim() || "";
-            const imageDescriptionEngine = document.getElementById('imageDescriptionEngine')?.value.trim() || "";
-            const imageStyleSelect = document.getElementById('imageStyleSelect')?.value || "";
-            const customImageStyle = document.getElementById('customImageStyle')?.value.trim() || "";
-
-            let context = `
-            You are an expert YouTube scriptwriter for the channel "${channelName}".
-            Your goal is to create highly engaging and viral video content.
-            
-            **Core Project Details:**
-            - Video Topic: "${videoTheme}"
-            - Target Audience: "${targetAudience}"
-            - Language: "${language}"
-            - Video Objective: "${videoObjective}"
-                        
-            **Narrative & Style Instructions:**
-            - Narrative Structure to use: "${narrativeStructure}"
-            - Speaking Pace: "${speakingPace}"
-            `;
-
-            if (narrativeTheme) {
-                context += `\n- Core Theme (The Big Idea): "${narrativeTheme}"`;
-            }
-            if (narrativeTone) {
-                context += `\n- Narrative Tone (The Feeling): "${narrativeTone}"`;
-            }
-            if (narrativeVoice) {
-                context += `\n- Narrator's Voice (The Personality): "${narrativeVoice}"`;
-            }
-            if (shockingEndingHook) {
-                context += `\n- Shocking Ending Hook to use: "${shockingEndingHook}"`;
-            }
-            if (videoDescription) {
-                context += `\n\n**Additional Information & Inspiration:**\n- Inspiration/Context: "${videoDescription}"`;
-            }
-            if (centralQuestion) {
-                context += `\n- Central Question to guide the entire script: "${centralQuestion}"`;
-            }
-            if (emotionalArc) {
-                context += `\n- Desired Emotional Arc: "${emotionalArc}"`;
-            }
-            
-            if (imageStyleSelect === 'cinematic' || imageStyleSelect === 'custom') {
-                context += `\n\n**Visual Style Instructions:**`;
-                if (imageDescriptionEngine) {
-                    context += `\n- Image Description Keywords: "${imageDescriptionEngine}"`;
-                }
-                if (imageStyleSelect === 'cinematic') {
-                    context += `\n- Image Style: ${CINEMATIC_STYLE_BLOCK}`;
-                } else if (imageStyleSelect === 'custom' && customImageStyle) {
-                    context += `\n- Custom Image Style: ${customImageStyle}`;
-                }
-            }
-
-            return context;
-        };
+// =========================================================================
+// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO getBasePromptContext INTEIRA POR ESTA <<<<<
+// =========================================================================
+/**
+ * Constrói o contexto base do prompt, agora incluindo dados de pesquisa para maior credibilidade.
+ */
+const getBasePromptContext = () => {
+    // Coleta todos os valores dos campos do formulário
+    const channelName = document.getElementById('channelName')?.value.trim() || "";
+    const videoTheme = document.getElementById('videoTheme')?.value.trim() || "";
+    const targetAudience = document.getElementById('targetAudience')?.value.trim() || "";
+    const language = document.getElementById('languageSelect')?.value || "en";
+    const languageStyle = document.getElementById('languageStyle')?.value || "";
+    const videoObjective = document.getElementById('videoObjective')?.value || "";
+    const speakingPace = document.getElementById('speakingPace')?.value || "";
+    const narrativeStructure = document.getElementById('narrativeStructure')?.value || "";
+    const narrativeTheme = document.getElementById('narrativeTheme')?.value.trim() || "";
+    const narrativeTone = document.getElementById('narrativeTone')?.value || "";
+    const narrativeVoice = document.getElementById('narrativeVoice')?.value.trim() || "";
+    const shockingEndingHook = document.getElementById('shockingEndingHook')?.value.trim() || "";
+    const videoDescription = document.getElementById('videoDescription')?.value.trim() || "";
+    const centralQuestion = document.getElementById('centralQuestion')?.value.trim() || "";
+    const emotionalArc = document.getElementById('emotionalArc')?.value.trim() || "";
+    const imageDescriptionEngine = document.getElementById('imageDescriptionEngine')?.value.trim() || "";
+    const imageStyleSelect = document.getElementById('imageStyleSelect')?.value || "";
+    const customImageStyle = document.getElementById('customImageStyle')?.value.trim() || "";
     
+    // AQUI ESTÁ A NOVIDADE: Lemos o conteúdo do novo campo de pesquisa
+    const researchData = document.getElementById('researchData')?.value.trim() || "";
+
+    // Monta o prompt base, definindo a persona da IA como roteirista E pesquisadora
+    let context = `
+    You are an expert YouTube scriptwriter and researcher for the channel "${channelName}".
+    Your goal is to create highly engaging, credible, and well-sourced video content.
+    
+    **Core Project Details:**
+    - Video Topic: "${videoTheme}"
+    - Target Audience: "${targetAudience}"
+    - Language: "${language}"
+    - Video Objective: "${videoObjective}"
+                        
+    **Narrative & Style Instructions:**
+    - Narrative Structure to use: "${narrativeStructure}"
+    - Speaking Pace: "${speakingPace}"
+    `;
+
+    // Adiciona as informações opcionais ao contexto
+    if (narrativeTheme) { context += `\n- Core Theme (The Big Idea): "${narrativeTheme}"`; }
+    if (narrativeTone) { context += `\n- Narrative Tone (The Feeling): "${narrativeTone}"`; }
+    if (narrativeVoice) { context += `\n- Narrator's Voice (The Personality): "${narrativeVoice}"`; }
+    if (shockingEndingHook) { context += `\n- Shocking Ending Hook to use: "${shockingEndingHook}"`; }
+    if (videoDescription) { context += `\n\n**Additional Information & Inspiration:**\n- Inspiration/Context: "${videoDescription}"`; }
+    if (centralQuestion) { context += `\n- Central Question to guide the entire script: "${centralQuestion}"`; }
+    if (emotionalArc) { context += `\n- Desired Emotional Arc: "${emotionalArc}"`; }
+    
+    // A MUDANÇA CRÍTICA: Se o usuário forneceu dados, adicionamos uma instrução inegociável ao prompt.
+    if (researchData) {
+        context += `
+
+**CRITICAL RESEARCH DATA & CONTEXT:**
+You MUST incorporate and properly attribute the following facts, names, and sources into the script. When you mention a name, briefly explain who they are (e.g., 'Maria da Silva, coordinator of...'). When you use a statistic, mention the source (e.g., 'According to the 2023 Violence Map...').
+---
+${researchData}
+---
+`;
+    }
+
+    // Lógica para o estilo visual (permanece a mesma)
+    if (imageStyleSelect === 'cinematic' || imageStyleSelect === 'custom') {
+        context += `\n\n**Visual Style Instructions:**`;
+        if (imageDescriptionEngine) { context += `\n- Image Description Keywords: "${imageDescriptionEngine}"`; }
+        if (imageStyleSelect === 'cinematic') { context += `\n- Image Style: ${CINEMATIC_STYLE_BLOCK}`; }
+        else if (imageStyleSelect === 'custom' && customImageStyle) { context += `\n- Custom Image Style: ${customImageStyle}`; }
+    }
+
+    return context;
+};
+
+
+// =========================================================================
+// >>>>> SUBSTITUA A FUNÇÃO constructScriptPrompt INTEIRA POR ESTA VERSÃO FINAL <<<<<
+// =========================================================================
         /**
          * Constrói o prompt específico para cada secção do roteiro ou tipo de conteúdo.
          * @param {string} sectionName - O nome da secção (ex: 'intro', 'titles_thumbnails').
@@ -2342,9 +2349,7 @@ const updateMainTooltip = () => {
          * @param {string|null} outlineDirective - Uma diretriz específica do esboço estratégico para esta secção.
          * @returns {{prompt: string, maxTokens: number}} O prompt e o limite de tokens.
          */
-// =========================================================================
-// >>>>> SUBSTITUA A FUNÇÃO constructScriptPrompt INTEIRA POR ESTA VERSÃO FINAL <<<<<
-// =========================================================================
+
 const constructScriptPrompt = (sectionName, sectionTitle, outlineDirective = null, contextText = null) => {
     const baseContext = getBasePromptContext();
     const videoDuration = document.getElementById('videoDuration').value;
