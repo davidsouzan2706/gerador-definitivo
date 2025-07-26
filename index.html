@@ -4171,8 +4171,9 @@ const resetApplicationState = () => {
         };
 
 // =========================================================================
-// >>>>> SUBSTITUA SUA FUNÇÃO suggestStrategy INTEIRA POR ESTA VERSÃO FINAL <<<<<
+// >>>>> AÇÃO 2: SUBSTITUA a função analyzeAndSetStrategy POR ESTAS DUAS <<<<<
 // =========================================================================
+
 /**
  * Chama a IA para analisar o tema/descrição e preencher os campos de estratégia como uma SUGESTÃO.
  * Esta função é OPCIONAL para o usuário.
@@ -4271,6 +4272,23 @@ const suggestStrategy = async (button) => {
  * Não utiliza a IA, apenas libera a próxima etapa.
  */
 const startCrafting = () => {
+    if (!validateInputs()) {
+        return;
+    }
+    
+    const dashboard = document.getElementById('projectDashboard');
+    if (dashboard) {
+        dashboard.classList.remove('hidden');
+        dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.showToast("Estratégia definida! Pronto para criar o esboço.");
+    }
+};
+
+/**
+ * Valida os inputs essenciais e avança para o painel de criação do roteiro.
+ * Não utiliza a IA, apenas libera a próxima etapa.
+ */
+const startCrafting = () => {
     // Valida apenas os campos mais essenciais para garantir que há uma base para o roteiro.
     if (!validateInputs()) { // Reutilizamos a validação que já obriga os campos da aba "Básico"
         return;
@@ -4285,7 +4303,7 @@ const startCrafting = () => {
 };
 
 // =========================================================================
-// >>>>> SUBSTITUA O BLOCO DOMContentLoaded INTEIRO PELA VERSÃO FINAL E CORRIGIDA <<<<<
+// >>>>> AÇÃO 3: SUBSTITUA O BLOCO DOMContentLoaded INTEIRO <<<<<
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
@@ -4368,8 +4386,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (button && button.id) {
             const clickActions = {
+                // Ações para os novos botões de estratégia
                 'suggestStrategyBtn': () => suggestStrategy(button),
                 'startCraftingBtn': () => startCrafting(),
+
+                // O resto das ações que já funcionavam
                 'generateOutlineBtn': () => generateStrategicOutline(button),
                 'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
                 'generateDescriptionBtn': () => generateVideoDescription(button),
@@ -4388,6 +4409,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (confirmed) { resetApplicationState(); }
                 },
             };
+            
             if (clickActions[button.id]) {
                 event.preventDefault();
                 clickActions[button.id]();
@@ -4402,7 +4424,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (element) {
             const eventType = (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') ? 'change' : 'input';
             element.addEventListener(eventType, (e) => {
-                // A condição `isSettingStrategy` previne o reset automático enquanto a IA preenche os campos
                 if (!isSettingStrategy) {
                     resetGeneratedScriptContent(e.target.id);
                 }
