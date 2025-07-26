@@ -4259,43 +4259,122 @@ const startCrafting = () => {
 
 
 // =========================================================================
-// >>>>> AÇÃO 3: SUBSTITUA O BLOCO DOMContentLoaded INTEIRO <<<<<
+// >>>>> AÇÃO 3: SUBSTITUA O BLOCO DOMContentLoaded INTEIRO POR ESTA VERSÃO FINAL <<<<<
 // =========================================================================
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
+    // Mapeia todos os elementos com um ID para os objetos `buttons` ou `elements` para fácil acesso.
     document.querySelectorAll('[id]').forEach(el => {
-        if (el.tagName === 'BUTTON') { buttons[el.id] = el; } 
-        else { elements[el.id] = el; }
+        if (el.tagName === 'BUTTON') {
+            buttons[el.id] = el;
+        } else {
+            elements[el.id] = el;
+        }
     });
 
     // --- 2. INICIALIZAÇÃO DE FUNÇÕES DA INTERFACE ---
+    // Executa as funções de configuração inicial da UI.
     setupInputTabs();
     updateProgressBar();
     updateButtonStates();
     updateNarrativeStructureOptions();
 
     // --- 3. EVENT LISTENERS ESPECÍFICOS ---
-    // (Todo o seu código de event listeners específicos permanece aqui, sem alterações)
-    // ...
+    // Adiciona "ouvintes" a elementos específicos para reações a eventos como 'change' ou 'click'.
+    const goalSelect = document.getElementById('narrativeGoal');
+    if (goalSelect) {
+        goalSelect.addEventListener('change', updateNarrativeStructureOptions);
+    }
+    
+    const structureSelect = document.getElementById('narrativeStructure');
+    if (structureSelect) {
+        structureSelect.addEventListener('change', updateMainTooltip);
+    }
 
-    // --- 4. O "GERENTE DE CLIQUES" ---
+    const imageStyleSelect = document.getElementById('imageStyleSelect');
+    if (imageStyleSelect) {
+        imageStyleSelect.addEventListener('change', toggleCustomImageStyleVisibility);
+    }
+
+    const importInput = document.getElementById('importFileInput');
+    if (importInput) {
+        importInput.addEventListener('change', importProject);
+    }
+    
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark');
+            const isDarkMode = document.body.classList.contains('dark');
+            document.getElementById('moonIcon').classList.toggle('hidden', isDarkMode);
+            document.getElementById('sunIcon').classList.toggle('hidden', !isDarkMode);
+            localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+        });
+    }
+
+    if (localStorage.getItem('darkMode') === 'enabled') {
+        document.body.classList.add('dark');
+        const moonIcon = document.getElementById('moonIcon');
+        const sunIcon = document.getElementById('sunIcon');
+        if(moonIcon) moonIcon.classList.add('hidden');
+        if(sunIcon) sunIcon.classList.remove('hidden');
+    }
+
+    const speakingPaceSelect = document.getElementById('speakingPace');
+    if (speakingPaceSelect) {
+        speakingPaceSelect.addEventListener('change', updateAllReadingTimes);
+    }
+
+    // --- 4. O "GERENTE DE CLIQUES" (DELEGAÇÃO DE EVENTOS GERAL) ---
+    // Um único "ouvinte" para todos os cliques no documento, que decide o que fazer.
     document.addEventListener('click', function(event) {
         const target = event.target;
         const button = target.closest('button');
 
-        // ... (Sua lógica para o Acordeão e botões com data-action permanece a mesma) ...
+        const accordionHeader = target.closest('.accordion-header');
+        if (accordionHeader && !target.closest('.header-buttons')) {
+            const body = accordionHeader.nextElementSibling;
+            const arrow = accordionHeader.querySelector('.accordion-arrow');
+            if (body && arrow) {
+                body.classList.toggle('open');
+                arrow.classList.toggle('open');
+            }
+        }
 
-        // Lógica para botões com IDs específicos
+        if (button && button.dataset.action) {
+            event.preventDefault();
+            const action = button.dataset.action;
+            
+            if (action === 'select-idea') {
+                const ideaString = button.dataset.idea;
+                if (ideaString) {
+                    try {
+                        const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                        selectIdea(ideaObject);
+                    } catch (e) {
+                        console.error("Falha ao processar os dados da ideia:", e);
+                        window.showToast("Erro ao selecionar a ideia.");
+                    }
+                }
+                return;
+            }
+
+            if (action === 'regenerate') { window.regenerateSection(button.dataset.sectionId); return; }
+            if (action === 'copy') {
+                const content = button.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
+                if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(button); }
+                return;
+            }
+            if (action === 'generate-prompts') { window.generatePromptsForSection(button, button.dataset.sectionId); return; }
+        }
+
         if (button && button.id) {
             const clickActions = {
-                // AÇÃO ANTIGA REMOVIDA
-                // 'analyzeStrategyBtn': () => analyzeAndSetStrategy(button),
-
-                // NOVAS AÇÕES ADICIONADAS
+                // Ações para os novos botões de estratégia
                 'suggestStrategyBtn': () => suggestStrategy(button),
                 'startCraftingBtn': () => startCrafting(),
 
-                // O RESTO DAS SUAS AÇÕES CONTINUAM IGUAIS
+                // O resto das ações que já funcionavam
                 'generateOutlineBtn': () => generateStrategicOutline(button),
                 'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
                 'generateDescriptionBtn': () => generateVideoDescription(button),
@@ -4315,6 +4394,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
             };
             
+            // Se o ID do botão clicado corresponder a uma ação, executa-a.
             if (clickActions[button.id]) {
                 event.preventDefault();
                 clickActions[button.id]();
@@ -4322,9 +4402,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
-    // (Sua lógica para resetar o roteiro em mudanças estratégicas permanece aqui, sem alterações)
-    // ...
+    // --- 5. LÓGICA PARA RESETAR ROTEIRO EM MUDANÇAS ESTRATÉGICAS ---
+    const strategicInputIds = ['videoTheme','videoDescription','videoDuration','speakingPace','narrativeGoal','narrativeStructure','narrativeTheme','narrativeTone','narrativeVoice','centralQuestion','emotionalArc','shockingEndingHook','imageDescriptionEngine','imageStyleSelect'];
+    strategicInputIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            const eventType = (element.tagName === 'SELECT' || element.tagName === 'TEXTAREA') ? 'change' : 'input';
+            element.addEventListener(eventType, (e) => {
+                if (!isSettingStrategy) {
+                    resetGeneratedScriptContent(e.target.id);
+                }
+            });
+        }
+    });
 });
 
 </script>
