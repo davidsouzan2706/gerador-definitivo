@@ -4267,22 +4267,6 @@ const suggestStrategy = async (button) => {
     }
 };
 
-/**
- * Valida os inputs essenciais e avança para o painel de criação do roteiro.
- * Não utiliza a IA, apenas libera a próxima etapa.
- */
-const startCrafting = () => {
-    if (!validateInputs()) {
-        return;
-    }
-    
-    const dashboard = document.getElementById('projectDashboard');
-    if (dashboard) {
-        dashboard.classList.remove('hidden');
-        dashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        window.showToast("Estratégia definida! Pronto para criar o esboço.");
-    }
-};
 
 /**
  * Valida os inputs essenciais e avança para o painel de criação do roteiro.
