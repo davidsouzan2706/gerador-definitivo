@@ -4214,19 +4214,39 @@ const suggestStrategy = async (button) => {
     showButtonLoading(button);
     isSettingStrategy = true;
 
-    // O PROMPT BLINDADO COM A NOVA REGRA DE EXIGÊNCIA
-    const prompt = `Você é uma API de geração de JSON. Sua única função é analisar um tema de vídeo e retornar um objeto JSON com a melhor estratégia de conteúdo.
+    // >>>>> PASSO 1: CRIAMOS UMA "COLA" COM OS VALORES VÁLIDOS DO NOSSO HTML <<<<<
+    const validOptions = {
+        narrative_goal: Array.from(document.getElementById('narrativeGoal').options).map(opt => opt.value).filter(Boolean),
+        // A estrutura narrativa é dinâmica, então não a incluímos aqui. A IA escolherá com base no 'goal'.
+        narrative_tone: Array.from(document.getElementById('narrativeTone').options).map(opt => opt.value).filter(Boolean),
+        language_style: Array.from(document.getElementById('languageStyle').options).map(opt => opt.value).filter(Boolean),
+        video_objective: Array.from(document.getElementById('videoObjective').options).map(opt => opt.value).filter(Boolean),
+        speaking_pace: Array.from(document.getElementById('speakingPace').options).map(opt => opt.value).filter(Boolean),
+    };
+
+    // >>>>> PASSO 2: CONSTRUÍMOS UMA PARTE DO PROMPT DINAMICAMENTE COM ESSA "COLA" <<<<<
+    const optionsInstructions = Object.entries(validOptions).map(([key, values]) => {
+        return `- Para a chave "${key}", você DEVE escolher UM dos seguintes valores: [${values.map(v => `"${v}"`).join(', ')}]`;
+    }).join('\n');
+
+
+    // >>>>> PASSO 3: O NOVO PROMPT BLINDADO E SUPER-RESTRITIVO <<<<<
+    const prompt = `Você é uma API de geração de JSON. Sua tarefa é analisar um tema de vídeo e retornar um objeto JSON com a melhor estratégia de conteúdo, seguindo regras estritas.
 
     **Tema do Vídeo:** "${theme}"
     **Descrição:** "${description}"
 
     **REGRAS CRÍTICAS E INEGOCIÁVEIS:**
-    1.  Sua resposta deve ser APENAS e SOMENTE o código de um objeto JSON.
-    2.  O JSON deve conter EXATAMENTE as seguintes chaves: "target_audience", "narrative_goal", "narrative_structure", "narrative_theme", "narrative_tone", "narrative_voice", "central_question", "emotional_arc", "language_style", "video_objective", "speaking_pace", "image_description_engine".
-    3.  **REGRA DE PREENCHIMENTO OBRIGATÓRIO (A MAIS IMPORTANTE):** Para CADA UMA das chaves listadas acima, você DEVE gerar um valor em string que seja criativo, relevante e útil. É ESTRITAMENTE PROIBIDO deixar qualquer valor em branco ou nulo. Todos os campos devem ser preenchidos.
-    4.  **REGRA DE FINALIZAÇÃO:** Sua resposta DEVE ser um objeto JSON completo e sintaticamente válido, terminando com um caractere \`}\`.
+    1.  **RESPOSTA JSON PURA:** Sua resposta deve ser APENAS e SOMENTE o código de um objeto JSON.
+    2.  **PREENCHIMENTO TOTAL:** Você DEVE gerar um valor criativo, relevante e útil para TODAS as chaves a seguir: "target_audience", "narrative_theme", "narrative_voice", "central_question", "emotional_arc", "image_description_engine". É proibido deixar valores em branco.
+    3.  **SELEÇÃO OBRIGATÓRIA (A REGRA MAIS IMPORTANTE):** Para os campos de seleção, você DEVE usar um dos valores EXATOS fornecidos abaixo. Não invente ou traduza.
+        ${optionsInstructions}
+    4.  **ESTRUTURA NARRATIVA INTELIGENTE:** Para a chave "narrative_structure", escolha um valor que seja compatível com o "narrative_goal" que você selecionou, baseado nesta lista:
+        - Se "narrative_goal" for "storytelling", escolha entre: ["documentary", "heros_journey", "pixar_spine", "mystery_loop", "twist"].
+        - Se "narrative_goal" for "storyselling", escolha entre: ["underdog_victory", "discovery_mentor", "if_not_found_create", "pas", "bab"].
+    5.  **FINALIZAÇÃO VÁLIDA:** Sua resposta DEVE ser um objeto JSON completo e sintaticamente válido, terminando com um caractere \`}\`.
 
-    Analise os dados e retorne o objeto JSON completo e totalmente preenchido agora.`;
+    Analise os dados e retorne o objeto JSON completo, totalmente preenchido e seguindo TODAS as regras agora.`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
@@ -4241,18 +4261,19 @@ const suggestStrategy = async (button) => {
         const narrativeStructureSelect = document.getElementById('narrativeStructure');
         if (narrativeGoalSelect && strategy.narrative_goal) {
             narrativeGoalSelect.value = strategy.narrative_goal;
-            updateNarrativeStructureOptions();
+            updateNarrativeStructureOptions(); // ESSENCIAL: Atualiza as opções de estrutura ANTES de tentar preenchê-la.
         }
         if (narrativeStructureSelect && strategy.narrative_structure) {
-            // Verifica se a opção retornada pela IA existe no select
-            if ([...narrativeStructureSelect.options].some(option => option.value === strategy.narrative_structure)) {
-                 narrativeStructureSelect.value = strategy.narrative_structure;
-            } else {
-                // Se não existir, seleciona a primeira opção como fallback
-                narrativeStructureSelect.selectedIndex = 0;
-                console.warn(`A estrutura '${strategy.narrative_structure}' não foi encontrada. Usando a primeira opção.`);
-            }
-            updateMainTooltip();
+            // Um pequeno delay para garantir que as novas opções de estrutura foram renderizadas no DOM
+            setTimeout(() => {
+                if ([...narrativeStructureSelect.options].some(option => option.value === strategy.narrative_structure)) {
+                    narrativeStructureSelect.value = strategy.narrative_structure;
+                } else {
+                    narrativeStructureSelect.selectedIndex = 0;
+                    console.warn(`A estrutura '${strategy.narrative_structure}' não foi encontrada para o objetivo '${strategy.narrative_goal}'. Usando a primeira opção como fallback.`);
+                }
+                updateMainTooltip(); // Atualiza o tooltip da estrutura
+            }, 50); // 50ms é geralmente suficiente
         }
         const keyToElementIdMap = {
             'target_audience': 'targetAudience',
@@ -4267,7 +4288,6 @@ const suggestStrategy = async (button) => {
             'image_description_engine': 'imageDescriptionEngine'
         };
         for (const key in keyToElementIdMap) {
-            // AQUI ESTÁ A GARANTIA: só preenche se a IA de fato retornou um valor
             if (strategy[key]) {
                 const element = document.getElementById(keyToElementIdMap[key]);
                 if (element) {
