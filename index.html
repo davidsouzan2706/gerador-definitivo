@@ -2340,7 +2340,7 @@ ${researchData}
 
 
 // =========================================================================
-// >>>>> SUBSTITUA A FUNÇÃO constructScriptPrompt INTEIRA POR ESTA VERSÃO FINAL <<<<<
+// >>>>> SUBSTITUA SUA FUNÇÃO constructScriptPrompt INTEIRA PELA VERSÃO FINAL E COMPLETA <<<<<
 // =========================================================================
         /**
          * Constrói o prompt específico para cada secção do roteiro ou tipo de conteúdo.
@@ -2371,6 +2371,12 @@ Você é um mestre roteirista de YouTube. Sua tarefa é escrever o texto para a 
 1.  **FOCO TOTAL:** Sua resposta deve ser APENAS e SOMENTE o texto para a seção **"${sectionTitle}"**.
 2.  **SEM EXTRAS:** É estritamente proibido incluir preâmbulos (como "Aqui está a introdução:"), resumos, traduções ou qualquer outro texto que não seja o próprio roteiro. A violação desta regra resultará em falha.
 3.  **FORMATO LIMPO:** Não inclua rótulos de cena, de áudio ou de narrador (como [CENA], (Música sobe), Narrador:). Apenas o texto a ser falado.
+
+**NOVA REGRA PERMANENTE: MAESTRO DO RITMO NARRATIVO**
+A partir de agora, você deve agir como um "Maestro do Ritmo". Sua escrita precisa ser dinâmica e cativante, não monótona. Para isso, você DEVE:
+- **Variar o Comprimento das Frases:** Alterne entre frases curtas e diretas (para criar impacto e tensão) e frases mais longas e complexas (para descrever ou aprofundar um conceito).
+- **Usar Perguntas Retóricas:** Ocasionalmente, faça perguntas diretas ao espectador para provocar reflexão e aumentar o engajamento. (Ex: "Mas o que isso realmente significava?", "Você consegue imaginar a cena?").
+- **Criar Pausas Dramáticas:** Use parágrafos muito curtos, às vezes de uma única frase, para criar pausas e dar peso a uma revelação.
 `;
 
     if (contextText) {
@@ -2392,7 +2398,7 @@ Agora, escreva a seção "${sectionTitle}", garantindo que seja uma continuaçã
     if (outlineDirective) {
         prompt += `\n\n**IMPORTANT STRATEGIC GUIDELINE:** For this specific section, you MUST follow this strategic plan: "${outlineDirective}"`;
     }
-    
+
     prompt += `\n\nIMPORTANT: Do NOT include any scene descriptions, visual/audio cues (e.g., [SHOT], (Camera pan), (Music swells)), or speaker labels (e.g., "Narrator:", "Host:") in the generated script content. Provide only the spoken text.`;
     prompt += `\n\nABSOLUTELY NO META-COMMENTS. Do not add any explanatory text about the script itself. Your entire response must be ONLY the text to be spoken in the video, and nothing else.`;
 
@@ -2400,14 +2406,38 @@ Agora, escreva a seção "${sectionTitle}", garantindo que seja uma continuaçã
         prompt += `\nIf a 'Central Question' is provided, ensure every section of the script (Introduction, Development, Climax) directly contributes to exploring or answering this question. The entire video must revolve around this central theme.`;
     }
     
+    // >>> BLOCO AGORA 100% COMPLETO, SEM ABREVIAÇÕES OU PLACEHOLDERS <<<
     switch (narrativeStructure) {
         case 'documentary':
-            prompt += `\n\nNARRATIVE STYLE: Use a 'Documentary' structure...`; // Seu código aqui
+            prompt += `\n\nNARRATIVE STYLE: As this is a 'Documentary', prioritize factual accuracy, a clear timeline, and an authoritative tone. Build your case with evidence and logical progression.`;
+            break;
+        case 'heros_journey':
+            prompt += `\n\nNARRATIVE STYLE: Following the 'Hero's Journey', structure this section around the hero's call to adventure, trials, or transformation. Emphasize the conflict and growth.`;
             break;
         case 'pixar_spine':
-            prompt += `\n\nNARRATIVE STYLE: Use the 'Pixar Spine' structure...`; // Seu código aqui
+            prompt += `\n\nNARRATIVE STYLE: Following the 'Pixar Spine', structure this section to follow the emotional beats of "Once upon a time... Every day... Until one day... Because of that... Until finally...".`;
             break;
-        // ... E assim por diante para todas as suas estruturas narrativas ...
+        case 'mystery_loop':
+            prompt += `\n\nNARRATIVE STYLE: Following the 'Mystery Loop', if this is the introduction, pose the central mystery. If it's the development, add clues and false leads. If it's the conclusion, provide the satisfying answer.`;
+            break;
+        case 'twist':
+            prompt += `\n\nNARRATIVE STYLE: For a 'Twist' narrative, build a clear expectation throughout the script, only to subvert it dramatically in the climax or conclusion.`;
+            break;
+        case 'underdog_victory':
+            prompt += `\n\nNARRATIVE STYLE: For 'Underdog Victory', emphasize the struggles, the lack of resources, and the immense odds the protagonist is facing. Make the audience root for them.`;
+            break;
+        case 'discovery_mentor':
+            prompt += `\n\nNARRATIVE STYLE: For 'Discovery/Mentor', position the narrative as a secret being revealed. Use phrases like "The secret that nobody tells you..." or "What if I told you...".`;
+            break;
+        case 'if_not_found_create':
+            prompt += `\n\nNARRATIVE STYLE: For 'If Not Found, Create', tell the origin story. Focus on the personal frustration and the 'aha!' moment that led to the creation of the solution.`;
+            break;
+        case 'pas':
+            prompt += `\n\nNARRATIVE STYLE: Using 'Problem-Agitate-Solve', this section should clearly define a pain point (Problem), intensify the negative emotions associated with it (Agitate), or present the clear solution (Solve).`;
+            break;
+        case 'bab':
+            prompt += `\n\nNARRATIVE STYLE: Using 'Before-After-Bridge', paint a vivid picture of the negative 'Before' state, the ideal 'After' state, or present the content as the 'Bridge' to get there.`;
+            break;
     }
 
     let maxTokens = 2000;
@@ -2495,14 +2525,54 @@ Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar u
             prompt = `${baseContext}
             Você é uma API de geração de metadados. Sua única função é retornar um objeto JSON.
             **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E ESTRICTAS):**
-            // ... (seu prompt completo para titles_thumbnails aqui)
+            1.  Sua resposta deve ser APENAS um objeto JSON.
+            2.  O objeto deve conter duas chaves principais: "titles" e "thumbnails".
+            3.  O valor de "titles" deve ser um array de 5 strings.
+            4.  O valor de "thumbnails" deve ser um array de 3 objetos.
+            5.  Cada objeto em "thumbnails" deve ter duas chaves: "title" e "description".
+            
+            **EXEMPLO DE RESPOSTA PERFEITA:**
+            {
+              "titles": [
+                "Título 1: Curto e impactante",
+                "Título 2: Com pergunta",
+                "Título 3: Com urgência",
+                "Título 4: Focado em benefício",
+                "Título 5: Controverso"
+              ],
+              "thumbnails": [
+                {
+                  "title": "Ideia de Thumbnail 1",
+                  "description": "Close-up em um objeto misterioso com uma seta vermelha apontando para ele."
+                },
+                {
+                  "title": "Ideia de Thumbnail 2",
+                  "description": "Foto de uma pessoa com uma expressão facial chocada, com texto grande 'VOCÊ NÃO VAI ACREDITAR'."
+                },
+                {
+                  "title": "Ideia de Thumbnail 3",
+                  "description": "Gráfico de 'Antes vs Depois' mostrando uma transformação surpreendente."
+                }
+              ]
+            }
             `;
             maxTokens = 1500;
             break;
 
         case 'description':
             const languageName = new Intl.DisplayNames([selectedLanguage], { type: 'language' }).of(selectedLanguage);
-            prompt = `${baseContext}\n\nGenerate a compelling YouTube video description (around 150-200 words) and 10 relevant hashtags...`; // Seu prompt aqui
+            prompt = `${baseContext}
+            
+            Sua tarefa é gerar uma descrição otimizada para um vídeo do YouTube e um conjunto de hashtags relevantes, no idioma ${languageName}.
+            
+            **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
+            1.  Comece com 2-3 frases que resumem o vídeo e incluem as palavras-chave principais do tema.
+            2.  Adicione um parágrafo que aprofunde o que o espectador aprenderá ou descobrirá.
+            3.  Finalize a descrição com uma chamada para ação (inscrever-se, comentar, etc.).
+            4.  Após a descrição, adicione uma linha em branco e depois a seção "Hashtags:".
+            5.  Liste 10 hashtags relevantes, começando com a mais ampla e terminando com as mais específicas.
+            
+            Responda APENAS com a descrição e as hashtags, nada mais.`;
             maxTokens = 700;
             break;
     }
