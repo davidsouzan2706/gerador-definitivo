@@ -4183,7 +4183,7 @@ const resetApplicationState = () => {
         };
 
 // ====================================================================================
-// >>>>> SUBSTITUA A SUA FUNÇÃO suggestStrategy INTEIRA POR ESTA VERSÃO FINAL E BLINDADA <<<<<
+// >>>>> SUBSTITUA A SUA FUNÇÃO suggestStrategy INTEIRA PELA VERSÃO DEFINITIVA <<<<<
 // ====================================================================================
 
 /**
@@ -4213,7 +4213,7 @@ const suggestStrategy = async (button) => {
     showButtonLoading(button);
     isSettingStrategy = true;
 
-    // >>> PASSO 1: DETERMINAR O IDIOMA E PEGAR AS OPÇÕES VÁLIDAS DO HTML <<<
+    // PASSO 1: DETERMINAR O IDIOMA E PEGAR AS OPÇÕES VÁLIDAS DO HTML
     const selectedLangCode = document.getElementById('languageSelect').value;
     const languageName = selectedLangCode === 'pt-br' ? 'Português (Brasil)' : 'English';
 
@@ -4225,7 +4225,7 @@ const suggestStrategy = async (button) => {
         speaking_pace: `['${Array.from(document.getElementById('speakingPace').options).map(o => o.value).filter(Boolean).join("', '")}']`,
     };
 
-    // >>> PASSO 2: O NOVO PROMPT "INQUEBRÁVEL" <<<
+    // >>> PASSO 2: O NOVO PROMPT "INQUEBRÁVEL" E CONCEITUALMENTE CORRETO <<<
     const prompt = `Você é uma API que retorna um objeto JSON. Sua tarefa é criar uma estratégia de conteúdo completa.
 
     **Tema do Vídeo:** "${theme}"
@@ -4251,6 +4251,7 @@ const suggestStrategy = async (button) => {
     -   **"video_objective":** (String) Escolha EXATAMENTE UM valor da seguinte lista: ${validOptions.video_objective}.
     -   **"speaking_pace":** (String) Escolha EXATAMENTE UM valor da seguinte lista: ${validOptions.speaking_pace}.
     -   **"image_description_engine":** (String) Sugira palavras-chave para o estilo visual (ex: 'Fotografias reais em preto e branco', 'Animações 2D coloridas').
+    -   **"research_data":** (String) Aja como um diretor de pesquisa. Sugira aqui quais tipos de dados, fontes, ou nomes de especialistas o usuário deveria pesquisar para enriquecer o roteiro. Exemplo: "Citar estatísticas de campeonatos mundiais (WSOP), entrevistar um jogador profissional conhecido, mencionar livros clássicos sobre teoria do poker." NÃO INVENTE DADOS, apenas guie a pesquisa.
 
     Retorne o objeto JSON completo e preenchido agora.`;
 
@@ -4289,7 +4290,8 @@ const suggestStrategy = async (button) => {
             'language_style': 'languageStyle',
             'video_objective': 'videoObjective',
             'speaking_pace': 'speakingPace',
-            'image_description_engine': 'imageDescriptionEngine'
+            'image_description_engine': 'imageDescriptionEngine',
+            'research_data': 'researchData' // <<< ADICIONADO O CAMPO DE PESQUISA AO MAPA
         };
         for (const key in keyToElementIdMap) {
             if (strategy[key]) {
