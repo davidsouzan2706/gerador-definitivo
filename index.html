@@ -4183,7 +4183,7 @@ const resetApplicationState = () => {
         };
 
 // =========================================================================
-// >>>>> AÇÃO 2: SUBSTITUA a função analyzeAndSetStrategy POR ESTAS DUAS <<<<<
+// >>>>> SUBSTITUA A SUA FUNÇÃO suggestStrategy INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
 // =========================================================================
 
 /**
@@ -4195,14 +4195,14 @@ const suggestStrategy = async (button) => {
     // Se já houver um roteiro, pede confirmação para não apagar o trabalho sem querer.
     if (document.querySelector('#scriptSectionsContainer .accordion-item')) {
         const userConfirmed = await showConfirmationDialog(
-            "Sugerir Nova Estratégia?", 
+            "Sugerir Nova Estratégia?",
             "Isso limpará todo o roteiro e metadados já gerados para aplicar a nova sugestão. Deseja continuar?"
         );
         if (!userConfirmed) return;
     }
-    
-    resetProjectOutputs(); 
-    
+
+    resetProjectOutputs();
+
     // Valida se os campos mínimos para a sugestão foram preenchidos.
     const theme = document.getElementById('videoTheme')?.value.trim();
     const description = document.getElementById('videoDescription')?.value.trim();
@@ -4210,10 +4210,10 @@ const suggestStrategy = async (button) => {
         window.showToast("Preencha o Tema e a Descrição do Vídeo para receber sugestões.");
         return;
     }
-    
+
     showButtonLoading(button);
     isSettingStrategy = true;
-    
+
     // O PROMPT "BLINDADO" E À PROVA DE FALHAS
     const prompt = `Você é uma API de geração de JSON. Sua única função é analisar um tema de vídeo e retornar um objeto JSON com a melhor estratégia de conteúdo.
 
@@ -4224,17 +4224,19 @@ const suggestStrategy = async (button) => {
     1.  Sua resposta deve ser APENAS e SOMENTE o código de um objeto JSON.
     2.  É ESTRITAMENTE PROIBIDO incluir qualquer texto, explicação ou comentário antes ou depois do JSON.
     3.  O JSON deve conter EXATAMENTE as seguintes chaves, com valores apropriados baseados na análise: "target_audience", "narrative_goal", "narrative_structure", "narrative_theme", "narrative_tone", "narrative_voice", "central_question", "emotional_arc", "language_style", "video_objective", "speaking_pace", "image_description_engine".
+    4.  **REGRA DE FINALIZAÇÃO (A MAIS IMPORTANTE):** Certifique-se de que sua resposta seja um objeto JSON completo e sintaticamente válido. Sua resposta DEVE terminar com um caractere \`}\`. Não pode haver truncamento.
 
     Analise os dados e retorne o objeto JSON puro agora.`;
 
     try {
-        const rawResult = await callGroqAPI(prompt, 2000);
+        // AUMENTAMOS O LIMITE DE TOKENS AQUI PARA EVITAR O CORTE
+        const rawResult = await callGroqAPI(prompt, 4000);
         const strategy = cleanGeneratedText(rawResult, true);
 
         if (!strategy || typeof strategy !== 'object') {
             throw new Error("A IA não retornou uma resposta em formato JSON válido.");
         }
-        
+
         // Lógica para preencher todos os campos do formulário com a resposta da IA.
         const narrativeGoalSelect = document.getElementById('narrativeGoal');
         const narrativeStructureSelect = document.getElementById('narrativeStructure');
@@ -4266,10 +4268,10 @@ const suggestStrategy = async (button) => {
                 }
             }
         }
-        
+
         window.showToast("Estratégia sugerida pela IA! Revise e edite como desejar.");
         document.querySelector('[data-tab="input-tab-estrategia"]')?.click();
-        
+
     } catch (error) {
         window.showToast(`Falha ao sugerir estratégia: ${error.message}`);
         console.error("Erro na sugestão de estratégia:", error);
