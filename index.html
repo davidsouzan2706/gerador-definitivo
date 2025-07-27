@@ -4182,9 +4182,9 @@ const resetApplicationState = () => {
             event.target.value = '';
         };
 
-// =========================================================================
-// >>>>> SUBSTITUA A SUA FUNÇÃO suggestStrategy INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
-// =========================================================================
+// ====================================================================================
+// >>>>> SUBSTITUA A SUA FUNÇÃO suggestStrategy INTEIRA POR ESTA VERSÃO FINAL E BLINDADA <<<<<
+// ====================================================================================
 
 /**
  * Chama a IA para analisar o tema/descrição e preencher os campos de estratégia como uma SUGESTÃO.
@@ -4214,7 +4214,7 @@ const suggestStrategy = async (button) => {
     showButtonLoading(button);
     isSettingStrategy = true;
 
-    // O PROMPT "BLINDADO" E À PROVA DE FALHAS
+    // O PROMPT BLINDADO COM A NOVA REGRA DE EXIGÊNCIA
     const prompt = `Você é uma API de geração de JSON. Sua única função é analisar um tema de vídeo e retornar um objeto JSON com a melhor estratégia de conteúdo.
 
     **Tema do Vídeo:** "${theme}"
@@ -4222,14 +4222,13 @@ const suggestStrategy = async (button) => {
 
     **REGRAS CRÍTICAS E INEGOCIÁVEIS:**
     1.  Sua resposta deve ser APENAS e SOMENTE o código de um objeto JSON.
-    2.  É ESTRITAMENTE PROIBIDO incluir qualquer texto, explicação ou comentário antes ou depois do JSON.
-    3.  O JSON deve conter EXATAMENTE as seguintes chaves, com valores apropriados baseados na análise: "target_audience", "narrative_goal", "narrative_structure", "narrative_theme", "narrative_tone", "narrative_voice", "central_question", "emotional_arc", "language_style", "video_objective", "speaking_pace", "image_description_engine".
-    4.  **REGRA DE FINALIZAÇÃO (A MAIS IMPORTANTE):** Certifique-se de que sua resposta seja um objeto JSON completo e sintaticamente válido. Sua resposta DEVE terminar com um caractere \`}\`. Não pode haver truncamento.
+    2.  O JSON deve conter EXATAMENTE as seguintes chaves: "target_audience", "narrative_goal", "narrative_structure", "narrative_theme", "narrative_tone", "narrative_voice", "central_question", "emotional_arc", "language_style", "video_objective", "speaking_pace", "image_description_engine".
+    3.  **REGRA DE PREENCHIMENTO OBRIGATÓRIO (A MAIS IMPORTANTE):** Para CADA UMA das chaves listadas acima, você DEVE gerar um valor em string que seja criativo, relevante e útil. É ESTRITAMENTE PROIBIDO deixar qualquer valor em branco ou nulo. Todos os campos devem ser preenchidos.
+    4.  **REGRA DE FINALIZAÇÃO:** Sua resposta DEVE ser um objeto JSON completo e sintaticamente válido, terminando com um caractere \`}\`.
 
-    Analise os dados e retorne o objeto JSON puro agora.`;
+    Analise os dados e retorne o objeto JSON completo e totalmente preenchido agora.`;
 
     try {
-        // AUMENTAMOS O LIMITE DE TOKENS AQUI PARA EVITAR O CORTE
         const rawResult = await callGroqAPI(prompt, 4000);
         const strategy = cleanGeneratedText(rawResult, true);
 
@@ -4245,7 +4244,14 @@ const suggestStrategy = async (button) => {
             updateNarrativeStructureOptions();
         }
         if (narrativeStructureSelect && strategy.narrative_structure) {
-            narrativeStructureSelect.value = strategy.narrative_structure;
+            // Verifica se a opção retornada pela IA existe no select
+            if ([...narrativeStructureSelect.options].some(option => option.value === strategy.narrative_structure)) {
+                 narrativeStructureSelect.value = strategy.narrative_structure;
+            } else {
+                // Se não existir, seleciona a primeira opção como fallback
+                narrativeStructureSelect.selectedIndex = 0;
+                console.warn(`A estrutura '${strategy.narrative_structure}' não foi encontrada. Usando a primeira opção.`);
+            }
             updateMainTooltip();
         }
         const keyToElementIdMap = {
@@ -4261,6 +4267,7 @@ const suggestStrategy = async (button) => {
             'image_description_engine': 'imageDescriptionEngine'
         };
         for (const key in keyToElementIdMap) {
+            // AQUI ESTÁ A GARANTIA: só preenche se a IA de fato retornou um valor
             if (strategy[key]) {
                 const element = document.getElementById(keyToElementIdMap[key]);
                 if (element) {
