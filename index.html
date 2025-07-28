@@ -3090,7 +3090,11 @@ window.optimizeParagraph = async (paragraphId, suggestion) => {
          // ==========================================================
         // >>>>> SUBSTITUA SUA FUNÇÃO suggestPerformance INTEIRA POR ESTA VERSÃO <<<<<
         // ==========================================================
-        window.suggestPerformance = async (button, sectionId) => {
+        // =========================================================================
+// >>>>> SUBSTITUA AS FUNÇÕES suggestPerformance E enrichText INTEIRAS POR ESTE BLOCO <<<<<
+// =========================================================================
+
+window.suggestPerformance = async (button, sectionId) => {
     const sectionElement = document.getElementById(sectionId);
     const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
     const outputContainer = sectionElement?.querySelector('.section-performance-output');
@@ -3102,7 +3106,7 @@ window.optimizeParagraph = async (paragraphId, suggestion) => {
 
     showButtonLoading(button);
     outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-    
+
     try {
         const paragraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
         const originalParagraphs = paragraphElements.map(p => p.textContent.trim().replace(/\[.*?\]/g, '').trim());
@@ -3120,9 +3124,6 @@ window.optimizeParagraph = async (paragraphId, suggestion) => {
                 promptContext += `Parágrafo ${globalIndex}: "${p}"\n\n`;
             });
 
-            // ==========================================================
-            // >>>>> INÍCIO DA MUDANÇA NO PROMPT <<<<<
-            // ==========================================================
             const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON.
 
 **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E CRÍTICAS):**
@@ -3149,21 +3150,18 @@ Analise os ${paragraphBatch.length} parágrafos a seguir e retorne o array JSON,
 
 **ROTEIRO (LOTE ATUAL):**
 ${promptContext}`;
-            // ==========================================================
-            // >>>>> FIM DA MUDANÇA NO PROMPT <<<<<
-            // ==========================================================
-
+            
             apiPromises.push(callGroqAPI(prompt, 3000).then(res => cleanGeneratedText(res, true)));
         }
 
         const allBatchResults = await Promise.all(apiPromises);
         const annotations = allBatchResults.flat();
 
-        if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) { 
+        if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) {
             console.error(`Falha na contagem: JS esperava ${originalParagraphs.length} anotações, mas a IA retornou ${annotations ? annotations.length : 0}.`);
-            throw new Error("A IA não retornou o número correto de anotações após juntar os lotes."); 
+            throw new Error("A IA não retornou o número correto de anotações após juntar os lotes.");
         }
-        
+
         let annotatedParagraphs = [];
         originalParagraphs.forEach((p, index) => {
             const annotationData = annotations[index];
@@ -3181,12 +3179,12 @@ ${promptContext}`;
         });
 
         const finalAnnotatedText = annotatedParagraphs.join('\n');
-        
+
         const originalTextForAudit = originalParagraphs.join('\n');
         const { isValid } = auditGeneratedText(originalTextForAudit.replace(/\n/g, ' '), finalAnnotatedText.replace(/\n/g, ' '));
 
         if (!isValid) { throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem."); }
-        
+
         const highlightedText = finalAnnotatedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
 
         outputContainer.innerHTML = `
@@ -3203,6 +3201,58 @@ ${promptContext}`;
         outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
     } finally {
         hideButtonLoading(button);
+    }
+};
+
+// Pega o texto selecionado pelo usuário, pede para a IA reescrevê-lo com uma analogia/metáfora,
+// substitui o texto original e invalida a análise anterior. (VERSÃO CORRIGIDA)
+window.enrichText = async (buttonElement) => {
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+
+    if (!selectedText) {
+        window.showToast("Por favor, selecione primeiro o texto que deseja enriquecer.");
+        return;
+    }
+
+    showButtonLoading(buttonElement);
+
+    try {
+        const prompt = `Você é um Mestre Roteirista e poeta. Sua tarefa é reescrever o "Parágrafo Original" para incorporar a "Sugestão de Melhoria".
+
+                **Parágrafo Original:**
+                "${selectedText}"
+
+                **REGRAS:**
+                - Mantenha o núcleo da mensagem intacto.
+                - A resposta deve ser APENAS o parágrafo reescrito. Sem introduções, comentários ou explicações.`;
+
+        const rawResult = await callGroqAPI(prompt, 500);
+        const enrichedText = removeMetaComments(rawResult);
+
+        if (selection.rangeCount > 0) {
+            document.execCommand('insertHTML', false, `<span class="highlight-change">${enrichedText}</span>`);
+        }
+
+        const accordionItem = buttonElement.closest('.accordion-item');
+        if (accordionItem) {
+            const analysisOutput = accordionItem.querySelector('.section-analysis-output');
+            if (analysisOutput) {
+                const invalidationMessage = `<p class="text-sm text-yellow-500 italic p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">O texto foi modificado. Por favor, clique em "Analisar Retenção" novamente.</p>`;
+                analysisOutput.innerHTML = invalidationMessage;
+            }
+
+            const scriptSection = accordionItem.parentElement;
+            invalidateAndClearPrompts(scriptSection);
+            invalidateAndClearPerformance(accordionItem.closest('.script-section'));
+        }
+
+        window.showToast("Texto enriquecido! Análise anterior resetada.");
+
+    } catch (error) {
+        window.showToast(`Falha ao enriquecer o texto: ${error.message}`);
+    } finally {
+        hideButtonLoading(buttonElement);
     }
 };
 
