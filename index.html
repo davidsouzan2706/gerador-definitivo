@@ -2546,23 +2546,51 @@ Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar u
             maxTokens = 2000;
             break;
 
+        // =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA O "case 'intro':" INTEIRO POR ESTE BLOCO <<<<<
+// =========================================================================
+
         case 'intro':
             const shockingHook = document.getElementById('shockingEndingHook')?.value.trim();
+            
+            // O NOVO PROMPT REVOLUCIONÁRIO PARA A INTRODUÇÃO
+            prompt += `
+
+**INSTRUÇÕES CRÍTICAS PARA A INTRODUÇÃO (ESTILO YOUTUBE VIRAL):**
+Sua tarefa é escrever a **Introdução** do vídeo. O objetivo é prender a atenção do espectador nos primeiros 15 segundos.
+
+**REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
+Você DEVE formatar sua resposta usando Markdown no formato de roteiro de duas colunas: **VÍDEO** e **ÁUDIO**. Cada bloco de ÁUDIO deve ser precedido por suas sugestões de VÍDEO.
+
+**EXEMPLO DE FORMATO PERFEITO:**
+**VÍDEO**
+* [IMAGEM: Close-up em um objeto misterioso com uma seta vermelha.]
+* [ANIMAÇÃO: Gráfico mostrando um crescimento explosivo.]
+
+**ÁUDIO**
+Este é o texto que será narrado. Ele deve ser cativante e direto.
+
+**VÍDEO**
+* [B-ROLL: Cenas rápidas de pessoas reagindo com choque.]
+
+**ÁUDIO**
+E o que eles descobriram em seguida... mudaria tudo.
+
+**REGRAS DE CONTEÚDO (HOOK VIRAL):**
+1.  **PROIBIDO COMEÇO LENTO:** NÃO comece com contexto histórico ou apresentações. Comece com a informação mais chocante, a estatística mais surpreendente, ou no meio da ação ("in media res").
+2.  **CRIE UM LOOP ABERTO:** Faça uma promessa ou uma pergunta intrigante que só será respondida no final do vídeo. Deixe o espectador desesperado para saber a resposta.
+3.  **PENSE VISUALMENTE:** As sugestões na coluna **VÍDEO** são tão importantes quanto o texto. Elas devem ser dinâmicas e complementar o áudio.`;
+
             if (shockingHook) {
                 prompt += `
-                \n\n**CRITICAL INSTRUCTION FOR THE INTRODUCTION:**
-                You MUST start the script EXACLTY with the following "Shocking Ending" phrase, without any preamble: "${shockingHook}"
-                After stating that phrase, use the rest of the introduction to build a deep sense of mystery and curiosity, making the audience desperate to know the chain of events that led to that ending. Do not explain the ending, only create the hook.
-                `;
-            } else {
-                prompt += `
-                The introduction should hook the viewer immediately, clearly state the video's intriguing question or mystery, and set the stage for what's to come. It must be captivating and create curiosity.
-                `;
+4.  **USE O DESFECHO CHOCANTE:** Comece o roteiro EXATAMENTE com a frase do 'Desfecho Chocante' fornecida. Use o resto da introdução para criar um mistério sobre como a história chegou naquele ponto. Frase a ser usada: "${shockingHook}"`;
             }
+
             if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
-                prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
+                prompt += `\n**IMPORTANTE: O texto na coluna ÁUDIO DEVE ser em Português.**`;
             }
-            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500;
+
+            maxTokens = targetWords ? Math.ceil(targetWords * 2.5) : 700; // Aumentamos os tokens para acomodar o formato
             break;
 
         case 'development':
