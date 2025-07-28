@@ -3466,7 +3466,7 @@ window.regenerateSection = (fullSectionId) => {
 
 
 // =========================================================================
-// >>>>> SUBSTITUA A SUA FUNÇÃO generatePromptsForSection INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
+// >>>>> SUBSTITUA A SUA FUNÇÃO generatePromptsForSection INTEIRA PELA VERSÃO FINAL <<<<<
 // =========================================================================
 window.generatePromptsForSection = async (button, sectionElementId) => {
     const sectionElement = document.getElementById(sectionElementId);
@@ -3526,15 +3526,21 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
                 promptContextForAI += `\nParágrafo ${globalIndex}:\n- Título do Capítulo (Guia Temático): "${item.chapter}"\n- Texto do Parágrafo: "${item.text}"\n- Contexto Emocional: (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})`;
             });
             
-            // >>> PROMPT BLINDADO COM NOVAS REGRAS DE SINTAXE <<<
-            const prompt = `Você é uma API de geração de JSON. Sua resposta deve ser APENAS um array JSON.
+            // >>> PROMPT HÍBRIDO: RIGOR SINTÁTICO + EXIGÊNCIA CRIATIVA <<<
+            const prompt = `Você é um Diretor de Fotografia e uma API de geração de JSON. Sua resposta deve ser APENAS um array JSON.
 
 **REGRAS CRÍTICAS DE SINTAXE (INEGOCIÁVEIS):**
 1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
-2.  **ASPAS DUPLAS:** TODAS as chaves (keys) e valores de texto (strings) DEVEM, OBRIGATORIAMENTE, começar e terminar com aspas duplas (\`"\`). É estritamente proibido misturar com aspas simples.
+2.  **ASPAS DUPLAS:** TODAS as chaves e valores de texto DEVEM, OBRIGATORIAMENTE, usar aspas duplas (\`"\`). É proibido misturar com aspas simples.
 3.  **SEM ASPAS INTERNAS:** Dentro dos valores de "imageDescription", NÃO use aspas duplas. Se precisar de ênfase, use aspas simples (\`'\`).
-4.  **UM PROMPT POR PARÁGRAFO:** Crie um objeto JSON para CADA parágrafo fornecido. O array final deve ter EXATAMENTE ${batch.length} objetos.
-5.  **DURAÇÃO REALISTA:** O valor de "estimated_duration" DEVE ser um número entre **${durationRange}**, representando segundos.
+
+**MANUAL DE CONTEÚDO (IGUALMENTE INEGOCIÁVEL):**
+1.  **UM OBJETO POR PARÁGRAFO:** Crie um objeto JSON para CADA parágrafo fornecido. O array final deve ter EXATAMENTE ${batch.length} objetos.
+2.  **DESCRIÇÃO RICA E DETALHADA:** Para a chave "imageDescription", você DEVE criar uma descrição VÍVIDA e CINEMATOGRÁFICA. É obrigatório incluir detalhes sobre:
+    - **Ângulo da Câmera:** (ex: 'Close-up extremo', 'Câmera lenta', 'Visão de cima')
+    - **Iluminação:** (ex: 'Dramática e sombria', 'Luz suave de janela')
+    - **Foco e Composição:** (ex: 'Foco nítido no primeiro plano com fundo desfocado')
+3.  **DURAÇÃO REALISTA:** O valor de "estimated_duration" DEVE ser um número entre **${durationRange}**.
 
 **DADOS PARA ANÁLISE (LOTE ATUAL):**
 ---
@@ -3554,7 +3560,7 @@ ${promptContextForAI}
         const curatedPrompts = allGeneratedPrompts.map((promptData, index) => {
             return {
                 scriptPhrase: paragraphsWithContext[index].text,
-                imageDescription: promptData.imageDescription || "Falha ao gerar descrição.",
+                imageDescription: promptData.imageDescription || "Falha ao gerar descrição. Tente re-gerar.",
                 estimated_duration: promptData.estimated_duration || 5
             };
         });
