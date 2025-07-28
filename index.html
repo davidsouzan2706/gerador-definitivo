@@ -2403,16 +2403,9 @@ ${researchData}
 
 
 // =========================================================================
-// >>>>> O CÓDIGO LIMPO E CORRETO <<<<<
+// >>>>> SUBSTITUA SUA FUNÇÃO constructScriptPrompt INTEIRA PELA VERSÃO FINAL E CORRIGIDA <<<<<
 // =========================================================================
 
-/**
- * Constrói o prompt específico para cada secção do roteiro ou tipo de conteúdo.
- * @param {string} sectionName - O nome da secção (ex: 'intro', 'titles_thumbnails').
- * @param {string} sectionTitle - O título da secção para o prompt.
- * @param {string|null} outlineDirective - Uma diretriz específica do esboço estratégico para esta secção.
- * @returns {{prompt: string, maxTokens: number}} O prompt e o limite de tokens.
- */
 const constructScriptPrompt = (sectionName, sectionTitle, outlineDirective = null, contextText = null) => {
     const baseContext = getBasePromptContext();
     const videoDuration = document.getElementById('videoDuration').value;
