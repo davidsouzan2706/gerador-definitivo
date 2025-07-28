@@ -2413,6 +2413,9 @@ ${researchData}
          * @returns {{prompt: string, maxTokens: number}} O prompt e o limite de tokens.
          */
 
+// =========================================================================
+// >>>>> SUBSTITUA SUA FUNÇÃO constructScriptPrompt INTEIRA PELA VERSÃO FINAL E COMPLETA <<<<<
+// =========================================================================
 const constructScriptPrompt = (sectionName, sectionTitle, outlineDirective = null, contextText = null) => {
     const baseContext = getBasePromptContext();
     const videoDuration = document.getElementById('videoDuration').value;
@@ -2468,8 +2471,7 @@ Agora, escreva a seção "${sectionTitle}", garantindo que seja uma continuaçã
     if (document.getElementById('centralQuestion').value.trim()) {
         prompt += `\nIf a 'Central Question' is provided, ensure every section of the script (Introduction, Development, Climax) directly contributes to exploring or answering this question. The entire video must revolve around this central theme.`;
     }
-    
-    // >>> BLOCO AGORA 100% COMPLETO, SEM ABREVIAÇÕES OU PLACEHOLDERS <<<
+
     switch (narrativeStructure) {
         case 'documentary':
             prompt += `\n\nNARRATIVE STYLE: As this is a 'Documentary', prioritize factual accuracy, a clear timeline, and an authoritative tone. Build your case with evidence and logical progression.`;
@@ -2508,27 +2510,24 @@ Agora, escreva a seção "${sectionTitle}", garantindo que seja uma continuaçã
     switch (sectionName) {
         case 'outline':
             prompt = `${baseContext}
+Você é uma API de geração de JSON. Sua tarefa é criar um "beat sheet" (esboço estratégico) para um vídeo.
 
-Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar um "beat sheet" ou um esboço estratégico detalhado para o vídeo.
-
-**REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
-1.  Responda APENAS com um objeto JSON.
-2.  O objeto deve conter chaves para: "introduction", "development", "climax", "conclusion", e "cta".
-3.  O valor de cada chave deve ser uma string descrevendo o objetivo daquela seção.
-
-**REGRA DE SINTAXE CRÍTICA:**
-- **Certifique-se de que cada valor de string no JSON comece e termine com aspas duplas (\`).** É estritamente proibido misturar aspas simples e duplas ou esquecer de fechar uma string corretamente.
+**REGRAS CRÍTICAS DE SINTAXE (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta deve ser APENAS o código de um objeto JSON, começando com \`{\` e terminando com \`}\`.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves (ex: "introduction") E todos os valores de texto (strings) DEVEM, OBRIGATORIAMENTE, usar aspas duplas (\`"\`). É estritamente proibido usar aspas simples (\`'\`) ou crases (\`\`) para delimitar as strings. A violação desta regra resultará em falha.
+3.  **CHAVES OBRIGATÓRIAS:** O objeto deve conter EXATAMENTE estas cinco chaves: "introduction", "development", "climax", "conclusion", e "cta".
+4.  **REVISÃO FINAL:** Antes de responder, revise sua própria saída para garantir que cada string está corretamente aberta e fechada com aspas duplas (\`"\`) e que a sintaxe JSON está perfeita.
 
 **EXEMPLO DE FORMATO PERFEITO:**
 {
-  "introduction": "Começar com uma pergunta retórica chocante sobre a mortalidade.",
-  "development": "Construir a narrativa explorando o luto das irmãs de Lázaro.",
-  "climax": "O momento de maior tensão no túmulo.",
-  "conclusion": "Resumir a lição: o milagre não é sobre desafiar a morte, mas sobre o poder da fé.",
+  "introduction": "Começar com uma pergunta retórica chocante.",
+  "development": "Construir a narrativa explorando o ponto A, B e C.",
+  "climax": "O momento de maior tensão no ponto C.",
+  "conclusion": "Resumir a lição principal do vídeo.",
   "cta": "Fazer uma chamada para ação suave."
 }
 `;
-            maxTokens = 2000;
+            maxTokens = 4000;
             break;
 
         case 'intro':
