@@ -4371,6 +4371,10 @@ const resetApplicationState = () => {
  * Esta função é OPCIONAL para o usuário.
  * @param {HTMLElement} button - O botão "Sugerir Estratégia" que foi clicado.
  */
+// =-==================================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA A SUA FUNÇÃO suggestStrategy INTEIRA POR ESTA VERSÃO <<<<<
+// =-==================================================================================
+
 const suggestStrategy = async (button) => {
     // Se já houver um roteiro, pede confirmação para não apagar o trabalho sem querer.
     if (document.querySelector('#scriptSectionsContainer .accordion-item')) {
@@ -4404,7 +4408,6 @@ const suggestStrategy = async (button) => {
         speaking_pace: `['${Array.from(document.getElementById('speakingPace').options).map(o => o.value).filter(Boolean).join("', '")}']`,
     };
 
-    // >>> PROMPT ATUALIZADO COM A NOVA CHAVE "emotional_hook" <<<
     const prompt = `Você é uma API que retorna um objeto JSON. Sua tarefa é criar uma estratégia de conteúdo completa.
 
     **Tema do Vídeo:** "${theme}"
@@ -4426,12 +4429,13 @@ const suggestStrategy = async (button) => {
     -   **"narrative_voice":** (String) Descreva a personalidade do narrador (ex: 'Sábio e experiente', 'Energético e divertido').
     -   **"central_question":** (String) Formule a pergunta central que o vídeo irá responder.
     -   **"emotional_arc":** (String) Descreva a jornada emocional do espectador (ex: 'Curiosidade -> Tensão -> Surpresa').
-    -   **"emotional_hook":** (String) Crie uma pequena história pessoal ou um arquétipo de personagem para ser o fio condutor da narrativa. Ex: "Focar na história de um jovem marinheiro que se alistou para honrar a família..." ou "Contar a história através dos olhos da irmã mais nova do protagonista...". Seja criativo.
+    -   **"emotional_hook":** (String) Crie uma pequena história pessoal ou um arquétipo de personagem para ser o fio condutor da narrativa.
+    -   **"shocking_ending_hook":** (String) Crie uma frase curta e chocante que será a primeira linha do vídeo, revelando o final da história para criar um mistério. (Ex: "...e foi assim que o herói se tornou o vilão."). // <<< ADICIONADO
     -   **"language_style":** (String) Escolha EXATAMENTE UM valor da seguinte lista: ${validOptions.language_style}.
     -   **"video_objective":** (String) Escolha EXATAMENTE UM valor da seguinte lista: ${validOptions.video_objective}.
     -   **"speaking_pace":** (String) Escolha EXATAMENTE UM valor da seguinte lista: ${validOptions.speaking_pace}.
-    -   **"image_description_engine":** (String) Sugira palavras-chave para o estilo visual (ex: 'Fotografias reais em preto e branco', 'Animações 2D coloridas').
-    -   **"research_data":** (String) Aja como um diretor de pesquisa. Sugira aqui quais tipos de dados, fontes, ou nomes de especialistas o usuário deveria pesquisar para enriquecer o roteiro. Exemplo: "Citar estatísticas de campeonatos mundiais (WSOP), entrevistar um jogador profissional conhecido, mencionar livros clássicos sobre teoria do poker." NÃO INVENTE DADOS, apenas guie a pesquisa.
+    -   **"image_description_engine":** (String) Sugira palavras-chave para o estilo visual.
+    -   **"research_data":** (String) Sugira quais tipos de dados o usuário deveria pesquisar para enriquecer o roteiro. NÃO INVENTE DADOS.
 
     Retorne o objeto JSON completo e preenchido agora.`;
 
@@ -4460,7 +4464,7 @@ const suggestStrategy = async (button) => {
                 updateMainTooltip();
             }, 50);
         }
-        // >>> MAPA ATUALIZADO COM A NOVA CHAVE "emotional_hook" <<<
+        
         const keyToElementIdMap = {
             'target_audience': 'targetAudience',
             'narrative_theme': 'narrativeTheme',
@@ -4469,6 +4473,7 @@ const suggestStrategy = async (button) => {
             'central_question': 'centralQuestion',
             'emotional_arc': 'emotionalArc',
             'emotional_hook': 'emotionalHook',
+            'shocking_ending_hook': 'shockingEndingHook', // <<< ADICIONADO
             'language_style': 'languageStyle',
             'video_objective': 'videoObjective',
             'speaking_pace': 'speakingPace',
