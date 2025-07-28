@@ -532,22 +532,13 @@
             <span><i class="fas fa-bolt mr-2"></i>Criar um Gancho / Mistério Contínuo</span>
         </label>
     </div>
-    
-    <!-- Campo para os detalhes da CONCLUSÃO -->
     <div id="conclusionInputContainer" class="input-group">
         <label for="conclusionSpecifics">Detalhes para a Conclusão:</label>
         <textarea id="conclusionSpecifics" rows="3" placeholder="Ex: A lição é que a resiliência é a nossa maior força..."></textarea>
     </div>
-
-    <!-- <<< NOSSO NOVO CAMPO ESTRATÉGICO AQUI >>> -->
-    <div class="input-group mt-4">
-        <label for="ctaSpecifics">Detalhes para o Call to Action (CTA) Específico (Opcional):</label>
-        <textarea id="ctaSpecifics" rows="2" placeholder="Ex: 'Apoie o Projeto X que luta por...', 'Assine a petição em nosso site...', 'Compre nosso curso no link...'"></textarea>
-    </div>
-
     <div class="text-center mt-6">
-        <button id="generateConclusionBtn" class="btn btn-primary">
-            <i class="fas fa-pen-fancy mr-2"></i>Gerar Conclusão
+        <button id="generateConclusionAndCtaBtn" class="btn btn-primary">
+            <i class="fas fa-pen-fancy mr-2"></i>Gerar Conclusão + CTA
         </button>
     </div>
 </div>
@@ -1566,16 +1557,13 @@ const mapEmotionsAndPacing = async (button) => {
 
 
 // =========================================================================
-// >>>>> PASSO 2, BLOCO A: SUBSTITUA a função generateConclusionAndCta por ESTAS DUAS <<<<<
+// >>>>> SUBSTITUA A FUNÇÃO generateConclusionAndCta INTEIRA POR ESTA VERSÃO FINAL <<<<<
 // =========================================================================
-
-/**
- * Gera APENAS a seção de Conclusão e prepara a UI para a geração do CTA.
- */
-const generateConclusion = async (button) => {
+const generateConclusionAndCta = async (button) => {
     if (!validateInputs()) return;
     showButtonLoading(button);
 
+    // Garante que o container de destino da conclusão exista antes de tentar usá-lo.
     const scriptContainer = document.getElementById('scriptSectionsContainer');
     if (scriptContainer && !document.getElementById('conclusionSection')) {
         const conclusionDiv = document.createElement('div');
@@ -1584,9 +1572,11 @@ const generateConclusion = async (button) => {
         scriptContainer.appendChild(conclusionDiv);
     }
 
+    // Coleta as escolhas do usuário no módulo de estratégia.
     const conclusionType = document.querySelector('input[name="conclusionType"]:checked').value;
     const conclusionSpecifics = document.getElementById('conclusionSpecifics').value.trim();
 
+    // Monta a diretiva estratégica para o prompt com base na escolha do usuário.
     let strategyDirective = '';
     switch (conclusionType) {
         case 'lesson':
@@ -1600,89 +1590,44 @@ const generateConclusion = async (button) => {
             strategyDirective = `O objetivo é criar um gancho ou mistério para o próximo vídeo. Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
             break;
     }
+    
+    // Coleta o contexto de TODAS as seções anteriores para garantir a continuidade.
+    const fullContext = getTranscriptOnly(); 
 
-    const fullContext = getTranscriptOnly();
+    // Monta o prompt final para a IA.
     const basePromptContext = getBasePromptContext();
     const prompt = `${basePromptContext}
     ${fullContext ? `\n\n**ROTEIRO ESCRITO ATÉ AGORA (PARA CONTEXTO):**\n---\n${fullContext}\n---\n` : ''}
-    Sua tarefa é escrever APENAS a **Conclusão** do vídeo, continuando de onde o roteiro parou. NÃO inclua um Call to Action (CTA) neste texto.
-    **Diretiva Estratégica para a Conclusão:** ${strategyDirective}
-    **REGRAS CRÍTICAS:** Responda APENAS com o texto da conclusão. Sem metadados, sem labels (como "Conclusão:"), apenas o texto a ser falado.`;
+    Você é um mestre roteirista. Sua tarefa é escrever a **Conclusão e o Call to Action (CTA)** do vídeo, JUNTOS, em um único bloco de texto fluido, continuando de onde o roteiro parou.
+    **Diretiva Estratégica para o Final:** ${strategyDirective}
+    **REGRAS CRÍTICAS:** Responda APENAS com o texto final para ser falado. Sem metadados, sem labels (como "Conclusão:", "CTA:"), apenas o texto.`;
 
     try {
-        let result = await callGroqAPI(prompt, 800);
+        const maxTokens = 800;
+        let result = await callGroqAPI(prompt, maxTokens);
         result = removeMetaComments(result.trim());
-        const paragraphs = result.split('\n').filter(p => p.trim() !== '');
-        const contentWithSpans = paragraphs.map((p, index) => `<div id="conclusion-p-${index}">${p}</div>`).join('');
 
-        document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão', contentWithSpans);
+        const paragraphs = result.split('\n').filter(p => p.trim() !== '');
+        const contentWithSpans = paragraphs.map((p, index) => 
+            `<div id="conclusion-p-${index}">${p}</div>`
+        ).join('');
+
+        // Renderiza o conteúdo gerado na seção de conclusão.
+        document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão e CTA', contentWithSpans);
+        
+        // A CORREÇÃO CRÍTICA: Atualiza o nosso "painel de controle" para a conclusão.
         projectState.conclusion = true;
         
-        // <<< LÓGICA DE TRANSFORMAÇÃO DA UI >>>
-        // Desabilita os inputs da Conclusão e prepara para o CTA
-        document.querySelectorAll('input[name="conclusionType"]').forEach(radio => radio.disabled = true);
-        document.getElementById('conclusionSpecifics').disabled = true;
-        document.querySelector('#conclusionInputContainer').classList.add('opacity-50');
+        // Finaliza e atualiza a UI.
+        markButtonAsCompleted('generateConclusionAndCtaBtn');
+        document.getElementById('conclusionStrategyModule').classList.add('hidden');
+        window.showToast("Conclusão e CTA gerados com sucesso!");
+        updateButtonStates(); // Reavalia o estado de todos os botões, habilitando o "Mapear".
 
-        // Modifica o botão para a próxima etapa: Gerar CTA
-        button.innerHTML = `<i class="fas fa-bullhorn mr-2"></i>Gerar CTA Estratégico`;
-        button.id = 'generateCtaBtn'; // Mudamos o ID para ser pego pelo nosso "gerente de cliques"
-
-        window.showToast("Conclusão gerada! Agora, vamos criar um CTA poderoso.");
-        document.getElementById('ctaSpecifics').focus();
-
-    } catch (error) {
+    } catch(error) {
         window.showToast(`Falha ao gerar a conclusão: ${error.message}`);
     } finally {
         hideButtonLoading(button);
-        updateButtonStates();
-    }
-};
-
-/**
- * Gera APENAS o Call to Action (CTA) estratégico e finaliza o processo.
- */
-const generateStrategicCta = async (button) => {
-    showButtonLoading(button);
-
-    const ctaSpecifics = document.getElementById('ctaSpecifics').value.trim();
-    const fullContext = getTranscriptOnly(); // Pega o roteiro completo, incluindo a conclusão recém-gerada
-    const basePromptContext = getBasePromptContext();
-
-    let ctaDirective = "Crie um Call to Action (CTA) genérico, convidando o espectador a curtir, comentar e se inscrever.";
-    if (ctaSpecifics) {
-        ctaDirective = `Crie um Call to Action (CTA) altamente específico e persuasivo. Instrução do usuário: "${ctaSpecifics}". Conecte esta instrução ao tema geral do vídeo de forma natural e convincente.`;
-    }
-
-    const prompt = `${basePromptContext}
-    **ROTEIRO COMPLETO (PARA CONTEXTO):**
-    ---
-    ${fullContext}
-    ---
-    Sua tarefa agora é escrever APENAS o **Call to Action (CTA)** para o final do vídeo.
-    **Diretiva Estratégica para o CTA:** ${ctaDirective}
-    **REGRAS CRÍTICAS:** Responda APENAS com o texto do CTA. Sem metadados, sem labels (como "CTA:"), apenas o texto a ser falado.`;
-
-    try {
-        let result = await callGroqAPI(prompt, 400);
-        result = removeMetaComments(result.trim());
-        const paragraphs = result.split('\n').filter(p => p.trim() !== '');
-        const contentWithSpans = paragraphs.map((p, index) => `<div id="cta-p-${index}">${p}</div>`).join('');
-        
-        const ctaSection = document.getElementById('ctaSection');
-        ctaSection.innerHTML = generateSectionHtmlContent('cta', 'Call to Action (CTA)', contentWithSpans);
-        ctaSection.classList.remove('hidden'); // Torna a seção visível
-        
-        markButtonAsCompleted('generateCtaBtn');
-        document.getElementById('conclusionStrategyModule').classList.add('hidden');
-        window.showToast("CTA Estratégico gerado! Roteiro finalizado.");
-        ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-    } catch(error) {
-        window.showToast(`Falha ao gerar o CTA: ${error.message}`);
-    } finally {
-        hideButtonLoading(button);
-        updateButtonStates();
     }
 };
 
@@ -2403,8 +2348,15 @@ ${researchData}
 
 
 // =========================================================================
-// >>>>> SUBSTITUA SUA FUNÇÃO constructScriptPrompt INTEIRA PELA VERSÃO FINAL E CORRIGIDA <<<<<
+// >>>>> SUBSTITUA SUA FUNÇÃO constructScriptPrompt INTEIRA PELA VERSÃO FINAL E COMPLETA <<<<<
 // =========================================================================
+        /**
+         * Constrói o prompt específico para cada secção do roteiro ou tipo de conteúdo.
+         * @param {string} sectionName - O nome da secção (ex: 'intro', 'titles_thumbnails').
+         * @param {string} sectionTitle - O título da secção para o prompt.
+         * @param {string|null} outlineDirective - Uma diretriz específica do esboço estratégico para esta secção.
+         * @returns {{prompt: string, maxTokens: number}} O prompt e o limite de tokens.
+         */
 
 const constructScriptPrompt = (sectionName, sectionTitle, outlineDirective = null, contextText = null) => {
     const baseContext = getBasePromptContext();
@@ -2461,7 +2413,8 @@ Agora, escreva a seção "${sectionTitle}", garantindo que seja uma continuaçã
     if (document.getElementById('centralQuestion').value.trim()) {
         prompt += `\nIf a 'Central Question' is provided, ensure every section of the script (Introduction, Development, Climax) directly contributes to exploring or answering this question. The entire video must revolve around this central theme.`;
     }
-
+    
+    // >>> BLOCO AGORA 100% COMPLETO, SEM ABREVIAÇÕES OU PLACEHOLDERS <<<
     switch (narrativeStructure) {
         case 'documentary':
             prompt += `\n\nNARRATIVE STYLE: As this is a 'Documentary', prioritize factual accuracy, a clear timeline, and an authoritative tone. Build your case with evidence and logical progression.`;
@@ -2500,24 +2453,27 @@ Agora, escreva a seção "${sectionTitle}", garantindo que seja uma continuaçã
     switch (sectionName) {
         case 'outline':
             prompt = `${baseContext}
-Você é uma API de geração de JSON. Sua tarefa é criar um "beat sheet" (esboço estratégico) para um vídeo.
 
-**REGRAS CRÍTICAS DE SINTAXE (INEGOCIÁVEIS):**
-1.  **JSON PURO:** Sua resposta deve ser APENAS o código de um objeto JSON, começando com \`{\` e terminando com \`}\`.
-2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves (ex: "introduction") E todos os valores de texto (strings) DEVEM, OBRIGATORIAMENTE, usar aspas duplas (\`"\`). É estritamente proibido usar aspas simples (\`'\`) ou crases (\`\`) para delimitar as strings. A violação desta regra resultará em falha.
-3.  **CHAVES OBRIGATÓRIAS:** O objeto deve conter EXATAMENTE estas cinco chaves: "introduction", "development", "climax", "conclusion", e "cta".
-4.  **REVISÃO FINAL:** Antes de responder, revise sua própria saída para garantir que cada string está corretamente aberta e fechada com aspas duplas (\`"\`) e que a sintaxe JSON está perfeita.
+Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar um "beat sheet" ou um esboço estratégico detalhado para o vídeo.
+
+**REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
+1.  Responda APENAS com um objeto JSON.
+2.  O objeto deve conter chaves para: "introduction", "development", "climax", "conclusion", e "cta".
+3.  O valor de cada chave deve ser uma string descrevendo o objetivo daquela seção.
+
+**REGRA DE SINTAXE CRÍTICA:**
+- **Certifique-se de que cada valor de string no JSON comece e termine com aspas duplas (\`).** É estritamente proibido misturar aspas simples e duplas ou esquecer de fechar uma string corretamente.
 
 **EXEMPLO DE FORMATO PERFEITO:**
 {
-  "introduction": "Começar com uma pergunta retórica chocante.",
-  "development": "Construir a narrativa explorando o ponto A, B e C.",
-  "climax": "O momento de maior tensão no ponto C.",
-  "conclusion": "Resumir a lição principal do vídeo.",
+  "introduction": "Começar com uma pergunta retórica chocante sobre a mortalidade.",
+  "development": "Construir a narrativa explorando o luto das irmãs de Lázaro.",
+  "climax": "O momento de maior tensão no túmulo.",
+  "conclusion": "Resumir a lição: o milagre não é sobre desafiar a morte, mas sobre o poder da fé.",
   "cta": "Fazer uma chamada para ação suave."
 }
 `;
-            maxTokens = 4000;
+            maxTokens = 2000;
             break;
 
         case 'intro':
@@ -2918,183 +2874,177 @@ Agora, escreva o novo capítulo sobre "${chapterTheme}", seguindo TODAS as regra
             });
         };
 
-// =========================================================================
-// >>>>> SUBSTITUA A SUA FUNÇÃO analyzeSectionRetention INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
-// =========================================================================
-window.analyzeSectionRetention = async (button, sectionId) => {
-    const sectionElement = document.getElementById(sectionId);
-    const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+        window.analyzeSectionRetention = async (button, sectionId) => {
+            const sectionElement = document.getElementById(sectionId);
+            const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+            
+            // >>>>> GUARDA DE PROTEÇÃO ROBUSTA (AQUI ESTÁ A CORREÇÃO) <<<<<
+            if (!contentWrapper || !contentWrapper.textContent.trim()) {
+                window.showToast("Gere o roteiro desta seção antes de analisar a retenção.");
+                return;
+            }
 
-    if (!contentWrapper || !contentWrapper.textContent.trim()) {
-        window.showToast("Gere o roteiro desta seção antes de analisar a retenção.");
-        return;
-    }
+            const paragraphs = Array.from(contentWrapper.querySelectorAll('div')); 
+            if (paragraphs.length === 0) {
+                window.showToast("Não há parágrafos para analisar.");
+                return;
+            }
+            // >>>>> FIM DA GUARDA DE PROTEÇÃO <<<<<
 
-    const paragraphs = Array.from(contentWrapper.querySelectorAll('div'));
-    if (paragraphs.length === 0) {
-        window.showToast("Não há parágrafos para analisar.");
-        return;
-    }
+            showButtonLoading(button);
 
-    showButtonLoading(button);
+            try {
+                const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
+                
+                const prompt = `You are a Retention Editor API. Analyze the following paragraphs and return a valid JSON array. For each, provide "paragraphIndex", "retentionScore" ('green', 'yellow', or 'red'), and a concise "suggestion" in Portuguese (Brazil). Your entire response must be ONLY the JSON array.
 
-    try {
-        const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
-        
-        // >>> PROMPT BLINDADO COM NOVAS REGRAS DE SINTAXE <<<
-        const prompt = `Você é uma API de análise de retenção que retorna um array JSON.
+                Analyze this data:
+                ${JSON.stringify(paragraphsWithIndexes, null, 2)}`;
+                
+                const rawResult = await callGroqAPI(prompt, 2500);
+                let analysis = cleanGeneratedText(rawResult, true);
 
-**REGRAS CRÍTICAS DE SINTAXE (INEGOCIÁVEIS):**
-1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
-2.  **ASPAS DUPLAS:** TODAS as chaves (keys) e valores de texto (strings) DEVEM, OBRIGATORIAMENTE, usar aspas duplas (\`"\`). É estritamente proibido misturar com aspas simples ou esquecer de fechar uma string.
-3.  **OBJETO COMPLETO:** Cada objeto no array deve conter EXATAMENTE as três chaves: "paragraphIndex" (um número), "retentionScore" (uma string: 'green', 'yellow', ou 'red'), e "suggestion" (uma string concisa em Português-Brasil).
-4.  **SEM CARACTERES INVÁLIDOS:** A string "suggestion" não deve terminar com caracteres soltos como parênteses ou colchetes. Ela deve ser uma frase completa.
+                if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
 
-**DADOS PARA ANÁLISE:**
-${JSON.stringify(paragraphsWithIndexes, null, 2)}
+                // LÓGICA DE UNIFICAÇÃO POR ADJACÊNCIA
+                if (analysis.length > 0) {
+                    let currentGroup = [];
+                    for (let i = 0; i < analysis.length; i++) {
+                        const currentItem = analysis[i];
+                        const previousItem = i > 0 ? analysis[i - 1] : null;
 
-Analise os dados e retorne o array JSON, seguindo TODAS as regras.`;
-
-        const rawResult = await callGroqAPI(prompt, 4000); // Aumentado para 4000 para acomodar textos longos
-        let analysis = cleanGeneratedText(rawResult, true);
-
-        if (!analysis || !Array.isArray(analysis)) throw new Error("Análise da IA em formato inválido.");
-
-        // LÓGICA DE UNIFICAÇÃO POR ADJACÊNCIA (código existente, permanece o mesmo)
-        if (analysis.length > 0) {
-            let currentGroup = [];
-            for (let i = 0; i < analysis.length; i++) {
-                const currentItem = analysis[i];
-                const previousItem = i > 0 ? analysis[i - 1] : null;
-
-                if (previousItem && currentItem.retentionScore === previousItem.retentionScore && currentItem.retentionScore !== 'green') {
-                    currentGroup.push(currentItem);
-                } else {
+                        if (previousItem && currentItem.retentionScore === previousItem.retentionScore && currentItem.retentionScore !== 'green') {
+                            currentGroup.push(currentItem);
+                        } else {
+                            if (currentGroup.length > 1) {
+                                const unifiedSuggestion = currentGroup[0].suggestion;
+                                currentGroup.forEach(groupItem => groupItem.suggestion = unifiedSuggestion);
+                            }
+                            currentGroup = [currentItem];
+                        }
+                    }
                     if (currentGroup.length > 1) {
                         const unifiedSuggestion = currentGroup[0].suggestion;
                         currentGroup.forEach(groupItem => groupItem.suggestion = unifiedSuggestion);
                     }
-                    currentGroup = [currentItem];
                 }
-            }
-            if (currentGroup.length > 1) {
-                const unifiedSuggestion = currentGroup[0].suggestion;
-                currentGroup.forEach(groupItem => groupItem.suggestion = unifiedSuggestion);
-            }
-        }
 
-        const newParagraphs = paragraphs.map(p => {
-            const newP = p.cloneNode(true);
-            newP.className = '';
-            newP.innerHTML = p.innerHTML.replace(/<div class="retention-tooltip">.*?<\/div>|<button class="retention-action-btn optimize-btn">.*?<\/button>/g, '');
-            p.parentNode.replaceChild(newP, p);
-            return newP;
-        });
+                const newParagraphs = paragraphs.map(p => {
+                    const newP = p.cloneNode(true);
+                    newP.className = '';
+                    newP.innerHTML = p.innerHTML.replace(/<div class="retention-tooltip">.*?<\/div>|<button class="retention-action-btn optimize-btn">.*?<\/button>/g, '');
+                    p.parentNode.replaceChild(newP, p);
+                    return newP;
+                });
 
-        analysis.forEach((item, index) => {
-            const p = newParagraphs[item.paragraphIndex];
-            if (p) {
-                p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
-                p.dataset.suggestionGroup = item.suggestion;
+                analysis.forEach((item, index) => {
+                    const p = newParagraphs[item.paragraphIndex]; 
+                    if (p) {
+                        p.classList.add('retention-paragraph-live', `retention-${item.retentionScore}`);
+                        p.dataset.suggestionGroup = item.suggestion;
 
-                if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
-                    const previousItem = index > 0 ? analysis[index - 1] : null;
-                    if (!previousItem || item.suggestion !== previousItem.suggestion) {
-                        const scoreLabels = { yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
-                        const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
+                        if (item.retentionScore === 'yellow' || item.retentionScore === 'red') {
+                            const previousItem = index > 0 ? analysis[index - 1] : null;
+                            if (!previousItem || item.suggestion !== previousItem.suggestion) {
+                                const scoreLabels = { yellow: "PONTO DE ATENÇÃO", red: "PONTO DE RISCO" };
+                                const tooltipTitle = scoreLabels[item.retentionScore] || 'ANÁLISE';
 
-                        const suggestionTextEscaped = item.suggestion
-                            .replace(/\\/g, '\\\\')
-                            .replace(/'/g, "\\'")
-                            .replace(/"/g, '\\"')
-                            .replace(/`/g, '\\`');
 
-                        const buttonsHtml = `
-                            <div class="flex gap-2 mt-3">
-                                <button class="flex-1 btn btn-primary btn-small py-1" onclick="event.stopPropagation(); window.optimizeGroup(this, \`${suggestionTextEscaped}\`)">
-                                    <i class="fas fa-magic mr-2"></i> Otimizar
-                                </button>
-                                <button class="flex-1 btn btn-danger bg-red-600 hover:bg-red-700 btn-small py-1" onclick="event.stopPropagation(); window.deleteParagraphGroup(this, \`${suggestionTextEscaped}\`)">
-                                    <i class="fas fa-trash-alt mr-2"></i> Deletar
-                                </button>
-                            </div>
-                        `;
-                        const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}${buttonsHtml}</div>`;
-                        p.insertAdjacentHTML('beforeend', tooltipHtml);
+                                const suggestionTextEscaped = item.suggestion
+    .replace(/\\/g, '\\\\') // Escapa a própria barra invertida
+    .replace(/'/g, "\\'")   // Escapa aspas simples
+    .replace(/"/g, '\\"')   // Escapa aspas duplas
+    .replace(/`/g, '\\`');  // Escapa a crase
+
+// Cria o HTML para os dois botões, usando template literals (crases) para facilitar.
+const buttonsHtml = `
+    <div class="flex gap-2 mt-3">
+        <button class="flex-1 btn btn-primary btn-small py-1" onclick="event.stopPropagation(); window.optimizeGroup(this, \`${suggestionTextEscaped}\`)">
+            <i class="fas fa-magic mr-2"></i> Otimizar
+        </button>
+        <button class="flex-1 btn btn-danger bg-red-600 hover:bg-red-700 btn-small py-1" onclick="event.stopPropagation(); window.deleteParagraphGroup(this, \`${suggestionTextEscaped}\`)">
+            <i class="fas fa-trash-alt mr-2"></i> Deletar
+        </button>
+    </div>
+`;
+
+// Monta o HTML final do tooltip.
+const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}${buttonsHtml}</div>`;
+                                
+
+                                p.insertAdjacentHTML('beforeend', tooltipHtml);
+                            }
+                        }
                     }
-                }
-            }
-        });
+                });
 
-        newParagraphs.forEach(p => {
-            if (p.dataset.suggestionGroup) {
-                p.addEventListener('mouseover', handleSuggestionMouseOver);
-                p.addEventListener('mouseout', handleSuggestionMouseOut);
-            }
-        });
+                newParagraphs.forEach(p => {
+                    if (p.dataset.suggestionGroup) {
+                        p.addEventListener('mouseover', handleSuggestionMouseOver);
+                        p.addEventListener('mouseout', handleSuggestionMouseOut);
+                    }
+                });
 
-        window.showToast("Análise de retenção concluída!");
-    } catch (error) {
-        window.showToast(`Falha na análise: ${error.message}`);
-    } finally {
-        hideButtonLoading(button);
-    }
-};
+                window.showToast("Análise de retenção concluída!");
+            } catch (error) {
+                window.showToast(`Falha na análise: ${error.message}`);
+            } finally {
+                hideButtonLoading(button);
+            }
+        };
+
+/**
          * Pega um parágrafo, otimiza com IA e substitui seu conteúdo.
          * (VERSÃO CORRIGIDA E ANEXADA AO 'WINDOW')
          */
-window.optimizeParagraph = async (paragraphId, suggestion) => {
-    const paragraphElement = document.getElementById(paragraphId);
-    if (!paragraphElement) return;
+        window.optimizeParagraph = async (paragraphId, suggestion) => {
+            const paragraphElement = document.getElementById(paragraphId);
+            if (!paragraphElement) return;
 
-    const button = paragraphElement.querySelector('.retention-action-btn');
-    if (button) {
-        button.disabled = true;
-        button.innerHTML = `<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px;"></div>`;
-    }
+            const button = paragraphElement.querySelector('.retention-action-btn');
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = `<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px;"></div>`;
+            }
 
-    const originalText = paragraphElement.firstChild.textContent.trim();
-    const languageName = document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text;
-    const prompt = `You are an expert copywriter. Rewrite the "Original Paragraph" below based on the "Improvement Suggestion".
+            const originalText = paragraphElement.firstChild.textContent.trim();
+            const languageName = document.getElementById('languageSelect').options[document.getElementById('languageSelect').selectedIndex].text;
+            const prompt = `You are an expert copywriter. Rewrite the "Original Paragraph" below based on the "Improvement Suggestion".
+        
+            **CRITICAL RULE: You MUST respond in ${languageName}.** Do not change the language.
 
-    **CRITICAL RULE: You MUST respond in ${languageName}.** Do not change the language.
+             **Original Paragraph:**
+             "${originalText}"
 
-     **Original Paragraph:**
-     "${originalText}"
+              **Improvement Suggestion:**
+               "${suggestion}"
 
-      **Improvement Suggestion:**
-       "${suggestion}"
+           Respond ONLY with the rewritten paragraph, in ${languageName}.`;
 
-   Respond ONLY with the rewritten paragraph, in ${languageName}.`;
+            try {
+                const rewrittenText = await callGroqAPI(prompt, 1000);
+                paragraphElement.firstChild.textContent = removeMetaComments(rewrittenText);
+                
+                // Feedback visual
+                paragraphElement.classList.remove('retention-yellow', 'retention-red');
+                paragraphElement.classList.add('retention-green');
+                paragraphElement.querySelector('.retention-tooltip')?.remove();
+                button?.remove();
+                
+                invalidateAndClearPrompts(paragraphElement.closest('.script-section'));
+                invalidateAndClearPerformance(paragraphElement.closest('.script-section'));
 
-    try {
-        const rewrittenText = await callGroqAPI(prompt, 1000);
-        paragraphElement.firstChild.textContent = removeMetaComments(rewrittenText);
-
-        // Feedback visual
-        paragraphElement.classList.remove('retention-yellow', 'retention-red');
-        paragraphElement.classList.add('retention-green');
-        paragraphElement.querySelector('.retention-tooltip')?.remove();
-        button?.remove();
-
-        invalidateAndClearPrompts(paragraphElement.closest('.script-section'));
-        invalidateAndClearPerformance(paragraphElement.closest('.script-section'));
-
-        window.showToast("Parágrafo otimizado!");
-    } catch (error) {
-        window.showToast(`Falha ao otimizar: ${error.message}`);
-        if (button) button.innerHTML = '⚠️'; // Ícone de erro
-    }
-};
+                window.showToast("Parágrafo otimizado!");
+            } catch (error) {
+                window.showToast(`Falha ao otimizar: ${error.message}`);
+                if (button) button.innerHTML = '⚠️'; // Ícone de erro
+            }
+        };
     
          // ==========================================================
         // >>>>> SUBSTITUA SUA FUNÇÃO suggestPerformance INTEIRA POR ESTA VERSÃO <<<<<
         // ==========================================================
-        // =========================================================================
-// >>>>> SUBSTITUA AS FUNÇÕES suggestPerformance E enrichText INTEIRAS POR ESTE BLOCO <<<<<
-// =========================================================================
-
-window.suggestPerformance = async (button, sectionId) => {
+        window.suggestPerformance = async (button, sectionId) => {
     const sectionElement = document.getElementById(sectionId);
     const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
     const outputContainer = sectionElement?.querySelector('.section-performance-output');
@@ -3106,7 +3056,7 @@ window.suggestPerformance = async (button, sectionId) => {
 
     showButtonLoading(button);
     outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-
+    
     try {
         const paragraphElements = Array.from(contentWrapper.querySelectorAll('div[id]'));
         const originalParagraphs = paragraphElements.map(p => p.textContent.trim().replace(/\[.*?\]/g, '').trim());
@@ -3124,6 +3074,9 @@ window.suggestPerformance = async (button, sectionId) => {
                 promptContext += `Parágrafo ${globalIndex}: "${p}"\n\n`;
             });
 
+            // ==========================================================
+            // >>>>> INÍCIO DA MUDANÇA NO PROMPT <<<<<
+            // ==========================================================
             const prompt = `Você é uma API de análise de roteiro. Sua resposta DEVE ser um array JSON.
 
 **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E CRÍTICAS):**
@@ -3150,18 +3103,21 @@ Analise os ${paragraphBatch.length} parágrafos a seguir e retorne o array JSON,
 
 **ROTEIRO (LOTE ATUAL):**
 ${promptContext}`;
-            
+            // ==========================================================
+            // >>>>> FIM DA MUDANÇA NO PROMPT <<<<<
+            // ==========================================================
+
             apiPromises.push(callGroqAPI(prompt, 3000).then(res => cleanGeneratedText(res, true)));
         }
 
         const allBatchResults = await Promise.all(apiPromises);
         const annotations = allBatchResults.flat();
 
-        if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) {
+        if (!Array.isArray(annotations) || annotations.length !== originalParagraphs.length) { 
             console.error(`Falha na contagem: JS esperava ${originalParagraphs.length} anotações, mas a IA retornou ${annotations ? annotations.length : 0}.`);
-            throw new Error("A IA não retornou o número correto de anotações após juntar os lotes.");
+            throw new Error("A IA não retornou o número correto de anotações após juntar os lotes."); 
         }
-
+        
         let annotatedParagraphs = [];
         originalParagraphs.forEach((p, index) => {
             const annotationData = annotations[index];
@@ -3179,12 +3135,12 @@ ${promptContext}`;
         });
 
         const finalAnnotatedText = annotatedParagraphs.join('\n');
-
+        
         const originalTextForAudit = originalParagraphs.join('\n');
         const { isValid } = auditGeneratedText(originalTextForAudit.replace(/\n/g, ' '), finalAnnotatedText.replace(/\n/g, ' '));
 
         if (!isValid) { throw new Error("Falha crítica na auditoria interna. O texto foi corrompido durante a montagem."); }
-
+        
         const highlightedText = finalAnnotatedText.replace(/(\[.*?\])/g, '<span class="text-indigo-500 dark:text-indigo-400 font-semibold italic">$1</span>');
 
         outputContainer.innerHTML = `
@@ -3201,58 +3157,6 @@ ${promptContext}`;
         outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
     } finally {
         hideButtonLoading(button);
-    }
-};
-
-// Pega o texto selecionado pelo usuário, pede para a IA reescrevê-lo com uma analogia/metáfora,
-// substitui o texto original e invalida a análise anterior. (VERSÃO CORRIGIDA)
-window.enrichText = async (buttonElement) => {
-    const selection = window.getSelection();
-    const selectedText = selection.toString().trim();
-
-    if (!selectedText) {
-        window.showToast("Por favor, selecione primeiro o texto que deseja enriquecer.");
-        return;
-    }
-
-    showButtonLoading(buttonElement);
-
-    try {
-        const prompt = `Você é um Mestre Roteirista e poeta. Sua tarefa é reescrever o "Parágrafo Original" para incorporar a "Sugestão de Melhoria".
-
-                **Parágrafo Original:**
-                "${selectedText}"
-
-                **REGRAS:**
-                - Mantenha o núcleo da mensagem intacto.
-                - A resposta deve ser APENAS o parágrafo reescrito. Sem introduções, comentários ou explicações.`;
-
-        const rawResult = await callGroqAPI(prompt, 500);
-        const enrichedText = removeMetaComments(rawResult);
-
-        if (selection.rangeCount > 0) {
-            document.execCommand('insertHTML', false, `<span class="highlight-change">${enrichedText}</span>`);
-        }
-
-        const accordionItem = buttonElement.closest('.accordion-item');
-        if (accordionItem) {
-            const analysisOutput = accordionItem.querySelector('.section-analysis-output');
-            if (analysisOutput) {
-                const invalidationMessage = `<p class="text-sm text-yellow-500 italic p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">O texto foi modificado. Por favor, clique em "Analisar Retenção" novamente.</p>`;
-                analysisOutput.innerHTML = invalidationMessage;
-            }
-
-            const scriptSection = accordionItem.parentElement;
-            invalidateAndClearPrompts(scriptSection);
-            invalidateAndClearPerformance(accordionItem.closest('.script-section'));
-        }
-
-        window.showToast("Texto enriquecido! Análise anterior resetada.");
-
-    } catch (error) {
-        window.showToast(`Falha ao enriquecer o texto: ${error.message}`);
-    } finally {
-        hideButtonLoading(buttonElement);
     }
 };
 
@@ -4597,36 +4501,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (button && button.id) {
-// =========================================================================
-// >>>>> PASSO 3: ADICIONE A NOVA AÇÃO AO SEU "GERENTE DE CLIQUES" <<<<<
-// =========================================================================
+            const clickActions = {
+                // Ações para os novos botões de estratégia
+                'suggestStrategyBtn': () => suggestStrategy(button),
+                'startCraftingBtn': () => startCrafting(),
 
-// Encontre este objeto no final do seu script:
-const clickActions = {
-    // Ações para os novos botões de estratégia
-    'suggestStrategyBtn': () => suggestStrategy(button),
-    'startCraftingBtn': () => startCrafting(),
-
-    // O resto das ações que já funcionavam
-    'generateOutlineBtn': () => generateStrategicOutline(button),
-    'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
-    'generateDescriptionBtn': () => generateVideoDescription(button),
-    'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
-    'generateSoundtrackBtn': () => generateSoundtrack(button),
-    'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
-    'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
-    'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-    'generateIdeasBtn': () => generateVideoIdeas(button),
-    'generateConclusionBtn': () => generateConclusion(button), // <<< NOME ATUALIZADO AQUI
-    'generateCtaBtn': () => generateStrategicCta(button),   // <<< ADICIONE ESTA NOVA LINHA
-    'exportProjectBtn': () => exportProject(),
-    'exportPdfBtn': () => downloadPdf(),
-    'exportTranscriptBtn': () => handleCopyAndDownloadTranscript(),
-    'resetProjectBtn': async () => {
-        const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
-        if (confirmed) { resetApplicationState(); }
-    },
-};
+                // O resto das ações que já funcionavam
+                'generateOutlineBtn': () => generateStrategicOutline(button),
+                'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
+                'generateDescriptionBtn': () => generateVideoDescription(button),
+                'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
+                'generateSoundtrackBtn': () => generateSoundtrack(button),
+                'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
+                'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
+                'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
+                'generateIdeasBtn': () => generateVideoIdeas(button),
+                'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
+                'exportProjectBtn': () => exportProject(),
+                'exportPdfBtn': () => downloadPdf(),
+                'exportTranscriptBtn': () => handleCopyAndDownloadTranscript(),
+                'resetProjectBtn': async () => {
+                    const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
+                    if (confirmed) { resetApplicationState(); }
+                },
+            };
             
             if (clickActions[button.id]) {
                 event.preventDefault();
