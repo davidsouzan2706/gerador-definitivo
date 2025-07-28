@@ -532,13 +532,22 @@
             <span><i class="fas fa-bolt mr-2"></i>Criar um Gancho / Mistério Contínuo</span>
         </label>
     </div>
+    
+    <!-- Campo para os detalhes da CONCLUSÃO -->
     <div id="conclusionInputContainer" class="input-group">
         <label for="conclusionSpecifics">Detalhes para a Conclusão:</label>
         <textarea id="conclusionSpecifics" rows="3" placeholder="Ex: A lição é que a resiliência é a nossa maior força..."></textarea>
     </div>
+
+    <!-- <<< NOSSO NOVO CAMPO ESTRATÉGICO AQUI >>> -->
+    <div class="input-group mt-4">
+        <label for="ctaSpecifics">Detalhes para o Call to Action (CTA) Específico (Opcional):</label>
+        <textarea id="ctaSpecifics" rows="2" placeholder="Ex: 'Apoie o Projeto X que luta por...', 'Assine a petição em nosso site...', 'Compre nosso curso no link...'"></textarea>
+    </div>
+
     <div class="text-center mt-6">
-        <button id="generateConclusionAndCtaBtn" class="btn btn-primary">
-            <i class="fas fa-pen-fancy mr-2"></i>Gerar Conclusão + CTA
+        <button id="generateConclusionBtn" class="btn btn-primary">
+            <i class="fas fa-pen-fancy mr-2"></i>Gerar Conclusão
         </button>
     </div>
 </div>
@@ -1557,13 +1566,16 @@ const mapEmotionsAndPacing = async (button) => {
 
 
 // =========================================================================
-// >>>>> SUBSTITUA A FUNÇÃO generateConclusionAndCta INTEIRA POR ESTA VERSÃO FINAL <<<<<
+// >>>>> PASSO 2, BLOCO A: SUBSTITUA a função generateConclusionAndCta por ESTAS DUAS <<<<<
 // =========================================================================
-const generateConclusionAndCta = async (button) => {
+
+/**
+ * Gera APENAS a seção de Conclusão e prepara a UI para a geração do CTA.
+ */
+const generateConclusion = async (button) => {
     if (!validateInputs()) return;
     showButtonLoading(button);
 
-    // Garante que o container de destino da conclusão exista antes de tentar usá-lo.
     const scriptContainer = document.getElementById('scriptSectionsContainer');
     if (scriptContainer && !document.getElementById('conclusionSection')) {
         const conclusionDiv = document.createElement('div');
@@ -1572,11 +1584,9 @@ const generateConclusionAndCta = async (button) => {
         scriptContainer.appendChild(conclusionDiv);
     }
 
-    // Coleta as escolhas do usuário no módulo de estratégia.
     const conclusionType = document.querySelector('input[name="conclusionType"]:checked').value;
     const conclusionSpecifics = document.getElementById('conclusionSpecifics').value.trim();
 
-    // Monta a diretiva estratégica para o prompt com base na escolha do usuário.
     let strategyDirective = '';
     switch (conclusionType) {
         case 'lesson':
@@ -1590,44 +1600,89 @@ const generateConclusionAndCta = async (button) => {
             strategyDirective = `O objetivo é criar um gancho ou mistério para o próximo vídeo. Detalhe fornecido pelo usuário: '${conclusionSpecifics}'`;
             break;
     }
-    
-    // Coleta o contexto de TODAS as seções anteriores para garantir a continuidade.
-    const fullContext = getTranscriptOnly(); 
 
-    // Monta o prompt final para a IA.
+    const fullContext = getTranscriptOnly();
     const basePromptContext = getBasePromptContext();
     const prompt = `${basePromptContext}
     ${fullContext ? `\n\n**ROTEIRO ESCRITO ATÉ AGORA (PARA CONTEXTO):**\n---\n${fullContext}\n---\n` : ''}
-    Você é um mestre roteirista. Sua tarefa é escrever a **Conclusão e o Call to Action (CTA)** do vídeo, JUNTOS, em um único bloco de texto fluido, continuando de onde o roteiro parou.
-    **Diretiva Estratégica para o Final:** ${strategyDirective}
-    **REGRAS CRÍTICAS:** Responda APENAS com o texto final para ser falado. Sem metadados, sem labels (como "Conclusão:", "CTA:"), apenas o texto.`;
+    Sua tarefa é escrever APENAS a **Conclusão** do vídeo, continuando de onde o roteiro parou. NÃO inclua um Call to Action (CTA) neste texto.
+    **Diretiva Estratégica para a Conclusão:** ${strategyDirective}
+    **REGRAS CRÍTICAS:** Responda APENAS com o texto da conclusão. Sem metadados, sem labels (como "Conclusão:"), apenas o texto a ser falado.`;
 
     try {
-        const maxTokens = 800;
-        let result = await callGroqAPI(prompt, maxTokens);
+        let result = await callGroqAPI(prompt, 800);
         result = removeMetaComments(result.trim());
-
         const paragraphs = result.split('\n').filter(p => p.trim() !== '');
-        const contentWithSpans = paragraphs.map((p, index) => 
-            `<div id="conclusion-p-${index}">${p}</div>`
-        ).join('');
+        const contentWithSpans = paragraphs.map((p, index) => `<div id="conclusion-p-${index}">${p}</div>`).join('');
 
-        // Renderiza o conteúdo gerado na seção de conclusão.
-        document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão e CTA', contentWithSpans);
-        
-        // A CORREÇÃO CRÍTICA: Atualiza o nosso "painel de controle" para a conclusão.
+        document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão', contentWithSpans);
         projectState.conclusion = true;
         
-        // Finaliza e atualiza a UI.
-        markButtonAsCompleted('generateConclusionAndCtaBtn');
-        document.getElementById('conclusionStrategyModule').classList.add('hidden');
-        window.showToast("Conclusão e CTA gerados com sucesso!");
-        updateButtonStates(); // Reavalia o estado de todos os botões, habilitando o "Mapear".
+        // <<< LÓGICA DE TRANSFORMAÇÃO DA UI >>>
+        // Desabilita os inputs da Conclusão e prepara para o CTA
+        document.querySelectorAll('input[name="conclusionType"]').forEach(radio => radio.disabled = true);
+        document.getElementById('conclusionSpecifics').disabled = true;
+        document.querySelector('#conclusionInputContainer').classList.add('opacity-50');
 
-    } catch(error) {
+        // Modifica o botão para a próxima etapa: Gerar CTA
+        button.innerHTML = `<i class="fas fa-bullhorn mr-2"></i>Gerar CTA Estratégico`;
+        button.id = 'generateCtaBtn'; // Mudamos o ID para ser pego pelo nosso "gerente de cliques"
+
+        window.showToast("Conclusão gerada! Agora, vamos criar um CTA poderoso.");
+        document.getElementById('ctaSpecifics').focus();
+
+    } catch (error) {
         window.showToast(`Falha ao gerar a conclusão: ${error.message}`);
     } finally {
         hideButtonLoading(button);
+        updateButtonStates();
+    }
+};
+
+/**
+ * Gera APENAS o Call to Action (CTA) estratégico e finaliza o processo.
+ */
+const generateStrategicCta = async (button) => {
+    showButtonLoading(button);
+
+    const ctaSpecifics = document.getElementById('ctaSpecifics').value.trim();
+    const fullContext = getTranscriptOnly(); // Pega o roteiro completo, incluindo a conclusão recém-gerada
+    const basePromptContext = getBasePromptContext();
+
+    let ctaDirective = "Crie um Call to Action (CTA) genérico, convidando o espectador a curtir, comentar e se inscrever.";
+    if (ctaSpecifics) {
+        ctaDirective = `Crie um Call to Action (CTA) altamente específico e persuasivo. Instrução do usuário: "${ctaSpecifics}". Conecte esta instrução ao tema geral do vídeo de forma natural e convincente.`;
+    }
+
+    const prompt = `${basePromptContext}
+    **ROTEIRO COMPLETO (PARA CONTEXTO):**
+    ---
+    ${fullContext}
+    ---
+    Sua tarefa agora é escrever APENAS o **Call to Action (CTA)** para o final do vídeo.
+    **Diretiva Estratégica para o CTA:** ${ctaDirective}
+    **REGRAS CRÍTICAS:** Responda APENAS com o texto do CTA. Sem metadados, sem labels (como "CTA:"), apenas o texto a ser falado.`;
+
+    try {
+        let result = await callGroqAPI(prompt, 400);
+        result = removeMetaComments(result.trim());
+        const paragraphs = result.split('\n').filter(p => p.trim() !== '');
+        const contentWithSpans = paragraphs.map((p, index) => `<div id="cta-p-${index}">${p}</div>`).join('');
+        
+        const ctaSection = document.getElementById('ctaSection');
+        ctaSection.innerHTML = generateSectionHtmlContent('cta', 'Call to Action (CTA)', contentWithSpans);
+        ctaSection.classList.remove('hidden'); // Torna a seção visível
+        
+        markButtonAsCompleted('generateCtaBtn');
+        document.getElementById('conclusionStrategyModule').classList.add('hidden');
+        window.showToast("CTA Estratégico gerado! Roteiro finalizado.");
+        ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    } catch(error) {
+        window.showToast(`Falha ao gerar o CTA: ${error.message}`);
+    } finally {
+        hideButtonLoading(button);
+        updateButtonStates();
     }
 };
 
@@ -4501,30 +4556,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (button && button.id) {
-            const clickActions = {
-                // Ações para os novos botões de estratégia
-                'suggestStrategyBtn': () => suggestStrategy(button),
-                'startCraftingBtn': () => startCrafting(),
+// =========================================================================
+// >>>>> PASSO 3: ADICIONE A NOVA AÇÃO AO SEU "GERENTE DE CLIQUES" <<<<<
+// =========================================================================
 
-                // O resto das ações que já funcionavam
-                'generateOutlineBtn': () => generateStrategicOutline(button),
-                'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
-                'generateDescriptionBtn': () => generateVideoDescription(button),
-                'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
-                'generateSoundtrackBtn': () => generateSoundtrack(button),
-                'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
-                'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
-                'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
-                'generateIdeasBtn': () => generateVideoIdeas(button),
-                'generateConclusionAndCtaBtn': () => generateConclusionAndCta(button),
-                'exportProjectBtn': () => exportProject(),
-                'exportPdfBtn': () => downloadPdf(),
-                'exportTranscriptBtn': () => handleCopyAndDownloadTranscript(),
-                'resetProjectBtn': async () => {
-                    const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
-                    if (confirmed) { resetApplicationState(); }
-                },
-            };
+// Encontre este objeto no final do seu script:
+const clickActions = {
+    // Ações para os novos botões de estratégia
+    'suggestStrategyBtn': () => suggestStrategy(button),
+    'startCraftingBtn': () => startCrafting(),
+
+    // O resto das ações que já funcionavam
+    'generateOutlineBtn': () => generateStrategicOutline(button),
+    'mapEmotionsBtn': () => mapEmotionsAndPacing(button),
+    'generateDescriptionBtn': () => generateVideoDescription(button),
+    'generateTitlesAndThumbnailsBtn': () => generateTitlesAndThumbnails(button),
+    'generateSoundtrackBtn': () => generateSoundtrack(button),
+    'generateIntroBtn': () => handleGenerateSection(button, 'intro', 'Introdução', 'intro'),
+    'generateDevelopmentBtn': () => handleGenerateSection(button, 'development', 'Desenvolvimento', 'development'),
+    'climaxBtn': () => handleGenerateSection(button, 'climax', 'Clímax', 'climax'),
+    'generateIdeasBtn': () => generateVideoIdeas(button),
+    'generateConclusionBtn': () => generateConclusion(button), // <<< NOME ATUALIZADO AQUI
+    'generateCtaBtn': () => generateStrategicCta(button),   // <<< ADICIONE ESTA NOVA LINHA
+    'exportProjectBtn': () => exportProject(),
+    'exportPdfBtn': () => downloadPdf(),
+    'exportTranscriptBtn': () => handleCopyAndDownloadTranscript(),
+    'resetProjectBtn': async () => {
+        const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
+        if (confirmed) { resetApplicationState(); }
+    },
+};
             
             if (clickActions[button.id]) {
                 event.preventDefault();
