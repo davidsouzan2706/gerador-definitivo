@@ -2553,38 +2553,30 @@ Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar u
         case 'intro':
             const shockingHook = document.getElementById('shockingEndingHook')?.value.trim();
             
-            // O PROMPT FINAL, REFINADO PARA UM FORMATO PROFISSIONAL
+            // O PROMPT FINAL, FOCADO 100% NO TEXTO E NO HOOK VIRAL
             prompt += `
 
 **INSTRUÇÕES CRÍTICAS PARA A INTRODUÇÃO (ESTILO YOUTUBE VIRAL):**
-Sua tarefa é escrever a **Introdução** do vídeo. O objetivo é prender a atenção do espectador nos primeiros 15 segundos com um roteiro que seja visual e dinâmico.
-
-**REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
-Você DEVE formatar sua resposta como um roteiro profissional. O texto a ser narrado deve ser escrito normalmente. As direções de cena (sugestões visuais como imagens, animações, B-Rolls, texto na tela) devem ser escritas em uma linha separada, **ANTES** do parágrafo de áudio correspondente, e devem estar *em itálico e entre parênteses*.
-
-**EXEMPLO DE FORMATO PERFEITO:**
-*(Close-up em um objeto misterioso com uma seta vermelha apontando para ele.)*
-Este é o texto que será narrado. Ele deve ser cativante e direto.
-
-*(Cenas rápidas de pessoas reagindo com choque, intercaladas com texto animado na tela: "O SEGREDO")*
-E o que eles descobriram em seguida... mudaria tudo.
+Sua tarefa é escrever a **Introdução** do vídeo. O objetivo é criar um "hook" magnético que prenda a atenção do espectador nos primeiros 15-30 segundos e o deixe desesperado para continuar assistindo.
 
 **REGRAS DE CONTEÚDO (HOOK VIRAL):**
-1.  **PROIBIDO COMEÇO LENTO:** NÃO comece com contexto histórico. Comece com a informação mais chocante, a estatística mais surpreendente, ou no meio da ação ("in media res").
-2.  **CRIE UM LOOP ABERTO:** Faça uma promessa ou uma pergunta intrigante que só será respondida no final do vídeo.
-3.  **PENSE VISUALMENTE:** As direções de cena em itálico são OBRIGATÓRIAS e tão importantes quanto o texto. Elas devem quebrar o texto em blocos menores e criar um ritmo visual.`;
+1.  **PROIBIDO COMEÇO LENTO:** NÃO comece com contexto histórico genérico ou apresentações longas. Você DEVE começar de uma das seguintes formas:
+    - **In Media Res:** Comece no meio do momento de maior ação ou tensão da história.
+    - **Estatística Chocante:** Apresente um dado ou estatística surpreendente e contra-intuitivo relacionado ao tema.
+    - **Pergunta Provocativa:** Faça uma pergunta direta e pessoal que crie uma conexão imediata com a dor ou o desejo do espectador.
+2.  **CRIE UM LOOP ABERTO (A REGRA MAIS IMPORTANTE):** Após o impacto inicial, você DEVE fazer uma promessa clara ou uma pergunta intrigante que só será totalmente respondida no final do vídeo. Crie um mistério. (Ex: "...e neste vídeo, você vai descobrir o erro de três palavras que custou um império.", "Mas como isso se conecta a você? A resposta pode te chocar.").
+3.  **SEJA CONCISO E DIRETO:** Use frases curtas e poderosas. A clareza e o impacto são mais importantes que a elegância literária nesta seção.`;
 
             if (shockingHook) {
                 prompt += `
-4.  **USE O DESFECHO CHOCANTE:** Comece o roteiro EXATAMENTE com a frase do 'Desfecho Chocante' fornecida. Use o resto da introdução para criar um mistério sobre como a história chegou naquele ponto. Frase a ser usada: "${shockingHook}"`;
+4.  **USE O DESFECHO CHOCANTE:** Comece o roteiro EXATAMENTE com a frase do 'Desfecho Chocante' fornecida: "${shockingHook}". Use o resto da introdução para aprofundar o mistério de como a história chegou àquele ponto.`;
             }
 
             if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
-                prompt += `\n**IMPORTANTE: Todo o texto (narração e direções de cena) DEVE ser em Português.**`;
+                prompt += `\n**IMPORTANTE: Todo o texto DEVE ser em Português.**`;
             }
 
-            // O maxTokens pode ser um pouco menor, pois o formato é mais enxuto
-            maxTokens = targetWords ? Math.ceil(targetWords * 2.0) : 600;
+            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 700;
             break;
 
         case 'development':
