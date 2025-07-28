@@ -3466,14 +3466,13 @@ window.regenerateSection = (fullSectionId) => {
 
 
 // =========================================================================
-// >>>>> VERSÃO FINAL E DEFINITIVA DE generatePromptsForSection <<<<<
-// (Com Controlador de Ritmo e Correção do bug "undefined")
+// >>>>> SUBSTITUA A SUA FUNÇÃO generatePromptsForSection INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
 // =========================================================================
 window.generatePromptsForSection = async (button, sectionElementId) => {
     const sectionElement = document.getElementById(sectionElementId);
     const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
     const promptContainer = sectionElement?.querySelector('.prompt-container');
-    
+
     if (!contentWrapper || !contentWrapper.textContent.trim() || !promptContainer) {
         window.showToast("Gere o conteúdo do roteiro desta seção primeiro.");
         return;
@@ -3485,9 +3484,8 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
 
     showButtonLoading(button);
     promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
-    
+
     try {
-        // ETAPA 1: Mapear parágrafos e seus capítulos (lógica existente)
         const allChildren = Array.from(contentWrapper.children);
         const paragraphsWithContext = [];
         let currentChapterTitle = "Contexto Geral";
@@ -3510,7 +3508,6 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
         const batchSize = 3;
         const apiPromises = [];
 
-        // ETAPA 2: LER O NOVO CONTROLADOR DE RITMO
         const visualPacing = document.getElementById('visualPacing').value;
         const durationMap = {
             'dinamico': '3 e 8',
@@ -3529,23 +3526,21 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
                 promptContextForAI += `\nParágrafo ${globalIndex}:\n- Título do Capítulo (Guia Temático): "${item.chapter}"\n- Texto do Parágrafo: "${item.text}"\n- Contexto Emocional: (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})`;
             });
             
-            // ETAPA 3: ATUALIZAR O PROMPT COM O NOVO CONTROLE DE DURAÇÃO
-            const prompt = `Você é um Diretor de Fotografia premiado, gerando um storyboard. Sua resposta deve ser APENAS um array JSON.
+            // >>> PROMPT BLINDADO COM NOVAS REGRAS DE SINTAXE <<<
+            const prompt = `Você é uma API de geração de JSON. Sua resposta deve ser APENAS um array JSON.
 
-**REGRAS CRÍTICAS:**
-1.  **UM PROMPT POR PARÁGRAFO:** Crie um objeto JSON para CADA parágrafo fornecido. O array final deve ter EXATAMENTE ${batch.length} objetos.
-2.  **DESCRIÇÃO DETALHADA:** A "imageDescription" DEVE incluir detalhes sobre:
-    - **Ângulo da Câmera:** (ex: Close-up extremo, Câmera lenta, Visão de cima)
-    - **Iluminação:** (ex: Dramática e sombria, Luz suave de janela)
-    - **Foco e Composição:** (ex: Foco nítido no primeiro plano com fundo desfocado)
-3.  **DURAÇÃO REALISTA:** O valor de "estimated_duration" DEVE ser um número entre **${durationRange}**, representando a duração em segundos de cada imagem na tela.
-4.  **SEM META-COMENTÁRIOS:** Sua resposta inteira deve ser APENAS o código JSON.
+**REGRAS CRÍTICAS DE SINTAXE (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
+2.  **ASPAS DUPLAS:** TODAS as chaves (keys) e valores de texto (strings) DEVEM, OBRIGATORIAMENTE, começar e terminar com aspas duplas (\`"\`). É estritamente proibido misturar com aspas simples.
+3.  **SEM ASPAS INTERNAS:** Dentro dos valores de "imageDescription", NÃO use aspas duplas. Se precisar de ênfase, use aspas simples (\`'\`).
+4.  **UM PROMPT POR PARÁGRAFO:** Crie um objeto JSON para CADA parágrafo fornecido. O array final deve ter EXATAMENTE ${batch.length} objetos.
+5.  **DURAÇÃO REALISTA:** O valor de "estimated_duration" DEVE ser um número entre **${durationRange}**, representando segundos.
 
 **DADOS PARA ANÁLISE (LOTE ATUAL):**
 ---
 ${promptContextForAI}
 ---`;
-            
+
             apiPromises.push(callGroqAPI(prompt, 4000).then(res => cleanGeneratedText(res, true)));
         }
 
@@ -3555,11 +3550,10 @@ ${promptContextForAI}
         if (!Array.isArray(allGeneratedPrompts) || allGeneratedPrompts.length < paragraphsWithContext.length) {
             throw new Error("A IA não retornou um prompt para cada parágrafo.");
         }
-        
-        // ETAPA 4: CORREÇÃO DO BUG "undefined"
+
         const curatedPrompts = allGeneratedPrompts.map((promptData, index) => {
             return {
-                scriptPhrase: paragraphsWithContext[index].text, // Pega o texto do nosso array local seguro
+                scriptPhrase: paragraphsWithContext[index].text,
                 imageDescription: promptData.imageDescription || "Falha ao gerar descrição.",
                 estimated_duration: promptData.estimated_duration || 5
             };
@@ -3567,7 +3561,7 @@ ${promptContextForAI}
 
         allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
         promptPaginationState[sectionElementId] = 0;
-        
+
         promptContainer.innerHTML = `
             <div class="prompt-pagination-wrapper space-y-4">
                 <div class="prompt-nav-container flex items-center justify-center gap-4"></div>
@@ -3577,7 +3571,7 @@ ${promptContextForAI}
         renderPaginatedPrompts(sectionElementId);
 
     } catch (error) {
-         promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
+        promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
     } finally {
         hideButtonLoading(button);
     }
