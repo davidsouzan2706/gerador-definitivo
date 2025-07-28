@@ -3575,7 +3575,7 @@ window.regenerateSection = (fullSectionId) => {
 
 
 // =========================================================================
-// >>>>> SUBSTITUA A SUA FUNÇÃO generatePromptsForSection INTEIRA PELA VERSÃO FINAL <<<<<
+// >>>>> SUBSTITUA A SUA FUNÇÃO generatePromptsForSection INTEIRA PELA VERSÃO BLINDADA <<<<<
 // =========================================================================
 window.generatePromptsForSection = async (button, sectionElementId) => {
     const sectionElement = document.getElementById(sectionElementId);
@@ -3635,20 +3635,18 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
                 promptContextForAI += `\nParágrafo ${globalIndex}:\n- Título do Capítulo (Guia Temático): "${item.chapter}"\n- Texto do Parágrafo: "${item.text}"\n- Contexto Emocional: (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})`;
             });
             
-            // >>> PROMPT HÍBRIDO: RIGOR SINTÁTICO + EXIGÊNCIA CRIATIVA <<<
-            const prompt = `Você é um Diretor de Fotografia e uma API de geração de JSON. Sua resposta deve ser APENAS um array JSON.
+            // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE EXPLÍCITAS <<<
+            const prompt = `Você é uma API de geração de JSON. Sua resposta deve ser APENAS um array JSON.
 
 **REGRAS CRÍTICAS DE SINTAXE (INEGOCIÁVEIS):**
 1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
-2.  **ASPAS DUPLAS:** TODAS as chaves e valores de texto DEVEM, OBRIGATORIAMENTE, usar aspas duplas (\`"\`). É proibido misturar com aspas simples.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves (ex: "imageDescription") E todos os valores de texto (strings) DEVEM, OBRIGATORIAMENTE, usar aspas duplas (\`"\`). É estritamente proibido usar aspas simples (\`'\`) ou crases (\`\`) para delimitar as strings. A violação desta regra resultará em falha.
 3.  **SEM ASPAS INTERNAS:** Dentro dos valores de "imageDescription", NÃO use aspas duplas. Se precisar de ênfase, use aspas simples (\`'\`).
+4.  **REVISÃO FINAL:** Antes de responder, revise sua própria saída para garantir que cada string está corretamente aberta e fechada com aspas duplas (\`"\`) e que a sintaxe JSON está perfeita.
 
 **MANUAL DE CONTEÚDO (IGUALMENTE INEGOCIÁVEL):**
 1.  **UM OBJETO POR PARÁGRAFO:** Crie um objeto JSON para CADA parágrafo fornecido. O array final deve ter EXATAMENTE ${batch.length} objetos.
-2.  **DESCRIÇÃO RICA E DETALHADA:** Para a chave "imageDescription", você DEVE criar uma descrição VÍVIDA e CINEMATOGRÁFICA. É obrigatório incluir detalhes sobre:
-    - **Ângulo da Câmera:** (ex: 'Close-up extremo', 'Câmera lenta', 'Visão de cima')
-    - **Iluminação:** (ex: 'Dramática e sombria', 'Luz suave de janela')
-    - **Foco e Composição:** (ex: 'Foco nítido no primeiro plano com fundo desfocado')
+2.  **DESCRIÇÃO RICA E DETALHADA:** Para a chave "imageDescription", você DEVE criar uma descrição VÍVIDA e CINEMATOGRÁFICA. É obrigatório incluir detalhes sobre Ângulo da Câmera, Iluminação, Foco e Composição.
 3.  **DURAÇÃO REALISTA:** O valor de "estimated_duration" DEVE ser um número entre **${durationRange}**.
 
 **DADOS PARA ANÁLISE (LOTE ATUAL):**
