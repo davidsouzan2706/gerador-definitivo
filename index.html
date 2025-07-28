@@ -382,6 +382,12 @@
                 <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
                 
 
+                <div class="input-group md:col-span-2">
+    <label for="emotionalHook">História Pessoal / Gancho Emocional (Opcional):</label>
+    <textarea id="emotionalHook" rows="3" placeholder="Ex: 'Meu avô era um dos mecânicos do Indianapolis. Ele nunca falava sobre a guerra, mas...' ou 'Focar na história de um jovem marinheiro que se alistou para honrar a família e sonhava em voltar para casa...'"></textarea>
+</div>
+                
+
 <div class="relative group"> <!-- 1. Novo container com "relative" e "group" -->
     <div class="input-group">
         <div class="flex items-center gap-2 mb-2">
@@ -2261,10 +2267,10 @@ const updateMainTooltip = () => {
 
 
 // =========================================================================
-// >>>>> SUBSTITUA A FUNÇÃO getBasePromptContext INTEIRA POR ESTA <<<<<
+// >>>>> BLOCO 1: SUBSTITUA SUA FUNÇÃO getBasePromptContext INTEIRA POR ESTA <<<<<
 // =========================================================================
 /**
- * Constrói o contexto base do prompt, agora incluindo dados de pesquisa para maior credibilidade.
+ * Constrói o contexto base do prompt, agora incluindo o gancho emocional e dados de pesquisa.
  */
 const getBasePromptContext = () => {
     // Coleta todos os valores dos campos do formulário
@@ -2286,14 +2292,16 @@ const getBasePromptContext = () => {
     const imageDescriptionEngine = document.getElementById('imageDescriptionEngine')?.value.trim() || "";
     const imageStyleSelect = document.getElementById('imageStyleSelect')?.value || "";
     const customImageStyle = document.getElementById('customImageStyle')?.value.trim() || "";
-    
-    // AQUI ESTÁ A NOVIDADE: Lemos o conteúdo do novo campo de pesquisa
     const researchData = document.getElementById('researchData')?.value.trim() || "";
 
-    // Monta o prompt base, definindo a persona da IA como roteirista E pesquisadora
+    // >>> AQUI ESTÁ A NOSSA NOVA EVOLUÇÃO <<<
+    // Lemos o conteúdo do nosso novo campo "Gancho Emocional"
+    const emotionalHook = document.getElementById('emotionalHook')?.value.trim() || "";
+
+    // Monta o prompt base
     let context = `
     You are an expert YouTube scriptwriter and researcher for the channel "${channelName}".
-    Your goal is to create highly engaging, credible, and well-sourced video content.
+    Your goal is to create highly engaging, credible, and emotionally resonant video content.
     
     **Core Project Details:**
     - Video Topic: "${videoTheme}"
@@ -2314,11 +2322,22 @@ const getBasePromptContext = () => {
     if (videoDescription) { context += `\n\n**Additional Information & Inspiration:**\n- Inspiration/Context: "${videoDescription}"`; }
     if (centralQuestion) { context += `\n- Central Question to guide the entire script: "${centralQuestion}"`; }
     if (emotionalArc) { context += `\n- Desired Emotional Arc: "${emotionalArc}"`; }
-    
-    // A MUDANÇA CRÍTICA: Se o usuário forneceu dados, adicionamos uma instrução inegociável ao prompt.
-    if (researchData) {
+
+    // >>> AQUI ESTÁ A NOVA INSTRUÇÃO PARA A IA <<<
+    // Se o usuário forneceu uma história pessoal, ela se torna a regra mais importante.
+    if (emotionalHook) {
         context += `
 
+**CRITICAL NARRATIVE ANCHOR (THE MOST IMPORTANT RULE):**
+You MUST use the following personal story as the emotional core and recurring 'human anchor' for the entire script. Weave references to this character/story throughout the introduction, development, and conclusion to make the grand historical narrative feel personal and relatable. This is the guiding thread of the story.
+---
+Emotional Anchor Story: "${emotionalHook}"
+---
+`;
+    }
+
+    if (researchData) {
+        context += `
 **CRITICAL RESEARCH DATA & CONTEXT:**
 You MUST incorporate and properly attribute the following facts, names, and sources into the script. When you mention a name, briefly explain who they are (e.g., 'Maria da Silva, coordinator of...'). When you use a statistic, mention the source (e.g., 'According to the 2023 Violence Map...').
 ---
@@ -2327,7 +2346,6 @@ ${researchData}
 `;
     }
 
-    // Lógica para o estilo visual (permanece a mesma)
     if (imageStyleSelect === 'cinematic' || imageStyleSelect === 'custom') {
         context += `\n\n**Visual Style Instructions:**`;
         if (imageDescriptionEngine) { context += `\n- Image Description Keywords: "${imageDescriptionEngine}"`; }
@@ -4034,7 +4052,7 @@ const generateStrategicOutline = async (button) => {
 
 
 // =========================================================================
-// >>>>> SUBSTITUA TODAS AS VERSÕES DE resetApplicationState POR ESTA <<<<<
+// >>>>> BLOCO 2: SUBSTITUA SUA FUNÇÃO resetApplicationState INTEIRA POR ESTA <<<<<
 // =========================================================================
 const resetApplicationState = () => {
     // 1. Zera o nosso "painel de controle" de estado do projeto.
@@ -4048,7 +4066,7 @@ const resetApplicationState = () => {
         }
     };
 
-    // 3. Reseta todos os inputs para seus valores padrão (código da sua segunda imagem).
+    // 3. Reseta todos os inputs para seus valores padrão
     safeReset('channelName', 'The Biblical Unveiling');
     safeReset('videoTheme');
     safeReset('videoDescription');
@@ -4067,9 +4085,11 @@ const resetApplicationState = () => {
     safeReset('imageDescriptionEngine');
     safeReset('imageStyleSelect', 'cinematic');
     safeReset('customImageStyle');
-    
+    safeReset('researchData'); // Limpa o campo de pesquisa
+    safeReset('emotionalHook'); // <<< ADICIONADO: Limpa o nosso novo campo
+
     toggleCustomImageStyleVisibility();
-    
+
     const nicheDesc = document.getElementById('nicheDescription');
     const ideasOut = document.getElementById('ideasOutput');
     if (nicheDesc) nicheDesc.value = '';
@@ -4081,9 +4101,7 @@ const resetApplicationState = () => {
     totalScriptSeconds = 0;
     promptPaginationState = {};
 
-    // A lógica de limpar os containers foi movida para resetProjectOutputs, o que está correto.
-    // Vamos garantir que a chamada esteja aqui, como na sua primeira imagem.
-    resetProjectOutputs(); 
+    resetProjectOutputs();
 
     window.showToast("Pronto para um novo roteiro!");
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -4523,8 +4541,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
-    const strategicInputIds = ['videoTheme','videoDescription','videoDuration','speakingPace','visualPacing','narrativeGoal','narrativeStructure','narrativeTheme','narrativeTone','narrativeVoice','centralQuestion','emotionalArc','shockingEndingHook','imageDescriptionEngine','imageStyleSelect', 'researchData'];
+     // Adicionamos 'emotionalHook' a esta lista.
+    const strategicInputIds = ['videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'visualPacing', 'narrativeGoal', 'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice', 'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect', 'researchData', 'emotionalHook'];
+    
     strategicInputIds.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
