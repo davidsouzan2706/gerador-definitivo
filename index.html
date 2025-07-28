@@ -2550,33 +2550,24 @@ Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar u
 // >>>>> PASSO ÚNICO: SUBSTITUA O "case 'intro':" INTEIRO POR ESTE BLOCO <<<<<
 // =========================================================================
 
-        case 'intro':
-            const shockingHook = document.getElementById('shockingEndingHook')?.value.trim();
-            
-            // O PROMPT FINAL, FOCADO 100% NO TEXTO E NO HOOK VIRAL
+        case 'development':
             prompt += `
 
-**INSTRUÇÕES CRÍTICAS PARA A INTRODUÇÃO (ESTILO YOUTUBE VIRAL):**
-Sua tarefa é escrever a **Introdução** do vídeo. O objetivo é criar um "hook" magnético que prenda a atenção do espectador nos primeiros 15-30 segundos e o deixe desesperado para continuar assistindo.
+**INSTRUÇÕES CRÍTICAS PARA O DESENVOLVIMENTO (ESTILO YOUTUBE VIRAL):**
+Sua tarefa é escrever o **Desenvolvimento** do roteiro. Esta é a seção mais longa, onde você aprofunda o tema. O objetivo principal aqui é **manter a retenção** do espectador.
 
-**REGRAS DE CONTEÚDO (HOOK VIRAL):**
-1.  **PROIBIDO COMEÇO LENTO:** NÃO comece com contexto histórico genérico ou apresentações longas. Você DEVE começar de uma das seguintes formas:
-    - **In Media Res:** Comece no meio do momento de maior ação ou tensão da história.
-    - **Estatística Chocante:** Apresente um dado ou estatística surpreendente e contra-intuitivo relacionado ao tema.
-    - **Pergunta Provocativa:** Faça uma pergunta direta e pessoal que crie uma conexão imediata com a dor ou o desejo do espectador.
-2.  **CRIE UM LOOP ABERTO (A REGRA MAIS IMPORTANTE):** Após o impacto inicial, você DEVE fazer uma promessa clara ou uma pergunta intrigante que só será totalmente respondida no final do vídeo. Crie um mistério. (Ex: "...e neste vídeo, você vai descobrir o erro de três palavras que custou um império.", "Mas como isso se conecta a você? A resposta pode te chocar.").
-3.  **SEJA CONCISO E DIRETO:** Use frases curtas e poderosas. A clareza e o impacto são mais importantes que a elegância literária nesta seção.`;
+**REGRAS DE CONTEÚDO E RITMO (RETENÇÃO E ENGAJAMENTO):**
+1.  **ESTRUTURA EM BLOCOS:** Apresente as informações em blocos temáticos claros e lógicos. Cada bloco deve explorar um aspecto do tema.
+2.  **GANCHOS DE RETENÇÃO (A REGRA MAIS IMPORTANTE):** A cada 2 ou 3 parágrafos de informação, você DEVE inserir um "gancho de retenção". Este gancho serve para quebrar a monotonia e re-engajar o espectador. Use uma das seguintes técnicas:
+    - **Teaser / Loop Aberto:** Crie um mini-mistério que será respondido em breve. (Ex: "...mas eles não sabiam que a parte mais difícil ainda estava por vir.", "E a solução que ele encontrou para isso é a razão pela qual esta empresa vale bilhões hoje.").
+    - **Pergunta de Engajamento:** Faça uma pergunta direta ao público relacionada ao conteúdo, incentivando a participação nos comentários. (Ex: "O que você teria feito nessa situação? Deixa sua opinião aqui nos comentários.", "Você já conhecia esse fato? Me conta aqui embaixo.").
+3.  **EQUILÍBRIO:** Mantenha o equilíbrio entre fornecer informações valiosas e manter a narrativa fluida e interessante. Não se perca em detalhes excessivamente técnicos sem conectá-los de volta à história principal ou ao gancho emocional.`;
 
-            if (shockingHook) {
-                prompt += `
-4.  **USE O DESFECHO CHOCANTE:** Comece o roteiro EXATAMENTE com a frase do 'Desfecho Chocante' fornecida: "${shockingHook}". Use o resto da introdução para aprofundar o mistério de como a história chegou àquele ponto.`;
-            }
-
+            // O código abaixo (maxTokens e a verificação de idioma) permanece o mesmo do seu arquivo original.
+            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 1500;
             if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
                 prompt += `\n**IMPORTANTE: Todo o texto DEVE ser em Português.**`;
             }
-
-            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 700;
             break;
 
         case 'development':
