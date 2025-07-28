@@ -376,47 +376,37 @@
 
 
         <!-- Aba 2: Estratégia Narrativa -->
-        <div id="input-tab-estrategia" class="tab-pane hidden"> <!-- A classe 'hidden' é importante -->
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="input-group md:col-span-2"><label for="targetAudience">Público-Alvo:</label><input type="text" id="targetAudience" value="Interessados em mistérios e história." ></div>
-                <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
-                
+<!-- Aba 2: Estratégia Narrativa (COM ORDEM REFINADA) -->
+<div id="input-tab-estrategia" class="tab-pane hidden">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <div class="input-group md:col-span-2">
-    <label for="emotionalHook">História Pessoal / Gancho Emocional (Opcional):</label>
-    <textarea id="emotionalHook" rows="3" placeholder="Ex: 'Meu avô era um dos mecânicos do Indianapolis. Ele nunca falava sobre a guerra, mas...' ou 'Focar na história de um jovem marinheiro que se alistou para honrar a família e sonhava em voltar para casa...'"></textarea>
-</div>
-                
+        <!-- Bloco 1: O Que e Para Quem -->
+        <div class="input-group md:col-span-2"><label for="targetAudience">Público-Alvo:</label><input type="text" id="targetAudience" value="Interessados em mistérios e história."></div>
+        <div class="input-group md:col-span-2"><label for="narrativeTheme">3. Tema Principal:</label><input type="text" id="narrativeTheme" placeholder="Ex: Superação, Luta contra injustiça..."></div>
+        <div class="input-group md:col-span-2"><label for="centralQuestion">Pergunta Central (Opcional):</label><textarea id="centralQuestion" rows="2" placeholder="Qual a pergunta que o seu vídeo deve responder?"></textarea></div>
 
-<div class="relative group"> <!-- 1. Novo container com "relative" e "group" -->
-    <div class="input-group">
-        <div class="flex items-center gap-2 mb-2">
-            <label for="narrativeStructure">2. Estrutura Específica:</label>
-            <!-- O ícone de ajuda não é mais necessário aqui, o próprio campo será o gatilho -->
+        <!-- Bloco 2: A Estrutura e a Alma -->
+        <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
+        <div class="relative group">
+            <div class="input-group">
+                <div class="flex items-center gap-2 mb-2"><label for="narrativeStructure">2. Estrutura Específica:</label></div>
+                <select id="narrativeStructure"></select>
+            </div>
+            <div id="structurePopover" class="card popover-bg absolute bottom-full left-0 mb-2 w-[400px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-20 pointer-events-none group-hover:pointer-events-auto">
+                <h4 id="popoverTitle" class="font-bold text-lg text-indigo-400 mb-2"></h4>
+                <p id="popoverDescription" class="text-sm leading-relaxed"></p>
+            </div>
         </div>
-        <select id="narrativeStructure"></select>
-    </div>
+        <div class="input-group md:col-span-2"><label for="emotionalHook">História Pessoal / Gancho Emocional (Opcional):</label><textarea id="emotionalHook" rows="3" placeholder="Ex: 'Meu avô era um dos mecânicos do Indianapolis. Ele nunca falava sobre a guerra, mas...' ou 'Focar na história de um jovem marinheiro que se alistou para honrar a família e sonhava em voltar para casa...'"></textarea></div>
 
+        <!-- Bloco 3: O Tom e a Jornada -->
+        <div class="input-group"><label for="narrativeTone">4. Tom da Narração:</label><select id="narrativeTone"><option value="inspirador" selected>Inspirador</option><option value="serio">Sério</option><option value="emocional">Emocional</option></select></div>
+        <div class="input-group"><label for="narrativeVoice">5. Voz do Narrador:</label><input type="text" id="narrativeVoice" placeholder="Ex: Sábio e experiente..."></div>
+        <div class="input-group md:col-span-2"><label for="emotionalArc">Arco Emocional Desejado (Opcional):</label><textarea id="emotionalArc" rows="2" placeholder="Ex: Curiosidade -> Tensão -> Surpresa"></textarea></div>
+        <div class="input-group md:col-span-2"><label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):</label><input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada."></div>
 
-    <!-- 2. Esta é a nossa "Caixa Verde" (o popover), inicialmente escondida -->
-    <div id="structurePopover" 
-     class="card popover-bg absolute bottom-full left-0 mb-2 w-[400px]
-            opacity-0 invisible group-hover:opacity-100 group-hover:visible 
-            transition-all duration-300 z-20 pointer-events-none group-hover:pointer-events-auto">
-        
-        <h4 id="popoverTitle" class="font-bold text-lg text-indigo-400 mb-2"></h4>
-        <p id="popoverDescription" class="text-sm leading-relaxed"></p>
     </div>
 </div>
-
-                <div class="input-group md:col-span-2"><label for="narrativeTheme">3. Tema Principal:</label><input type="text" id="narrativeTheme" placeholder="Ex: Superação, Luta contra injustiça..."></div>
-                <div class="input-group"><label for="narrativeTone">4. Tom da Narração:</label><select id="narrativeTone"><option value="inspirador" selected>Inspirador</option><option value="serio">Sério</option><option value="emocional">Emocional</option></select></div>
-                 <div class="input-group"><label for="narrativeVoice">5. Voz do Narrador:</label><input type="text" id="narrativeVoice" placeholder="Ex: Sábio e experiente..."></div>
-                <div class="input-group md:col-span-2"><label for="centralQuestion">Pergunta Central (Opcional):</label><textarea id="centralQuestion" rows="2" placeholder="Qual a pergunta que o seu vídeo deve responder?"></textarea></div>
-                <div class="input-group md:col-span-2"><label for="emotionalArc">Arco Emocional Desejado (Opcional):</label><textarea id="emotionalArc" rows="2" placeholder="Ex: Curiosidade -> Tensão -> Surpresa"></textarea></div>
-                <div class="input-group md:col-span-2"><label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):</label><input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada."></div>
-             </div>
-        </div>
 
         <!-- Aba 3: Detalhes Técnicos -->
 <div id="input-tab-tecnicos" class="tab-pane hidden"> <!-- A classe 'hidden' é importante -->
