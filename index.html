@@ -537,22 +537,24 @@
         </label>
     </div>
     
-    <!-- Campo para os detalhes da CONCLUSÃO -->
     <div id="conclusionInputContainer" class="input-group">
         <label for="conclusionSpecifics">Detalhes para a Conclusão:</label>
         <textarea id="conclusionSpecifics" rows="3" placeholder="Ex: A lição é que a resiliência é a nossa maior força..."></textarea>
     </div>
 
-    <!-- <<< NOSSO NOVO CAMPO ESTRATÉGICO PARA O CTA >>> -->
     <div class="input-group mt-4">
         <label for="ctaSpecifics">Detalhes para o Call to Action (CTA) Específico (Opcional):</label>
         <textarea id="ctaSpecifics" rows="2" placeholder="Ex: 'Apoie o Projeto X que luta por...', 'Assine a petição em nosso site...', 'Compre nosso curso no link...'"></textarea>
     </div>
 
     <div class="text-center mt-6">
-        <!-- O ID e o texto deste botão foram alterados -->
+        <!-- Botão inicial para gerar a Conclusão -->
         <button id="generateConclusionBtn" class="btn btn-primary">
             <i class="fas fa-pen-fancy mr-2"></i>Gerar Conclusão
+        </button>
+        <!-- <<< NOVO BOTÃO DE CTA (INICIALMENTE ESCONDIDO) >>> -->
+        <button id="generateCtaBtn" class="btn btn-primary hidden">
+            <i class="fas fa-bullhorn mr-2"></i>Gerar CTA Estratégico
         </button>
     </div>
 </div>
@@ -1571,12 +1573,9 @@ const mapEmotionsAndPacing = async (button) => {
 
 
 // =========================================================================
-// >>>>> PASSO 2: SUBSTITUA a função 'generateConclusionAndCta' por ESTAS DUAS <<<<<
+// >>>>> PASSO 2: SUBSTITUA a função 'generateConclusion' INTEIRA por ESTA <<<<<
 // =========================================================================
 
-/**
- * Gera APENAS a seção de Conclusão e prepara a UI para a geração do CTA.
- */
 const generateConclusion = async (button) => {
     if (!validateInputs()) return;
     showButtonLoading(button);
@@ -1623,13 +1622,14 @@ const generateConclusion = async (button) => {
         document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão', contentWithSpans);
         projectState.conclusion = true;
         
-        // LÓGICA DE TRANSFORMAÇÃO DA UI
+        // <<< LÓGICA DE TRANSFORMAÇÃO DA UI CORRIGIDA >>>
         document.querySelectorAll('input[name="conclusionType"]').forEach(radio => radio.disabled = true);
         document.getElementById('conclusionSpecifics').disabled = true;
         document.querySelector('#conclusionInputContainer').classList.add('opacity-50');
 
-        button.innerHTML = `<i class="fas fa-bullhorn mr-2"></i>Gerar CTA Estratégico`;
-        button.id = 'generateCtaBtn';
+        // Esconde o botão de Conclusão e mostra o botão de CTA
+        button.classList.add('hidden');
+        document.getElementById('generateCtaBtn').classList.remove('hidden');
 
         window.showToast("Conclusão gerada! Agora, vamos criar um CTA poderoso.");
         document.getElementById('ctaSpecifics').focus();
@@ -1641,7 +1641,6 @@ const generateConclusion = async (button) => {
         updateButtonStates();
     }
 };
-
 /**
  * Gera APENAS o Call to Action (CTA) estratégico e finaliza o processo.
  */
