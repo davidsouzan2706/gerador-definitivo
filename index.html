@@ -969,6 +969,24 @@ Ex: 'Fonte: Estudo de Harvard; Dr. João da Silva, especialista...'
     </section>
 
 
+
+    <!-- SEÇÃO 5: ANÁLISE DE ROTEIRO COMPLETO -->
+<section id="scriptAnalysisSection" class="mt-10 hidden">
+    <div class="section-title">
+        <h2 class="text-xl font-bold">5. Análise de Roteiro (Beta)</h2>
+    </div>
+    <div class="card text-center">
+        <p class="mb-4 text-gray-600 dark:text-gray-400">Pronto para receber um feedback de nível profissional? Nossa IA analisará seu roteiro completo em busca de pontos fortes e oportunidades de melhoria.</p>
+        <button id="analyzeScriptBtn" data-action="analyzeScript" class="btn btn-primary">
+            <i class="fas fa-search-plus mr-2"></i> Analisar Roteiro Completo
+        </button>
+        <!-- O relatório da análise será injetado aqui -->
+        <div id="analysisReportContainer" class="mt-6 text-left"></div>
+    </div>
+</section>
+
+
+
 <!-- ========================================================== -->
 <!--     NOVA SEÇÃO 4: GERENCIAMENTO DO PROJETO (EXPORTAR/IMPORTAR)     -->
 <!-- ========================================================== -->
@@ -1238,6 +1256,124 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 button.innerHTML = 'Erro!';
             }
         };
+
+
+
+
+        // =========================================================================
+// >>>>> PASSO 2: ADICIONE ESTAS TRÊS NOVAS FUNÇÕES AO SEU JAVASCRIPT <<<<<
+// =========================================================================
+
+/**
+ * Orquestra a análise completa do roteiro, chamando "micro-análises" para cada parte.
+ */
+const analyzeFullScript = async (button) => {
+    showButtonLoading(button);
+    const reportContainer = document.getElementById('analysisReportContainer');
+    reportContainer.innerHTML = DOMPurify.sanitize(`<div class="my-4"><div class="loading-spinner-small mx-auto"></div><p class="text-sm mt-2">Analisando... Isso pode levar um momento.</p></div>`);
+
+    try {
+        // Coleta os textos das seções
+        const introText = document.querySelector('#introSection .generated-content-wrapper')?.textContent.trim();
+        const devText = document.querySelector('#developmentSection .generated-content-wrapper')?.textContent.trim();
+        const climaxText = document.querySelector('#climaxSection .generated-content-wrapper')?.textContent.trim();
+        const conclusionText = document.querySelector('#conclusionSection .generated-content-wrapper')?.textContent.trim();
+
+        if (!introText || !devText || !climaxText || !conclusionText) {
+            throw new Error("Todas as seções do roteiro (Intro, Dev, Clímax, Conclusão) devem ser geradas primeiro.");
+        }
+
+        // Executa as micro-análises em paralelo
+        const [hookAnalysis, retentionAnalysis, impactAnalysis] = await Promise.all([
+            analyzeScriptPart('Hook e Introdução', introText, `Analise este hook. Dê uma nota de 0 a 10 para o impacto inicial e a capacidade de criar um 'loop aberto'.`),
+            analyzeScriptPart('Ritmo e Retenção', devText, `Analise este desenvolvimento. Dê uma nota para a variação de ritmo e o uso de ganchos de retenção para evitar monotonia.`),
+            analyzeScriptPart('Impacto Emocional e Finalização', `${climaxText}\n\n${conclusionText}`, `Analise este final (clímax e conclusão). Dê uma nota para o impacto emocional e se ele cumpre a promessa da história.`)
+        ]);
+
+        // Renderiza o relatório final
+        reportContainer.innerHTML = ''; // Limpa o spinner
+        reportContainer.appendChild(createReportSection(hookAnalysis));
+        reportContainer.appendChild(createReportSection(retentionAnalysis));
+        reportContainer.appendChild(createReportSection(impactAnalysis));
+
+        window.showToast("Análise do roteiro concluída!");
+
+    } catch (error) {
+        console.error("Erro detalhado em analyzeFullScript:", error);
+        window.showToast(`Falha na análise: ${error.message}`);
+        reportContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">${error.message}</p>`);
+    } finally {
+        hideButtonLoading(button);
+    }
+};
+
+/**
+ * Função genérica para analisar uma parte específica do roteiro.
+ */
+const analyzeScriptPart = async (criterion, text, instruction) => {
+    const prompt = `Você é uma API de Análise de Roteiro que retorna um objeto JSON.
+
+**TAREFA:** Analise o "Trecho de Roteiro" fornecido com base no "Critério de Análise".
+
+**Critério de Análise:** ${instruction}
+
+**Trecho de Roteiro:**
+---
+${text.slice(0, 7000)}
+---
+
+**REGRAS DE RESPOSTA (JSON):**
+Sua resposta DEVE ser um objeto JSON com EXATAMENTE estas chaves:
+- "criterion_name": (String) O nome do critério que você analisou (ex: "${criterion}").
+- "score": (Número) Uma nota de 0 a 10.
+- "positive_points": (String) Um parágrafo resumindo os pontos fortes.
+- "improvement_points": (Array) Um array de objetos, onde cada objeto tem duas chaves: "critique" (String) e "suggestion" (String). Forneça de 1 a 2 pontos de melhoria.
+
+Responda APENAS com o objeto JSON.`;
+
+    const rawResult = await callGroqAPI(prompt, 2000);
+    return cleanGeneratedText(rawResult, true);
+};
+
+/**
+ * Cria e retorna o elemento HTML para uma seção do relatório de análise.
+ */
+const createReportSection = (analysisData) => {
+    const sectionDiv = document.createElement('div');
+    sectionDiv.className = 'p-4 border rounded-lg mb-4 bg-gray-50 dark:bg-gray-800';
+
+    if (!analysisData || typeof analysisData.score === 'undefined') {
+        sectionDiv.innerHTML = DOMPurify.sanitize(`
+            <h4 class="font-bold text-lg text-red-500">${analysisData.criterion_name || 'Seção de Análise'}</h4>
+            <p class="text-red-500 text-sm mt-2">Falha ao processar a análise para esta seção.</p>
+        `);
+        return sectionDiv;
+    }
+
+    let improvementHtml = '';
+    if (analysisData.improvement_points && analysisData.improvement_points.length > 0) {
+        improvementHtml = analysisData.improvement_points.map(point => `
+            <div class="mt-3">
+                <p class="text-sm"><strong class="text-yellow-600 dark:text-yellow-400">Crítica:</strong> ${DOMPurify.sanitize(point.critique)}</p>
+                <p class="text-sm"><strong class="text-green-600 dark:text-green-400">Sugestão:</strong> ${DOMPurify.sanitize(point.suggestion)}</p>
+            </div>
+        `).join('');
+    }
+
+    const content = `
+        <div class="flex justify-between items-center">
+            <h4 class="font-bold text-lg">${DOMPurify.sanitize(analysisData.criterion_name)}</h4>
+            <span class="font-bold text-xl text-primary">${analysisData.score}/10</span>
+        </div>
+        <div class="mt-2">
+            <p class="text-sm"><strong class="text-indigo-500">Pontos Fortes:</strong> ${DOMPurify.sanitize(analysisData.positive_points)}</p>
+            ${improvementHtml}
+        </div>
+    `;
+    sectionDiv.innerHTML = content;
+    return sectionDiv;
+};
+
 
 
 // =========================================================================
@@ -5498,6 +5634,21 @@ const actions = {
 },
 
 
+
+
+const analysisSection = document.getElementById('scriptAnalysisSection');
+    if(analysisSection) {
+        if(intro && development && climax && conclusion) {
+            analysisSection.classList.remove('hidden');
+        } else {
+            analysisSection.classList.add('hidden');
+        }
+    }
+
+
+
+
+
         'select-enigma-idea': (btn) => {
             const ideaString = btn.dataset.idea;
             if (ideaString) {
@@ -5528,6 +5679,8 @@ const actions = {
         'refineStyle': (btn) => window.refineSectionStyle(btn),
         'enrichWithData': (btn) => window.enrichWithData(btn),
         'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
+
+        'analyzeScript': (btn) => analyzeFullScript(btn),
 
         'optimizeGroup': (btn) => {
         const suggestionText = btn.dataset.suggestionText;
