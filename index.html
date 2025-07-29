@@ -276,35 +276,31 @@
     visibility: hidden;
     opacity: 0;
     width: 300px;
-    background-color: var(--dark-bg); /* <<< CORREÇÃO APLICADA */
-    color: var(--dark-text-header);     /* <<< CORREÇÃO APLICADA */
+    background-color: var(--dark-bg);
+    color: var(--dark-text-header);
     text-align: left;
     border-radius: 8px;
     padding: 1rem;
     position: absolute;
     z-index: 1001;
-    bottom: 150%; 
+    bottom: 150%;
     left: 50%;
     transform: translateX(-50%);
     box-shadow: var(--shadow);
     border: 1px solid var(--dark-border);
     transition: opacity 0.3s;
     pointer-events: none;
-    font-weight: normal;
-    font-size: 0.875rem;
-    line-height: 1.5;
+
+    /* <<< AQUI ESTÃO AS MELHORIAS DE LEGIBILIDADE >>> */
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;    /* Um pouco mais pesado que o normal (400) */
+    line-height: 1.6;    /* Espaçamento entre linhas mais confortável */
 }
 
 /* --- Flecha do Balão --- */
-.help-icon .tooltip-text::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: var(--dark-bg) transparent transparent transparent; /* <<< CORREÇÃO APLICADA */
+.help-icon .tooltip-text strong {
+    font-weight: 700; /* Garante que o negrito seja bem forte */
+    color: var(--primary); /* Destaca o título com a cor primária */
 }
 
 /* --- Exibição ao passar o mouse --- */
