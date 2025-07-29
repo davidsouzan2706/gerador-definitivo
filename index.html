@@ -5611,6 +5611,21 @@ const actions = {
         'resetProject': async () => {
             const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
             if (confirmed) { resetApplicationState(); }
+
+
+const analysisSection = document.getElementById('scriptAnalysisSection');
+    if(analysisSection) {
+        if(intro && development && climax && conclusion) {
+            analysisSection.classList.remove('hidden');
+        } else {
+            analysisSection.classList.add('hidden');
+        }
+    }
+
+
+
+
+            
         },
         
         // Ações Dinâmicas (dentro dos acordeões e modais)
@@ -5636,14 +5651,6 @@ const actions = {
 
 
 
-const analysisSection = document.getElementById('scriptAnalysisSection');
-    if(analysisSection) {
-        if(intro && development && climax && conclusion) {
-            analysisSection.classList.remove('hidden');
-        } else {
-            analysisSection.classList.add('hidden');
-        }
-    }
 
 
 
