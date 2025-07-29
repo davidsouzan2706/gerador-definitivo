@@ -295,6 +295,29 @@
     visibility: visible;
 }
 
+/* ========================================================== */
+/*     PASSO 2.1: ADICIONE ESTE NOVO BLOCO AO SEU CSS         */
+/* ========================================================== */
+.help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--dark-border);
+    color: var(--dark-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: help;
+    margin-left: 8px;
+    transition: var(--transition);
+}
+.help-icon:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
 
     </style>
 </head>
@@ -449,13 +472,18 @@
                 <p id="popoverDescription" class="text-sm leading-relaxed"></p>
             </div>
         </div>
-        <div class="input-group md:col-span-2"><label for="emotionalHook" data-tooltip="Dê uma alma para sua história. Este é o 'fio condutor' humano. A IA usará esta pequena história para conectar os grandes fatos a uma experiência pessoal, tornando o roteiro muito mais impactante.">História Pessoal / Gancho Emocional (Opcional):</label><textarea id="emotionalHook" rows="3" placeholder="Qual rosto humano dará alma à sua história? Ex: a jornada de um indivíduo, uma memória pessoal, um arquétipo (o azarão, o mentor)..."></textarea></div>
+        <div class="input-group md:col-span-2"><label for="emotionalHook">História Pessoal / Gancho Emocional (Opcional):
+    <span class="help-icon"
+          data-help-title="Dê uma Alma para sua História"
+          data-help-content="Este é o 'fio condutor' humano. A IA usará esta pequena história para conectar os grandes fatos a uma experiência pessoal.">i</span>
+</label><textarea id="emotionalHook" rows="3" placeholder="Qual rosto humano dará alma à sua história? Ex: a jornada de um indivíduo, uma memória pessoal, um arquétipo (o azarão, o mentor)..."></textarea></div>
 
         <!-- Bloco 3: O Tom e a Jornada -->
         <div class="input-group"><label for="narrativeTone">4. Tom da Narração:</label><select id="narrativeTone"><option value="inspirador" selected>Inspirador</option><option value="serio">Sério</option><option value="emocional">Emocional</option></select></div>
         <div class="input-group"><label for="narrativeVoice">5. Voz do Narrador:</label><input type="text" id="narrativeVoice" placeholder="Se seu canal fosse uma pessoa, como ela falaria? Confiante? Engraçada? Misteriosa?"></div>
         <div class="input-group md:col-span-2"><label for="emotionalArc">Arco Emocional Desejado (Opcional):</label><textarea id="emotionalArc" rows="2" placeholder="Ex: Curiosidade -> Tensão -> Surpresa"></textarea></div>
-        <div class="input-group md:col-span-2"><label for="shockingEndingHook" data-tooltip="A técnica do 'loop aberto' reverso. Coloque a frase final e mais chocante da sua história aqui. A IA usará esta frase como a PRIMEIRA linha do vídeo, criando um mistério instantâneo que prende o espectador até o final.">O Desfecho Chocante (Hook Opcional):</label><input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada."></div>
+        <div class="input-group md:col-span-2"><label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):<span class="help-icon"data-help-title="Hook Reverso (Loop Aberto)"data-help-content="Coloque a frase final e mais chocante da sua história aqui. A IA usará esta frase como a PRIMEIRA linha do vídeo, criando um mistério instantâneo.">i</span>
+</label><input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada."></div>
 
     </div>
 </div>
@@ -469,7 +497,11 @@
         <div class="input-group"><label for="speakingPace">Ritmo de Fala:</label><select id="speakingPace"><option value="moderate" selected>Moderado</option><option value="slow">Lento</option><option value="fast">Rápido</option></select></div>
 
 <div class="input-group md:col-span-2">
-    <label for="researchData" data-tooltip="Aumente a credibilidade do seu roteiro. Cole aqui nomes, datas, estatísticas, ou citações. A IA irá tecer essas informações na narrativa. Ex: 'Fonte: Estudo de Harvard; Dr. João da Silva, especialista...'">Fontes e Dados de Pesquisa (Opcional):</label>
+    <label for="researchData">Fontes e Dados de Pesquisa (Opcional):
+    <span class="help-icon" 
+          data-help-title="Aumente a Credibilidade"
+          data-help-content="Cole aqui nomes, datas, estatísticas, ou citações. A IA irá tecer essas informações na narrativa. Ex: 'Fonte: Estudo de Harvard; Dr. João da Silva, especialista...'">i</span>
+</label>
     <textarea id="researchData" rows="4" placeholder="Para aumentar a credibilidade, cole aqui dados, fontes, nomes e links que a IA deve citar e contextualizar no roteiro. Ex: Fonte: Atlas da Violência 2023; Maria da Silva, coordenadora do Instituto Odara..."></textarea>
 </div>
 
@@ -4972,9 +5004,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const goalSelect = document.getElementById('narrativeGoal');
     if (goalSelect) { goalSelect.addEventListener('change', updateNarrativeStructureOptions); }
 
-    const structureSelect = document.getElementById('narrativeStructure');
-    if (structureSelect) { structureSelect.addEventListener('change', updateMainTooltip); }
-    
     const imageStyleSelect = document.getElementById('imageStyleSelect');
     if (imageStyleSelect) { imageStyleSelect.addEventListener('change', toggleCustomImageStyleVisibility); }
     
@@ -5002,30 +5031,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const speakingPaceSelect = document.getElementById('speakingPace');
     if (speakingPaceSelect) { speakingPaceSelect.addEventListener('change', updateAllReadingTimes); }
-    
-    // --- 4. O "GERENTE DE CLIQUES" (versão v6.0 - Robusta) ---
-const actions = {
-        // Ações da página principal
+
+    // --- 4. NOVO "GERENTE DE AJUDA" E POPOVER UNIFICADO ---
+    const popover = document.getElementById('structurePopover');
+    const popoverTitle = document.getElementById('popoverTitle');
+    const popoverDescription = document.getElementById('popoverDescription');
+    const structureSelect = document.getElementById('narrativeStructure');
+
+    const showPopover = (element, title, content) => {
+        if (!popover || !popoverTitle || !popoverDescription) return;
+        popoverTitle.textContent = title;
+        popoverDescription.textContent = content;
+        const rect = element.getBoundingClientRect();
+        
+        // Ajusta a posição para não sair da tela
+        const popoverWidth = popover.offsetWidth;
+        let leftPosition = rect.left + window.scrollX - (popoverWidth / 2) + (rect.width / 2);
+        if (leftPosition < 10) leftPosition = 10; // Margem esquerda
+        if (leftPosition + popoverWidth > window.innerWidth - 10) {
+            leftPosition = window.innerWidth - popoverWidth - 10; // Margem direita
+        }
+
+        popover.style.left = `${leftPosition}px`;
+        popover.style.top = `${rect.top + window.scrollY - 10}px`;
+        popover.style.transform = 'translateY(-100%)';
+        popover.classList.remove('opacity-0', 'invisible');
+    };
+
+    const hidePopover = () => {
+        if (!popover) return;
+        popover.classList.add('opacity-0', 'invisible');
+    };
+
+    document.body.addEventListener('mouseover', (event) => {
+        const helpIcon = event.target.closest('.help-icon');
+        const structureField = event.target.closest('#narrativeStructure');
+
+        if (helpIcon) {
+            showPopover(helpIcon, helpIcon.dataset.helpTitle, helpIcon.dataset.helpContent);
+        } else if (structureField) {
+            const selectedKey = structureField.value;
+            const selectedText = structureField.options[structureField.selectedIndex]?.text;
+            const descriptionText = narrativeTooltips[selectedKey] || "Descrição não encontrada.";
+            if(selectedText) {
+                 showPopover(structureField, selectedText, descriptionText);
+            }
+        }
+    });
+
+    document.body.addEventListener('mouseout', (event) => {
+        if (event.target.closest('.help-icon') || event.target.closest('#narrativeStructure')) {
+            hidePopover();
+        }
+    });
+
+    // Adiciona listener para a MUDANÇA no select de estrutura, para manter o popover atualizado
+    if (structureSelect) {
+        structureSelect.addEventListener('change', () => {
+            const selectedKey = structureSelect.value;
+            const selectedText = structureSelect.options[structureSelect.selectedIndex]?.text;
+            const descriptionText = narrativeTooltips[selectedKey] || "Descrição não encontrada.";
+            if(selectedText) {
+                popoverTitle.textContent = selectedText;
+                popoverDescription.textContent = descriptionText;
+            }
+        });
+    }
+
+
+    // --- 5. O "GERENTE DE CLIQUES" (versão v6.0 - Robusta) ---
+    const actions = {
         'suggestStrategy': (btn) => suggestStrategy(btn),
         'startCrafting': (btn) => startCrafting(),
         'generateIdeas': (btn) => generateVideoIdeas(btn),
         'generateOutline': (btn) => generateStrategicOutline(btn),
-        
-        // Ações dos Módulos de Recursos
         'mapEmotions': (btn) => mapEmotionsAndPacing(btn),
         'generateDescription': (btn) => generateVideoDescription(btn),
         'generateTitlesAndThumbnails': (btn) => generateTitlesAndThumbnails(btn),
         'generateSoundtrack': (btn) => generateSoundtrack(btn),
-
-        // Ações de Geração de Seções
         'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
         'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
         'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
         'generateConclusion': (btn) => generateConclusion(btn),
         'generateCta': (btn) => generateStrategicCta(btn),
         'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
-
-        // Ações de Gerenciamento
         'exportProject': () => exportProject(),
         'exportPdf': () => downloadPdf(),
         'exportTranscript': () => handleCopyAndDownloadTranscript(),
@@ -5033,8 +5122,6 @@ const actions = {
             const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
             if (confirmed) { resetApplicationState(); }
         },
-        
-        // Ações Dinâmicas (dentro dos acordeões e modais)
         'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
         'select-idea': (btn) => {
             const ideaString = btn.dataset.idea;
@@ -5051,27 +5138,23 @@ const actions = {
             if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(btn); }
         },
         'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
-        
-        // <<< NOSSAS NOVAS AÇÕES CONECTADAS AQUI >>>
         'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
         'refineStyle': (btn) => window.refineSectionStyle(btn),
         'enrichWithData': (btn) => window.enrichWithData(btn),
         'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
-
         'optimizeGroup': (btn) => {
-        const suggestionText = btn.dataset.suggestionText;
-        if (suggestionText) window.optimizeGroup(btn, suggestionText);
+            const suggestionText = btn.dataset.suggestionText;
+            if (suggestionText) window.optimizeGroup(btn, suggestionText);
         },
         'deleteParagraphGroup': (btn) => {
-         const suggestionText = btn.dataset.suggestionText;
-         if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
+            const suggestionText = btn.dataset.suggestionText;
+            if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
         },
     };
 
     document.addEventListener('click', function(event) {
         const target = event.target;
         
-        // Lógica do Acordeão
         const accordionHeader = target.closest('.accordion-header');
         if (accordionHeader && !target.closest('.header-buttons')) {
             const body = accordionHeader.nextElementSibling;
@@ -5079,7 +5162,6 @@ const actions = {
             if (body && arrow) { body.classList.toggle('open'); arrow.classList.toggle('open'); }
         }
 
-        // Lógica dos Botões de Ação
         const button = target.closest('button[data-action]');
         if (!button) return;
 
@@ -5092,7 +5174,7 @@ const actions = {
         }
     });
 
-    // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
+    // --- 6. LÓGICA PARA RESETAR ROTEIRO ---
     const strategicInputIds = ['videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'visualPacing', 'narrativeGoal', 'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice', 'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect', 'researchData', 'emotionalHook'];
     
     strategicInputIds.forEach(id => {
