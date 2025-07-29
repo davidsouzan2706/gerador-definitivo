@@ -1262,8 +1262,9 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 
 
 // =========================================================================
-// >>>>> PASSO 3: SUBSTITUA A FUNÇÃO 'analyzeFullScript' INTEIRA POR ESTA <<<<<
+// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'analyzeFullScript' INTEIRA POR ESTA <<<<<
 // =========================================================================
+
 const analyzeFullScript = async (button) => {
     showButtonLoading(button);
     const reportContainer = document.getElementById('analysisReportContainer');
@@ -1280,13 +1281,8 @@ const analyzeFullScript = async (button) => {
             throw new Error("Todas as 5 seções do roteiro (Intro, Dev, Clímax, Conclusão e CTA) devem ser geradas primeiro.");
         }
 
-        const [
-            introAnalysis,
-            devAnalysis,
-            climaxAnalysis,
-            conclusionAnalysis,
-            ctaAnalysis
-        ] = await Promise.all([
+        // Usando Promise.allSettled para resiliência
+        const results = await Promise.allSettled([
             analyzeScriptPart('Introdução (Hook)', introText, `Analise este hook. Dê uma nota de 0 a 10 para o impacto inicial e a capacidade de criar um 'loop aberto' que prenda a atenção.`),
             analyzeScriptPart('Desenvolvimento (Ritmo e Retenção)', devText, `Analise este desenvolvimento. Dê uma nota para a variação de ritmo, a clareza da informação e o uso de ganchos de retenção para evitar monotonia.`),
             analyzeScriptPart('Clímax', climaxText, `Analise este clímax. Dê uma nota para o impacto emocional e se ele representa o ponto alto da tensão e da narrativa da história.`),
@@ -1295,11 +1291,25 @@ const analyzeFullScript = async (button) => {
         ]);
 
         reportContainer.innerHTML = '';
-        reportContainer.appendChild(createReportSection(introAnalysis));
-        reportContainer.appendChild(createReportSection(devAnalysis));
-        reportContainer.appendChild(createReportSection(climaxAnalysis));
-        reportContainer.appendChild(createReportSection(conclusionAnalysis));
-        reportContainer.appendChild(createReportSection(ctaAnalysis));
+
+        results.forEach(result => {
+            if (result.status === 'fulfilled') {
+                reportContainer.appendChild(createReportSection(result.value));
+            } else {
+                // Promise.allSettled nos dá o erro aqui, mas nossa analyzeScriptPart já formata um objeto de erro bonito
+                console.error("Uma micro-análise falhou:", result.reason);
+                const errorData = { 
+                    criterion_name: "Erro na Análise", 
+                    score: '!', 
+                    positive_points: 'Houve uma falha ao contatar a IA para esta seção.',
+                    improvement_points: [{
+                        critique: 'Detalhe do Erro',
+                        suggestion: result.reason.message
+                    }]
+                };
+                reportContainer.appendChild(createReportSection(errorData));
+            }
+        });
 
         window.showToast("Análise do roteiro concluída!");
 
@@ -1318,6 +1328,7 @@ const analyzeFullScript = async (button) => {
 // =========================================================================
 // >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'analyzeScriptPart' INTEIRA POR ESTA <<<<<
 // =========================================================================
+
 const analyzeScriptPart = async (criterion, text, instruction) => {
     const prompt = `Você é uma API de Análise de Roteiro que atua como um editor de linha e um estrategista de conteúdo para YouTube. Sua resposta DEVE ser um objeto JSON.
 
@@ -1330,20 +1341,52 @@ const analyzeScriptPart = async (criterion, text, instruction) => {
 ${text.slice(0, 7000)}
 ---
 
-**REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
+**REGRAS DE RESPOSTA (JSON ESTRITO):**
 Sua resposta DEVE ser um objeto JSON com EXATAMENTE estas chaves:
-- "criterion_name": (String) O nome do critério (ex: "${criterion}").
-- "score": (Número) Uma nota de 0 a 10, avaliando o trecho estritamente contra o critério.
-- "positive_points": (String) Um parágrafo conciso elogiando o que o trecho faz bem, citando uma pequena parte do texto como exemplo.
-- "improvement_points": (Array) Um array contendo de 1 a 2 objetos de melhoria. Cada objeto DEVE ter três chaves:
-    - "problematic_quote": (String) A frase ou trecho EXATO do roteiro original que representa a maior oportunidade de melhoria.
-    - "critique": (String) Uma crítica construtiva explicando POR QUE este trecho é um ponto fraco.
-    - "suggestion": (String) Uma sugestão acionável de como reescrever o trecho ou o que adicionar para corrigir o problema.
+- "criterion_name": (String) O nome do critério que você analisou (ex: "${criterion}").
+- "score": (Número) Uma nota de 0 a 10.
+- "positive_points": (String) Um parágrafo resumindo os pontos fortes.
+- "improvement_points": (Array) Um array de objetos, onde cada objeto tem duas chaves: "critique" (String) e "suggestion" (String). Forneça de 1 a 2 pontos de melhoria.
 
 Responda APENAS com o objeto JSON.`;
 
-    const rawResult = await callGroqAPI(prompt, 2500);
-    return cleanGeneratedText(rawResult, true);
+    try {
+        const rawResult = await callGroqAPI(prompt, 2500);
+        const analysisData = cleanGeneratedText(rawResult, true);
+
+        // BLINDAGEM DE VALIDAÇÃO
+        if (!analysisData) {
+            throw new Error("A IA retornou uma resposta nula ou vazia.");
+        }
+        const requiredKeys = ['criterion_name', 'score', 'positive_points', 'improvement_points'];
+        for (const key of requiredKeys) {
+            if (!(key in analysisData)) {
+                // Para ser mais resiliente, podemos adicionar um valor padrão em vez de quebrar
+                analysisData[key] = key === 'improvement_points' ? [] : 'N/A';
+                console.warn(`A chave '${key}' estava ausente na resposta da IA. Um valor padrão foi adicionado.`);
+            }
+        }
+        if (!Array.isArray(analysisData.improvement_points)) {
+             console.warn(`'improvement_points' não era um array. Convertendo para array vazio.`);
+             analysisData.improvement_points = [];
+        }
+
+        return analysisData;
+
+    } catch (error) {
+        console.error(`Erro ao analisar a parte '${criterion}':`, error);
+        // Retorna um objeto de erro para ser tratado pelo Promise.allSettled
+        // Isso evita que um erro quebre toda a análise.
+        return { 
+            criterion_name: criterion, 
+            score: 'Erro', 
+            positive_points: 'Não foi possível analisar esta seção.', 
+            improvement_points: [{
+                critique: 'Erro da API',
+                suggestion: `A análise falhou. O erro foi: ${error.message}`
+            }]
+        };
+    }
 };
 
 
