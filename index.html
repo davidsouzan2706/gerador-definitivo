@@ -629,11 +629,16 @@
             <label for="nicheDescription">Nicho do Canal ou Temas de Interesse:</label>
             <textarea id="nicheDescription" rows="4" placeholder="Ex: Arqueologia Bíblica e mistérios não resolvidos; Finanças pessoais para jovens cristãos; Análise de sermões e teologia prática..."></textarea>
         </div>
-        <div class="text-center mt-6">
-<button id="generateIdeasBtn" data-action="generateIdeas" class="btn btn-primary">
-    <i class="fas fa-lightbulb mr-2"></i>Gerar Ideias de Vídeo
-</button>
-        </div>
+<div class="text-center mt-6 flex flex-wrap justify-center gap-4">
+    <!-- Botão Antigo (Generalista) -->
+    <button id="generateIdeasBtn" data-action="generateIdeas" class="btn btn-primary">
+        <i class="fas fa-lightbulb mr-2"></i>Gerar Ideias (Geral)
+    </button>
+    <!-- Nosso Novo Botão (Especialista) -->
+    <button id="unravelEnigmasBtn" data-action="unravelEnigmas" class="btn btn-secondary">
+        <i class="fas fa-scroll mr-2"></i>Desvendar Enigmas (Bíblico)
+    </button>
+</div>
         
         <!-- Container para a saída das ideias -->
         <div id="ideasOutput" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -4091,6 +4096,89 @@ Gere 6 ideias de vídeo seguindo EXATAMENTE as regras e o formato acima.`;
 
 
 
+// ==========================================================
+//     PASSO 2: ADICIONE ESTA NOVA FUNÇÃO AO SEU JAVASCRIPT
+// ==========================================================
+
+const unravelEnigmas = async (button) => {
+    const nicheDescription = document.getElementById('nicheDescription').value.trim();
+    if (!nicheDescription) {
+        window.showToast("Por favor, descreva o nicho ou um tema bíblico para desvendar.");
+        return;
+    }
+
+    const outputContainer = document.getElementById('ideasOutput');
+    outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
+
+    showButtonLoading(button);
+
+    // O PROMPT MESTRE v2.0 - Aprimorado com a análise profissional
+    const prompt = `Você é um Teólogo Investigativo e um Mestre em Hermenêutica Bíblica. Sua especialidade é "desvendar as escrituras" para o canal "The Biblical Unveiling", encontrando os significados ocultos, códigos simbólicos e conexões inesperadas que a maioria dos leitores deixa passar.
+
+Sua missão é gerar 5 ideias de vídeos com base na descrição fornecida.
+
+**DIRETIVA PRINCIPAL: EVITE O ÓBVIO.** Esqueça os clichês (Arca da Aliança, Santo Graal, Torre de Babel). O público quer profundidade. As ideias devem exigir uma análise que vá além da leitura superficial, revelando insights que surpreendam um espectador familiarizado com a Bíblia.
+
+Para encontrar ideias únicas, você DEVE usar uma das seguintes **Técnicas Investigativas**:
+1.  **Fio Oculto (Cross-Referencing):** Conecte um detalhe sutil do Antigo Testamento a um evento do Novo Testamento.
+2.  **Lupa Lexical (Análise de Palavras):** Escolha uma palavra em Hebraico/Grego cuja tradução perde um significado profundo.
+3.  **O Espelho Tipológico (Tipologia):** Analise uma história menos conhecida do Antigo Testamento como uma "sombra" de Cristo.
+4.  **Contexto Histórico Profundo:** Conecte um evento bíblico a um detalhe pouco conhecido da cultura da época (romana, egípcia, babilônica).
+
+**FORMATO DA RESPOSTA:**
+Sua resposta DEVE ser um array JSON válido. Cada ideia no array deve ser um objeto com as seguintes chaves:
+- "title": (String) Um título curioso e específico. (Ex: "O Código Secreto Escondido nos Sonhos do Faraó")
+- "enigma": (String) O mistério central que o vídeo irá resolver.
+- "investigative_method": (String) O nome exato da técnica usada.
+- "hook_question": (String) Uma pergunta intrigante para os primeiros 15 segundos do vídeo. (Ex: "Por que o número 153 aparece apenas uma vez na Bíblia, e é um número de peixes?")
+
+**Descrição do usuário para inspirar as ideias:** "${nicheDescription}"
+
+Agora, gere as 5 ideias.`;
+
+    try {
+        const rawResult = await callGroqAPI(prompt, 4000);
+        const ideas = cleanGeneratedText(rawResult, true);
+
+        if (!ideas || !Array.isArray(ideas) || ideas.length === 0) {
+            throw new Error("A IA não retornou ideias de enigmas no formato esperado.");
+        }
+
+        outputContainer.innerHTML = ''; // Limpa o spinner
+
+        ideas.forEach((idea, index) => {
+            const card = document.createElement('div');
+            card.className = 'card-background p-4 rounded-lg shadow-md border-l-4 border-purple-500 animate-fade-in flex flex-col justify-between';
+            
+            const escapedIdea = escapeIdeaForOnclick(idea);
+            const cardContent = `
+                <div>
+                    <div class="flex justify-between items-start gap-4">
+                        <h4 class="font-bold text-base text-gray-800 dark:text-gray-200 flex-grow">${index + 1}. ${DOMPurify.sanitize(idea.title)}</h4>
+                        <button class="btn btn-primary btn-small flex-shrink-0 py-1 px-3"
+                                data-action="select-enigma-idea" 
+                                data-idea='${escapedIdea}'>
+                            Usar
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2"><strong>Enigma:</strong> ${DOMPurify.sanitize(idea.enigma)}</p>
+                    <p class="text-xs text-purple-600 dark:text-purple-400 font-semibold mt-3">Método: ${DOMPurify.sanitize(idea.investigative_method)}</p>
+                </div>
+            `;
+            card.innerHTML = DOMPurify.sanitize(cardContent, { ADD_ATTR: ['data-action', 'data-idea'] });
+            outputContainer.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Erro detalhado em unravelEnigmas:", error);
+        outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-red-500 text-sm">Falha ao desvendar enigmas: ${error.message}</p>`);
+    } finally {
+        hideButtonLoading(button);
+    }
+};
+
+
+
 // =========================================================================
 // >>>>> AÇÃO 1: ADICIONE A FUNÇÃO `selectIdea` QUE ESTAVA FALTANDO <<<<<
 // =========================================================================
@@ -5316,6 +5404,7 @@ const actions = {
         'suggestStrategy': (btn) => suggestStrategy(btn),
         'startCrafting': (btn) => startCrafting(),
         'generateIdeas': (btn) => generateVideoIdeas(btn),
+        'unravelEnigmas': (btn) => unravelEnigmas(btn), // <<< ADICIONE ESTA NOVA AÇÃO
         'generateOutline': (btn) => generateStrategicOutline(btn),
         
         // Ações dos Módulos de Recursos
@@ -5352,6 +5441,24 @@ const actions = {
                 } catch (e) { console.error("Erro ao processar dados da ideia:", e); window.showToast("Erro ao selecionar a ideia.");}
             }
         },
+
+
+        'select-enigma-idea': (btn) => { // <<< ADICIONE ESTA NOVA AÇÃO DE SELEÇÃO
+            const ideaString = btn.dataset.idea;
+            if (ideaString) {
+                try {
+                    const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                    // Para enigmas, vamos preencher mais campos
+                    document.getElementById('videoTheme').value = ideaObject.title || '';
+                    document.getElementById('videoDescription').value = ideaObject.enigma || '';
+                    document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
+                    window.showToast("Enigma selecionado! Estratégia pré-preenchida.");
+                    document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } catch (e) { console.error("Falha ao processar dados da ideia de enigma:", e); }
+            }
+        },
+
+
         'regenerate': (btn) => window.regenerateSection(btn.dataset.sectionId),
         'copy': (btn) => {
             const content = btn.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
