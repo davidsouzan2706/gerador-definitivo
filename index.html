@@ -3108,7 +3108,7 @@ window.analyzeSectionRetention = async (button, sectionId) => {
         return;
     }
 
-    const paragraphs = Array.from(contentWrapper.querySelectorAll('div'));
+    const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]')); // Alterado para pegar apenas divs com ID
     if (paragraphs.length === 0) {
         window.showToast("Não há parágrafos para analisar.");
         return;
@@ -3119,19 +3119,20 @@ window.analyzeSectionRetention = async (button, sectionId) => {
     try {
         const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
         
-        // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE EXPLÍCITAS <<<
+        // >>> PROMPT BLINDADO COM REGRA DE FECHAMENTO EXPLÍCITA <<<
         const prompt = `Você é uma API de análise de retenção que retorna um array JSON.
 
 **REGRAS CRÍTICAS DE SINTAXE (INEGOCIÁVEIS):**
-1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
-2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves (ex: "suggestion") E todos os valores de texto (strings) DEVEM, OBRIGATORIAMENTE, usar aspas duplas (\`"\`). É estritamente proibido usar aspas simples (\`'\`).
-3.  **VÍRGULA FINAL:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último objeto.
-4.  **OBJETO COMPLETO:** Cada objeto no array deve conter EXATAMENTE as três chaves: "paragraphIndex" (um número), "retentionScore" (uma string: "green", "yellow", ou "red"), e "suggestion" (uma string concisa em Português-Brasil).
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON.
+2.  **ESTRUTURA COMPLETA:** Sua resposta DEVE começar com um colchete de abertura \`[\` e, OBRIGATORIAMENTE, terminar com um colchete de fechamento \`]\`.
+3.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves (ex: "suggestion") E todos os valores de texto (strings) DEVEM usar aspas duplas (\`"\`).
+4.  **VÍRGULA FINAL:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último objeto.
+5.  **OBJETO COMPLETO:** Cada objeto no array deve conter EXATAMENTE as três chaves: "paragraphIndex", "retentionScore" ("green", "yellow", ou "red"), e "suggestion" (em Português-Brasil).
 
 **DADOS PARA ANÁLISE:**
 ${JSON.stringify(paragraphsWithIndexes, null, 2)}
 
-Analise os dados e retorne o array JSON, seguindo TODAS as regras de sintaxe.`;
+Analise os dados e retorne o array JSON completo e sintaticamente perfeito.`;
 
         const rawResult = await callGroqAPI(prompt, 4000);
         let analysis = cleanGeneratedText(rawResult, true);
