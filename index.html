@@ -578,6 +578,48 @@
         font-weight: 700;
         color: var(--primary);
     }
+
+    /* ========================================================== */
+/*     PASSO 1: ADICIONE ESTE NOVO BLOCO AO SEU CSS           */
+/* ========================================================== */
+
+#tone-variation-menu {
+    position: absolute;
+    background-color: var(--dark-surface);
+    border: 1px solid var(--dark-border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 0.5rem;
+    z-index: 1002;
+    display: flex;
+    gap: 0.5rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, transform 0.2s;
+    transform: translateY(10px);
+}
+
+#tone-variation-menu.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#tone-variation-menu button {
+    background-color: transparent;
+    border: none;
+    color: var(--dark-text-body);
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+#tone-variation-menu button:hover {
+    background-color: var(--dark-border);
+    color: var(--dark-text-header);
+
 </style>
 
 
@@ -968,6 +1010,14 @@ Ex: 'Fonte: Estudo de Harvard; Dr. João da Silva, especialista...'
 </div>
         </main>
 
+
+        <div id="tone-variation-menu" class="">
+        <button data-tone="emotion">Mais Emoção</button>
+        <button data-tone="impact">Mais Urgência</button>
+        <button data-tone="clarity">Mais Clareza</button>
+        <button data-tone="humor">Mais Humor</button>
+        </div>
+
         <!-- Floating Action Bar -->
         <div class="floating-action-bar">
             <button class="theme-toggle bg-indigo-500 text-white">
@@ -1187,6 +1237,64 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
                 button.innerHTML = 'Erro!';
             }
         };
+
+
+// ==========================================================
+//     PASSO 3.1: ADICIONE ESTA NOVA FUNÇÃO AO SEU SCRIPT
+// ==========================================================
+const varyTone = async (tone) => {
+    if (!userSelectionRange) {
+        window.showToast("Erro: Seleção de texto perdida.");
+        return;
+    }
+    const selectedText = userSelectionRange.toString();
+    const toneMenu = document.getElementById('tone-variation-menu');
+    toneMenu.classList.remove('visible'); // Esconde o menu imediatamente
+
+    const toneInstructions = {
+        emotion: "injete linguagem mais emotiva, focada em sentimentos, vulnerabilidade e impacto pessoal. Use palavras mais fortes e analogias sensoriais.",
+        impact: "use frases mais curtas, palavras de ação e uma estrutura que crie um senso de velocidade, urgência e importância.",
+        clarity: "atue como um 'tradutor de complexidade'. Remova jargões, simplifique conceitos e reescreva a ideia da forma mais clara e direta possível.",
+        humor: "reescreva o trecho com uma pitada de ironia, sarcasmo leve ou uma analogia engraçada, alinhada com a voz geral do roteiro."
+    };
+
+    const prompt = `Você é um Editor de Roteiro especialista em tom narrativo. Sua tarefa é reescrever o 'Texto Original' para que ele transmita um novo sentimento, mantendo a informação central.
+
+**Texto Original:**
+---
+${selectedText}
+---
+
+**Nova Intenção (Tom):**
+Você deve reescrever o texto para que ele tenha **mais ${tone}**. Para isso, ${toneInstructions[tone]}
+
+**REGRAS:**
+- Mantenha a informação e o significado do texto original.
+- Responda APENAS com o texto reescrito. Sem comentários ou explicações.`;
+
+    try {
+        const rawResult = await callGroqAPI(prompt, 1000);
+        const variedText = removeMetaComments(rawResult);
+        
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(userSelectionRange);
+        document.execCommand('insertHTML', false, DOMPurify.sanitize(`<span class="highlight-change">${variedText}</span>`));
+        
+        const sectionElement = userSelectionRange.startContainer.parentElement.closest('.script-section');
+        if (sectionElement) {
+            invalidateAndClearPerformance(sectionElement);
+            invalidateAndClearPrompts(sectionElement);
+        }
+        
+        window.showToast(`Texto reescrito com '${tone}'!`);
+    } catch(error) {
+        console.error(`Erro ao variar o tom para ${tone}:`, error);
+        window.showToast(`Falha ao reescrever o texto: ${error.message}`);
+    } finally {
+        userSelectionRange = null;
+    }
+};
 
 
 // =========================================================================
@@ -5438,6 +5546,38 @@ const actions = {
             action(button);
         }
     });
+
+
+    const toneMenu = document.getElementById('tone-variation-menu');
+
+    // Listener para mostrar o menu quando um texto é selecionado
+    document.addEventListener('selectionchange', () => {
+        const selection = window.getSelection();
+        const selectedText = selection.toString().trim();
+        
+        if (selectedText.length > 10 && selection.anchorNode.parentElement.closest('.generated-content-wrapper')) {
+            userSelectionRange = selection.getRangeAt(0).cloneRange();
+            const rect = userSelectionRange.getBoundingClientRect();
+            
+            toneMenu.style.left = `${rect.left + window.scrollX}px`;
+            toneMenu.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            toneMenu.classList.add('visible');
+        } else {
+            if (!toneMenu.contains(document.activeElement)) {
+                 toneMenu.classList.remove('visible');
+            }
+        }
+    });
+
+    // Listener para os cliques nos botões do menu
+    toneMenu.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-tone]');
+        if (button) {
+            const tone = button.dataset.tone;
+            varyTone(tone);
+        }
+    });
+    
 
     // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
     const strategicInputIds = ['videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'visualPacing', 'narrativeGoal', 'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice', 'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect', 'researchData', 'emotionalHook'];
