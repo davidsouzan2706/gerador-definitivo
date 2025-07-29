@@ -1667,15 +1667,17 @@ const generateConclusion = async (button) => {
         const paragraphs = result.split('\n').filter(p => p.trim() !== '');
         const contentWithSpans = paragraphs.map((p, index) => `<div id="conclusion-p-${index}">${p}</div>`).join('');
 
-        document.getElementById('conclusionSection').innerHTML = generateSectionHtmlContent('conclusion', 'Conclusão', contentWithSpans);
+        // <<< AQUI ESTÁ A CORREÇÃO >>>
+        const conclusionContainer = document.getElementById('conclusionSection');
+        const conclusionElement = generateSectionHtmlContent('conclusion', 'Conclusão', contentWithSpans);
+        conclusionContainer.innerHTML = ''; // Limpa o container
+        conclusionContainer.appendChild(conclusionElement); // Adiciona o elemento seguro
         projectState.conclusion = true;
         
-        // <<< LÓGICA DE TRANSFORMAÇÃO DA UI CORRIGIDA >>>
         document.querySelectorAll('input[name="conclusionType"]').forEach(radio => radio.disabled = true);
         document.getElementById('conclusionSpecifics').disabled = true;
         document.querySelector('#conclusionInputContainer').classList.add('opacity-50');
 
-        // Esconde o botão de Conclusão e mostra o botão de CTA
         button.classList.add('hidden');
         document.getElementById('generateCtaBtn').classList.remove('hidden');
 
@@ -1690,22 +1692,16 @@ const generateConclusion = async (button) => {
     }
 };
 
-
-// =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA a função 'generateStrategicCta' INTEIRA por ESTA <<<<<
-// =========================================================================
-
 const generateStrategicCta = async (button) => {
     showButtonLoading(button);
 
-    // <<< AQUI ESTÁ A BLINDAGEM: Garantimos que o container do CTA exista >>>
     const scriptContainer = document.getElementById('scriptSectionsContainer');
     let ctaSection = document.getElementById('ctaSection');
     if (scriptContainer && !ctaSection) {
         ctaSection = document.createElement('div');
         ctaSection.id = 'ctaSection';
         ctaSection.classList.add('script-section');
-        scriptContainer.appendChild(ctaSection); // Adiciona ao final das seções
+        scriptContainer.appendChild(ctaSection);
     }
 
     const ctaSpecifics = document.getElementById('ctaSpecifics').value.trim();
@@ -1732,8 +1728,10 @@ const generateStrategicCta = async (button) => {
         const paragraphs = result.split('\n').filter(p => p.trim() !== '');
         const contentWithSpans = paragraphs.map((p, index) => `<div id="cta-p-${index}">${p}</div>`).join('');
         
-        // Agora, 'ctaSection' está garantido que não é null
-        ctaSection.innerHTML = generateSectionHtmlContent('cta', 'Call to Action (CTA)', contentWithSpans);
+        // <<< E A CORREÇÃO ESTÁ AQUI TAMBÉM >>>
+        const ctaElement = generateSectionHtmlContent('cta', 'Call to Action (CTA)', contentWithSpans);
+        ctaSection.innerHTML = ''; // Limpa o container
+        ctaSection.appendChild(ctaElement); // Adiciona o elemento seguro
         ctaSection.classList.remove('hidden');
         
         markButtonAsCompleted('generateCtaBtn');
