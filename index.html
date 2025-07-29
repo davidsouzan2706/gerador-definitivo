@@ -245,6 +245,77 @@
         }
 
 
+/* ========================================================== */
+/*     PASSO 1: ADICIONE ESTE NOVO BLOCO AO SEU CSS           */
+/* ========================================================== */
+
+/* --- Estilo para o Ícone de Ajuda (gatilho) --- */
+.help-icon {
+    position: relative; /* Necessário para o posicionamento do tooltip */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--dark-border);
+    color: var(--dark-text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: help;
+    margin-left: 8px;
+    transition: var(--transition);
+}
+
+.help-icon:hover {
+    background-color: var(--primary);
+    color: white;
+}
+
+/* --- Estilo para o Balão de Ajuda (conteúdo) --- */
+.help-icon .tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    width: 300px;
+    background-color: var(--dark-surface);
+    color: var(--dark-text-body);
+    text-align: left;
+    border-radius: 8px;
+    padding: 1rem;
+    position: absolute;
+    z-index: 1001; /* Z-index alto para garantir que fique por cima */
+    bottom: 150%; 
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--dark-border);
+    transition: opacity 0.3s;
+    pointer-events: none; /* Garante que o tooltip não interfira com o mouse */
+    font-weight: normal;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+/* --- Flecha do Balão --- */
+.help-icon .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--dark-surface) transparent transparent transparent;
+}
+
+/* --- Exibição ao passar o mouse --- */
+.help-icon:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+        
+
+
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
