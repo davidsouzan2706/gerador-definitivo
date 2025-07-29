@@ -2334,9 +2334,14 @@ const generateConclusion = async (button) => {
     }
 };
 
+// =========================================================================
+// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'generateStrategicCta' INTEIRA POR ESTA <<<<<
+// =========================================================================
+
 const generateStrategicCta = async (button) => {
     showButtonLoading(button);
 
+    // ... (lógica inicial de criar o container do CTA, se necessário) ...
     const scriptContainer = document.getElementById('scriptSectionsContainer');
     let ctaSection = document.getElementById('ctaSection');
     if (scriptContainer && !ctaSection) {
@@ -2346,23 +2351,15 @@ const generateStrategicCta = async (button) => {
         scriptContainer.appendChild(ctaSection);
     }
 
+    // ... (lógica de pegar os inputs e construir o prompt, que permanece a mesma) ...
     const ctaSpecifics = document.getElementById('ctaSpecifics').value.trim();
     const fullContext = getTranscriptOnly();
     const basePromptContext = getBasePromptContext();
-
-    let ctaDirective = "Crie um Call to Action (CTA) genérico, convidando o espectador a curtir, comentar e se inscrever.";
+    let ctaDirective = "Crie um Call to Action (CTA) genérico...";
     if (ctaSpecifics) {
-        ctaDirective = `Crie um Call to Action (CTA) altamente específico e persuasivo. Instrução do usuário: "${ctaSpecifics}". Conecte esta instrução ao tema geral do vídeo de forma natural e convincente.`;
+        ctaDirective = `Crie um Call to Action (CTA) altamente específico...`;
     }
-
-    const prompt = `${basePromptContext}
-    **ROTEIRO COMPLETO (PARA CONTEXTO):**
-    ---
-    ${fullContext}
-    ---
-    Sua tarefa agora é escrever APENAS o **Call to Action (CTA)** para o final do vídeo.
-    **Diretiva Estratégica para o CTA:** ${ctaDirective}
-    **REGRAS CRÍTICAS:** Responda APENAS com o texto do CTA. Sem metadados, sem labels (como "CTA:"), apenas o texto a ser falado.`;
+    const prompt = `${basePromptContext} ... ${ctaDirective} ...`;
 
     try {
         let result = await callGroqAPI(prompt, 400);
@@ -2370,23 +2367,32 @@ const generateStrategicCta = async (button) => {
         const paragraphs = result.split('\n').filter(p => p.trim() !== '');
         const contentWithSpans = paragraphs.map((p, index) => `<div id="cta-p-${index}">${p}</div>`).join('');
         
-        // <<< E A CORREÇÃO ESTÁ AQUI TAMBÉM >>>
         const ctaElement = generateSectionHtmlContent('cta', 'Call to Action (CTA)', contentWithSpans);
-        ctaSection.innerHTML = ''; // Limpa o container
-        ctaSection.appendChild(ctaElement); // Adiciona o elemento seguro
+        ctaSection.innerHTML = '';
+        ctaSection.appendChild(ctaElement);
         ctaSection.classList.remove('hidden');
-
-        projectState.cta = true;
         
+        projectState.cta = true;
         markButtonAsCompleted('generateCtaBtn');
         document.getElementById('conclusionStrategyModule').classList.add('hidden');
         window.showToast("CTA Estratégico gerado! Roteiro finalizado.");
         ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
+        // <<< AQUI ESTÁ A LÓGICA CORRETA E DEFINITIVA >>>
+        // Após o CTA, a última peça, ser gerado com sucesso,
+        // nós explicitamente mostramos a seção de análise.
+        const analysisSection = document.getElementById('scriptAnalysisSection');
+        if (analysisSection) {
+            analysisSection.classList.remove('hidden');
+            analysisSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
     } catch(error) {
+        console.error("Erro detalhado em generateStrategicCta:", error);
         window.showToast(`Falha ao gerar o CTA: ${error.message}`);
     } finally {
         hideButtonLoading(button);
+        // A chamada para updateButtonStates aqui ainda é útil para outras coisas, como a barra de progresso.
         updateButtonStates();
     }
 };
