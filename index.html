@@ -524,7 +524,7 @@
         <h3 class="text-lg font-bold">Qual é o objetivo final do seu vídeo?</h3>
         <!-- <<< NOSSO NOVO BOTÃO DE AJUDA AQUI >>> -->
         <button id="suggestFinalStrategyBtn" data-action="suggestFinalStrategy" class="btn btn-secondary btn-small mt-2">
-            <i class="fas fa-magic mr-2"></i> Sugerir Estratégia Final com IA
+            <i class="fas fa-magic mr-2"></i> Sugerir Estratégia Final
         </button>
     </div>
     <div class="flex justify-center flex-wrap gap-4 mb-6">
@@ -543,11 +543,11 @@
     </div>
     <div id="conclusionInputContainer" class="input-group">
         <label for="conclusionSpecifics">Detalhes para a Conclusão:</label>
-        <textarea id="conclusionSpecifics" rows="3" placeholder="Ex: A lição é que a resiliência é a nossa maior força..."></textarea>
+        <textarea id="conclusionSpecifics" rows="3" placeholder="A IA pode sugerir isso para você... ou escreva sua própria diretriz."></textarea>
     </div>
     <div class="input-group mt-4">
         <label for="ctaSpecifics">Detalhes para o Call to Action (CTA) Específico (Opcional):</label>
-        <textarea id="ctaSpecifics" rows="2" placeholder="Ex: 'Apoie o Projeto X que luta por...', 'Assine a petição em nosso site...', 'Compre nosso curso no link...'"></textarea>
+        <textarea id="ctaSpecifics" rows="2" placeholder="A IA também pode sugerir um CTA criativo... ou defina o seu."></textarea>
     </div>
     <div class="text-center mt-6">
         <button id="generateConclusionBtn" data-action="generateConclusion" class="btn btn-primary">
@@ -4766,7 +4766,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (speakingPaceSelect) { speakingPaceSelect.addEventListener('change', updateAllReadingTimes); }
     
     // --- 4. O "GERENTE DE CLIQUES" (versão v6.0 - Robusta) ---
-  const actions = {
+    const actions = {
         'suggestStrategy': (btn) => suggestStrategy(btn),
         'startCrafting': (btn) => startCrafting(),
         'generateOutline': (btn) => generateStrategicOutline(btn),
@@ -4780,7 +4780,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'generateIdeas': (btn) => generateVideoIdeas(btn),
         'generateConclusion': (btn) => generateConclusion(btn),
         'generateCta': (btn) => generateStrategicCta(btn),
-        'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
+        'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn), // <<< AQUI ESTÁ A NOSSA NOVA FEATURE
         'exportProject': () => exportProject(),
         'exportPdf': () => downloadPdf(),
         'exportTranscript': () => handleCopyAndDownloadTranscript(),
