@@ -2751,42 +2751,37 @@ Sua tarefa é escrever o **Desenvolvimento** do roteiro. Esta é a seção mais 
             maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 400;
             break;
 
-        case 'titles_thumbnails':
+case 'titles_thumbnails':
             prompt = `${baseContext}
-            Você é uma API de geração de metadados. Sua única função é retornar um objeto JSON.
-            **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS E ESTRICTAS):**
-            1.  Sua resposta deve ser APENAS um objeto JSON.
-            2.  O objeto deve conter duas chaves principais: "titles" e "thumbnails".
-            3.  O valor de "titles" deve ser um array de 5 strings.
-            4.  O valor de "thumbnails" deve ser um array de 3 objetos.
-            5.  Cada objeto em "thumbnails" deve ter duas chaves: "title" e "description".
-            
-            **EXEMPLO DE RESPOSTA PERFEITA:**
-            {
-              "titles": [
-                "Título 1: Curto e impactante",
-                "Título 2: Com pergunta",
-                "Título 3: Com urgência",
-                "Título 4: Focado em benefício",
-                "Título 5: Controverso"
-              ],
-              "thumbnails": [
-                {
-                  "title": "Ideia de Thumbnail 1",
-                  "description": "Close-up em um objeto misterioso com uma seta vermelha apontando para ele."
-                },
-                {
-                  "title": "Ideia de Thumbnail 2",
-                  "description": "Foto de uma pessoa com uma expressão facial chocada, com texto grande 'VOCÊ NÃO VAI ACREDITAR'."
-                },
-                {
-                  "title": "Ideia de Thumbnail 3",
-                  "description": "Gráfico de 'Antes vs Depois' mostrando uma transformação surpreendente."
-                }
-              ]
-            }
-            `;
-            maxTokens = 1500;
+Você é uma API de geração de metadados que retorna APENAS um objeto JSON.
+
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`{\` e terminando com \`}\`.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
+3.  **ESTRUTURA OBRIGATÓRIA:** O objeto JSON DEVE conter EXATAMENTE duas chaves principais: "titles" e "thumbnails".
+    - O valor de "titles" DEVE ser um array de 5 strings.
+    - O valor de "thumbnails" DEVE ser um array de 3 objetos.
+    - Cada objeto em "thumbnails" DEVE ter exatamente duas chaves: "title" e "description".
+4.  **SEM ASPAS INTERNAS:** Dentro dos valores de string (como "description"), NÃO use aspas duplas. Use aspas simples (\`'\`) se precisar de ênfase.
+
+**EXEMPLO DE RESPOSTA PERFEITA:**
+{
+  "titles": [
+    "Título 1: Curto e impactante",
+    "Título 2: Com pergunta",
+    "Título 3: Com urgência",
+    "Título 4: Focado em benefício",
+    "Título 5: Controverso"
+  ],
+  "thumbnails": [
+    { "title": "Ideia de Thumbnail 1", "description": "Close-up em um objeto misterioso com uma seta vermelha." },
+    { "title": "Ideia de Thumbnail 2", "description": "Foto de uma pessoa com expressão chocada e texto 'VOCÊ NÃO VAI ACREDITAR'." },
+    { "title": "Ideia de Thumbnail 3", "description": "Gráfico de 'Antes vs Depois' mostrando uma transformação." }
+  ]
+}
+
+Analise o contexto do roteiro e gere o objeto JSON seguindo TODAS as regras.`;
+            maxTokens = 2000; // Aumentado para dar espaço para a IA
             break;
 
         case 'description':
