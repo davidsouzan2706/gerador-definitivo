@@ -4578,11 +4578,12 @@ window.regenerateSection = (fullSectionId) => {
             const sectionName = fullSectionId.replace('Section', '');
             
             const sectionMap = {
-                'intro': { title: 'Introdução', elementId: 'intro' },
-                'development': { title: 'Desenvolvimento', elementId: 'development' },
-                'climax': { title: 'Clímax', elementId: 'climax' },
-                'conclusion': { title: 'Conclusão e CTA', elementId: 'conclusion' }
-            };
+    'intro': { title: 'Introdução', elementId: 'intro' },
+    'development': { title: 'Desenvolvimento', elementId: 'development' },
+    'climax': { title: 'Clímax', elementId: 'climax' },
+    'conclusion': { title: 'Conclusão', elementId: 'conclusion' }, // Título corrigido
+    'cta': { title: 'Call to Action (CTA)', elementId: 'cta' } // <<< ADICIONADO
+};
 
             const sectionInfo = sectionMap[sectionName];
             
@@ -4935,7 +4936,7 @@ ${titlesString}
 Responda APENAS com o array JSON completo e sintaticamente PERFEITO, seguindo EXATAMENTE as regras acima.`;
 
     try {
-        const rawResult = await callGroqAPI(prompt, 2000);
+        const rawResult = await callGroqAPI(prompt, 3000);
         const analysis = cleanGeneratedText(rawResult, true);
 
         if (!analysis || !Array.isArray(analysis)) {
