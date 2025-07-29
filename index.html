@@ -2312,41 +2312,46 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
          * @param {string} text - O texto gerado pela IA.
          * @returns {string} O texto sem os comentários meta.
          */
-        const removeMetaComments = (text) => {
-            if (!text) return "";
-            
-            let cleanedText = text.trim();
+const removeMetaComments = (text) => {
+    if (!text) return "";
+    
+    let cleanedText = text.trim();
 
-            // CAMADA 1: O "Segurança Rápido" - Remove preâmbulos comuns que terminam com ":"
-            const lines = cleanedText.split('\n');
-            if (lines.length > 1 && lines[0].trim().endsWith(':')) {
-                lines.shift(); // Remove a primeira linha se for um preâmbulo
-                cleanedText = lines.join('\n').trim();
-            }
+    // CAMADA 1: Remove preâmbulos comuns que terminam com ":"
+    const lines = cleanedText.split('\n');
+    if (lines.length > 1 && lines[0].trim().endsWith(':')) {
+        lines.shift();
+        cleanedText = lines.join('\n').trim();
+    }
 
-            // CAMADA 2: O "Segurança Especialista" - Usa regex para padrões mais complexos
-            const patternsToRemove = [
-                // Padrão para pegar frases como "Here is the generated script for..."
-                /Here is the (generated )?script for the "[^"]+" section:\s*\n?/gi,
-                // Padrão para pegar rótulos específicos em negrito que a IA às vezes usa
-                /^\*\*roteiro anotado:\*\*\s*\n?/im,
-                /^\*\*Introdução:\*\*\s*\n?/im,
-                /^\*\*Desenvolvimento:\*\*\s*\n?/im,
-                /^\*\*Clímax:\*\*\s*\n?/im,
-                /^\*\*Conclusão:\*\*\s*\n?/im
-            ];
+    // CAMADA 2: Usa regex para remover padrões específicos e indesejados
+    const patternsToRemove = [
+        // Padrões genéricos que já tínhamos
+        /Here is the (generated )?script for the "[^"]+" section:\s*\n?/gi,
+        /^\*\*roteiro anotado:\*\*\s*\n?/im,
+        /^\*\*Introdução:\*\*\s*\n?/im,
+        /^\*\*Desenvolvimento:\*\*\s*\n?/im,
+        /^\*\*Clímax:\*\*\s*\n?/im,
+        /^\*\*Conclusão:\*\*\s*\n?/im,
 
-            patternsToRemove.forEach(pattern => {
-                cleanedText = cleanedText.replace(pattern, '');
-            });
-            
-            // Limpeza final de aspas, caso a IA envolva a resposta inteira nelas
-            if (cleanedText.startsWith('"') && cleanedText.endsWith('"')) {
-                cleanedText = cleanedText.substring(1, cleanedText.length - 1);
-            }
+        // <<< NOSSAS NOVAS REGRAS DE LIMPEZA AQUI >>>
+        // Padrão para remover "**TEXTO REFINADO:**" e variações
+        /^\*\*TEXTO REFINADO:\*\*\s*\n?/im,
+        // Padrão para remover "**Capítulo: [Qualquer Coisa]**"
+        /^\*\*Capítulo:.*?\*\*\s*\n?/im
+    ];
 
-            return cleanedText.trim();
-        };
+    patternsToRemove.forEach(pattern => {
+        cleanedText = cleanedText.replace(pattern, '');
+    });
+    
+    // CAMADA 3: Limpeza final de aspas, caso a IA envolva a resposta inteira nelas
+    if (cleanedText.startsWith('"') && cleanedText.endsWith('"')) {
+        cleanedText = cleanedText.substring(1, cleanedText.length - 1);
+    }
+
+    return cleanedText.trim();
+};
 
         // --- INÍCIO DO NOVO MÓDULO DE NARRATIVA ---
 
