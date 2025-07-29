@@ -1104,12 +1104,13 @@ Ex: 'Fonte: Estudo de Harvard; Dr. João da Silva, especialista...'
         let generatedTitlesAndThumbnails = null;
         let allImagePrompts = {}; 
         let strategicOutline = null;
-        let projectState = {
-        intro: false,
-        development: false,
-        climax: false,
-        conclusion: false
-    };
+    let projectState = {
+    intro: false,
+    development: false,
+    climax: false,
+    conclusion: false,
+    cta: false
+};
         let elements = {};
         let buttons = {};
         let totalScriptSeconds = 0;
@@ -5163,11 +5164,17 @@ const generateStrategicOutline = async (button) => {
 
 
 // =========================================================================
-// >>>>> BLOCO 2: SUBSTITUA SUA FUNÇÃO resetApplicationState INTEIRA POR ESTA <<<<<
+// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO resetApplicationState INTEIRA POR ESTA <<<<<
 // =========================================================================
 const resetApplicationState = () => {
     // 1. Zera o nosso "painel de controle" de estado do projeto.
-    projectState = { intro: false, development: false, climax: false, conclusion: false };
+    projectState = {
+        intro: false,
+        development: false,
+        climax: false,
+        conclusion: false,
+        cta: false
+    };
 
     // 2. Função interna para resetar um campo do formulário de forma segura.
     const safeReset = (elementId, value = '') => {
@@ -5181,7 +5188,7 @@ const resetApplicationState = () => {
     safeReset('channelName', 'The Biblical Unveiling');
     safeReset('videoTheme');
     safeReset('videoDescription');
-    safeReset('targetAudience', 'Pessoas Interessadas em Arqueologia Bíblica e História Antiga, Cristãos e Pessoas de Fé, Entusiastas de Ciência e Ceticismo (com mente aberta), Curiosos em Geral e Amantes de Mistérios.');
+    safeReset('targetAudience', ''); // Corrigido para placeholder
     safeReset('languageSelect', 'en');
     safeReset('videoObjective', 'informar');
     safeReset('videoDuration', '');
@@ -5196,10 +5203,11 @@ const resetApplicationState = () => {
     safeReset('imageDescriptionEngine');
     safeReset('imageStyleSelect', 'cinematic');
     safeReset('customImageStyle');
-    safeReset('researchData'); // Limpa o campo de pesquisa
-    safeReset('emotionalHook'); // <<< ADICIONADO: Limpa o nosso novo campo
+    safeReset('researchData');
+    safeReset('emotionalHook');
 
     toggleCustomImageStyleVisibility();
+    updateNarrativeStructureOptions(); // Garante que a estrutura seja resetada
 
     const nicheDesc = document.getElementById('nicheDescription');
     const ideasOut = document.getElementById('ideasOutput');
