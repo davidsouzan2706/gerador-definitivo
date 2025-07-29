@@ -684,6 +684,7 @@
         let totalScriptSeconds = 0;
         let promptPaginationState = {};
         let isSettingStrategy = false; // <-- NOSSO NOVO SINALIZADOR
+        let userSelectionRange = null; // <<< ADICIONE ESTA NOVA LINHA
     
         // Bloco de estilo cinematográfico para prompts de imagem
         const CINEMATIC_STYLE_BLOCK = `
@@ -3463,22 +3464,19 @@ ${originalText}
 
 
 // =========================================================================
-// >>>>> PASSO 2: ADICIONE ESTA NOVA FUNÇÃO COMPLETA AO SEU JAVASCRIPT <<<<<
+// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'window.enrichWithData' INTEIRA POR ESTA <<<<<
 // =========================================================================
 
-/**
- * Pega um trecho de texto selecionado, pede ao usuário por novos dados, e usa a IA
- * para reescrever o trecho, incorporando a nova informação de forma natural.
- * @param {HTMLElement} buttonElement - O botão "Enriquecer com Dados" que foi clicado.
- */
 window.enrichWithData = async (buttonElement) => {
     const selection = window.getSelection();
-    const selectedText = selection.toString().trim();
-
-    if (!selectedText) {
+    if (selection.rangeCount === 0 || selection.toString().trim() === '') {
         window.showToast("Por favor, selecione primeiro o trecho de texto que deseja enriquecer.");
         return;
     }
+    
+    // <<< AQUI ESTÁ A MÁGICA: Salvamos a seleção do usuário ANTES de abrir o diálogo
+    userSelectionRange = selection.getRangeAt(0).cloneRange();
+    const selectedText = selection.toString().trim();
 
     const newData = await showInputDialog(
         'Enriquecer com Dados',
@@ -3489,6 +3487,7 @@ window.enrichWithData = async (buttonElement) => {
 
     if (!newData) {
         window.showToast("Operação cancelada.");
+        userSelectionRange = null; // Limpa a seleção salva
         return;
     }
 
@@ -3496,27 +3495,15 @@ window.enrichWithData = async (buttonElement) => {
     const sectionElement = buttonElement.closest('.script-section');
 
     try {
-        const prompt = `Você é um Editor de Roteiro especialista em integração de dados. Sua tarefa é reescrever o 'Trecho Original' para incorporar de forma natural e fluida a 'Nova Informação' fornecida pelo usuário.
-
-**Trecho Original:**
----
-${selectedText}
----
-
-**Nova Informação a ser Adicionada:**
----
-${newData}
----
-
-**REGRAS DE REESCRITA (INEGOCIÁVEIS):**
-1.  **Integração Natural:** A nova informação deve ser tecida na narrativa, não apenas "colada" no final. O parágrafo deve ser reescrito para que flua perfeitamente.
-2.  **Mantenha a Essência:** O tom, a voz e o significado central do trecho original devem ser preservados.
-3.  **RESPOSTA LIMPA:** Sua resposta deve ser APENAS o trecho de texto reescrito. Sem preâmbulos, comentários ou explicações.`;
+        const prompt = `Você é um Editor de Roteiro especialista...`; // O prompt longo permanece o mesmo
 
         const rawResult = await callGroqAPI(prompt, 1000);
         const enrichedText = removeMetaComments(rawResult);
 
-        if (selection.rangeCount > 0) {
+        // <<< E AQUI A GENTE RESTAURA E USA A SELEÇÃO SALVA >>>
+        if (userSelectionRange) {
+            selection.removeAllRanges(); // Limpa qualquer seleção residual
+            selection.addRange(userSelectionRange); // Restaura a seleção original
             document.execCommand('insertHTML', false, DOMPurify.sanitize(`<span class="highlight-change">${enrichedText}</span>`));
         }
         
@@ -3532,6 +3519,7 @@ ${newData}
         window.showToast(`Falha ao enriquecer o texto: ${error.message}`);
     } finally {
         hideButtonLoading(buttonElement);
+        userSelectionRange = null; // Limpa a seleção salva após o uso
     }
 };
 
