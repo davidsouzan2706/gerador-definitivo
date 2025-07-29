@@ -1,11 +1,10 @@
-<!--Teste-->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Roteiros Virais v3.5</title>
+    <title>Gerador de Roteiros Virais v3.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
@@ -254,7 +253,7 @@
         <header class="bg-white dark:bg-gray-800 shadow-sm">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                    <i class="fas fa-video mr-2"></i>Gerador de Roteiros Virais v3.5
+                    <i class="fas fa-video mr-2"></i>Gerador de Roteiros Virais v3.6
                 </h1>
                 <div class="flex items-center space-x-4">
                     <button id="darkModeToggle" class="theme-toggle">
@@ -2456,7 +2455,7 @@ const getBasePromptContext = () => {
     const speakingPace = document.getElementById('speakingPace')?.value || "";
     const narrativeStructure = document.getElementById('narrativeStructure')?.value || "";
     const narrativeTheme = document.getElementById('narrativeTheme')?.value.trim() || "";
-    const narrativeTone = document.getElementById('narrativeTone')?.value || "";
+    const narrativeTone = document.getElementById('narrativeTone')?.value || ""; // Crucial para a nova lógica
     const narrativeVoice = document.getElementById('narrativeVoice')?.value.trim() || "";
     const shockingEndingHook = document.getElementById('shockingEndingHook')?.value.trim() || "";
     const videoDescription = document.getElementById('videoDescription')?.value.trim() || "";
@@ -2466,9 +2465,6 @@ const getBasePromptContext = () => {
     const imageStyleSelect = document.getElementById('imageStyleSelect')?.value || "";
     const customImageStyle = document.getElementById('customImageStyle')?.value.trim() || "";
     const researchData = document.getElementById('researchData')?.value.trim() || "";
-
-    // >>> AQUI ESTÁ A NOSSA NOVA EVOLUÇÃO <<<
-    // Lemos o conteúdo do nosso novo campo "Gancho Emocional"
     const emotionalHook = document.getElementById('emotionalHook')?.value.trim() || "";
 
     // Monta o prompt base
@@ -2487,7 +2483,6 @@ const getBasePromptContext = () => {
     - Speaking Pace: "${speakingPace}"
     `;
 
-    // Adiciona as informações opcionais ao contexto
     if (narrativeTheme) { context += `\n- Core Theme (The Big Idea): "${narrativeTheme}"`; }
     if (narrativeTone) { context += `\n- Narrative Tone (The Feeling): "${narrativeTone}"`; }
     if (narrativeVoice) { context += `\n- Narrator's Voice (The Personality): "${narrativeVoice}"`; }
@@ -2496,10 +2491,25 @@ const getBasePromptContext = () => {
     if (centralQuestion) { context += `\n- Central Question to guide the entire script: "${centralQuestion}"`; }
     if (emotionalArc) { context += `\n- Desired Emotional Arc: "${emotionalArc}"`; }
 
-    // >>> AQUI ESTÁ A NOVA INSTRUÇÃO PARA A IA <<<
-    // Se o usuário forneceu uma história pessoal, ela se torna a regra mais importante.
+    // <<< AQUI ESTÁ A LÓGICA CONDICIONAL INTELIGENTE (v6.0) >>>
     if (emotionalHook) {
-        context += `
+        if (narrativeTone === 'inspirador') {
+            // Nova instrução poderosa para histórias inspiradoras
+            context += `
+
+**PROFUNDIDADE EMOCIONAL (REGRA MAIS IMPORTANTE):**
+A história a seguir é a âncora emocional do nosso roteiro. Para que ela não pareça superficial, você DEVE "mostrar, não apenas contar".
+- **Crie 'Cenas' Vívidas:** Ao longo do roteiro, em vez de apenas citar o personagem, descreva pequenos momentos e cenas.
+- **Mostre a Dificuldade:** Inclua uma pequena cena ou descrição do personagem enfrentando um obstáculo real. (Ex: estudando até tarde, recebendo uma notícia ruim).
+- **Mostre a Superação:** Inclua uma pequena cena ou descrição do momento de virada ou pequena vitória do personagem. (Ex: recebendo o e-mail de aprovação, vendo o primeiro resultado positivo).
+- **Conecte o Micro ao Macro:** Use essas pequenas cenas para ilustrar os grandes temas do roteiro.
+
+**Âncora Emocional:** "${emotionalHook}"
+---
+`;
+        } else {
+            // Instrução original, que funciona bem para drama e outros tons
+            context += `
 
 **CRITICAL NARRATIVE ANCHOR (THE MOST IMPORTANT RULE):**
 You MUST use the following personal story as the emotional core and recurring 'human anchor' for the entire script. Weave references to this character/story throughout the introduction, development, and conclusion to make the grand historical narrative feel personal and relatable. This is the guiding thread of the story.
@@ -2507,12 +2517,13 @@ You MUST use the following personal story as the emotional core and recurring 'h
 Emotional Anchor Story: "${emotionalHook}"
 ---
 `;
+        }
     }
 
     if (researchData) {
         context += `
 **CRITICAL RESEARCH DATA & CONTEXT:**
-You MUST incorporate and properly attribute the following facts, names, and sources into the script. When you mention a name, briefly explain who they are (e.g., 'Maria da Silva, coordinator of...'). When you use a statistic, mention the source (e.g., 'According to the 2023 Violence Map...').
+You MUST incorporate and properly attribute the following facts, names, and sources into the script...
 ---
 ${researchData}
 ---
@@ -2520,10 +2531,7 @@ ${researchData}
     }
 
     if (imageStyleSelect === 'cinematic' || imageStyleSelect === 'custom') {
-        context += `\n\n**Visual Style Instructions:**`;
-        if (imageDescriptionEngine) { context += `\n- Image Description Keywords: "${imageDescriptionEngine}"`; }
-        if (imageStyleSelect === 'cinematic') { context += `\n- Image Style: ${CINEMATIC_STYLE_BLOCK}`; }
-        else if (imageStyleSelect === 'custom' && customImageStyle) { context += `\n- Custom Image Style: ${customImageStyle}`; }
+        context += `\n\n**Visual Style Instructions:**...`;
     }
 
     return context;
