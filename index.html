@@ -8,6 +8,7 @@
     <title>Gerador de Roteiros Virais v3.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
     <style>
         
     
@@ -819,6 +820,7 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 
             } catch (error) {
                 window.showToast(`Falha ao otimizar: ${error.message}`);
+                console.error("Erro detalhado em optimizeGroup:", error);
                 button.innerHTML = 'Erro!';
             }
         };
@@ -867,6 +869,7 @@ Responda APENAS com o objeto JSON.`;
 
     } catch (error) {
         window.showToast(`Falha ao sugerir estratégia final: ${error.message}`);
+        console.error("Erro detalhado em suggestFinalStrategy:", error);
     } finally {
         hideButtonLoading(button);
     }
@@ -1557,11 +1560,12 @@ const mapEmotionsAndPacing = async (button) => {
                 });
                 mapHtml += '</div>';
                 
-                outputContainer.innerHTML = mapHtml;
+                outputContainer.innerHTML = DOMPurify.sanitize(mapHtml);
                 markButtonAsCompleted(button.id);
 
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar o mapa emocional: ${error.message}</p>`;
+                console.error("Erro detalhado em mapEmotionsAndPacing:", error);
             } finally {
                 hideButtonLoading(button);
             }
@@ -1608,11 +1612,13 @@ const mapEmotionsAndPacing = async (button) => {
                 suggestionsHtml += '</ul>';
                 
                 // >>> AQUI ESTÁ A MUDANÇA <<<
-                outputContainer.innerHTML = `<div class="generated-output-box">${suggestionsHtml}</div>`;
+                const sanitizedHtml = DOMPurify.sanitize(`<div class="generated-output-box">${suggestionsHtml}</div>`);
+                outputContainer.innerHTML = sanitizedHtml;
                 markButtonAsCompleted(button.id);
 
             } catch (error) {
                 outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar sugestões: ${error.message}</p>`;
+                console.error("Erro detalhado em generateSoundtrack:", error);
             } finally {
                 hideButtonLoading(button);
             }
@@ -1686,6 +1692,7 @@ const generateConclusion = async (button) => {
 
     } catch (error) {
         window.showToast(`Falha ao gerar a conclusão: ${error.message}`);
+        console.error("Erro detalhado em generateConclusion:", error);
     } finally {
         hideButtonLoading(button);
         updateButtonStates();
@@ -3026,6 +3033,7 @@ Agora, escreva o novo capítulo sobre "${chapterTheme}", seguindo TODAS as regra
 
     } catch (error) {
         window.showToast(`Falha ao adicionar capítulo: ${error.message}`);
+        console.error("Erro detalhado em continuationPrompt:", error);
     } finally {
         hideButtonLoading(button);
     }
@@ -3209,6 +3217,7 @@ Analise os dados e retorne o array JSON completo e sintaticamente perfeito.`;
         window.showToast("Análise de retenção concluída!");
     } catch (error) {
         window.showToast(`Falha na análise: ${error.message}`);
+        console.error("Erro detalhado em Análise de retenção:", error);
     } finally {
         hideButtonLoading(button);
     }
@@ -3258,6 +3267,7 @@ Analise os dados e retorne o array JSON completo e sintaticamente perfeito.`;
                 window.showToast("Parágrafo otimizado!");
             } catch (error) {
                 window.showToast(`Falha ao otimizar: ${error.message}`);
+                console.error("Erro detalhado em optimizeParagraph:", error);
                 if (button) button.innerHTML = '⚠️'; // Ícone de erro
             }
         };
@@ -3376,6 +3386,7 @@ ${promptContext}`;
 
     } catch (error) {
         outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao sugerir performance: ${error.message}</p>`;
+        console.error("Erro detalhado em auditGeneratedText:", error);
     } finally {
         hideButtonLoading(button);
     }
@@ -3383,7 +3394,7 @@ ${promptContext}`;
 
 
 // =========================================================================
-// >>>>> PASSO 2: ADICIONE ESTA NOVA FUNÇÃO COMPLETA AO SEU JAVASCRIPT <<<<<
+// >>>>> SUBSTITUA A FUNÇÃO 'window.refineSectionStyle' INTEIRA POR ESTA VERSÃO SEGURA <<<<<
 // =========================================================================
 
 /**
@@ -3429,22 +3440,31 @@ ${originalText}
 
         const newParagraphs = refinedText.split('\n').filter(p => p.trim() !== '');
         const sectionId = sectionElement.id.replace('Section', '');
-        contentWrapper.innerHTML = newParagraphs.map((p, index) => 
+        
+        // Constrói o novo HTML
+        const newHtml = newParagraphs.map((p, index) => 
             `<div id="${sectionId}-p-${index}">${p}</div>`
         ).join('');
 
+        // <<< AQUI ESTÁ A IMPLEMENTAÇÃO DE SEGURANÇA >>>
+        // Sanitiza o HTML antes de inseri-lo no DOM
+        contentWrapper.innerHTML = DOMPurify.sanitize(newHtml);
+
+        // Invalida análises anteriores, pois o texto mudou
         invalidateAndClearPerformance(sectionElement);
         invalidateAndClearPrompts(sectionElement);
         const analysisOutput = sectionElement.querySelector('.section-analysis-output');
         if (analysisOutput) {
-            analysisOutput.innerHTML = '';
+            analysisOutput.innerHTML = ''; // Limpa a análise de retenção
         }
 
+        // Atualiza o tempo de leitura
         updateAllReadingTimes();
 
         window.showToast("Estilo do roteiro refinado com sucesso!");
 
     } catch (error) {
+        console.error("Erro detalhado em refineSectionStyle:", error); // Adicionado log de erro
         window.showToast(`Falha ao refinar o estilo: ${error.message}`);
     } finally {
         hideButtonLoading(buttonElement);
@@ -3503,6 +3523,7 @@ ${originalText}
 
             } catch (error) {
                 window.showToast(`Falha ao enriquecer o texto: ${error.message}`);
+                console.error("Erro detalhado em scriptSection:", error);
             } finally {
                 hideButtonLoading(buttonElement);
             }
@@ -3591,6 +3612,7 @@ const generateVideoIdeas = async (button) => {
                 Isso geralmente acontece com tópicos considerados sensíveis ou controversos. Tente reformular sua descrição com termos mais neutros ou uma abordagem diferente.
             </p>`;
             window.showToast("O tema foi considerado sensível pela IA.");
+            console.error("Erro detalhado em prompt:", error);
         } else {
             outputContainer.innerHTML = `<p class="md:col-span-2 text-red-500 text-sm">Falha ao gerar ideias: ${error.message}</p>`;
         }
@@ -3867,6 +3889,7 @@ ${promptContextForAI}
 
     } catch (error) {
         promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
+        console.error("Erro detalhado em curatedPrompts:", error);
     } finally {
         hideButtonLoading(button);
     }
@@ -3934,6 +3957,7 @@ ${promptContextForAI}
                 }
             } catch (error) {
                 soundtrackContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar sugestões: ${error.message}</p>`;
+                console.error("Erro detalhado em suggestSoundtrack:", error);
             }
         };
 
@@ -4093,6 +4117,7 @@ ${promptContextForAI}
 
             } catch (error) {
                 resultContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao analisar os títulos: ${error.message}</p>`;
+                console.error("Erro detalhado em Falha ao analisar os títulos:", error);
             }
         };
 
@@ -4143,6 +4168,7 @@ ${promptContextForAI}
 
             } catch (error) {
                 resultContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao analisar as thumbnails: ${error.message}</p>`;
+                console.error("Erro detalhado em cleanGeneratedText:", error);
             }
         };
         /**
@@ -4160,7 +4186,8 @@ ${promptContextForAI}
                 const targetContentElement = document.getElementById('videoDescriptionContent');
                 if (targetContentElement) {
                     // >>> AQUI ESTÁ A MUDANÇA <<<
-                    targetContentElement.innerHTML = `<div class="generated-output-box whitespace-pre-wrap">${result}</div>`;
+                    const sanitizedResult = DOMPurify.sanitize(`<div class="generated-output-box whitespace-pre-wrap">${result}</div>`);
+                    targetContentElement.innerHTML = sanitizedResult;
                     markButtonAsCompleted(button.id);
                 }
             } catch (error) {
