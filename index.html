@@ -2808,6 +2808,10 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
          * @param {string} text - O texto gerado pela IA.
          * @returns {string} O texto sem os comentários meta.
          */
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO removeMetaComments INTEIRA POR ESTA <<<<<
+// =========================================================================
+
 const removeMetaComments = (text) => {
     if (!text) return "";
     
@@ -2831,21 +2835,25 @@ const removeMetaComments = (text) => {
         /^\*\*Conclusão:\*\*\s*\n?/im,
         /^\*\*TEXTO REFINADO:\*\*\s*\n?/im,
         
-        // <<< NOSSO NOVO "CAÇADOR DE TÍTULOS" GENÉRICO >>>
-        // Remove qualquer linha que seja APENAS um título em negrito (ex: **Título Exemplo**)
-        /^\s*\*\*[^*]+\*\*\s*$/gm
+        // "Caçador de Títulos" genérico
+        /^\s*\*\*[^*]+\*\*\s*$/gm,
+
+        // <<< NOSSO NOVO "CAÇADOR DE METADADOS" AQUI >>>
+        // Remove linhas que começam com "Word count:" e variações
+        /^\s*Word count:\s*\d+\s*$/gim
     ];
 
     patternsToRemove.forEach(pattern => {
         cleanedText = cleanedText.replace(pattern, '');
     });
     
-    // CAMADA 3: Limpeza final de aspas, caso a IA envolva a resposta inteira nelas
+    // CAMADA 3: Limpeza final
     if (cleanedText.startsWith('"') && cleanedText.endsWith('"')) {
         cleanedText = cleanedText.substring(1, cleanedText.length - 1);
     }
 
-    return cleanedText.trim();
+    // Remove quebras de linha extras no início ou no final do texto
+    return cleanedText.replace(/^\s*\n|\n\s*$/g, '');
 };
 
         // --- INÍCIO DO NOVO MÓDULO DE NARRATIVA ---
@@ -5584,7 +5592,7 @@ const actions = {
             varyTone(tone);
         }
     });
-    
+
 
     // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
     const strategicInputIds = ['videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'visualPacing', 'narrativeGoal', 'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice', 'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect', 'researchData', 'emotionalHook'];
