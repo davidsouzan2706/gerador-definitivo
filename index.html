@@ -313,7 +313,7 @@
     visibility: visible;
     opacity: 1;
 }
-        
+
 
 
     </style>
@@ -469,13 +469,25 @@
                 <p id="popoverDescription" class="text-sm leading-relaxed"></p>
             </div>
         </div>
-        <div class="input-group md:col-span-2"><label for="emotionalHook">História Pessoal / Gancho Emocional (Opcional):</label><textarea id="emotionalHook" rows="3" placeholder="Qual rosto humano dará alma à sua história? Ex: a jornada de um indivíduo, uma memória pessoal, um arquétipo (o azarão, o mentor)..."></textarea></div>
+        <div class="input-group md:col-span-2"><label for="emotionalHook">História Pessoal / Gancho Emocional (Opcional):
+    <span class="help-icon">i
+        <span class="tooltip-text">
+            **Dê uma alma para sua história.** Este é o 'fio condutor' humano. A IA usará esta pequena história para conectar os grandes fatos a uma experiência pessoal, tornando o roteiro muito mais impactante.
+        </span>
+    </span>
+</label><textarea id="emotionalHook" rows="3" placeholder="Qual rosto humano dará alma à sua história? Ex: a jornada de um indivíduo, uma memória pessoal, um arquétipo (o azarão, o mentor)..."></textarea></div>
 
         <!-- Bloco 3: O Tom e a Jornada -->
         <div class="input-group"><label for="narrativeTone">4. Tom da Narração:</label><select id="narrativeTone"><option value="inspirador" selected>Inspirador</option><option value="serio">Sério</option><option value="emocional">Emocional</option></select></div>
         <div class="input-group"><label for="narrativeVoice">5. Voz do Narrador:</label><input type="text" id="narrativeVoice" placeholder="Se seu canal fosse uma pessoa, como ela falaria? Confiante? Engraçada? Misteriosa?"></div>
         <div class="input-group md:col-span-2"><label for="emotionalArc">Arco Emocional Desejado (Opcional):</label><textarea id="emotionalArc" rows="2" placeholder="Ex: Curiosidade -> Tensão -> Surpresa"></textarea></div>
-        <div class="input-group md:col-span-2"><label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):</label><input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada."></div>
+        <div class="input-group md:col-span-2"><label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):
+    <span class="help-icon">i
+        <span class="tooltip-text">
+            **A técnica do 'loop aberto' reverso.** Coloque a frase final e mais chocante da sua história aqui. A IA usará esta frase como a PRIMEIRA linha do vídeo, criando um mistério instantâneo que prende o espectador até o final.
+        </span>
+    </span>
+</label><input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada."></div>
 
     </div>
 </div>
@@ -489,7 +501,17 @@
         <div class="input-group"><label for="speakingPace">Ritmo de Fala:</label><select id="speakingPace"><option value="moderate" selected>Moderado</option><option value="slow">Lento</option><option value="fast">Rápido</option></select></div>
 
 <div class="input-group md:col-span-2">
-    <label for="researchData">Fontes e Dados de Pesquisa (Opcional):</label>
+
+    <label for="researchData">Fontes e Dados de Pesquisa (Opcional):
+    <span class="help-icon">i
+        <span class="tooltip-text">
+            **Aumente a credibilidade.** Cole aqui nomes, datas, estatísticas, ou citações. A IA irá tecer essas informações na narrativa.
+
+Ex: 'Fonte: Estudo de Harvard; Dr. João da Silva, especialista...'
+        </span>
+    </span>
+</label>
+
     <textarea id="researchData" rows="4" placeholder="Para aumentar a credibilidade, cole aqui dados, fontes, nomes e links que a IA deve citar e contextualizar no roteiro. Ex: Fonte: Atlas da Violência 2023; Maria da Silva, coordenadora do Instituto Odara..."></textarea>
 </div>
 
