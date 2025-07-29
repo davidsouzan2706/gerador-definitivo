@@ -1574,56 +1574,60 @@ const mapEmotionsAndPacing = async (button) => {
 
 
 
-            const generateSoundtrack = async (button) => {
-            const fullTranscript = getTranscriptOnly();
-            if (!fullTranscript) {
-                window.showToast("Gere o roteiro completo primeiro para sugerir uma trilha sonora coerente.");
-                return;
-            }
+const generateSoundtrack = async (button) => {
+    const fullTranscript = getTranscriptOnly();
+    if (!fullTranscript) {
+        window.showToast("Gere o roteiro completo primeiro para sugerir uma trilha sonora coerente.");
+        return;
+    }
 
-            const outputContainer = document.getElementById('soundtrackContent');
-            
-            showButtonLoading(button);
-            outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
+    const outputContainer = document.getElementById('soundtrackContent');
+    
+    showButtonLoading(button);
+    outputContainer.innerHTML = DOMPurify.sanitize(`<div class="loading-spinner-small mx-auto my-4"></div>`);
 
-            const prompt = `Você é um especialista em prompts para IAs de geração de música (como Suno/Udio). Sua tarefa é analisar o roteiro completo de um vídeo e criar 3 prompts de texto distintos e detalhados que capturem a essência emocional da narrativa.
+    // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE EXPLÍCITAS <<<
+    const prompt = `Você é uma API de geração de JSON. Sua tarefa é analisar um roteiro e criar 3 prompts para IAs de geração de música.
 
-            **REGRAS DE FORMATAÇÃO (NÃO NEGOCIÁVEIS):**
-            1. Sua resposta DEVE SER um array JSON válido.
-            2. O array deve conter EXATAMENTE 3 strings.
-            3. CADA string deve ser um parágrafo único, bem escrito e descritivo.
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON.
+2.  **ESTRUTURA COMPLETA:** Sua resposta DEVE começar com um colchete de abertura \`[\` e, OBRIGATORIAMENTE, terminar com um colchete de fechamento \`]\`.
+3.  **ASPAS DUPLAS, SEMPRE:** Cada string no array DEVE, OBRIGATORIAMENTE, usar aspas duplas (\`"\`).
+4.  **VÍRGULA FINAL:** Cada string dentro do array DEVE ser seguida por uma vírgula, EXCETO a última string.
+5.  **CONTEÚDO:** O array deve conter EXATAMENTE 3 strings, cada uma sendo um parágrafo descritivo.
 
-            **Roteiro completo para analisar:**
-            ---
-            ${fullTranscript}
-            ---`;
+**Roteiro completo para analisar:**
+---
+${fullTranscript}
+---
 
-            try {
-                const rawResult = await callGroqAPI(prompt, 800);
-                const analysis = cleanGeneratedText(rawResult, true);
+Responda APENAS com o array JSON completo e sintaticamente perfeito.`;
 
-                if (!analysis || !Array.isArray(analysis)) {
-                    throw new Error("A IA retornou um formato de trilha sonora inesperado.");
-                }
+    try {
+        const rawResult = await callGroqAPI(prompt, 1500); // Aumentado para dar mais espaço
+        const analysis = cleanGeneratedText(rawResult, true);
 
-                let suggestionsHtml = '<ul class="soundtrack-list space-y-2">';
-                analysis.forEach(suggestion => {
-                    suggestionsHtml += `<li>${suggestion}</li>`;
-                });
-                suggestionsHtml += '</ul>';
-                
-                // >>> AQUI ESTÁ A MUDANÇA <<<
-                const sanitizedHtml = DOMPurify.sanitize(`<div class="generated-output-box">${suggestionsHtml}</div>`);
-                outputContainer.innerHTML = sanitizedHtml;
-                markButtonAsCompleted(button.id);
+        if (!analysis || !Array.isArray(analysis) || analysis.length === 0) {
+            throw new Error("A IA não retornou sugestões no formato esperado.");
+        }
 
-            } catch (error) {
-                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar sugestões: ${error.message}</p>`;
-                console.error("Erro detalhado em generateSoundtrack:", error);
-            } finally {
-                hideButtonLoading(button);
-            }
-        };
+        let suggestionsHtml = '<ul class="soundtrack-list space-y-2">';
+        analysis.forEach(suggestion => {
+            // Sanitiza cada sugestão individualmente antes de adicionar
+            suggestionsHtml += `<li>${DOMPurify.sanitize(suggestion)}</li>`;
+        });
+        suggestionsHtml += '</ul>';
+        
+        outputContainer.innerHTML = DOMPurify.sanitize(`<div class="generated-output-box">${suggestionsHtml}</div>`);
+        markButtonAsCompleted(button.id);
+
+    } catch (error) {
+        console.error("Erro detalhado em generateSoundtrack:", error);
+        outputContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">Falha ao gerar sugestões: ${error.message}</p>`);
+    } finally {
+        hideButtonLoading(button);
+    }
+};
 
 
 
@@ -3102,7 +3106,7 @@ window.analyzeSectionRetention = async (button, sectionId) => {
         return;
     }
 
-    const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]')); // Alterado para pegar apenas divs com ID
+    const paragraphs = Array.from(contentWrapper.querySelectorAll('div[id]'));
     if (paragraphs.length === 0) {
         window.showToast("Não há parágrafos para analisar.");
         return;
@@ -3113,15 +3117,16 @@ window.analyzeSectionRetention = async (button, sectionId) => {
     try {
         const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
         
-        // >>> PROMPT BLINDADO COM REGRA DE FECHAMENTO EXPLÍCITA <<<
+        // >>> PROMPT BLINDADO COM A NOVA REGRA DE ASPAS INTERNAS <<<
         const prompt = `Você é uma API de análise de retenção que retorna um array JSON.
 
 **REGRAS CRÍTICAS DE SINTAXE (INEGOCIÁVEIS):**
 1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON.
 2.  **ESTRUTURA COMPLETA:** Sua resposta DEVE começar com um colchete de abertura \`[\` e, OBRIGATORIAMENTE, terminar com um colchete de fechamento \`]\`.
-3.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves (ex: "suggestion") E todos os valores de texto (strings) DEVEM usar aspas duplas (\`"\`).
-4.  **VÍRGULA FINAL:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último objeto.
-5.  **OBJETO COMPLETO:** Cada objeto no array deve conter EXATAMENTE as três chaves: "paragraphIndex", "retentionScore" ("green", "yellow", ou "red"), e "suggestion" (em Português-Brasil).
+3.  **ASPAS DUPLAS EXTERNAS:** TODAS as chaves (ex: "suggestion") E todos os valores de texto (strings) DEVEM usar aspas duplas (\`"\`).
+4.  **ASPAS SIMPLES INTERNAS (A REGRA MAIS IMPORTANTE):** Se você precisar usar aspas DENTRO de uma string de "suggestion", você DEVE, OBRIGATORIAMENTE, usar aspas simples (\`'\`). É estritamente proibido usar aspas duplas dentro de outra string.
+5.  **VÍRGULA FINAL:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último objeto.
+6.  **OBJETO COMPLETO:** Cada objeto no array deve conter EXATAMENTE as três chaves: "paragraphIndex", "retentionScore" ("green", "yellow", ou "red"), e "suggestion" (em Português-Brasil).
 
 **DADOS PARA ANÁLISE:**
 ${JSON.stringify(paragraphsWithIndexes, null, 2)}
@@ -3159,7 +3164,7 @@ Analise os dados e retorne o array JSON completo e sintaticamente perfeito.`;
         const newParagraphs = paragraphs.map(p => {
             const newP = p.cloneNode(true);
             newP.className = '';
-            newP.innerHTML = p.innerHTML.replace(/<div class="retention-tooltip">.*?<\/div>|<button class="retention-action-btn optimize-btn">.*?<\/button>/g, '');
+            newP.innerHTML = DOMPurify.sanitize(p.innerHTML.replace(/<div class="retention-tooltip">.*?<\/div>|<button class="retention-action-btn optimize-btn">.*?<\/button>/g, ''));
             p.parentNode.replaceChild(newP, p);
             return newP;
         });
@@ -3190,7 +3195,7 @@ Analise os dados e retorne o array JSON completo e sintaticamente perfeito.`;
                             </div>
                         `;
                         const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}${buttonsHtml}</div>`;
-                        p.insertAdjacentHTML('beforeend', tooltipHtml);
+                        p.innerHTML += DOMPurify.sanitize(tooltipHtml);
                     }
                 }
             }
@@ -3205,8 +3210,8 @@ Analise os dados e retorne o array JSON completo e sintaticamente perfeito.`;
 
         window.showToast("Análise de retenção concluída!");
     } catch (error) {
+        console.error("Erro detalhado em analyzeSectionRetention:", error);
         window.showToast(`Falha na análise: ${error.message}`);
-        console.error("Erro detalhado em Análise de retenção:", error);
     } finally {
         hideButtonLoading(button);
     }
