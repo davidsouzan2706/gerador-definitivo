@@ -2074,7 +2074,7 @@ const invalidateAndClearPrompts = (sectionElement) => {
         };
     
 // =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO generateSectionHtmlContent INTEIRA POR ESTA <<<<<
+// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO generateSectionHtmlContent INTEIRA POR ESTA VERSÃO <<<<<
 // =========================================================================
 
 const generateSectionHtmlContent = (sectionId, title, content) => {
@@ -2146,24 +2146,26 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
     accordionHeader.appendChild(headerActionsGroup);
 
     // ---- PASSO 3: Construir o CORPO (Body) ----
-    // Conteúdo gerado
     const contentWrapper = document.createElement('div');
     contentWrapper.className = 'generated-content-wrapper';
     contentWrapper.setAttribute('contenteditable', 'true');
-    contentWrapper.innerHTML = content; // Usamos innerHTML aqui porque o 'content' já vem com divs internos. Futuramente, podemos refatorar isso também.
+    contentWrapper.innerHTML = content;
 
-    // Ferramentas de Análise (o bloco grande que continha os botões)
-    // Para manter a simplicidade nesta etapa, vamos injetar este bloco com innerHTML,
-    // pois ele é estático e não depende de dados externos.
     const analysisTools = document.createElement('div');
-    const addChapterButtonHtml = sectionId === 'development' ? `<button class="btn btn-primary btn-small" onclick="window.addDevelopmentChapter(this)"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/></svg> Adicionar Capítulo</button>` : '';
+    const addChapterButtonHtml = sectionId === 'development' ? `<button class="btn btn-primary btn-small" data-action="addDevelopmentChapter"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/></svg> Adicionar Capítulo</button>` : '';
+    
+    // Injeção do HTML das ferramentas, agora com o novo botão "Refinar Estilo"
     analysisTools.innerHTML = `
         <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-6">
             <div class="text-center">
                 <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 1: Diagnóstico e Criativo</h5>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Analise a retenção e, se precisar, enriqueça trechos. Selecione um trecho e clique.</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Analise a retenção e, se precisar, edite ou enriqueça o texto.</p>
                 <div class="flex items-center justify-center gap-2 flex-wrap">
                     <button class="btn btn-secondary btn-small" onclick="window.analyzeSectionRetention(this, '${sectionId}Section')">Analisar Retenção</button>
+                    <button class="btn btn-secondary btn-small" onclick="window.refineSectionStyle(this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gem" viewBox="0 0 16 16"><path d="M3.1.7a.5.5 0 0 1 .4-.2h9a.5.5 0 0 1 .4.2l2.976 3.974c.149.199.224.458.224.726v1.2a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1-.5-.5v-1.2c0-.268.075-.527.224-.726L3.1.7zM1.49 4.107l-1.18-1.575a.5.5 0 0 1 .4-.8h13.56a.5.5 0 0 1 .4.8L14.51 4.107H1.49zM.5 5.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1 0 1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h.5a.5.5 0 0 1 .5-.5v-1a.5.5 0 0 1-.5.5zM2 13.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+                        Refinar Estilo
+                    </button>
                     <button class="btn btn-secondary btn-small" onclick="window.enrichText(this)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M9.5 2.672a.5.5 0 1 0 1 0V.843a.5.5 0 0 0-1 0v1.829Zm4.5.035A.5.5 0 0 0 13.293 2L12 3.293a.5.5 0 1 0 .707.707L14 2.707a.5.5 0 0 0 0-.707ZM7.293 4A.5.5 0 1 0 8 3.293L6.707 2A.5.5 0 0 0 6 2.707L7.293 4Zm-.621 2.5a.5.5 0 0 0 0 .707l1.293 1.293a.5.5 0 0 0 .707-.707L7.38 6.207a.5.5 0 0 0-.707 0Z"/><path d="M12.026 8.5H11a.5.5 0 0 0 0 1h1.026a.5.5 0 0 0 0-1Zm-1.633.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293Zm-3.134 3.367a.5.5 0 1 0-.707.707l1.293 1.293a.5.5 0 0 0 .707-.707l-1.293-1.293Zm1.633-.293a.5.5 0 1 1 .707.707l-1.293 1.293a.5.5 0 0 1-.707-.707l1.293-1.293A.5.5 0 0 1 8.89 11.86Z"/></svg>
                         <span class="button-text">Enriquecer Texto</span>
@@ -2186,8 +2188,7 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
             </div>
         </div>
     `;
-
-    // Montar o Corpo
+    
     accordionBody.appendChild(contentWrapper);
     accordionBody.appendChild(analysisTools);
 
@@ -2195,10 +2196,8 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
     accordionItem.appendChild(accordionHeader);
     accordionItem.appendChild(accordionBody);
 
-    // Retornamos o elemento do DOM completo, pronto para ser adicionado à página.
     return accordionItem;
 };
-
 
     
         // ==========================================================
@@ -2850,6 +2849,9 @@ Sua tarefa é escrever o **Desenvolvimento** do roteiro. Esta é a seção mais 
         };
 
 
+
+
+
         // =========================================================================
 // >>>>> AÇÃO 1: SUBSTITUA A FUNÇÃO createScriptSectionPlaceholder COMPLETA <<<<<
 // =========================================================================
@@ -2860,13 +2862,15 @@ Sua tarefa é escrever o **Desenvolvimento** do roteiro. Esta é a seção mais 
  * @param {string} buttonId - O ID do botão principal que gera esta seção (ex: 'generateIntroBtn').
  * @returns {string} O HTML do placeholder da seção.
  */
-const createScriptSectionPlaceholder = (sectionId, title, buttonId) => {
+
+
+const createScriptSectionPlaceholder = (sectionId, title, buttonId, actionName) => {
     const containerId = `${sectionId}Section`;
     
     return `
         <div id="${containerId}" class="script-section card card-placeholder mb-4 animate-fade-in flex justify-between items-center">
             <h3 class="font-semibold text-lg text-gray-700 dark:text-gray-300">${title}</h3>
-            <button id="${buttonId}" class="btn btn-primary">
+            <button id="${buttonId}" data-action="${actionName}" class="btn btn-primary">
                 <i class="fas fa-magic mr-2"></i>Gerar
             </button>
         </div>
@@ -3332,6 +3336,77 @@ ${promptContext}`;
         hideButtonLoading(button);
     }
 };
+
+
+// =========================================================================
+// >>>>> PASSO 2: ADICIONE ESTA NOVA FUNÇÃO COMPLETA AO SEU JAVASCRIPT <<<<<
+// =========================================================================
+
+/**
+ * Pega o texto de uma seção, pede para a IA refinar o estilo (remover repetições, melhorar fluidez)
+ * e substitui o conteúdo original pelo texto refinado.
+ * @param {HTMLElement} buttonElement - O botão "Refinar Estilo" que foi clicado.
+ */
+window.refineSectionStyle = async (buttonElement) => {
+    showButtonLoading(buttonElement);
+
+    const sectionElement = buttonElement.closest('.script-section');
+    if (!sectionElement) {
+        window.showToast("Erro: Seção do roteiro não encontrada.");
+        hideButtonLoading(buttonElement);
+        return;
+    }
+
+    const contentWrapper = sectionElement.querySelector('.generated-content-wrapper');
+    const originalText = contentWrapper?.textContent.trim();
+
+    if (!originalText) {
+        window.showToast("Não há texto para refinar nesta seção.");
+        hideButtonLoading(buttonElement);
+        return;
+    }
+
+    const prompt = `Você é um Editor de Estilo (Copy Editor) de elite. Sua tarefa é reescrever o texto a seguir para melhorar sua qualidade, fluidez e impacto, sem alterar o significado, o tom ou a mensagem central.
+
+**TEXTO ORIGINAL:**
+---
+${originalText}
+---
+
+**REGRAS DE REFINAMENTO (INEGOCIÁVEIS):**
+1.  **Elimine Repetições:** Identifique e remova palavras e estruturas de frases repetitivas. Use sinônimos e varie a construção das sentenças.
+2.  **Melhore a Fluidez:** Conecte as ideias de forma mais suave e lógica. Garanta que o texto flua bem quando lido em voz alta.
+3.  **Mantenha a Essência:** NÃO adicione novas informações, opiniões ou mude o significado original. Seu trabalho é polir, não recriar.
+4.  **RESPOSTA LIMPA:** Sua resposta deve ser APENAS o texto refinado. Sem preâmbulos, comentários ou explicações.`;
+
+    try {
+        const rawResult = await callGroqAPI(prompt, 4000);
+        const refinedText = removeMetaComments(rawResult);
+
+        const newParagraphs = refinedText.split('\n').filter(p => p.trim() !== '');
+        const sectionId = sectionElement.id.replace('Section', '');
+        contentWrapper.innerHTML = newParagraphs.map((p, index) => 
+            `<div id="${sectionId}-p-${index}">${p}</div>`
+        ).join('');
+
+        invalidateAndClearPerformance(sectionElement);
+        invalidateAndClearPrompts(sectionElement);
+        const analysisOutput = sectionElement.querySelector('.section-analysis-output');
+        if (analysisOutput) {
+            analysisOutput.innerHTML = '';
+        }
+
+        updateAllReadingTimes();
+
+        window.showToast("Estilo do roteiro refinado com sucesso!");
+
+    } catch (error) {
+        window.showToast(`Falha ao refinar o estilo: ${error.message}`);
+    } finally {
+        hideButtonLoading(buttonElement);
+    }
+};
+
 
     
         /**
@@ -4115,9 +4190,9 @@ const generateStrategicOutline = async (button) => {
         const scriptContainer = document.getElementById('scriptSectionsContainer');
         if (scriptContainer) {
             scriptContainer.innerHTML = ''; 
-            scriptContainer.innerHTML += createScriptSectionPlaceholder('intro', 'Introdução', 'generateIntroBtn');
-            scriptContainer.innerHTML += createScriptSectionPlaceholder('development', 'Desenvolvimento', 'generateDevelopmentBtn');
-            scriptContainer.innerHTML += createScriptSectionPlaceholder('climax', 'Clímax', 'climaxBtn');
+            scriptContainer.innerHTML += createScriptSectionPlaceholder('intro', 'Introdução', 'generateIntroBtn', 'generateIntro');
+            scriptContainer.innerHTML += createScriptSectionPlaceholder('development', 'Desenvolvimento', 'generateDevelopmentBtn', 'generateDevelopment');
+            scriptContainer.innerHTML += createScriptSectionPlaceholder('climax', 'Clímax', 'climaxBtn', 'generateClimax');
         }
 
     } catch (error) {
@@ -4648,7 +4723,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (speakingPaceSelect) { speakingPaceSelect.addEventListener('change', updateAllReadingTimes); }
     
     // --- 4. O "GERENTE DE CLIQUES" (versão v6.0 - Robusta) ---
-    const actions = {
+  const actions = {
         'suggestStrategy': (btn) => suggestStrategy(btn),
         'startCrafting': (btn) => startCrafting(),
         'generateOutline': (btn) => generateStrategicOutline(btn),
@@ -4658,7 +4733,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'generateSoundtrack': (btn) => generateSoundtrack(btn),
         'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
         'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
-        'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climaxBtn'), // Correção do ID
+        'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
         'generateIdeas': (btn) => generateVideoIdeas(btn),
         'generateConclusion': (btn) => generateConclusion(btn),
         'generateCta': (btn) => generateStrategicCta(btn),
@@ -4669,6 +4744,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
             if (confirmed) { resetApplicationState(); }
         },
+        'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
         'select-idea': (btn) => {
             const ideaString = btn.dataset.idea;
             if (ideaString) {
