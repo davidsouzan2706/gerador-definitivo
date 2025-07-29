@@ -4,7 +4,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Roteiros Virais v3.6</title>
+    <title>Gerador de Roteiros Virais v3.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
@@ -589,7 +589,7 @@
         <header class="bg-white dark:bg-gray-800 shadow-sm">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                    <i class="fas fa-video mr-2"></i>Gerador de Roteiros Virais v3.6
+                    <i class="fas fa-video mr-2"></i>Gerador de Roteiros Virais v3.7
                 </h1>
                 <div class="flex items-center space-x-4">
                     <button id="darkModeToggle" class="theme-toggle">
@@ -2513,6 +2513,10 @@ const invalidateAndClearPrompts = (sectionElement) => {
 // >>>>> PASSO 1: SUBSTITUA A FUNÇÃO generateSectionHtmlContent INTEIRA POR ESTA VERSÃO <<<<<
 // =========================================================================
 
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO generateSectionHtmlContent INTEIRA POR ESTA <<<<<
+// =========================================================================
+
 const generateSectionHtmlContent = (sectionId, title, content) => {
     // ---- PASSO 1: Criar os Elementos Principais (esqueleto) ----
     const accordionItem = document.createElement('div');
@@ -2590,7 +2594,6 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gem" viewBox="0 0 16 16"><path d="M3.1.7a.5.5 0 0 1 .4-.2h9a.5.5 0 0 1 .4.2l2.976 3.974c.149.199.224.458.224.726v1.2a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1-.5-.5v-1.2c0-.268.075-.527.224-.726L3.1.7zM1.49 4.107l-1.18-1.575a.5.5 0 0 1 .4-.8h13.56a.5.5 0 0 1 .4.8L14.51 4.107H1.49zM.5 5.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1 0 1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h.5a.5.5 0 0 1 .5-.5v-1a.5.5 0 0 1-.5.5zM2 13.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
                         Refinar Estilo
                     </button>
-                    <!-- <<< CORREÇÃO AQUI: Trocamos onclick por data-action >>> -->
                     <button class="btn btn-secondary btn-small" data-action="enrichWithData">
                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.5 2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-1 0v-11a.5.5 0 0 1 .5-.5z"/><path d="M2 7.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
                         Enriquecer com Dados
@@ -2613,7 +2616,7 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
             </div>
         </div>
     `;
-    analysisTools.innerHTML = DOMPurify.sanitize(toolsHtml, { ADD_TAGS: ["svg", "path"], ADD_ATTR: ["d", "fill", "viewbox", "xmlns", "width", "height"] });
+    analysisTools.innerHTML = DOMPurify.sanitize(toolsHtml, { ADD_TAGS: ["svg", "path"], ADD_ATTR: ["d", "fill", "viewBox", "xmlns", "width", "height", "class"] });
     
     accordionBody.appendChild(contentWrapper);
     accordionBody.appendChild(analysisTools);
@@ -3938,64 +3941,7 @@ Responda APENAS com o texto final reescrito.`;
     }
 };
 
-    
-        /**
-         * Pega o texto selecionado pelo usuário, pede para a IA reescrevê-lo com uma analogia/metáfora,
-         * substitui o texto original e invalida a análise anterior. (VERSÃO CORRIGIDA)
-         * @param {HTMLElement} buttonElement - O botão que foi clicado.
-         */
-                window.enrichText = async (buttonElement) => {
-            const selection = window.getSelection();
-            const selectedText = selection.toString().trim();
-
-            if (!selectedText) {
-                window.showToast("Por favor, selecione primeiro o texto que deseja enriquecer.");
-                return;
-            }
-
-            showButtonLoading(buttonElement);
-
-            try {
-                const prompt = `Você é um Mestre Roteirista e poeta. Sua tarefa é reescrever o "Parágrafo Original" para incorporar a "Sugestão de Melhoria".
-
-                **Parágrafo Original:**
-                "${selectedText}"
-
-                **REGRAS:**
-                - Mantenha o núcleo da mensagem intacto.
-                - A resposta deve ser APENAS o parágrafo reescrito. Sem introduções, comentários ou explicações.`;
-
-                const rawResult = await callGroqAPI(prompt, 500);
-                const enrichedText = removeMetaComments(rawResult);
-
-                if (selection.rangeCount > 0) {
-                    document.execCommand('insertHTML', false, `<span class="highlight-change">${enrichedText}</span>`);
-                }
-                
-                const accordionItem = buttonElement.closest('.accordion-item');
-                if (accordionItem) {
-                    const analysisOutput = accordionItem.querySelector('.section-analysis-output');
-                    if (analysisOutput) {
-                        const invalidationMessage = `<p class="text-sm text-yellow-500 italic p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md">O texto foi modificado. Por favor, clique em "Analisar Retenção" novamente.</p>`;
-                        analysisOutput.innerHTML = invalidationMessage;
-                    }
-                                        
-                    const scriptSection = accordionItem.parentElement; 
-                    invalidateAndClearPrompts(scriptSection);
-                    invalidateAndClearPerformance(accordionItem.closest('.script-section'));
-                }
-
-                window.showToast("Texto enriquecido! Análise anterior resetada.");
-
-            } catch (error) {
-                window.showToast(`Falha ao enriquecer o texto: ${error.message}`);
-                console.error("Erro detalhado em scriptSection:", error);
-            } finally {
-                hideButtonLoading(buttonElement);
-            }
-        };
-
-    
+     
 // =========================================================================
 // >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'generateVideoIdeas' INTEIRA POR ESTA <<<<<
 // =========================================================================
