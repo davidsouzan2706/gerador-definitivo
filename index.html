@@ -244,10 +244,9 @@
             background-color: color-mix(in srgb, var(--dark-border) 50%, transparent);
         }
 
-
-/* ========================================================== */
-/*     PASSO 1: ADICIONE ESTE NOVO BLOCO AO SEU CSS           */
-/* ========================================================== */
+/* ========================================================================= */
+/* >>>>> SUBSTITUA O BLOCO DE CSS DO TOOLTIP INTEIRO POR ESTE <<<<< */
+/* ========================================================================= */
 
 /* --- Estilo para o Ícone de Ajuda (gatilho) --- */
 .help-icon {
@@ -277,20 +276,20 @@
     visibility: hidden;
     opacity: 0;
     width: 300px;
-    background-color: var(--dark-surface);
-    color: var(--dark-text-body);
+    background-color: var(--dark-bg); /* <<< CORREÇÃO APLICADA */
+    color: var(--dark-text-header);     /* <<< CORREÇÃO APLICADA */
     text-align: left;
     border-radius: 8px;
     padding: 1rem;
     position: absolute;
-    z-index: 1001; /* Z-index alto para garantir que fique por cima */
+    z-index: 1001;
     bottom: 150%; 
     left: 50%;
     transform: translateX(-50%);
     box-shadow: var(--shadow);
     border: 1px solid var(--dark-border);
     transition: opacity 0.3s;
-    pointer-events: none; /* Garante que o tooltip não interfira com o mouse */
+    pointer-events: none;
     font-weight: normal;
     font-size: 0.8rem;
     line-height: 1.5;
@@ -305,7 +304,7 @@
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: var(--dark-surface) transparent transparent transparent;
+    border-color: var(--dark-bg) transparent transparent transparent; /* <<< CORREÇÃO APLICADA */
 }
 
 /* --- Exibição ao passar o mouse --- */
