@@ -1953,7 +1953,7 @@ const resetProjectOutputs = () => {
 const isScriptComplete = () => {
     // Esta versão lê diretamente do nosso "painel de controle" de estado,
     // que é muito mais confiável do que verificar o HTML.
-    return projectState.intro && projectState.development && projectState.climax && projectState.conclusion;
+    return projectState.intro && projectState.development && projectState.climax && projectState.conclusion && projectState.cta;
 };
 
 
@@ -2375,6 +2375,8 @@ const generateStrategicCta = async (button) => {
         ctaSection.innerHTML = ''; // Limpa o container
         ctaSection.appendChild(ctaElement); // Adiciona o elemento seguro
         ctaSection.classList.remove('hidden');
+
+        projectState.cta = true;
         
         markButtonAsCompleted('generateCtaBtn');
         document.getElementById('conclusionStrategyModule').classList.add('hidden');
@@ -5164,10 +5166,9 @@ const generateStrategicOutline = async (button) => {
 
 
 // =========================================================================
-// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO resetApplicationState INTEIRA POR ESTA <<<<<
+// >>>>> PASSO 4: SUBSTITUA A FUNÇÃO resetApplicationState INTEIRA POR ESTA <<<<<
 // =========================================================================
 const resetApplicationState = () => {
-    // 1. Zera o nosso "painel de controle" de estado do projeto.
     projectState = {
         intro: false,
         development: false,
@@ -5176,19 +5177,15 @@ const resetApplicationState = () => {
         cta: false
     };
 
-    // 2. Função interna para resetar um campo do formulário de forma segura.
-    const safeReset = (elementId, value = '') => {
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.value = value;
-        }
-    };
+    const safeReset = (elementId, value = '') => { /* ... */ };
 
-    // 3. Reseta todos os inputs para seus valores padrão
+    // ... (o resto da sua função de reset, que já está correta)
+    
+    // Apenas para garantir, o miolo da função deve ser este:
     safeReset('channelName', 'The Biblical Unveiling');
     safeReset('videoTheme');
     safeReset('videoDescription');
-    safeReset('targetAudience', ''); // Corrigido para placeholder
+    safeReset('targetAudience', ''); 
     safeReset('languageSelect', 'en');
     safeReset('videoObjective', 'informar');
     safeReset('videoDuration', '');
@@ -5207,7 +5204,7 @@ const resetApplicationState = () => {
     safeReset('emotionalHook');
 
     toggleCustomImageStyleVisibility();
-    updateNarrativeStructureOptions(); // Garante que a estrutura seja resetada
+    updateNarrativeStructureOptions();
 
     const nicheDesc = document.getElementById('nicheDescription');
     const ideasOut = document.getElementById('ideasOutput');
@@ -5633,7 +5630,7 @@ if (analysisSection) {
 
 
 
-            
+
         },
         
         // Ações Dinâmicas (dentro dos acordeões e modais)
