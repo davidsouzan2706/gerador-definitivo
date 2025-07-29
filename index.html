@@ -2202,13 +2202,13 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
                 <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 1: Diagnóstico e Criativo</h5>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Analise, edite ou enriqueça o texto para máxima qualidade.</p>
                 <div class="flex items-center justify-center gap-2 flex-wrap">
-                    <button class="btn btn-secondary btn-small" onclick="window.analyzeSectionRetention(this, '${sectionId}Section')">Analisar Retenção</button>
-                    <button class="btn btn-secondary btn-small" onclick="window.refineSectionStyle(this)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3.1.7a.5.5 0 0 1 .4-.2h9a.5.5 0 0 1 .4.2l2.976 3.974c.149.199.224.458.224.726v1.2a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1-.5-.5v-1.2c0-.268.075-.527.224-.726L3.1.7zM1.49 4.107l-1.18-1.575a.5.5 0 0 1 .4-.8h13.56a.5.5 0 0 1 .4.8L14.51 4.107H1.49zM.5 5.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1 0 1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h.5a.5.5 0 0 1 .5-.5v-1a.5.5 0 0 1-.5.5zM2 13.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+                    <button class="btn btn-secondary btn-small" data-action="analyzeRetention" data-section-id="${sectionId}Section">Analisar Retenção</button>
+                    <button class="btn btn-secondary btn-small" data-action="refineStyle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gem" viewBox="0 0 16 16"><path d="M3.1.7a.5.5 0 0 1 .4-.2h9a.5.5 0 0 1 .4.2l2.976 3.974c.149.199.224.458.224.726v1.2a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1-.5-.5v-1.2c0-.268.075-.527.224-.726L3.1.7zM1.49 4.107l-1.18-1.575a.5.5 0 0 1 .4-.8h13.56a.5.5 0 0 1 .4.8L14.51 4.107H1.49zM.5 5.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1 0 1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h.5a.5.5 0 0 1 .5-.5v-1a.5.5 0 0 1-.5.5zM2 13.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
                         Refinar Estilo
                     </button>
-                    <!-- <<< NOSSO NOVO BOTÃO DE ENRIQUECIMENTO AQUI >>> -->
-                    <button class="btn btn-secondary btn-small" onclick="window.enrichWithData(this)">
+                    <!-- <<< CORREÇÃO AQUI: Trocamos onclick por data-action >>> -->
+                    <button class="btn btn-secondary btn-small" data-action="enrichWithData">
                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.5 2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-1 0v-11a.5.5 0 0 1 .5-.5z"/><path d="M2 7.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
                         Enriquecer com Dados
                     </button>
@@ -2219,7 +2219,7 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
             <div class="pt-4 border-t border-dashed border-gray-200 dark:border-gray-700 text-center">
                  <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 2: Estrutura de Narração</h5>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Adicione sugestões de performance para guiar a narração.</p>
-                <div class="flex items-center justify-center gap-2"><button class="btn btn-secondary btn-small" onclick="window.suggestPerformance(this, '${sectionId}Section')">Sugerir Performance</button></div>
+                <div class="flex items-center justify-center gap-2"><button class="btn btn-secondary btn-small" data-action="suggestPerformance" data-section-id="${sectionId}Section">Sugerir Performance</button></div>
                 <div class="section-performance-output mt-3 text-left"></div> 
             </div>
             <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
@@ -4854,21 +4854,28 @@ document.addEventListener('DOMContentLoaded', () => {
     if (speakingPaceSelect) { speakingPaceSelect.addEventListener('change', updateAllReadingTimes); }
     
     // --- 4. O "GERENTE DE CLIQUES" (versão v6.0 - Robusta) ---
-    const actions = {
+const actions = {
+        // Ações da página principal
         'suggestStrategy': (btn) => suggestStrategy(btn),
         'startCrafting': (btn) => startCrafting(),
+        'generateIdeas': (btn) => generateVideoIdeas(btn),
         'generateOutline': (btn) => generateStrategicOutline(btn),
+        
+        // Ações dos Módulos de Recursos
         'mapEmotions': (btn) => mapEmotionsAndPacing(btn),
         'generateDescription': (btn) => generateVideoDescription(btn),
         'generateTitlesAndThumbnails': (btn) => generateTitlesAndThumbnails(btn),
         'generateSoundtrack': (btn) => generateSoundtrack(btn),
+
+        // Ações de Geração de Seções
         'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
         'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
         'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
-        'generateIdeas': (btn) => generateVideoIdeas(btn),
         'generateConclusion': (btn) => generateConclusion(btn),
         'generateCta': (btn) => generateStrategicCta(btn),
-        'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn), // <<< AQUI ESTÁ A NOSSA NOVA FEATURE
+        'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
+
+        // Ações de Gerenciamento
         'exportProject': () => exportProject(),
         'exportPdf': () => downloadPdf(),
         'exportTranscript': () => handleCopyAndDownloadTranscript(),
@@ -4876,6 +4883,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
             if (confirmed) { resetApplicationState(); }
         },
+        
+        // Ações Dinâmicas (dentro dos acordeões e modais)
         'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
         'select-idea': (btn) => {
             const ideaString = btn.dataset.idea;
@@ -4883,7 +4892,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
                     selectIdea(ideaObject);
-                } catch (e) { console.error("Falha ao processar dados da ideia:", e); window.showToast("Erro ao selecionar a ideia.");}
+                } catch (e) { console.error("Erro ao processar dados da ideia:", e); window.showToast("Erro ao selecionar a ideia.");}
             }
         },
         'regenerate': (btn) => window.regenerateSection(btn.dataset.sectionId),
@@ -4892,6 +4901,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(btn); }
         },
         'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
+        
+        // <<< NOSSAS NOVAS AÇÕES CONECTADAS AQUI >>>
+        'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
+        'refineStyle': (btn) => window.refineSectionStyle(btn),
+        'enrichWithData': (btn) => window.enrichWithData(btn),
+        'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
     };
 
     document.addEventListener('click', function(event) {
