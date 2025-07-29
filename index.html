@@ -826,9 +826,10 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
 
 
-// ==========================================================
-//     PASSO 2: ADICIONE ESTA NOVA FUNÇÃO AO SEU JAVASCRIPT
-// ==========================================================
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO suggestFinalStrategy INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
+// =========================================================================
+
 const suggestFinalStrategy = async (button) => {
     showButtonLoading(button);
 
@@ -839,21 +840,27 @@ const suggestFinalStrategy = async (button) => {
         return;
     }
 
-    const prompt = `Você é um Estrategista de Conteúdo de elite para o YouTube. Analise o roteiro completo fornecido abaixo. Sua tarefa é sugerir a melhor estratégia para o final do vídeo.
+    // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE E ESTRUTURA EXPLÍCITAS <<<
+    const prompt = `Você é uma API Estrategista de Conteúdo que retorna APENAS um objeto JSON.
 
-**ROTEIRO COMPLETO (PARA CONTEXTO):**
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`{\` e terminando com \`}\`.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
+3.  **ESTRUTURA OBRIGATÓRIA:** O objeto JSON DEVE conter EXATAMENTE estas duas chaves: "conclusion_suggestion" (string) e "cta_suggestion" (string).
+4.  **IDIOMA:** Ambos os valores de texto devem estar no mesmo idioma do roteiro analisado.
+
+**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO:**
+{
+  "conclusion_suggestion": "A lição principal é que a inovação nasce da necessidade. A conclusão deve focar em como a frustração do criador se tornou a solução para milhões.",
+  "cta_suggestion": "Desafie a audiência a pensar em um problema em sua própria comunidade que poderia ser resolvido com criatividade e peça para compartilharem suas ideias nos comentários."
+}
+
+**ROTEiro COMPLETO (PARA CONTEXTO):**
 ---
 ${fullContext}
 ---
 
-**REGRAS CRÍTICAS DE RESPOSTA:**
-1.  Sua resposta DEVE ser um objeto JSON.
-2.  O objeto DEVE conter EXATAMENTE duas chaves: "conclusion_suggestion" e "cta_suggestion".
-3.  O valor de "conclusion_suggestion" deve ser uma sugestão de lição ou reflexão poderosa para a conclusão.
-4.  O valor de "cta_suggestion" deve ser uma sugestão de Call to Action criativo e engajador, que se conecte com o tema do vídeo.
-5.  Ambos os textos devem estar no mesmo idioma do roteiro.
-
-Responda APENAS com o objeto JSON.`;
+Analise o roteiro e retorne o objeto JSON completo e sintaticamente PERFEITO, seguindo EXATAMENTE as regras acima.`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 1000);
@@ -868,8 +875,8 @@ Responda APENAS com o objeto JSON.`;
         }
 
     } catch (error) {
-        window.showToast(`Falha ao sugerir estratégia final: ${error.message}`);
         console.error("Erro detalhado em suggestFinalStrategy:", error);
+        window.showToast(`Falha ao sugerir estratégia final: ${error.message}`);
     } finally {
         hideButtonLoading(button);
     }
@@ -1485,93 +1492,96 @@ const updateButtonStates = () => {
         };
 
 
-         /**
-         * Analisa o roteiro completo para criar um "mapa emocional" para guiar a produção.
-         */
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO mapEmotionsAndPacing INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
+// =========================================================================
+
 const mapEmotionsAndPacing = async (button) => {
-    // 1. A condição de verificação que já criamos antes
     const isFullScriptComplete = 
         document.querySelector('#introSection .accordion-item') &&
         document.querySelector('#developmentSection .accordion-item') &&
         document.querySelector('#climaxSection .accordion-item') &&
         document.querySelector('#conclusionSection .accordion-item');
 
-    // 2. Se a condição não for atendida, mostra o TOAST e para a função.
     if (!isFullScriptComplete) {
         window.showToast("Por favor, gere o roteiro completo (incluindo a Conclusão) antes de mapear as emoções.");
         return;
     }
 
     const fullTranscript = getTranscriptOnly();
-    // A verificação abaixo é uma segunda camada de segurança, podemos mantê-la.
     if (!fullTranscript) {
         window.showToast("Gere o roteiro completo primeiro para criar o mapa emocional.");
         return;
     }
 
-            const outputContainer = document.getElementById('emotionalMapContent');
-            
-            showButtonLoading(button);
-            outputContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
+    const outputContainer = document.getElementById('emotionalMapContent');
+    
+    showButtonLoading(button);
+    outputContainer.innerHTML = DOMPurify.sanitize(`<div class="loading-spinner-small mx-auto my-4"></div>`);
 
-            const paragraphs = fullTranscript.split('\n\n').filter(p => p.trim() !== '');
+    const paragraphs = fullTranscript.split('\n\n').filter(p => p.trim() !== '');
 
-            const prompt = `Você é um Diretor de Cena. Sua tarefa é analisar um roteiro e criar um "beat sheet" emocional. Para cada parágrafo, defina a 'emoção' chave e o 'ritmo' da narração.
-            
-            **REGRAS CRÍTICAS:**
-            1.  Sua resposta DEVE ser um array JSON.
-            2.  O array deve ter um objeto para CADA um dos ${paragraphs.length} parágrafos do roteiro.
-            3.  Cada objeto deve ter TRÊS chaves: "paragraph_index" (o número do índice, começando em 0), "emotion" (string, ex: "Curiosidade Intensa"), e "pace" (string, ex: "Rápido e Incisivo").
+    // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE E ESTRUTURA EXPLÍCITAS <<<
+    const prompt = `Você é uma API de análise de roteiro que retorna APENAS um array JSON.
 
-            **ROTEIRO PARA ANALISAR:**
-            ${paragraphs.map((p, index) => `PARAGRAFO ${index}: "${p}"`).join('\n\n')}
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
+3.  **VÍRGULA FINAL:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último objeto.
+4.  **ESTRUTURA DO OBJETO:** Cada objeto no array DEVE conter EXATAMENTE estas três chaves: "paragraph_index" (um número, começando em 0), "emotion" (string), e "pace" (string).
+5.  **NÚMERO DE OBJETOS:** O array DEVE conter EXATAMENTE ${paragraphs.length} objetos, um para cada parágrafo.
 
-            Responda apenas com o array JSON, garantindo um objeto para cada parágrafo de 0 a ${paragraphs.length - 1}.`;
+**ROTEIRO PARA ANALISAR:**
+${paragraphs.map((p, index) => `PARAGRAFO ${index}: "${p}"`).join('\n\n')}
 
-            try {
-                const rawResult = await callGroqAPI(prompt, 3000);
-                const analysis = cleanGeneratedText(rawResult, true);
+Responda APENAS com o array JSON completo e sintaticamente PERFEITO, seguindo EXATAMENTE as regras acima.`;
 
-                if (!analysis || !Array.isArray(analysis) || analysis.length > paragraphs.length) {
-                    throw new Error("A IA retornou um mapa emocional em formato inválido ou incompleto.");
-                }
+    try {
+        const rawResult = await callGroqAPI(prompt, 3000);
+        const analysis = cleanGeneratedText(rawResult, true);
 
-                window.emotionalMap = analysis;
-                
-                // >>>>> GERAÇÃO DO HTML CORRIGIDA E MELHORADA <<<<<
-                let mapHtml = '<div class="space-y-4">';
-                analysis.forEach(item => {
-                    const paragraphText = paragraphs[item.paragraph_index];
-                    if (!paragraphText) return; // Pula se o parágrafo não existir
+        if (!analysis || !Array.isArray(analysis) || analysis.length < paragraphs.length) {
+            throw new Error("A IA retornou um mapa emocional em formato inválido ou incompleto.");
+        }
 
-                    mapHtml += `
-                        <div class="emotional-map-item card !p-3">
-                            <p class="paragraph-preview">"${paragraphText}"</p>
-                            <div class="analysis-tags">
-                                <span class="tag tag-emotion">
-                                    <i class="fas fa-theater-masks mr-2"></i>${item.emotion}
-                                </span>
-                                <span class="tag tag-pace">
-                                    <i class="fas fa-tachometer-alt mr-2"></i>${item.pace}
-                                </span>
-                            </div>
-                        </div>
-                    `;
-                });
-                mapHtml += '</div>';
-                
-                outputContainer.innerHTML = DOMPurify.sanitize(mapHtml);
-                markButtonAsCompleted(button.id);
+        window.emotionalMap = analysis;
+        
+        let mapHtml = '<div class="space-y-4">';
+        analysis.forEach(item => {
+            const paragraphText = paragraphs[item.paragraph_index];
+            if (!paragraphText) return;
 
-            } catch (error) {
-                outputContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar o mapa emocional: ${error.message}</p>`;
-                console.error("Erro detalhado em mapEmotionsAndPacing:", error);
-            } finally {
-                hideButtonLoading(button);
-            }
-        };
+            mapHtml += `
+                <div class="emotional-map-item card !p-3">
+                    <p class="paragraph-preview">"${DOMPurify.sanitize(paragraphText)}"</p>
+                    <div class="analysis-tags">
+                        <span class="tag tag-emotion">
+                            <i class="fas fa-theater-masks mr-2"></i>${DOMPurify.sanitize(item.emotion)}
+                        </span>
+                        <span class="tag tag-pace">
+                            <i class="fas fa-tachometer-alt mr-2"></i>${DOMPurify.sanitize(item.pace)}
+                        </span>
+                    </div>
+                </div>
+            `;
+        });
+        mapHtml += '</div>';
+        
+        outputContainer.innerHTML = DOMPurify.sanitize(mapHtml, { ADD_TAGS: ["i"] });
+        markButtonAsCompleted(button.id);
+
+    } catch (error) {
+        console.error("Erro detalhado em mapEmotionsAndPacing:", error);
+        outputContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">Falha ao gerar o mapa emocional: ${error.message}</p>`);
+    } finally {
+        hideButtonLoading(button);
+    }
+};
 
 
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO generateSoundtrack INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
+// =========================================================================
 
 const generateSoundtrack = async (button) => {
     const fullTranscript = getTranscriptOnly();
@@ -1585,25 +1595,32 @@ const generateSoundtrack = async (button) => {
     showButtonLoading(button);
     outputContainer.innerHTML = DOMPurify.sanitize(`<div class="loading-spinner-small mx-auto my-4"></div>`);
 
-    // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE EXPLÍCITAS <<<
-    const prompt = `Você é uma API de geração de JSON. Sua tarefa é analisar um roteiro e criar 3 prompts para IAs de geração de música.
+    // >>> PROMPT BLINDADO SEGUINDO A ANÁLISE PROFISSIONAL <<<
+    const prompt = `Você é um especialista em criação de prompts para IAs de música. Sua tarefa é gerar 3 parágrafos descritivos para uma trilha sonora baseada no roteiro fornecido.
 
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
-1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON.
-2.  **ESTRUTURA COMPLETA:** Sua resposta DEVE começar com um colchete de abertura \`[\` e, OBRIGATORIAMENTE, terminar com um colchete de fechamento \`]\`.
-3.  **ASPAS DUPLAS, SEMPRE:** Cada string no array DEVE, OBRIGATORIAMENTE, usar aspas duplas (\`"\`).
-4.  **VÍRGULA FINAL:** Cada string dentro do array DEVE ser seguida por uma vírgula, EXCETO a última string.
-5.  **CONTEÚDO:** O array deve conter EXATAMENTE 3 strings, cada uma sendo um parágrafo descritivo.
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (ABSOLUTAMENTE OBRIGATÓRIAS):**
+1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto é permitido.
+2.  **ESTRUTURA DO ARRAY:** O array deve conter EXATAMENTE 3 strings.
+3.  **ASPAS DUPLAS SEMPRE:** CADA string no array DEVE usar obrigatoriamente aspas duplas (\`"\`).
+4.  **VÍRGULAS OBRIGATÓRIAS:** CADA string no array, exceto a ÚLTIMA, DEVE ser seguida por uma vírgula (\`,\`).
+5.  **CONTEÚDO DAS STRINGS:** Cada string deve ser um parágrafo único e bem escrito.
 
-**Roteiro completo para analisar:**
+**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO:**
+[
+  "Uma melodia suave e inspiradora com piano e violão, criando uma atmosfera de esperança.",
+  "Ritmo acelerado e eletrizante com sintetizadores, combinando tensão e empolgação para momentos de ação.",
+  "Uma orquestração épica e emocional com cordas, evocando sentimentos de conquista e realização."
+]
+
+**ROTEIRO COMPLETO PARA ANALISAR:**
 ---
 ${fullTranscript}
 ---
 
-Responda APENAS com o array JSON completo e sintaticamente perfeito.`;
+Responda APENAS com o array JSON completo e sintaticamente PERFEITO, seguindo EXATAMENTE as regras acima.`;
 
     try {
-        const rawResult = await callGroqAPI(prompt, 1500); // Aumentado para dar mais espaço
+        const rawResult = await callGroqAPI(prompt, 1500);
         const analysis = cleanGeneratedText(rawResult, true);
 
         if (!analysis || !Array.isArray(analysis) || analysis.length === 0) {
@@ -1612,7 +1629,6 @@ Responda APENAS com o array JSON completo e sintaticamente perfeito.`;
 
         let suggestionsHtml = '<ul class="soundtrack-list space-y-2">';
         analysis.forEach(suggestion => {
-            // Sanitiza cada sugestão individualmente antes de adicionar
             suggestionsHtml += `<li>${DOMPurify.sanitize(suggestion)}</li>`;
         });
         suggestionsHtml += '</ul>';
@@ -3620,10 +3636,6 @@ Responda APENAS com o texto final reescrito.`;
 // =========================================================================
 // >>>>> SUBSTITUA A SUA FUNÇÃO generateVideoIdeas INTEIRA POR ESTA VERSÃO CORRIGIDA <<<<<
 // =========================================================================
-/**
- * Gera e valida ideias de vídeo com base no nicho fornecido, respeitando o idioma selecionado.
- * @param {HTMLElement} button - O botão que acionou a geração.
- */
 const generateVideoIdeas = async (button) => {
     const nicheDescription = document.getElementById('nicheDescription').value.trim();
     if (!nicheDescription) {
@@ -3631,37 +3643,45 @@ const generateVideoIdeas = async (button) => {
         return;
     }
 
-    // >>> AQUI ESTÁ A CORREÇÃO: Lemos o idioma selecionado pelo usuário <<<
     const selectedLangCode = document.getElementById('languageSelect').value;
     const languageName = selectedLangCode === 'pt-br' ? 'Português (Brasil)' : 'English';
 
     const outputContainer = document.getElementById('ideasOutput');
-    outputContainer.innerHTML = `<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`;
+    outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
 
     showButtonLoading(button);
 
     try {
-        // >>> O PROMPT AGORA INCLUI A INSTRUÇÃO DE IDIOMA <<<
-        const prompt = `Você é um Estrategista de Conteúdo Viral para o YouTube. Sua tarefa é analisar a descrição de um nicho e gerar 6 ideias de vídeo com alto potencial de engajamento.
+        // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE E ESTRUTURA EXPLÍCITAS <<<
+        const prompt = `Você é uma API Estrategista de Conteúdo que retorna APENAS um array JSON.
 
-        **Nicho/Descrição:** "${nicheDescription}"
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
+3.  **VÍRGULA FINAL:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último objeto.
+4.  **ESTRUTURA DO OBJETO:** Cada objeto no array DEVE conter EXATAMENTE estas cinco chaves: "title" (string), "angle" (string), "targetAudience" (string), "viralityScore" (um número de 0 a 10), e "videoDescription" (string).
+5.  **IDIOMA:** Lembre-se, todos os valores de texto devem estar em **${languageName}**.
 
-        **REGRA CRÍTICA DE IDIOMA:** Todos os valores de texto no JSON (title, angle, targetAudience, videoDescription) DEVEM ser gerados em **${languageName}**.
+**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO:**
+[
+  {
+    "title": "Título Clickbait Inteligente da Ideia 1",
+    "angle": "Uma frase curta explicando a abordagem única.",
+    "targetAudience": "O público-alvo específico para esta ideia.",
+    "viralityScore": 9,
+    "videoDescription": "Uma descrição curta e otimizada para o YouTube."
+  }
+]
 
-        Para cada ideia, você deve fornecer:
-        1.  **title:** Um título "clickbait" mas inteligente (máximo 70 caracteres).
-        2.  **angle:** O ângulo ou abordagem única em uma frase curta (máximo 120 caracteres).
-        3.  **targetAudience:** O público-alvo específico que esta ideia mais atrairia.
-        4.  **viralityScore:** Uma nota de 0 a 10 sobre o potencial de viralidade.
-        5.  **videoDescription:** Uma descrição curta e otimizada para o YouTube.
+**Nicho/Descrição para analisar:** "${nicheDescription}"
 
-        Responda APENAS com um array JSON. Cada objeto no array deve conter exatamente as chaves acima.`;
+Gere 6 ideias de vídeo seguindo EXATAMENTE as regras e o formato acima.`;
 
         const rawResult = await callGroqAPI(prompt, 4000);
         const ideas = cleanGeneratedText(rawResult, true);
 
         if (!ideas || !Array.isArray(ideas) || ideas.length === 0) {
-            throw new Error("A IA retornou uma resposta vazia ou em formato inesperado, mesmo sendo um JSON válido.");
+            throw new Error("A IA retornou uma resposta vazia ou em formato inesperado.");
         }
 
         outputContainer.innerHTML = '';
@@ -3671,39 +3691,41 @@ const generateVideoIdeas = async (button) => {
             const angle = idea.angle || "Sem um ângulo definido.";
             const viralityScore = idea.viralityScore || "N/A";
 
-            const ideaCard = `
-                <div class="card-background p-4 rounded-lg shadow-md border-l-4 border-indigo-500 animate-fade-in flex flex-col justify-between min-h-[140px]">
-                    <div>
-                        <div class="flex justify-between items-start gap-4">
-                            <h4 class="font-bold text-base text-gray-800 dark:text-gray-200 flex-grow">${index + 1}. ${title}</h4>
-                            <button class="btn btn-primary btn-small flex-shrink-0 py-1 px-3"
-                                    data-action="select-idea"
-                                    data-idea='${escapeIdeaForOnclick(idea)}'>
-                                Usar
-                            </button>
-                        </div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 italic mt-2">"${angle}"</p>
+            // Usando createElement para segurança
+            const card = document.createElement('div');
+            card.className = 'card-background p-4 rounded-lg shadow-md border-l-4 border-indigo-500 animate-fade-in flex flex-col justify-between min-h-[140px]';
+            
+            const escapedIdea = escapeIdeaForOnclick(idea);
+            const cardContent = `
+                <div>
+                    <div class="flex justify-between items-start gap-4">
+                        <h4 class="font-bold text-base text-gray-800 dark:text-gray-200 flex-grow">${index + 1}. ${DOMPurify.sanitize(title)}</h4>
+                        <button class="btn btn-primary btn-small flex-shrink-0 py-1 px-3"
+                                data-action="select-idea"
+                                data-idea='${escapedIdea}'>
+                            Usar
+                        </button>
                     </div>
-                    <span class="font-bold text-sm text-indigo-500 bg-indigo-100 dark:bg-indigo-900 dark:text-indigo-300 py-1 px-2 rounded self-start mt-3">
-                        Potencial: ${viralityScore} / 10
-                    </span>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 italic mt-2">"${DOMPurify.sanitize(angle)}"</p>
                 </div>
+                <span class="font-bold text-sm text-indigo-500 bg-indigo-100 dark:bg-indigo-900 dark:text-indigo-300 py-1 px-2 rounded self-start mt-3">
+                    Potencial: ${DOMPurify.sanitize(String(viralityScore))} / 10
+                </span>
             `;
-            outputContainer.innerHTML += ideaCard;
+            card.innerHTML = DOMPurify.sanitize(cardContent, { ADD_ATTR: ['data-action', 'data-idea'] });
+            outputContainer.appendChild(card);
         });
 
     } catch (error) {
-        if (error.message.includes("A IA não retornou um formato JSON reconhecível")) {
-            outputContainer.innerHTML = `<p class="md:col-span-2 text-yellow-500 text-sm p-4 bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
+        console.error("Erro detalhado em generateVideoIdeas:", error);
+        if (error.message.includes("A IA não retornou um formato")) {
+            outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-yellow-500 text-sm p-4 bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
                 <strong>A IA se recusou a gerar conteúdo para este tema.</strong><br><br>
-                Isso geralmente acontece com tópicos considerados sensíveis ou controversos. Tente reformular sua descrição com termos mais neutros ou uma abordagem diferente.
-            </p>`;
-            window.showToast("O tema foi considerado sensível pela IA.");
-            console.error("Erro detalhado em prompt:", error);
+                Isso geralmente acontece com tópicos considerados sensíveis ou controversos. Tente reformular sua descrição.
+            </p>`);
         } else {
-            outputContainer.innerHTML = `<p class="md:col-span-2 text-red-500 text-sm">Falha ao gerar ideias: ${error.message}</p>`;
+            outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-red-500 text-sm">Falha ao gerar ideias: ${error.message}</p>`);
         }
-        console.error("Erro em generateVideoIdeas:", error);
     } finally {
         hideButtonLoading(button);
     }
@@ -4152,112 +4174,153 @@ ${promptContextForAI}
             }
         };
 
-        /**
-         * Analisa o potencial de clique (CTR) dos títulos gerados.
-         */
-        window.analyzeTitles = async () => {
-            if (!generatedTitlesAndThumbnails || !generatedTitlesAndThumbnails.titles || generatedTitlesAndThumbnails.titles.length === 0) {
-                window.showToast("Gere os títulos primeiro!");
-                return;
-            }
 
-            const resultContainer = document.getElementById('ctrAnalysisResult');
-            resultContainer.innerHTML = `<div class="loading-spinner-small"></div>`;
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO analyzeTitles INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
+// =========================================================================
 
-            const titlesString = generatedTitlesAndThumbnails.titles.join('\n');
-            
-            const prompt = `Você é um especialista em marketing de conteúdo para o YouTube. Analise a seguinte lista de títulos de vídeo. Para cada um, forneça uma "nota de CTR" de 0 a 10 (onde 10 é um clique quase garantido) e uma sugestão curta e objetiva para melhorá-lo, focando em curiosidade, urgência e benefício claro.
+window.analyzeTitles = async () => {
+    if (!generatedTitlesAndThumbnails || !generatedTitlesAndThumbnails.titles || generatedTitlesAndThumbnails.titles.length === 0) {
+        window.showToast("Gere os títulos primeiro!");
+        return;
+    }
 
-            Responda APENAS com um array JSON. Cada objeto no array deve ter as chaves "titulo_original", "nota_ctr" e "sugestao_melhora".
+    const resultContainer = document.getElementById('ctrAnalysisResult');
+    resultContainer.innerHTML = DOMPurify.sanitize(`<div class="loading-spinner-small"></div>`);
 
-            Títulos para analisar:
-            ---
-            ${titlesString}
-            ---`;
+    const titlesString = generatedTitlesAndThumbnails.titles.join('\n');
+    
+    // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE E ESTRUTURA EXPLÍCITAS <<<
+    const prompt = `Você é uma API de análise de títulos do YouTube que retorna APENAS um array JSON.
 
-            try {
-                const rawResult = await callGroqAPI(prompt, 2000);
-                const cleanedResult = cleanGeneratedText(rawResult, true);
-                const analysis = cleanedResult;
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
+3.  **VÍRGULA FINAL:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último objeto.
+4.  **ESTRUTURA DO OBJETO:** Cada objeto no array DEVE conter EXATAMENTE estas três chaves: "titulo_original" (string), "nota_ctr" (um número de 0 a 10), e "sugestao_melhora" (string).
 
-                let analysisHtml = '<div class="space-y-4">';
-                analysis.forEach(item => {
-                    // --- INÍCIO DA CORREÇÃO NA RENDERIZAÇÃO ---
-                    analysisHtml += `
-                        <div class="p-3 card-background rounded-md shadow-sm">
-                            <p class="font-semibold text-gray-800 dark:text-gray-200">${item.titulo_original}</p>
-                            <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><strong>Nota de CTR:</strong> <span class="text-indigo-500 font-bold">${item.nota_ctr} / 10</span></p>
-                            <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><strong>Sugestão:</strong> ${item.sugestao_melhora}</p>
-                        </div>
-                    `;
+**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO:**
+[
+  {
+    "titulo_original": "Título Exemplo 1",
+    "nota_ctr": 8,
+    "sugestao_melhora": "Adicionar um número ou um gatilho de curiosidade."
+  },
+  {
+    "titulo_original": "Título Exemplo 2",
+    "nota_ctr": 6,
+    "sugestao_melhora": "Encurtar para ser mais direto e impactante."
+  }
+]
+
+**Títulos para analisar:**
+---
+${titlesString}
+---
+
+Responda APENAS com o array JSON completo e sintaticamente PERFEITO, seguindo EXATAMENTE as regras acima.`;
+
+    try {
+        const rawResult = await callGroqAPI(prompt, 2000);
+        const analysis = cleanGeneratedText(rawResult, true);
+
+        if (!analysis || !Array.isArray(analysis)) {
+            throw new Error("A IA não retornou uma análise de títulos em formato válido.");
+        }
+
+        let analysisHtml = '<div class="space-y-4">';
+        analysis.forEach(item => {
+            analysisHtml += `
+                <div class="p-3 card-background rounded-md shadow-sm">
+                    <p class="font-semibold text-gray-800 dark:text-gray-200">${DOMPurify.sanitize(item.titulo_original)}</p>
+                    <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><strong>Nota de CTR:</strong> <span class="text-indigo-500 font-bold">${DOMPurify.sanitize(String(item.nota_ctr))} / 10</span></p>
+                    <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><strong>Sugestão:</strong> ${DOMPurify.sanitize(item.sugestao_melhora)}</p>
+                </div>
+            `;
+        });
+        analysisHtml += '</div>';
+        resultContainer.innerHTML = DOMPurify.sanitize(analysisHtml);
+
+    } catch (error) {
+        console.error("Erro detalhado em analyzeTitles:", error);
+        resultContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">Falha ao analisar os títulos: ${error.message}</p>`);
+    }
+};
+
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO analyzeThumbnails INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
+// =========================================================================
+
+window.analyzeThumbnails = async () => {
+    if (!generatedTitlesAndThumbnails || !generatedTitlesAndThumbnails.thumbnails || generatedTitlesAndThumbnails.thumbnails.length === 0) {
+        window.showToast("Gere as ideias de thumbnail primeiro!");
+        return;
+    }
+
+    const resultContainer = document.getElementById('thumbnailAnalysisResult');
+    resultContainer.innerHTML = DOMPurify.sanitize(`<div class="loading-spinner-small"></div>`);
+
+    const thumbnailsString = generatedTitlesAndThumbnails.thumbnails.map(t => `Título: ${t.title}, Descrição: ${t.description}`).join('\n---\n');
+    
+    // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE E ESTRUTURA EXPLÍCITAS <<<
+    const prompt = `Você é uma API de análise de thumbnails do YouTube que retorna APENAS um array JSON.
+
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
+3.  **VÍRGULA FINAL:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último objeto.
+4.  **ESTRUTURA DO OBJETO:** Cada objeto no array DEVE conter EXATAMENTE estas três chaves: "titulo" (string, contendo o título original da ideia analisada), "nota_visual" (um número de 0 a 10), e "sugestao_melhora" (string).
+
+**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO:**
+[
+  {
+    "titulo": "Ideia de Thumbnail 1",
+    "nota_visual": 7,
+    "sugestao_melhora": "Aumentar o contraste e usar uma fonte mais legível no texto."
+  },
+  {
+    "titulo": "Ideia de Thumbnail 2",
+    "nota_visual": 9,
+    "sugestao_melhora": "Adicionar um contorno brilhante ao redor da pessoa para destacá-la do fundo."
+  }
+]
+
+**Ideias para analisar:**
+---
+${thumbnailsString}
+---
+
+Responda APENAS com o array JSON completo e sintaticamente PERFEITO, seguindo EXATAMENTE as regras acima.`;
+
+    try {
+        const rawResult = await callGroqAPI(prompt, 2500);
+        const analysis = cleanGeneratedText(rawResult, true);
+
+        if (!analysis || !Array.isArray(analysis)) {
+            throw new Error("A IA não retornou uma análise de thumbnails em formato válido.");
+        }
+
+        let analysisHtml = '<div class="space-y-4">';
+        analysis.forEach(item => {
+            analysisHtml += `
+                <div class="p-3 card-background rounded-md shadow-sm">
+                    <p class="font-semibold text-gray-800 dark:text-gray-200">"${DOMPurify.sanitize(item.titulo || 'Ideia Sem Título')}"</p>
+                    <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><strong>Nota de Potencial Visual:</strong> <span class="text-indigo-500 font-bold">${DOMPurify.sanitize(String(item.nota_visual))} / 10</span></p>
+                    <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><strong>Sugestão:</strong> ${DOMPurify.sanitize(item.sugestao_melhora)}</p>
+                </div>
+            `;
+        });
+        analysisHtml += '</div>';
+        resultContainer.innerHTML = DOMPurify.sanitize(analysisHtml);
+
+    } catch (error) {
+        console.error("Erro detalhado em analyzeThumbnails:", error);
+        resultContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">Falha ao analisar as thumbnails: ${error.message}</p>`);
+    }
+};
 
 
-            // --------------------------------------
-                    // --- FIM DA CORREÇÃO NA RENDERIZAÇÃO ---
-            // --------------------------------------
 
-
-
-                });
-                analysisHtml += '</div>';
-                resultContainer.innerHTML = analysisHtml;
-
-            } catch (error) {
-                resultContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao analisar os títulos: ${error.message}</p>`;
-                console.error("Erro detalhado em Falha ao analisar os títulos:", error);
-            }
-        };
-
-        /**
-         * Analisa o potencial de clique (CTR) das ideias de thumbnail geradas.
-         */
-        window.analyzeThumbnails = async () => {
-            if (!generatedTitlesAndThumbnails || !generatedTitlesAndThumbnails.thumbnails || generatedTitlesAndThumbnails.thumbnails.length === 0) {
-                window.showToast("Gere as ideias de thumbnail primeiro!");
-                return;
-            }
-
-            const resultContainer = document.getElementById('thumbnailAnalysisResult');
-            resultContainer.innerHTML = `<div class="loading-spinner-small"></div>`;
-
-            const thumbnailsString = generatedTitlesAndThumbnails.thumbnails.map(t => `Título: ${t.title}, Descrição: ${t.description}`).join('\n---\n');
-            
-            // --- INÍCIO DA CORREÇÃO NO PROMPT ---
-            const prompt = `Você é um Diretor de Arte e especialista em YouTube. Analise a seguinte lista de ideias para thumbnails. Para cada uma, forneça uma "nota de potencial visual" de 0 a 10 (onde 10 é uma imagem irresistível) e uma sugestão curta para maximizar o impacto visual, focando em contraste, emoção facial, clareza e curiosidade.
-
-            Responda APENAS com um array JSON. Cada objeto no array deve ter as chaves "titulo", "nota_visual" e "sugestao_melhora". A chave "titulo" DEVE conter o título original da ideia que você analisou.
-
-            Ideias para analisar:
-            ---
-            ${thumbnailsString}
-            ---`;
-            // --- FIM DA CORREÇÃO NO PROMPT ---
-
-            try {
-                const rawResult = await callGroqAPI(prompt, 2500);
-                const cleanedResult = cleanGeneratedText(rawResult, true);
-                const analysis = cleanedResult;
-
-                let analysisHtml = '<div class="space-y-4">';
-                analysis.forEach(item => {
-                    // --- INÍCIO DA CORREÇÃO NA RENDERIZAÇÃO ---
-                    analysisHtml += `
-                        <div class="p-3 card-background rounded-md shadow-sm">
-                            <p class="font-semibold text-gray-800 dark:text-gray-200">"${item.titulo || 'Ideia Sem Título'}"</p>
-                            <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><strong>Nota de Potencial Visual:</strong> <span class="text-indigo-500 font-bold">${item.nota_visual} / 10</span></p>
-                            <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><strong>Sugestão:</strong> ${item.sugestao_melhora}</p>
-                        </div>
-                    `;
-                    // --- FIM DA CORREÇÃO NA RENDERIZAÇÃO ---
-                });
-                analysisHtml += '</div>';
-                resultContainer.innerHTML = analysisHtml;
-
-            } catch (error) {
-                resultContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao analisar as thumbnails: ${error.message}</p>`;
-                console.error("Erro detalhado em cleanGeneratedText:", error);
-            }
-        };
         /**
          * Gera a descrição do vídeo e hashtags.
          */
@@ -4296,7 +4359,7 @@ const generateStrategicOutline = async (button) => {
     
     const outlineContentDiv = document.getElementById('outlineContent');
     if (outlineContentDiv) {
-        outlineContentDiv.innerHTML = `<div class="loading-spinner-small mx-auto"></div>`;
+        outlineContentDiv.innerHTML = DOMPurify.sanitize(`<div class="loading-spinner-small mx-auto"></div>`);
     } else {
         window.showToast("Erro: Container do esboço não encontrado.");
         hideButtonLoading(button);
@@ -4305,34 +4368,50 @@ const generateStrategicOutline = async (button) => {
 
     try {
         const { prompt, maxTokens } = constructScriptPrompt('outline', 'Esboço Estratégico');
-        const rawResult = await callGroqAPI(prompt, maxTokens);
+        // O prompt já foi blindado dentro da função constructScriptPrompt.
+        // Apenas para garantir, vamos usar a versão mais recente e segura aqui.
+        const finalPrompt = getBasePromptContext() + `
+Você é uma API de geração de JSON. Sua tarefa é criar um "beat sheet" (esboço estratégico) para um vídeo.
+
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta deve ser APENAS o código de um objeto JSON, começando com \`{\` e terminando com \`}\`.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves (ex: "introduction") E todos os valores de texto (strings) DEVEM, OBRIGATORIAMENTE, usar aspas duplas (\`"\`).
+3.  **CHAVES OBRIGATÓRIAS:** O objeto deve conter EXATAMENTE estas cinco chaves: "introduction", "development", "climax", "conclusion", e "cta".
+
+**EXEMPLO DE FORMATO PERFEITO:**
+{
+  "introduction": "Começar com uma pergunta retórica chocante.",
+  "development": "Construir a narrativa explorando o ponto A, B e C.",
+  "climax": "O momento de maior tensão no ponto C.",
+  "conclusion": "Resumir a lição principal do vídeo.",
+  "cta": "Fazer uma chamada para ação suave."
+}
+`;
+        const rawResult = await callGroqAPI(finalPrompt, 4000);
         
         strategicOutline = cleanGeneratedText(rawResult, true);
 
-        if (!strategicOutline || typeof strategicOutline !== 'object') {
+        if (!strategicOutline || typeof strategicOutline !== 'object' || !strategicOutline.introduction) {
             console.error("A IA retornou um esboço em formato inválido:", rawResult);
             throw new Error("A IA falhou em gerar um esboço válido.");
         }
 
         const titleTranslations = {
-            'introduction': 'Introdução',
-            'development': 'Desenvolvimento',
-            'climax': 'Clímax',
-            'conclusion': 'Conclusão',
-            'cta': 'CTA'
+            'introduction': 'Introdução', 'development': 'Desenvolvimento',
+            'climax': 'Clímax', 'conclusion': 'Conclusão', 'cta': 'CTA'
         };
         
         let outlineHtml = '<ul class="space-y-4 text-sm">';
         for (const key in strategicOutline) {
             if (Object.hasOwnProperty.call(strategicOutline, key)) {
-                const translatedTitle = titleTranslations[key] || (key.charAt(0).toUpperCase() + key.slice(1));
+                const translatedTitle = titleTranslations[key] || key;
                 let contentText = strategicOutline[key] || '';
                 
                 outlineHtml += `
                     <li>
                         <div>
-                            <strong class="text-indigo-600 dark:text-indigo-400">${translatedTitle}:</strong>
-                            <span class="text-gray-600 dark:text-gray-300">${contentText}</span>
+                            <strong class="text-indigo-600 dark:text-indigo-400">${DOMPurify.sanitize(translatedTitle)}:</strong>
+                            <span class="text-gray-600 dark:text-gray-300">${DOMPurify.sanitize(contentText)}</span>
                         </div>
                     </li>
                 `;
@@ -4340,7 +4419,7 @@ const generateStrategicOutline = async (button) => {
         }
         outlineHtml += '</ul>';
         
-        outlineContentDiv.innerHTML = outlineHtml;
+        outlineContentDiv.innerHTML = DOMPurify.sanitize(outlineHtml);
         markButtonAsCompleted(button.id);
 
         const scriptContainer = document.getElementById('scriptSectionsContainer');
@@ -4352,10 +4431,10 @@ const generateStrategicOutline = async (button) => {
         }
 
     } catch (error) {
+        console.error("Erro detalhado em generateStrategicOutline:", error);
         window.showToast(`Falha ao gerar Esboço: ${error.message}`);
-        console.error("Error generating Outline.", error);
         if (outlineContentDiv) {
-            outlineContentDiv.innerHTML = `<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`;
+            outlineContentDiv.innerHTML = DOMPurify.sanitize(`<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`);
         }
     } finally {
         hideButtonLoading(button);
@@ -4667,21 +4746,13 @@ const resetApplicationState = () => {
             event.target.value = '';
         };
 
-// ====================================================================================
-// >>>>> SUBSTITUA A SUA FUNÇÃO suggestStrategy INTEIRA PELA VERSÃO FINAL E COMPLETA <<<<<
-// ====================================================================================
 
-/**
- * Chama a IA para analisar o tema/descrição e preencher os campos de estratégia como uma SUGESTÃO.
- * Esta função é OPCIONAL para o usuário.
- * @param {HTMLElement} button - O botão "Sugerir Estratégia" que foi clicado.
- */
+
 // =-==================================================================================
 // >>>>> PASSO ÚNICO: SUBSTITUA A SUA FUNÇÃO suggestStrategy INTEIRA POR ESTA VERSÃO <<<<<
 // =-==================================================================================
 
 const suggestStrategy = async (button) => {
-    // Se já houver um roteiro, pede confirmação para não apagar o trabalho sem querer.
     if (document.querySelector('#scriptSectionsContainer .accordion-item')) {
         const userConfirmed = await showConfirmationDialog(
             "Sugerir Nova Estratégia?",
@@ -4713,36 +4784,36 @@ const suggestStrategy = async (button) => {
         speaking_pace: `['${Array.from(document.getElementById('speakingPace').options).map(o => o.value).filter(Boolean).join("', '")}']`,
     };
 
-    const prompt = `Você é uma API que retorna um objeto JSON. Sua tarefa é criar uma estratégia de conteúdo completa.
+    // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE E ESTRUTURA EXPLÍCITAS <<<
+    const prompt = `Você é uma API que retorna um objeto JSON para definir a estratégia de um vídeo.
 
-    **Tema do Vídeo:** "${theme}"
-    **Descrição:** "${description}"
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`{\` e terminando com \`}\`.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
+3.  **PREENCHIMENTO TOTAL:** Você DEVE preencher TODAS as chaves listadas no manual abaixo com valores criativos e relevantes.
 
-    **REGRAS ABSOLUTAS E INEGOCIÁVEIS:**
-    1.  **IDIOMA:** Todos os valores de texto (strings) que você gerar para o JSON DEVEM estar em **${languageName}**.
-    2.  **JSON PURO:** Sua resposta deve ser APENAS o código de um objeto JSON, começando com \`{\` e terminando com \`}\`.
-    3.  **PREENCHIMENTO COMPLETO:** Você DEVE preencher TODAS as chaves a seguir com valores criativos e contextuais. Nenhuma chave pode ficar com valor vazio.
+**MANUAL DE PREENCHIMENTO (SIGA EXATAMENTE):**
+-   **"target_audience":** (String) Descreva o público-alvo ideal.
+-   **"narrative_goal":** (String) Escolha EXATAMENTE UM valor da lista: ${validOptions.narrative_goal}.
+-   **"narrative_structure":** (String) Com base no "narrative_goal", escolha uma estrutura compatível: se 'storytelling', escolha de ["documentary", "heros_journey", "pixar_spine", "mystery_loop", "twist"]; se 'storyselling', escolha de ["underdog_victory", "discovery_mentor", "if_not_found_create", "pas", "bab"].
+-   **"narrative_theme":** (String) Defina o tema principal.
+-   **"narrative_tone":** (String) Escolha EXATAMENTE UM valor da lista: ${validOptions.narrative_tone}.
+-   **"narrative_voice":** (String) Descreva a personalidade do narrador.
+-   **"central_question":** (String) Formule a pergunta central do vídeo.
+-   **"emotional_arc":** (String) Descreva a jornada emocional do espectador.
+-   **"emotional_hook":** (String) Crie uma história pessoal para ser o fio condutor.
+-   **"shocking_ending_hook":** (String) Crie uma frase chocante para o início do vídeo.
+-   **"language_style":** (String) Escolha EXATAMENTE UM valor da lista: ${validOptions.language_style}.
+-   **"video_objective":** (String) Escolha EXATAMENTE UM valor da lista: ${validOptions.video_objective}.
+-   **"speaking_pace":** (String) Escolha EXATAMENTE UM valor da lista: ${validOptions.speaking_pace}.
+-   **"image_description_engine":** (String) Sugira palavras-chave para o estilo visual.
+-   **"research_data":** (String) Sugira quais dados pesquisar para o roteiro (NÃO INVENTE DADOS).
+-   **IDIOMA:** Lembre-se, todos os valores de texto devem estar em **${languageName}**.
 
-    **MANUAL DE PREENCHIMENTO (SIGA EXATAMENTE):**
-    -   **"target_audience":** (String) Descreva o público-alvo ideal para este vídeo.
-    -   **"narrative_goal":** (String) Escolha EXATAMENTE UM valor da seguinte lista: ${validOptions.narrative_goal}.
-    -   **"narrative_structure":** (String) Com base na sua escolha de "narrative_goal", escolha uma estrutura compatível:
-        -   Se o objetivo for 'storytelling', escolha entre: ["documentary", "heros_journey", "pixar_spine", "mystery_loop", "twist"].
-        -   Se o objetivo for 'storyselling', escolha entre: ["underdog_victory", "discovery_mentor", "if_not_found_create", "pas", "bab"].
-    -   **"narrative_theme":** (String) Defina o tema principal ou a "grande ideia" do vídeo.
-    -   **"narrative_tone":** (String) Escolha EXATAMENTE UM valor da seguinte lista: ${validOptions.narrative_tone}.
-    -   **"narrative_voice":** (String) Descreva a personalidade do narrador (ex: 'Sábio e experiente', 'Energético e divertido').
-    -   **"central_question":** (String) Formule a pergunta central que o vídeo irá responder.
-    -   **"emotional_arc":** (String) Descreva a jornada emocional do espectador (ex: 'Curiosidade -> Tensão -> Surpresa').
-    -   **"emotional_hook":** (String) Crie uma pequena história pessoal ou um arquétipo de personagem para ser o fio condutor da narrativa.
-    -   **"shocking_ending_hook":** (String) Crie uma frase curta e chocante que será a primeira linha do vídeo, revelando o final da história para criar um mistério. (Ex: "...e foi assim que o herói se tornou o vilão."). // <<< ADICIONADO
-    -   **"language_style":** (String) Escolha EXATAMENTE UM valor da seguinte lista: ${validOptions.language_style}.
-    -   **"video_objective":** (String) Escolha EXATAMENTE UM valor da seguinte lista: ${validOptions.video_objective}.
-    -   **"speaking_pace":** (String) Escolha EXATAMENTE UM valor da seguinte lista: ${validOptions.speaking_pace}.
-    -   **"image_description_engine":** (String) Sugira palavras-chave para o estilo visual.
-    -   **"research_data":** (String) Sugira quais tipos de dados o usuário deveria pesquisar para enriquecer o roteiro. NÃO INVENTE DADOS.
+**Tema do Vídeo:** "${theme}"
+**Descrição:** "${description}"
 
-    Retorne o objeto JSON completo e preenchido agora.`;
+Responda APENAS com o objeto JSON completo e sintaticamente PERFEITO.`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
@@ -4752,6 +4823,7 @@ const suggestStrategy = async (button) => {
             throw new Error("A IA não retornou uma resposta em formato JSON válido.");
         }
 
+        // Lógica de preenchimento dos campos (permanece a mesma)
         const narrativeGoalSelect = document.getElementById('narrativeGoal');
         const narrativeStructureSelect = document.getElementById('narrativeStructure');
         if (narrativeGoalSelect && strategy.narrative_goal) {
@@ -4771,26 +4843,18 @@ const suggestStrategy = async (button) => {
         }
         
         const keyToElementIdMap = {
-            'target_audience': 'targetAudience',
-            'narrative_theme': 'narrativeTheme',
-            'narrative_tone': 'narrativeTone',
-            'narrative_voice': 'narrativeVoice',
-            'central_question': 'centralQuestion',
-            'emotional_arc': 'emotionalArc',
-            'emotional_hook': 'emotionalHook',
-            'shocking_ending_hook': 'shockingEndingHook', // <<< ADICIONADO
-            'language_style': 'languageStyle',
-            'video_objective': 'videoObjective',
-            'speaking_pace': 'speakingPace',
-            'image_description_engine': 'imageDescriptionEngine',
+            'target_audience': 'targetAudience', 'narrative_theme': 'narrativeTheme',
+            'narrative_tone': 'narrativeTone', 'narrative_voice': 'narrativeVoice',
+            'central_question': 'centralQuestion', 'emotional_arc': 'emotionalArc',
+            'emotional_hook': 'emotionalHook', 'shocking_ending_hook': 'shockingEndingHook',
+            'language_style': 'languageStyle', 'video_objective': 'videoObjective',
+            'speaking_pace': 'speakingPace', 'image_description_engine': 'imageDescriptionEngine',
             'research_data': 'researchData'
         };
         for (const key in keyToElementIdMap) {
             if (strategy[key]) {
                 const element = document.getElementById(keyToElementIdMap[key]);
-                if (element) {
-                    element.value = strategy[key];
-                }
+                if (element) { element.value = strategy[key]; }
             }
         }
 
@@ -4798,8 +4862,8 @@ const suggestStrategy = async (button) => {
         document.querySelector('[data-tab="input-tab-estrategia"]')?.click();
 
     } catch (error) {
+        console.error("Erro detalhado em suggestStrategy:", error);
         window.showToast(`Falha ao sugerir estratégia: ${error.message}`);
-        console.error("Erro na sugestão de estratégia:", error);
     } finally {
         isSettingStrategy = false;
         hideButtonLoading(button);
