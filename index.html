@@ -4014,7 +4014,6 @@ const generateVideoIdeas = async (button) => {
 
     showButtonLoading(button);
 
-    // PROMPT ATUALIZADO PARA EXIGIR UMA DESCRIÇÃO MAIS LONGA
     const prompt = `Você é uma API Estrategista de Conteúdo que retorna APENAS um array JSON. Sua missão é gerar 6 ideias de vídeo com alto potencial de engajamento para um canal do YouTube.
 
 **REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
@@ -4029,7 +4028,7 @@ const generateVideoIdeas = async (button) => {
 - **"angle":** O ângulo ou abordagem única em uma frase curta (máximo 120 caracteres).
 - **"targetAudience":** O público-alvo específico que esta ideia mais atrairia.
 - **"viralityScore":** Uma nota de 0 a 10 sobre o potencial de viralidade.
-- **"videoDescription":** Uma descrição de **3 a 4 frases**, otimizada para o YouTube, com as palavras-chave principais e uma promessa clara.
+- **"videoDescription":** Uma descrição de **3 a 4 frases substanciais**, otimizada para o YouTube, com as palavras-chave principais e uma promessa clara do que o espectador aprenderá.
 
 **Nicho/Descrição para analisar:** "${nicheDescription}"
 
@@ -4107,7 +4106,6 @@ const unravelEnigmas = async (button) => {
     outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
     showButtonLoading(button);
 
-    // PROMPT APRIMORADO COM A REGRA DE CONEXÃO
     const prompt = `Você é um Teólogo Investigativo e um Mestre em Hermenêutica Bíblica para o canal "The Biblical Unveiling".
 
 **Sua missão é gerar 6 ideias de vídeos que conectem o TEMA FORNECIDO PELO USUÁRIO com enigmas, símbolos e histórias da Bíblia.**
@@ -4124,7 +4122,7 @@ Para encontrar ideias únicas, você DEVE usar uma das seguintes **Técnicas Inv
 Sua resposta DEVE ser um array JSON válido. Cada ideia no array deve ser um objeto com as seguintes chaves:
 - "title": (String) Um título curioso e específico.
 - "enigma": (String) O mistério central em uma única frase.
-- "synopsis": (String) Uma sinopse de 3 a 4 frases que detalha a abordagem do vídeo e qual referência bíblica será o ponto de partida.
+- "synopsis": (String) Uma sinopse detalhada de **3 a 4 frases substanciais**, que explica a abordagem do vídeo, os pontos que serão cobertos e qual será a revelação principal.
 - "investigative_method": (String) O nome exato da técnica usada.
 - "hook_question": (String) Uma pergunta intrigante para os primeiros 15 segundos.
 
@@ -5430,21 +5428,23 @@ const actions = {
         
         // Ações Dinâmicas (dentro dos acordeões e modais)
         'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
-        'select-idea': (btn) => {
-            const ideaString = btn.dataset.idea;
-            if (ideaString) {
-                try {
-                    const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                    
-                    document.getElementById('videoTheme').value = ideaObject.title || '';
-                    document.getElementById('videoDescription').value = ideaObject.videoDescription || '';
-                    document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
+'select-idea': (btn) => {
+    const ideaString = btn.dataset.idea;
+    if (ideaString) {
+        try {
+            const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+            
+            document.getElementById('videoTheme').value = ideaObject.title || '';
+            document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
+            document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
 
-                    window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
-                    document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } catch (e) { console.error("Falha ao processar dados da ideia:", e); }
-            }
-        },
+            window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
+            document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch (e) { 
+            console.error("Falha ao processar dados da ideia:", e); 
+        }
+    }
+},
 
 
         'select-enigma-idea': (btn) => {
