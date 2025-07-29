@@ -3184,16 +3184,20 @@ Analise os dados e retorne o array JSON completo e sintaticamente perfeito.`;
                         const suggestionTextEscaped = item.suggestion
                             .replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/`/g, '\\`');
 
-                        const buttonsHtml = `
-                            <div class="flex gap-2 mt-3">
-                                <button class="flex-1 btn btn-primary btn-small py-1" onclick="event.stopPropagation(); window.optimizeGroup(this, \`${suggestionTextEscaped}\`)">
-                                    <i class="fas fa-magic mr-2"></i> Otimizar
-                                </button>
-                                <button class="flex-1 btn btn-danger bg-red-600 hover:bg-red-700 btn-small py-1" onclick="event.stopPropagation(); window.deleteParagraphGroup(this, \`${suggestionTextEscaped}\`)">
-                                    <i class="fas fa-trash-alt mr-2"></i> Deletar
-                                </button>
-                            </div>
-                        `;
+                 const buttonsHtml = `
+    <div class="flex gap-2 mt-3">
+        <button class="flex-1 btn btn-primary btn-small py-1" 
+                data-action="optimizeGroup" 
+                data-suggestion-text="${suggestionTextEscaped}">
+            <i class="fas fa-magic mr-2"></i> Otimizar
+        </button>
+        <button class="flex-1 btn btn-danger bg-red-600 hover:bg-red-700 btn-small py-1" 
+                data-action="deleteParagraphGroup" 
+                data-suggestion-text="${suggestionTextEscaped}">
+            <i class="fas fa-trash-alt mr-2"></i> Deletar
+        </button>
+    </div>
+`;
                         const tooltipHtml = `<div class="retention-tooltip"><strong>${tooltipTitle}:</strong> ${item.suggestion}${buttonsHtml}</div>`;
                         p.innerHTML += DOMPurify.sanitize(tooltipHtml);
                     }
@@ -4919,6 +4923,15 @@ const actions = {
         'refineStyle': (btn) => window.refineSectionStyle(btn),
         'enrichWithData': (btn) => window.enrichWithData(btn),
         'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
+
+        'optimizeGroup': (btn) => {
+        const suggestionText = btn.dataset.suggestionText;
+        if (suggestionText) window.optimizeGroup(btn, suggestionText);
+        },
+        'deleteParagraphGroup': (btn) => {
+         const suggestionText = btn.dataset.suggestionText;
+         if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
+        },
     };
 
     document.addEventListener('click', function(event) {
