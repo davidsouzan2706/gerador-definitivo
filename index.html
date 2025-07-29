@@ -1239,9 +1239,10 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
 
 
-// ==========================================================
-//     PASSO 3.1: ADICIONE ESTA NOVA FUNÇÃO AO SEU SCRIPT
-// ==========================================================
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO 'varyTone' INTEIRA POR ESTA VERSÃO <<<<<
+// =========================================================================
+
 const varyTone = async (tone) => {
     if (!userSelectionRange) {
         window.showToast("Erro: Seleção de texto perdida.");
@@ -1249,7 +1250,11 @@ const varyTone = async (tone) => {
     }
     const selectedText = userSelectionRange.toString();
     const toneMenu = document.getElementById('tone-variation-menu');
-    toneMenu.classList.remove('visible'); // Esconde o menu imediatamente
+    toneMenu.classList.remove('visible');
+
+    // <<< AQUI ESTÁ A CORREÇÃO: Lemos o idioma selecionado >>>
+    const selectedLangCode = document.getElementById('languageSelect').value;
+    const languageName = selectedLangCode === 'pt-br' ? 'Português do Brasil' : 'English';
 
     const toneInstructions = {
         emotion: "injete linguagem mais emotiva, focada em sentimentos, vulnerabilidade e impacto pessoal. Use palavras mais fortes e analogias sensoriais.",
@@ -1258,6 +1263,7 @@ const varyTone = async (tone) => {
         humor: "reescreva o trecho com uma pitada de ironia, sarcasmo leve ou uma analogia engraçada, alinhada com a voz geral do roteiro."
     };
 
+    // <<< O PROMPT AGORA INCLUI A REGRA DE IDIOMA >>>
     const prompt = `Você é um Editor de Roteiro especialista em tom narrativo. Sua tarefa é reescrever o 'Texto Original' para que ele transmita um novo sentimento, mantendo a informação central.
 
 **Texto Original:**
@@ -1268,9 +1274,10 @@ ${selectedText}
 **Nova Intenção (Tom):**
 Você deve reescrever o texto para que ele tenha **mais ${tone}**. Para isso, ${toneInstructions[tone]}
 
-**REGRAS:**
-- Mantenha a informação e o significado do texto original.
-- Responda APENAS com o texto reescrito. Sem comentários ou explicações.`;
+**REGRAS CRÍTICAS (INEGOCIÁVEIS):**
+1.  **IDIOMA:** A sua resposta DEVE, OBRIGATORIAMENTE, estar em **${languageName}**.
+2.  **Mantenha a Essência:** A informação e o significado do texto original devem ser preservados.
+3.  **RESPOSTA LIMPA:** Responda APENAS com o texto reescrito. Sem comentários ou explicações.`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 1000);
