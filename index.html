@@ -522,6 +522,10 @@
 <div id="conclusionStrategyModule" class="card mb-6 hidden">
     <div class="text-center mb-4">
         <h3 class="text-lg font-bold">Qual é o objetivo final do seu vídeo?</h3>
+        <!-- <<< NOSSO NOVO BOTÃO DE AJUDA AQUI >>> -->
+        <button id="suggestFinalStrategyBtn" data-action="suggestFinalStrategy" class="btn btn-secondary btn-small mt-2">
+            <i class="fas fa-magic mr-2"></i> Sugerir Estratégia Final com IA
+        </button>
     </div>
     <div class="flex justify-center flex-wrap gap-4 mb-6">
         <label class="radio-label">
@@ -537,23 +541,18 @@
             <span><i class="fas fa-bolt mr-2"></i>Criar um Gancho / Mistério Contínuo</span>
         </label>
     </div>
-    
     <div id="conclusionInputContainer" class="input-group">
         <label for="conclusionSpecifics">Detalhes para a Conclusão:</label>
         <textarea id="conclusionSpecifics" rows="3" placeholder="Ex: A lição é que a resiliência é a nossa maior força..."></textarea>
     </div>
-
     <div class="input-group mt-4">
         <label for="ctaSpecifics">Detalhes para o Call to Action (CTA) Específico (Opcional):</label>
         <textarea id="ctaSpecifics" rows="2" placeholder="Ex: 'Apoie o Projeto X que luta por...', 'Assine a petição em nosso site...', 'Compre nosso curso no link...'"></textarea>
     </div>
-
     <div class="text-center mt-6">
-        <!-- Botão inicial para gerar a Conclusão -->
         <button id="generateConclusionBtn" data-action="generateConclusion" class="btn btn-primary">
             <i class="fas fa-pen-fancy mr-2"></i>Gerar Conclusão
         </button>
-        <!-- <<< NOVO BOTÃO DE CTA (INICIALMENTE ESCONDIDO) >>> -->
         <button id="generateCtaBtn" data-action="generateCta" class="btn btn-primary hidden">
             <i class="fas fa-bullhorn mr-2"></i>Gerar CTA Estratégico
         </button>
@@ -824,6 +823,54 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
             }
         };
 
+
+// ==========================================================
+//     PASSO 2: ADICIONE ESTA NOVA FUNÇÃO AO SEU JAVASCRIPT
+// ==========================================================
+const suggestFinalStrategy = async (button) => {
+    showButtonLoading(button);
+
+    const fullContext = getTranscriptOnly();
+    if (!fullContext) {
+        window.showToast("Gere o roteiro principal primeiro para receber sugestões.");
+        hideButtonLoading(button);
+        return;
+    }
+
+    const prompt = `Você é um Estrategista de Conteúdo de elite para o YouTube. Analise o roteiro completo fornecido abaixo. Sua tarefa é sugerir a melhor estratégia para o final do vídeo.
+
+**ROTEIRO COMPLETO (PARA CONTEXTO):**
+---
+${fullContext}
+---
+
+**REGRAS CRÍTICAS DE RESPOSTA:**
+1.  Sua resposta DEVE ser um objeto JSON.
+2.  O objeto DEVE conter EXATAMENTE duas chaves: "conclusion_suggestion" e "cta_suggestion".
+3.  O valor de "conclusion_suggestion" deve ser uma sugestão de lição ou reflexão poderosa para a conclusão.
+4.  O valor de "cta_suggestion" deve ser uma sugestão de Call to Action criativo e engajador, que se conecte com o tema do vídeo.
+5.  Ambos os textos devem estar no mesmo idioma do roteiro.
+
+Responda APENAS com o objeto JSON.`;
+
+    try {
+        const rawResult = await callGroqAPI(prompt, 1000);
+        const suggestions = cleanGeneratedText(rawResult, true);
+
+        if (suggestions && suggestions.conclusion_suggestion && suggestions.cta_suggestion) {
+            document.getElementById('conclusionSpecifics').value = suggestions.conclusion_suggestion;
+            document.getElementById('ctaSpecifics').value = suggestions.cta_suggestion;
+            window.showToast("Sugestões para Conclusão e CTA preenchidas!");
+        } else {
+            throw new Error("A IA não retornou sugestões no formato esperado.");
+        }
+
+    } catch (error) {
+        window.showToast(`Falha ao sugerir estratégia final: ${error.message}`);
+    } finally {
+        hideButtonLoading(button);
+    }
+};
 
 
 // =========================================================================
@@ -3588,9 +3635,8 @@ const selectIdea = (idea) => {
 // >>>>> AÇÃO 2: SUBSTITUA A FUNÇÃO handleGenerateSection COMPLETA <<<<<
 // =========================================================================
 const handleGenerateSection = async (button, sectionName, sectionTitle, elementId) => {
-    // Validações iniciais
     if (!validateInputs()) return;
-    if (!strategicOutline) {
+    if (!strategicOutline && sectionName !== 'intro') { // A intro pode ser gerada sem esboço se necessário
         window.showToast("Crie o Esboço Estratégico primeiro!");
         return;
     }
@@ -3598,7 +3644,6 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
     showButtonLoading(button);
     
     const targetSectionElement = document.getElementById(`${elementId}Section`);
-    // Limpeza de análises antigas
     if (targetSectionElement) {
         const analysisOutput = targetSectionElement.querySelector('.section-analysis-output');
         const performanceOutput = targetSectionElement.querySelector('.section-performance-output');
@@ -3607,7 +3652,6 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
     }
 
     try {
-        // Coleta o contexto de todas as seções anteriores
         let contextText = null;
         const previousSectionsContent = [];
         const requiredSections = {
@@ -3620,8 +3664,7 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
             for (const reqId of requiredSections[sectionName]) {
                 const requiredWrapper = document.querySelector(`#${reqId} .generated-content-wrapper`);
                 if (!requiredWrapper || !requiredWrapper.textContent.trim()) {
-                    const sectionContainer = document.getElementById(reqId);
-                    const reqTitle = sectionContainer?.querySelector('h3')?.textContent || reqId.replace('Section', '');
+                    const reqTitle = document.querySelector(`#${reqId} h3`)?.textContent || reqId.replace('Section', '');
                     window.showToast(`Por favor, gere a seção "${reqTitle}" primeiro.`);
                     hideButtonLoading(button);
                     return;
@@ -3631,10 +3674,10 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
             contextText = previousSectionsContent.join('\n\n---\n\n');
         }
 
-        // Constrói o prompt e chama a IA
         const keyMap = { intro: 'introduction', development: 'development', climax: 'climax', conclusion: 'conclusion' };
         const outlineKey = keyMap[sectionName];
-        const directive = strategicOutline[outlineKey];
+        const directive = strategicOutline ? strategicOutline[outlineKey] : null;
+        
         const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive, contextText);
         
         let rawResult = await callGroqAPI(prompt, maxTokens);
@@ -3645,20 +3688,22 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
             `<div id="${elementId}-p-${index}">${p}</div>`
         ).join('');
         
-        // Renderiza o conteúdo na tela
         if (targetSectionElement) {
-            const sectionHtml = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
-            targetSectionElement.innerHTML = ''; // Primeiro, limpa o placeholder
-            targetSectionElement.appendChild(sectionHtml); // Agora, adiciona o nosso novo elemento seguro
+            // <<< AQUI ESTÁ A CORREÇÃO CRÍTICA >>>
+            // Chamamos nossa função segura que retorna um ELEMENTO, não uma string.
+            const sectionElement = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
+            
+            // Limpamos o container e adicionamos o novo elemento usando appendChild.
+            targetSectionElement.innerHTML = ''; 
+            targetSectionElement.appendChild(sectionElement);
+            
             targetSectionElement.classList.remove('card', 'card-placeholder', 'flex', 'justify-between', 'items-center');
-            targetSectionElement.querySelector('.accordion-item')?.classList.add('animate-fade-in');
         } else {
             console.error(`Elemento alvo com ID '${elementId}Section' não encontrado.`);
             window.showToast("Erro interno: Seção do roteiro não encontrada.");
             return;
         }
         
-        // A MUDANÇA CRÍTICA: Atualiza o objeto de estado explícito
         if (projectState.hasOwnProperty(sectionName)) {
             projectState[sectionName] = true;
         }
@@ -4738,6 +4783,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'generateIdeas': (btn) => generateVideoIdeas(btn),
         'generateConclusion': (btn) => generateConclusion(btn),
         'generateCta': (btn) => generateStrategicCta(btn),
+        'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
         'exportProject': () => exportProject(),
         'exportPdf': () => downloadPdf(),
         'exportTranscript': () => handleCopyAndDownloadTranscript(),
