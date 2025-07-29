@@ -4014,6 +4014,7 @@ const generateVideoIdeas = async (button) => {
 
     showButtonLoading(button);
 
+    // PROMPT FINAL E BLINDADO
     const prompt = `Você é uma API Estrategista de Conteúdo que retorna APENAS um array JSON. Sua missão é gerar 6 ideias de vídeo com alto potencial de engajamento para um canal do YouTube.
 
 **REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
@@ -4023,12 +4024,12 @@ const generateVideoIdeas = async (button) => {
 4.  **ESTRUTURA DO OBJETO:** Cada objeto no array DEVE conter EXATAMENTE estas cinco chaves: "title", "angle", "targetAudience", "viralityScore" (um número de 0 a 10), e "videoDescription" (uma string).
 5.  **IDIOMA:** Lembre-se, todos os valores de texto devem estar em **${languageName}**.
 
-**MANUAL DE CONTEÚDO:**
+**MANUAL DE CONTEÚDO (SIGA EXATAMENTE):**
 - **"title":** Um título "clickbait" mas inteligente (máximo 70 caracteres).
-- **"angle":** O ângulo ou abordagem única em uma frase curta (máximo 120 caracteres).
-- **"targetAudience":** O público-alvo específico que esta ideia mais atrairia.
+- **"angle":** O ângulo ou abordagem única em **uma única frase curta e impactante**. (Ex: "Desvendando as estratégias ocultas que os bancos usam para investir seu dinheiro.")
+- **"targetAudience":** O público-alvo específico para esta ideia.
 - **"viralityScore":** Uma nota de 0 a 10 sobre o potencial de viralidade.
-- **"videoDescription":** Uma descrição de **3 a 4 frases substanciais**, otimizada para o YouTube, com as palavras-chave principais e uma promessa clara do que o espectador aprenderá.
+- **"videoDescription":** Uma descrição mais detalhada de **3 a 4 frases substanciais**, otimizada para o YouTube, explicando o que o espectador aprenderá e qual problema será resolvido.
 
 **Nicho/Descrição para analisar:** "${nicheDescription}"
 
@@ -4046,7 +4047,7 @@ Gere 6 ideias de vídeo seguindo EXATAMENTE as regras e o formato acima.`;
 
         ideas.forEach((idea, index) => {
             const title = idea.title || "Ideia sem título";
-            const angle = idea.angle || "Sem um ângulo definido.";
+            const displayDescription = idea.videoDescription || idea.angle || "Descrição não disponível.";
             const viralityScore = idea.viralityScore || "N/A";
 
             const card = document.createElement('div');
@@ -4063,7 +4064,7 @@ Gere 6 ideias de vídeo seguindo EXATAMENTE as regras e o formato acima.`;
                             Usar
                         </button>
                     </div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 italic mt-2">"${DOMPurify.sanitize(angle)}"</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">"${DOMPurify.sanitize(displayDescription)}"</p>
                 </div>
                 <span class="font-bold text-sm text-indigo-500 bg-indigo-100 dark:bg-indigo-900 dark:text-indigo-300 py-1 px-2 rounded self-start mt-3">
                     Potencial: ${DOMPurify.sanitize(String(viralityScore))} / 10
