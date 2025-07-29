@@ -3474,7 +3474,6 @@ window.enrichWithData = async (buttonElement) => {
         return;
     }
     
-    // <<< AQUI ESTÁ A MÁGICA: Salvamos a seleção do usuário ANTES de abrir o diálogo
     userSelectionRange = selection.getRangeAt(0).cloneRange();
     const selectedText = selection.toString().trim();
 
@@ -3487,7 +3486,7 @@ window.enrichWithData = async (buttonElement) => {
 
     if (!newData) {
         window.showToast("Operação cancelada.");
-        userSelectionRange = null; // Limpa a seleção salva
+        userSelectionRange = null;
         return;
     }
 
@@ -3495,15 +3494,35 @@ window.enrichWithData = async (buttonElement) => {
     const sectionElement = buttonElement.closest('.script-section');
 
     try {
-        const prompt = `Você é um Editor de Roteiro especialista...`; // O prompt longo permanece o mesmo
+        // <<< O PROMPT FOI COMPLETAMENTE REESCRITO PARA SER À PROVA DE FALHAS >>>
+        const prompt = `Você é um Editor de Roteiro de elite. Sua única função é reescrever um trecho de texto para integrar uma nova informação de forma sutil e profissional.
+
+**Trecho Original do Roteiro:**
+---
+${selectedText}
+---
+
+**Nova Informação a ser Integrada:**
+---
+${newData}
+---
+
+**SUA TAREFA (A ÚNICA REGRA):**
+Reescreva o "Trecho Original do Roteiro", tecendo a "Nova Informação a ser Integrada" de forma natural e fluida. O resultado final deve ser um parágrafo (ou parágrafos) coeso e bem escrito, que mantenha o tom e a mensagem do texto original, mas agora enriquecido com o novo dado.
+
+**É ESTRITAMENTE PROIBIDO:**
+- Apresentar-se ou falar sobre suas habilidades.
+- Adicionar qualquer comentário, título ou explicação.
+- Desviar-se da tarefa de reescrever o texto.
+
+Responda APENAS com o texto final reescrito.`;
 
         const rawResult = await callGroqAPI(prompt, 1000);
         const enrichedText = removeMetaComments(rawResult);
 
-        // <<< E AQUI A GENTE RESTAURA E USA A SELEÇÃO SALVA >>>
         if (userSelectionRange) {
-            selection.removeAllRanges(); // Limpa qualquer seleção residual
-            selection.addRange(userSelectionRange); // Restaura a seleção original
+            selection.removeAllRanges();
+            selection.addRange(userSelectionRange);
             document.execCommand('insertHTML', false, DOMPurify.sanitize(`<span class="highlight-change">${enrichedText}</span>`));
         }
         
@@ -3519,7 +3538,7 @@ window.enrichWithData = async (buttonElement) => {
         window.showToast(`Falha ao enriquecer o texto: ${error.message}`);
     } finally {
         hideButtonLoading(buttonElement);
-        userSelectionRange = null; // Limpa a seleção salva após o uso
+        userSelectionRange = null;
     }
 };
 
