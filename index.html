@@ -2333,12 +2333,11 @@ const removeMetaComments = (text) => {
         /^\*\*Desenvolvimento:\*\*\s*\n?/im,
         /^\*\*Clímax:\*\*\s*\n?/im,
         /^\*\*Conclusão:\*\*\s*\n?/im,
-
-        // <<< NOSSAS NOVAS REGRAS DE LIMPEZA AQUI >>>
-        // Padrão para remover "**TEXTO REFINADO:**" e variações
         /^\*\*TEXTO REFINADO:\*\*\s*\n?/im,
-        // Padrão para remover "**Capítulo: [Qualquer Coisa]**"
-        /^\*\*Capítulo:.*?\*\*\s*\n?/im
+        
+        // <<< NOSSO NOVO "CAÇADOR DE TÍTULOS" GENÉRICO >>>
+        // Remove qualquer linha que seja APENAS um título em negrito (ex: **Título Exemplo**)
+        /^\s*\*\*[^*]+\*\*\s*$/gm
     ];
 
     patternsToRemove.forEach(pattern => {
