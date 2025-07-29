@@ -652,7 +652,7 @@
         
         <div class="input-group mt-2">
             <label id="inputDialogLabel" for="inputDialogField">Label do Campo</label>
-            <textarea id="inputDialogField" rows="2" placeholder="Placeholder..."></textarea>
+            <textarea id="inputDialogField" rows="2" placeholder="Placeholder..." class="!text-[var(--dark-text-body)]"></textarea>
         </div>
 
         <div class="flex justify-end gap-4 mt-6">
@@ -972,7 +972,7 @@ const showInputDialog = (title, message, label, placeholder, suggestions = []) =
         if (suggestions && suggestions.length > 0) {
             suggestions.forEach(suggestionText => {
                 const suggestionBtn = document.createElement('button');
-                suggestionBtn.className = 'btn btn-warning w-full text-left justify-start';
+                suggestionBtn.className = 'btn btn-secondary hover:bg-purple-600 dark:hover:bg-purple-700 w-full text-left justify-start';
                 suggestionBtn.textContent = suggestionText;
                 // Ao clicar em um botão de sugestão, fecha o diálogo e retorna o texto da sugestão
                 suggestionBtn.onclick = () => {
