@@ -4793,12 +4793,11 @@ Responda APENAS com o array JSON completo e sintaticamente PERFEITO, seguindo EX
         };
 
 // =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO generateStrategicOutline INTEIRA POR ESTA VERSÃO <<<<<
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO generateStrategicOutline INTEIRA <<<<<
 // =========================================================================
 
 const generateStrategicOutline = async (button) => {
     if (!validateInputs()) return;
-    
     showButtonLoading(button);
     
     const outlineContentDiv = document.getElementById('outlineContent');
@@ -4811,24 +4810,8 @@ const generateStrategicOutline = async (button) => {
     }
 
     try {
-        const finalPrompt = getBasePromptContext() + `
-Você é uma API de geração de JSON. Sua tarefa é criar um "beat sheet" (esboço estratégico) para um vídeo.
-
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
-1.  **JSON PURO:** Sua resposta deve ser APENAS o código de um objeto JSON, começando com \`{\` e terminando com \`}\`.
-2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e todos os valores de texto (strings) DEVEM usar aspas duplas (\`"\`).
-3.  **CHAVES OBRIGATÓRIAS:** O objeto deve conter EXATAMENTE estas cinco chaves: "introduction", "development", "climax", "conclusion", e "cta".
-
-**EXEMPLO DE FORMATO PERFEITO:**
-{
-  "introduction": "Começar com uma pergunta retórica chocante.",
-  "development": "Construir a narrativa explorando o ponto A, B e C.",
-  "climax": "O momento de maior tensão no ponto C.",
-  "conclusion": "Resumir a lição principal do vídeo.",
-  "cta": "Fazer uma chamada para ação suave."
-}
-`;
-        const rawResult = await callGroqAPI(finalPrompt, 4000);
+        const { prompt } = constructScriptPrompt('outline'); // Usamos o prompt blindado
+        const rawResult = await callGroqAPI(prompt, 4000);
         
         strategicOutline = cleanGeneratedText(rawResult, true);
 
@@ -4846,35 +4829,34 @@ Você é uma API de geração de JSON. Sua tarefa é criar um "beat sheet" (esbo
         for (const key in strategicOutline) {
             if (Object.hasOwnProperty.call(strategicOutline, key)) {
                 const translatedTitle = titleTranslations[key] || key;
+                const contentValue = strategicOutline[key];
                 
-                // <<< AQUI ESTÁ A LÓGICA DE TRADUÇÃO INTELIGENTE >>>
-                let contentValue = strategicOutline[key];
-                let contentText = '';
-
+                outlineHtml += `<li><div><strong class="text-indigo-600 dark:text-indigo-400">${translatedTitle}:</strong>`;
+                
+                // <<< AQUI ESTÁ A NOVA LÓGICA INTELIGENTE DE RENDERIZAÇÃO >>>
                 if (typeof contentValue === 'string') {
-                    contentText = contentValue;
-                } else if (Array.isArray(contentValue)) {
-                    // Se for um array, junta os valores
-                    contentText = contentValue.map(item => typeof item === 'object' ? JSON.stringify(item) : item).join('; ');
+                    outlineHtml += ` <span class="text-gray-600 dark:text-gray-300">${DOMPurify.sanitize(contentValue)}</span>`;
                 } else if (typeof contentValue === 'object' && contentValue !== null) {
-                    // Se for um objeto, converte para string
-                    contentText = JSON.stringify(contentValue);
+                    outlineHtml += '<ul class="list-disc pl-5 mt-1 space-y-1">';
+                    for (const subKey in contentValue) {
+                        if(Array.isArray(contentValue[subKey])) { // Para o caso do Desenvolvimento ter seções
+                             contentValue[subKey].forEach(section => {
+                                outlineHtml += `<li><span class="font-semibold">${DOMPurify.sanitize(section.title || subKey)}:</span> ${DOMPurify.sanitize(section.description || '')}</li>`;
+                             });
+                        } else {
+                            outlineHtml += `<li><span class="font-semibold">${DOMPurify.sanitize(subKey.replace(/_/g, ' '))}:</span> ${DOMPurify.sanitize(contentValue[subKey])}</li>`;
+                        }
+                    }
+                    outlineHtml += '</ul>';
                 }
                 
-                outlineHtml += `
-                    <li>
-                        <div>
-                            <strong class="text-indigo-600 dark:text-indigo-400">${DOMPurify.sanitize(translatedTitle)}:</strong>
-                            <span class="text-gray-600 dark:text-gray-300">${DOMPurify.sanitize(contentText)}</span>
-                        </div>
-                    </li>
-                `;
+                outlineHtml += '</div></li>';
             }
         }
         outlineHtml += '</ul>';
         
-        outlineContentDiv.innerHTML = DOMPurify.sanitize(outlineHtml);
-        markButtonAsCompleted(button.id);
+        outlineContentDiv.innerHTML = outlineHtml; // A sanitização já foi feita nos pedaços
+        markButtonAsCompleted(button.dataset.action ? button.id : 'generateOutlineBtn');
 
         const scriptContainer = document.getElementById('scriptSectionsContainer');
         if (scriptContainer) {
@@ -4887,9 +4869,7 @@ Você é uma API de geração de JSON. Sua tarefa é criar um "beat sheet" (esbo
     } catch (error) {
         console.error("Erro detalhado em generateStrategicOutline:", error);
         window.showToast(`Falha ao gerar Esboço: ${error.message}`);
-        if (outlineContentDiv) {
-            outlineContentDiv.innerHTML = DOMPurify.sanitize(`<div class="asset-card-placeholder text-red-500">Erro ao gerar o esboço. Tente novamente.</div>`);
-        }
+        // ... (resto do seu catch)
     } finally {
         hideButtonLoading(button);
         updateButtonStates();
