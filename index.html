@@ -245,6 +245,57 @@
         }
 
 
+        /* ========================================================== */
+/*     PASSO 1: ADICIONE ESTE NOVO BLOCO AO SEU CSS           */
+/* ========================================================== */
+
+/* --- Estilos para o gatilho do Tooltip e seu conteúdo --- */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]::before,
+[data-tooltip]::after {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(100% + 10px); /* Distância acima do elemento */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s, visibility 0.2s;
+    z-index: 1000;
+}
+
+[data-tooltip]::before {
+    content: attr(data-tooltip);
+    width: 300px;
+    background-color: var(--dark-surface);
+    color: var(--dark-text-body);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--dark-border);
+    box-shadow: var(--shadow);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    white-space: pre-wrap; /* Permite quebras de linha no tooltip */
+}
+
+[data-tooltip]::after {
+    content: '';
+    border: 8px solid transparent;
+    border-top-color: var(--dark-surface);
+    transform: translateX(-50%) translateY(8px); /* Ajuste fino para a seta */
+}
+
+[data-tooltip]:hover::before,
+[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900">
@@ -382,9 +433,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
         <!-- Bloco 1: O Que e Para Quem -->
-        <div class="input-group md:col-span-2"><label for="targetAudience">Público-Alvo:</label><input type="text" id="targetAudience" placeholder="Ex: Fãs de história, entusiastas de tecnologia..."></div>
-        <div class="input-group md:col-span-2"><label for="narrativeTheme">3. Tema Principal:</label><input type="text" id="narrativeTheme" placeholder="Ex: Superação, Luta contra injustiça..."></div>
-        <div class="input-group md:col-span-2"><label for="centralQuestion">Pergunta Central (Opcional):</label><textarea id="centralQuestion" rows="2" placeholder="Qual a pergunta que o seu vídeo deve responder?"></textarea></div>
+        <div class="input-group md:col-span-2"><label for="targetAudience">Público-Alvo:</label><input type="text" id="targetAudience" placeholder="Quem você quer que assista? Descreva seu espectador ideal."></div>
+        <div class="input-group md:col-span-2"><label for="narrativeTheme">3. Tema Principal:</label><input type="text" id="narrativeTheme" placeholder="Qual é a 'grande ideia'? A única mensagem que seu público deve lembrar?"></div>
+        <div class="input-group md:col-span-2"><label for="centralQuestion">Pergunta Central (Opcional):</label><textarea id="centralQuestion" rows="2" placeholder="Qual mistério ou 'coceira mental' você vai criar e prometer resolver?"></textarea></div>
 
         <!-- Bloco 2: A Estrutura e a Alma -->
         <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
@@ -398,13 +449,13 @@
                 <p id="popoverDescription" class="text-sm leading-relaxed"></p>
             </div>
         </div>
-        <div class="input-group md:col-span-2"><label for="emotionalHook">História Pessoal / Gancho Emocional (Opcional):</label><textarea id="emotionalHook" rows="3" placeholder="Ex: 'Meu avô era um dos mecânicos do Indianapolis. Ele nunca falava sobre a guerra, mas...' ou 'Focar na história de um jovem marinheiro que se alistou para honrar a família e sonhava em voltar para casa...'"></textarea></div>
+        <div class="input-group md:col-span-2"><label for="emotionalHook" data-tooltip="Dê uma alma para sua história. Este é o 'fio condutor' humano. A IA usará esta pequena história para conectar os grandes fatos a uma experiência pessoal, tornando o roteiro muito mais impactante.">História Pessoal / Gancho Emocional (Opcional):</label><textarea id="emotionalHook" rows="3" placeholder="Qual rosto humano dará alma à sua história? Ex: a jornada de um indivíduo, uma memória pessoal, um arquétipo (o azarão, o mentor)..."></textarea></div>
 
         <!-- Bloco 3: O Tom e a Jornada -->
         <div class="input-group"><label for="narrativeTone">4. Tom da Narração:</label><select id="narrativeTone"><option value="inspirador" selected>Inspirador</option><option value="serio">Sério</option><option value="emocional">Emocional</option></select></div>
-        <div class="input-group"><label for="narrativeVoice">5. Voz do Narrador:</label><input type="text" id="narrativeVoice" placeholder="Ex: Sábio e experiente..."></div>
+        <div class="input-group"><label for="narrativeVoice">5. Voz do Narrador:</label><input type="text" id="narrativeVoice" placeholder="Se seu canal fosse uma pessoa, como ela falaria? Confiante? Engraçada? Misteriosa?"></div>
         <div class="input-group md:col-span-2"><label for="emotionalArc">Arco Emocional Desejado (Opcional):</label><textarea id="emotionalArc" rows="2" placeholder="Ex: Curiosidade -> Tensão -> Surpresa"></textarea></div>
-        <div class="input-group md:col-span-2"><label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):</label><input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada."></div>
+        <div class="input-group md:col-span-2"><label for="shockingEndingHook" data-tooltip="A técnica do 'loop aberto' reverso. Coloque a frase final e mais chocante da sua história aqui. A IA usará esta frase como a PRIMEIRA linha do vídeo, criando um mistério instantâneo que prende o espectador até o final.">O Desfecho Chocante (Hook Opcional):</label><input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada."></div>
 
     </div>
 </div>
@@ -418,7 +469,7 @@
         <div class="input-group"><label for="speakingPace">Ritmo de Fala:</label><select id="speakingPace"><option value="moderate" selected>Moderado</option><option value="slow">Lento</option><option value="fast">Rápido</option></select></div>
 
 <div class="input-group md:col-span-2">
-    <label for="researchData">Fontes e Dados de Pesquisa (Opcional):</label>
+    <label for="researchData" data-tooltip="Aumente a credibilidade do seu roteiro. Cole aqui nomes, datas, estatísticas, ou citações. A IA irá tecer essas informações na narrativa. Ex: 'Fonte: Estudo de Harvard; Dr. João da Silva, especialista...'">Fontes e Dados de Pesquisa (Opcional):</label>
     <textarea id="researchData" rows="4" placeholder="Para aumentar a credibilidade, cole aqui dados, fontes, nomes e links que a IA deve citar e contextualizar no roteiro. Ex: Fonte: Atlas da Violência 2023; Maria da Silva, coordenadora do Instituto Odara..."></textarea>
 </div>
 
@@ -543,11 +594,11 @@
     </div>
     <div id="conclusionInputContainer" class="input-group">
         <label for="conclusionSpecifics">Detalhes para a Conclusão:</label>
-        <textarea id="conclusionSpecifics" rows="3" placeholder="A IA pode sugerir isso para você... ou escreva sua própria diretriz."></textarea>
+        <textarea id="conclusionSpecifics" rows="3" placeholder="Qual sentimento ou ideia final você quer deixar com o espectador? Esperança? Indignação? Uma nova perspectiva?"></textarea>
     </div>
     <div class="input-group mt-4">
         <label for="ctaSpecifics">Detalhes para o Call to Action (CTA) Específico (Opcional):</label>
-        <textarea id="ctaSpecifics" rows="2" placeholder="A IA também pode sugerir um CTA criativo... ou defina o seu."></textarea>
+        <textarea id="ctaSpecifics" rows="2" placeholder="Qual ação específica você quer que o espectador tome? Ex: Visitar um site, apoiar uma causa, comprar um produto..."></textarea>
     </div>
     <div class="text-center mt-6">
         <button id="generateConclusionBtn" data-action="generateConclusion" class="btn btn-primary">
