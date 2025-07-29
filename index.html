@@ -3997,9 +3997,8 @@ Responda APENAS com o texto final reescrito.`;
 
     
 // =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO 'generateVideoIdeas' INTEIRA POR ESTA VERSÃO <<<<<
+// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'generateVideoIdeas' INTEIRA POR ESTA <<<<<
 // =========================================================================
-
 const generateVideoIdeas = async (button) => {
     const nicheDescription = document.getElementById('nicheDescription').value.trim();
     if (!nicheDescription) {
@@ -4015,26 +4014,22 @@ const generateVideoIdeas = async (button) => {
 
     showButtonLoading(button);
 
-    // >>> PROMPT BLINDADO E ESTRUTURADO <<<
+    // PROMPT ATUALIZADO PARA EXIGIR UMA DESCRIÇÃO MAIS LONGA
     const prompt = `Você é uma API Estrategista de Conteúdo que retorna APENAS um array JSON. Sua missão é gerar 6 ideias de vídeo com alto potencial de engajamento para um canal do YouTube.
 
 **REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
 1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
 2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
 3.  **VÍRGULA FINAL:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último objeto.
-4.  **ESTRUTURA DO OBJETO:** Cada objeto no array DEVE conter EXATAMENTE estas cinco chaves: "title", "angle", "targetAudience", "viralityScore" (um número de 0 a 10), e "videoDescription" (uma string de 3-4 frases).
+4.  **ESTRUTURA DO OBJETO:** Cada objeto no array DEVE conter EXATAMENTE estas cinco chaves: "title", "angle", "targetAudience", "viralityScore" (um número de 0 a 10), e "videoDescription" (uma string).
 5.  **IDIOMA:** Lembre-se, todos os valores de texto devem estar em **${languageName}**.
 
-**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO:**
-[
-  {
-    "title": "Título Clickbait Inteligente da Ideia 1",
-    "angle": "Uma frase curta explicando a abordagem única e o que torna este vídeo diferente.",
-    "targetAudience": "O público-alvo específico para esta ideia (ex: iniciantes, especialistas).",
-    "viralityScore": 9,
-    "videoDescription": "Uma descrição curta e otimizada para o YouTube, com as palavras-chave principais e uma promessa clara."
-  }
-]
+**MANUAL DE CONTEÚDO:**
+- **"title":** Um título "clickbait" mas inteligente (máximo 70 caracteres).
+- **"angle":** O ângulo ou abordagem única em uma frase curta (máximo 120 caracteres).
+- **"targetAudience":** O público-alvo específico que esta ideia mais atrairia.
+- **"viralityScore":** Uma nota de 0 a 10 sobre o potencial de viralidade.
+- **"videoDescription":** Uma descrição de **3 a 4 frases**, otimizada para o YouTube, com as palavras-chave principais e uma promessa clara.
 
 **Nicho/Descrição para analisar:** "${nicheDescription}"
 
@@ -4056,7 +4051,6 @@ Gere 6 ideias de vídeo seguindo EXATAMENTE as regras e o formato acima.`;
             const viralityScore = idea.viralityScore || "N/A";
 
             const card = document.createElement('div');
-            // Usando a borda primária para diferenciar do roxo dos enigmas
             card.className = 'card-background p-4 rounded-lg shadow-md border-l-4 border-indigo-500 animate-fade-in flex flex-col justify-between min-h-[140px]';
             
             const escapedIdea = escapeIdeaForOnclick(idea);
@@ -4082,7 +4076,14 @@ Gere 6 ideias de vídeo seguindo EXATAMENTE as regras e o formato acima.`;
 
     } catch (error) {
         console.error("Erro detalhado em generateVideoIdeas:", error);
-        // ... (resto do seu bloco catch, que já está bom)
+        if (error.message.includes("A IA não retornou um formato")) {
+            outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-yellow-500 text-sm p-4 bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
+                <strong>A IA se recusou a gerar conteúdo para este tema.</strong><br><br>
+                Isso geralmente acontece com tópicos considerados sensíveis ou controversos. Tente reformular sua descrição.
+            </p>`);
+        } else {
+            outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-red-500 text-sm">Falha ao gerar ideias: ${error.message}</p>`);
+        }
     } finally {
         hideButtonLoading(button);
     }
@@ -4091,9 +4092,8 @@ Gere 6 ideias de vídeo seguindo EXATAMENTE as regras e o formato acima.`;
 
 
 // =========================================================================
-// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'unravelEnigmas' INTEIRA POR ESTA VERSÃO <<<<<
+// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'unravelEnigmas' INTEIRA POR ESTA <<<<<
 // =========================================================================
-
 const unravelEnigmas = async (button) => {
     const nicheDescription = document.getElementById('nicheDescription').value.trim();
     if (!nicheDescription) {
@@ -4103,29 +4103,37 @@ const unravelEnigmas = async (button) => {
 
     const selectedLangCode = document.getElementById('languageSelect').value;
     const languageName = selectedLangCode === 'pt-br' ? 'Português do Brasil' : 'English';
-
     const outputContainer = document.getElementById('ideasOutput');
     outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
-
     showButtonLoading(button);
 
-    // >>> PROMPT APRIMORADO COM REGRA DE IDIOMA EXPLÍCITA <<<
-    const prompt = `Você é um Teólogo Investigativo... (o prompt longo e detalhado permanece o mesmo)
+    // PROMPT APRIMORADO COM A REGRA DE CONEXÃO
+    const prompt = `Você é um Teólogo Investigativo e um Mestre em Hermenêutica Bíblica para o canal "The Biblical Unveiling".
+
+**Sua missão é gerar 6 ideias de vídeos que conectem o TEMA FORNECIDO PELO USUÁRIO com enigmas, símbolos e histórias da Bíblia.**
+
+**DIRETIVA PRINCIPAL: FAÇA A CONEXÃO.** Mesmo que o tema do usuário não seja diretamente bíblico (ex: "Mercado Financeiro"), sua tarefa é encontrar paralelos, metáforas, princípios e lições dentro das Escrituras que se apliquem a esse tema. Você deve incluir referências bíblicas (livro, capítulo, versículo) como ponto de partida para a investigação.
+
+Para encontrar ideias únicas, você DEVE usar uma das seguintes **Técnicas Investigativas**:
+1.  **Fio Oculto (Cross-Referencing)**
+2.  **Lupa Lexical (Análise de Palavras)**
+3.  **O Espelho Tipológico (Tipologia)**
+4.  **Contexto Histórico Profundo**
 
 **FORMATO DA RESPOSTA:**
 Sua resposta DEVE ser um array JSON válido. Cada ideia no array deve ser um objeto com as seguintes chaves:
-- "title": (String)
-- "enigma": (String)
-- "synopsis": (String) Uma sinopse de 3-4 frases.
-- "investigative_method": (String)
-- "hook_question": (String)
+- "title": (String) Um título curioso e específico.
+- "enigma": (String) O mistério central em uma única frase.
+- "synopsis": (String) Uma sinopse de 3 a 4 frases que detalha a abordagem do vídeo e qual referência bíblica será o ponto de partida.
+- "investigative_method": (String) O nome exato da técnica usada.
+- "hook_question": (String) Uma pergunta intrigante para os primeiros 15 segundos.
 
-**REGRA CRÍTICA DE IDIOMA (INEGOCIÁVEL):** Todos os valores de texto (title, enigma, synopsis, hook_question) DEVEM ser gerados em **${languageName}**.
+**REGRA CRÍTICA DE IDIOMA:** Todos os valores de texto (title, enigma, synopsis, hook_question) DEVEM ser gerados em **${languageName}**.
 
-**Descrição do usuário:** "${nicheDescription}"
+**Tema fornecido pelo usuário (para conectar com a Bíblia):** "${nicheDescription}"
 
 Agora, gere as 6 ideias.`;
-
+    
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
         const ideas = cleanGeneratedText(rawResult, true);
@@ -5427,8 +5435,14 @@ const actions = {
             if (ideaString) {
                 try {
                     const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                    selectIdea(ideaObject);
-                } catch (e) { console.error("Erro ao processar dados da ideia:", e); window.showToast("Erro ao selecionar a ideia.");}
+                    
+                    document.getElementById('videoTheme').value = ideaObject.title || '';
+                    document.getElementById('videoDescription').value = ideaObject.videoDescription || '';
+                    document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
+
+                    window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
+                    document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } catch (e) { console.error("Falha ao processar dados da ideia:", e); }
             }
         },
 
