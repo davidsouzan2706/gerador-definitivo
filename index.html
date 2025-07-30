@@ -4216,7 +4216,7 @@ ${originalText}
 
 
 // ==========================================================
-// >>>>> PASSO 3: SUBSTITUA A FUNÇÃO 'window.applySuggestion' <<<<<
+// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'window.applySuggestion' <<<<<
 // ==========================================================
 window.applySuggestion = (button) => {
     const { criterionName, problematicQuote, rewrittenQuote } = button.dataset;
@@ -4247,20 +4247,19 @@ window.applySuggestion = (button) => {
         window.showToast("Erro: Container de conteúdo do roteiro não encontrado.");
         return;
     }
-
-    const originalHtml = contentWrapper.innerHTML;
-    const quoteToFind = problematicQuote.replace(/"/g, '"');
-    const highlightedSuggestion = `<span class="highlight-change">${rewrittenQuote}</span>`;
     
     // Para evitar problemas com tags HTML internas, vamos substituir o texto puro
-    // Criamos um elemento temporário para manipular o texto sem quebrar o HTML
     const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = DOMPurify.sanitize(originalHtml);
+    tempDiv.innerHTML = contentWrapper.innerHTML;
 
     let replaced = false;
     tempDiv.querySelectorAll('div[id^="' + sectionId.replace('Section','') + '-p-"]').forEach(p => {
-        if (!replaced && p.textContent.includes(quoteToFind)) {
-            p.innerHTML = p.innerHTML.replace(quoteToFind, highlightedSuggestion);
+        // Usamos textContent para uma busca mais segura, ignorando o HTML interno
+        if (!replaced && p.textContent.includes(problematicQuote)) {
+            // Criamos o novo HTML com o span de destaque
+            const highlightedSuggestion = `<span class="highlight-change">${rewrittenQuote}</span>`;
+            // Substituímos o texto original pelo nosso HTML com destaque
+            p.innerHTML = p.innerHTML.replace(problematicQuote, highlightedSuggestion);
             replaced = true;
         }
     });
@@ -4269,7 +4268,8 @@ window.applySuggestion = (button) => {
         window.showToast("Não foi possível aplicar a sugestão. O texto pode ter sido editado.");
         return;
     }
-
+    
+    // Sanitizamos e atualizamos o conteúdo final
     contentWrapper.innerHTML = DOMPurify.sanitize(tempDiv.innerHTML, { ADD_TAGS: ["span"], ADD_ATTR: ["class"] });
     window.showToast("Sugestão aplicada com sucesso!");
     
@@ -4277,8 +4277,19 @@ window.applySuggestion = (button) => {
     invalidateAndClearPrompts(sectionElement);
     updateAllReadingTimes();
 
+    // --- MELHORIA DE FEEDBACK NO BOTÃO ---
     button.disabled = true;
-    button.textContent = "Aplicada!";
+    button.innerHTML = '<i class="fas fa-check mr-2"></i>Aplicada!';
+    button.classList.remove('btn-primary');
+    button.classList.add('btn-success'); // Classe de sucesso que já temos!
+
+    // Opcional: Reverter o botão após um tempo, caso o usuário queira re-aplicar
+    setTimeout(() => {
+        button.disabled = false;
+        button.innerHTML = 'Aplicar';
+        button.classList.remove('btn-success');
+        button.classList.add('btn-primary');
+    }, 8000); // Reverte após 5 segundos
 };
 
 
