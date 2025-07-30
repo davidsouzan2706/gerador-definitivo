@@ -1326,9 +1326,8 @@ const analyzeFullScript = async (button) => {
 
 
 // =========================================================================
-// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'analyzeScriptPart' INTEIRA POR ESTA <<<<<
+// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'analyzeScriptPart' INTEIRA POR ESTA <<<<<
 // =========================================================================
-
 const analyzeScriptPart = async (criterion, text, instruction) => {
     const prompt = `Você é uma API de Análise de Roteiro que atua como um editor de linha e um estrategista de conteúdo para YouTube. Sua resposta DEVE ser um objeto JSON.
 
@@ -1341,27 +1340,26 @@ const analyzeScriptPart = async (criterion, text, instruction) => {
 ${text.slice(0, 7000)}
 ---
 
-**REGRAS DE RESPOSTA (JSON ESTRITO):**
+**REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
 Sua resposta DEVE ser um objeto JSON com EXATAMENTE estas chaves:
-- "criterion_name": (String) O nome do critério que você analisou (ex: "${criterion}").
+- "criterion_name": (String) O nome do critério (ex: "${criterion}").
 - "score": (Número) Uma nota de 0 a 10.
 - "positive_points": (String) Um parágrafo resumindo os pontos fortes.
 - "improvement_points": (Array) Um array de objetos, onde cada objeto tem duas chaves: "critique" (String) e "suggestion" (String). Forneça de 1 a 2 pontos de melhoria.
+- **ASPAS INTERNAS (REGRA MAIS IMPORTANTE):** Se você precisar usar aspas DENTRO de qualquer valor de string (como em 'positive_points' ou 'critique' para citar o roteiro), você DEVE OBRIGATORIAMENTE usar aspas simples (' '). É estritamente proibido usar aspas duplas dentro de outra string.
 
-Responda APENAS com o objeto JSON.`;
+Responda APENAS com o objeto JSON, seguindo todas as regras à risca.`;
 
     try {
-        const rawResult = await callGroqAPI(prompt, 2500);
+        const rawResult = await callGroqAPI(prompt, 3000);
         const analysisData = cleanGeneratedText(rawResult, true);
 
-        // BLINDAGEM DE VALIDAÇÃO
         if (!analysisData) {
             throw new Error("A IA retornou uma resposta nula ou vazia.");
         }
         const requiredKeys = ['criterion_name', 'score', 'positive_points', 'improvement_points'];
         for (const key of requiredKeys) {
             if (!(key in analysisData)) {
-                // Para ser mais resiliente, podemos adicionar um valor padrão em vez de quebrar
                 analysisData[key] = key === 'improvement_points' ? [] : 'N/A';
                 console.warn(`A chave '${key}' estava ausente na resposta da IA. Um valor padrão foi adicionado.`);
             }
@@ -1375,8 +1373,6 @@ Responda APENAS com o objeto JSON.`;
 
     } catch (error) {
         console.error(`Erro ao analisar a parte '${criterion}':`, error);
-        // Retorna um objeto de erro para ser tratado pelo Promise.allSettled
-        // Isso evita que um erro quebre toda a análise.
         return { 
             criterion_name: criterion, 
             score: 'Erro', 
@@ -2392,13 +2388,11 @@ const generateConclusion = async (button) => {
 };
 
 // =========================================================================
-// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'generateStrategicCta' INTEIRA POR ESTA <<<<<
+// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'generateStrategicCta' INTEIRA POR ESTA <<<<<
 // =========================================================================
-
 const generateStrategicCta = async (button) => {
     showButtonLoading(button);
 
-    // ... (lógica inicial de criar o container do CTA, se necessário) ...
     const scriptContainer = document.getElementById('scriptSectionsContainer');
     let ctaSection = document.getElementById('ctaSection');
     if (scriptContainer && !ctaSection) {
@@ -2408,15 +2402,26 @@ const generateStrategicCta = async (button) => {
         scriptContainer.appendChild(ctaSection);
     }
 
-    // ... (lógica de pegar os inputs e construir o prompt, que permanece a mesma) ...
     const ctaSpecifics = document.getElementById('ctaSpecifics').value.trim();
     const fullContext = getTranscriptOnly();
     const basePromptContext = getBasePromptContext();
-    let ctaDirective = "Crie um Call to Action (CTA) genérico...";
+
+    let ctaDirective = "Crie um Call to Action (CTA) genérico, convidando o espectador a curtir, comentar e se inscrever.";
     if (ctaSpecifics) {
-        ctaDirective = `Crie um Call to Action (CTA) altamente específico...`;
+        ctaDirective = `Crie um Call to Action (CTA) altamente específico e persuasivo. Instrução do usuário: "${ctaSpecifics}". Conecte esta instrução ao tema geral do vídeo de forma natural e convincente.`;
     }
-    const prompt = `${basePromptContext} ... ${ctaDirective} ...`;
+
+    const prompt = `${basePromptContext}
+    **ROTEIRO COMPLETO (PARA CONTEXTO):**
+    ---
+    ${fullContext}
+    ---
+    Sua tarefa agora é escrever APENAS o **Call to Action (CTA)** para o final do vídeo.
+    **Diretiva Estratégica para o CTA:** ${ctaDirective}
+    
+    **REGRAS CRÍTICAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
+    1.  Responda APENAS com o texto a ser falado.
+    2.  É ESTRITAMENTE PROIBIDO incluir rótulos de narrador (como 'Narrator:'), anotações de cena (como '(Visuals:...)', '(Opening shot...)') ou qualquer outra formatação que não seja o texto puro do roteiro.`;
 
     try {
         let result = await callGroqAPI(prompt, 400);
@@ -2433,11 +2438,7 @@ const generateStrategicCta = async (button) => {
         markButtonAsCompleted('generateCtaBtn');
         document.getElementById('conclusionStrategyModule').classList.add('hidden');
         window.showToast("CTA Estratégico gerado! Roteiro finalizado.");
-        ctaSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-        // <<< AQUI ESTÁ A LÓGICA CORRETA E DEFINITIVA >>>
-        // Após o CTA, a última peça, ser gerado com sucesso,
-        // nós explicitamente mostramos a seção de análise.
+        
         const analysisSection = document.getElementById('scriptAnalysisSection');
         if (analysisSection) {
             analysisSection.classList.remove('hidden');
@@ -2449,7 +2450,6 @@ const generateStrategicCta = async (button) => {
         window.showToast(`Falha ao gerar o CTA: ${error.message}`);
     } finally {
         hideButtonLoading(button);
-        // A chamada para updateButtonStates aqui ainda é útil para outras coisas, como a barra de progresso.
         updateButtonStates();
     }
 };
