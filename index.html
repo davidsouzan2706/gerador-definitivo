@@ -344,7 +344,8 @@
 }
 
 .highlight-change {
-  animation: fade-out-highlight 8s ease-out forwards;
+  /* MUDE O NÚMERO AQUI PARA O TEMPO QUE DESEJAR */
+  animation: fade-out-highlight 15s ease-out forwards;
   border-radius: 4px;
   outline-offset: 2px;
 }
@@ -1205,79 +1206,105 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 
 
 // =========================================================================
-        // PASSO 2: ADICIONE ESTA NOVA FUNÇÃO INTELIGENTE AO SEU SCRIPT
-        // =========================================================================
-        window.optimizeGroup = async (button, suggestionText) => {
-            const safeSelector = suggestionText.replace(/"/g, '\\"');
-            const paragraphsToOptimize = document.querySelectorAll(`[data-suggestion-group="${safeSelector}"]`);
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO 'window.optimizeGroup' INTEIRA <<<<<
+// =========================================================================
+window.optimizeGroup = async (button, suggestionText) => {
+    const safeSelector = suggestionText.replace(/"/g, '\\"');
+    const paragraphsToOptimize = document.querySelectorAll(`[data-suggestion-group="${safeSelector}"]`);
 
-            if (paragraphsToOptimize.length === 0) {
-                window.showToast("Erro: parágrafos para otimizar não encontrados.");
-                return;
-            }
+    if (paragraphsToOptimize.length === 0) {
+        window.showToast("Erro: parágrafos para otimizar não encontrados.");
+        return;
+    }
 
-            const originalButtonText = button.innerHTML;
-            button.innerHTML = '<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px; margin: auto;"></div>';
-            button.disabled = true;
+    const originalButtonText = button.innerHTML;
+    button.innerHTML = '<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px; margin: auto;"></div>';
+    button.disabled = true;
 
-            try {
-                const originalBlock = Array.from(paragraphsToOptimize).map(p => p.textContent.trim()).join('\n\n');
-                const prompt = `Você é um Roteirista especialista em reescrita. Sua tarefa é pegar um bloco de parágrafos e reescrevê-lo para corrigir um problema específico, mantendo a mensagem central.
-                
-                **PROBLEMA A SER CORRIGIDO (Sugestão):** "${suggestionText}"
-                **BLOCO DE TEXTO ORIGINAL:**
-                ---
-                ${originalBlock}
-                ---
+    try {
+        const originalBlock = Array.from(paragraphsToOptimize).map(p => p.textContent.trim()).join('\n\n');
+        
+        // <<< AQUI ESTÁ O ENRIQUECIMENTO DO PROMPT >>>
+        const basePromptContext = getBasePromptContext(); // Pega o contexto estratégico
+        const fullScriptContext = getTranscriptOnly(); // Pega o roteiro completo
+        
+        const prompt = `Você é um Editor de Roteiro de elite e um especialista em reescrita (copywriter). Sua tarefa é reescrever um bloco de texto problemático, garantindo que a nova versão não apenas corrija o problema, mas também se alinhe perfeitamente ao tom e contexto geral do roteiro.
 
-                **REGRAS:**
-                1. Reescreva o bloco de texto inteiro para que ele flua melhor e resolva o problema apontado na sugestão.
-                2. Você pode juntar parágrafos, dividi-los ou reordená-los se isso melhorar a clareza e o impacto.
-                3. Responda APENAS com o novo bloco de texto reescrito. Sem comentários ou introduções.`;
+**CONTEXTO GERAL DO PROJETO (para alinhar o tom e o estilo):**
+---
+${basePromptContext}
+---
 
-                const rawResult = await callGroqAPI(prompt, 2000);
-                const newContent = removeMetaComments(rawResult.trim());
-                const newParagraphs = newContent.split('\n').filter(p => p.trim() !== '');
+**ROTEIRO COMPLETO (para entender a narrativa geral):**
+---
+${fullScriptContext}
+---
 
-                const firstParagraph = paragraphsToOptimize[0];
-                const contentWrapper = firstParagraph.parentElement;
-                
-                firstParagraph.textContent = newParagraphs[0] || '';
-                firstParagraph.className = 'retention-paragraph-live retention-green highlight-change';
-                firstParagraph.removeAttribute('data-suggestion-group');
+**TAREFA ESPECÍFICA:**
 
-                let lastElement = firstParagraph;
-                for (let i = 1; i < newParagraphs.length; i++) {
-                    const newDiv = document.createElement('div');
-                    newDiv.textContent = newParagraphs[i];
-                    newDiv.className = 'retention-paragraph-live retention-green highlight-change';
-                    contentWrapper.insertBefore(newDiv, lastElement.nextSibling);
-                    lastElement = newDiv;
-                }
+**PROBLEMA A SER CORRIGIDO (Sugestão):** "${suggestionText}"
 
-                for (let i = 1; i < paragraphsToOptimize.length; i++) {
-                    paragraphsToOptimize[i].remove();
-                }
+**BLOCO DE TEXTO ORIGINAL (Para Re-escrever):**
+---
+${originalBlock}
+---
 
-                // >>>>> AQUI ESTÁ A CORREÇÃO QUE FALTAVA <<<<<
-                // 1. Encontra o elemento da seção pai, a partir do primeiro parágrafo.
-                const sectionElement = firstParagraph.closest('.script-section');
+**REGRAS CRÍTICAS:**
+1. Reescreva o bloco de texto inteiro para que ele flua melhor e resolva o problema apontado na sugestão.
+2. Você pode juntar parágrafos, dividi-los ou reordená-los se isso melhorar a clareza e o impacto.
+3. A nova versão DEVE soar como uma continuação natural do resto do roteiro, respeitando o tom e a voz definidos no contexto.
+4. Responda APENAS com o novo bloco de texto reescrito. Sem comentários, preâmbulos ou explicações.`;
 
-                // 2. Invalida os resultados de Performance e Prompts, pois o texto mudou.
-                if (sectionElement) {
-                    invalidateAndClearPerformance(sectionElement);
-                    invalidateAndClearPrompts(sectionElement);
-                }
-                // >>>>> FIM DA CORREÇÃO <<<<<
+        const rawResult = await callGroqAPI(prompt, 2000);
+        const newContent = removeMetaComments(rawResult.trim());
+        const newParagraphs = newContent.split('\n').filter(p => p.trim() !== '');
 
-                window.showToast("Bloco de parágrafos otimizado!");
+        const firstParagraph = paragraphsToOptimize[0];
+        const contentWrapper = firstParagraph.parentElement;
+        
+        // Substitui o primeiro parágrafo e o destaca
+        firstParagraph.textContent = newParagraphs[0] || '';
+        firstParagraph.className = 'highlight-change'; // Reutilizando nossa classe de animação!
+        firstParagraph.removeAttribute('data-suggestion-group');
 
-            } catch (error) {
-                window.showToast(`Falha ao otimizar: ${error.message}`);
-                console.error("Erro detalhado em optimizeGroup:", error);
-                button.innerHTML = 'Erro!';
-            }
-        };
+        // Adiciona os novos parágrafos, se houver
+        let lastElement = firstParagraph;
+        for (let i = 1; i < newParagraphs.length; i++) {
+            const newDiv = document.createElement('div');
+            newDiv.textContent = newParagraphs[i];
+            newDiv.className = 'highlight-change'; // Animação em todos os novos parágrafos
+            contentWrapper.insertBefore(newDiv, lastElement.nextSibling);
+            lastElement = newDiv;
+        }
+
+        // Remove os parágrafos antigos restantes
+        for (let i = 1; i < paragraphsToOptimize.length; i++) {
+            paragraphsToOptimize[i].remove();
+        }
+
+        const sectionElement = firstParagraph.closest('.script-section');
+        if (sectionElement) {
+            invalidateAndClearPerformance(sectionElement);
+            invalidateAndClearPrompts(sectionElement);
+        }
+
+        window.showToast("Bloco de parágrafos otimizado com sucesso!");
+
+    } catch (error) {
+        window.showToast(`Falha ao otimizar: ${error.message}`);
+        console.error("Erro detalhado em optimizeGroup:", error);
+    } finally {
+        // Restauramos o botão original, que será removido junto com o tooltip
+        button.innerHTML = originalButtonText;
+        button.disabled = false;
+        
+        // Remove o tooltip inteiro após a otimização
+        const tooltip = button.closest('.retention-tooltip');
+        if (tooltip) {
+            tooltip.remove();
+        }
+    }
+};
 
 
 
@@ -4333,7 +4360,7 @@ window.applySuggestion = (button) => {
         button.innerHTML = 'Aplicar';
         button.classList.remove('btn-success');
         button.classList.add('btn-primary');
-    }, 19000);
+    }, 15000);
 };
 
 
