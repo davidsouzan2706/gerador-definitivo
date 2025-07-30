@@ -4,7 +4,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Roteiros Virais v3.7</title>
+    <title>Gerador de Roteiros Virais v3.8</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
@@ -645,13 +645,16 @@
 
 
 </head>
+
+
+
 <body class="bg-gray-50 dark:bg-gray-900">
     <div class="min-h-screen">
         <!-- Header -->
         <header class="bg-white dark:bg-gray-800 shadow-sm">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                    <i class="fas fa-video mr-2"></i>Gerador de Roteiros Virais v3.7
+                    <i class="fas fa-video mr-2"></i>Gerador de Roteiros Virais v3.8
                 </h1>
                 <div class="flex items-center space-x-4">
                     <button id="darkModeToggle" class="theme-toggle">
@@ -967,9 +970,7 @@
 
 
             <!-- MÓDULO DE ESTRATÉGIA DA CONCLUSÃO (inicialmente escondido) -->
-<!-- ========================================================== -->
-<!--     PASSO 1: SUBSTITUA O SEU MÓDULO DE CONCLUSÃO POR ESTE      -->
-<!-- ========================================================== -->
+
 
 <div id="conclusionStrategyModule" class="card mb-6 hidden">
     <div class="text-center mb-4">
@@ -1022,12 +1023,24 @@
         <h2 class="text-xl font-bold">5. Análise de Roteiro (Beta)</h2>
     </div>
     <div class="card text-center">
-        <p class="mb-4 text-gray-600 dark:text-gray-400">Pronto para receber um feedback de nível profissional? Nossa IA analisará seu roteiro completo em busca de pontos fortes e oportunidades de melhoria.</p>
-        <button id="analyzeScriptBtn" data-action="analyzeScript" class="btn btn-primary">
-            <i class="fas fa-search-plus mr-2"></i> Analisar Roteiro Completo
-        </button>
-        <!-- O relatório da análise será injetado aqui -->
+        <p class="mb-4 text-gray-600 dark:text-gray-400">Pronto para receber um feedback de nível profissional? Nossas IAs analisarão seu roteiro completo em busca de pontos fortes, oportunidades de melhoria e ganchos de retenção.</p>
+        
+        <!-- Container dos botões -->
+        <div class="flex flex-wrap justify-center gap-4">
+            <button id="analyzeScriptBtn" data-action="analyzeScript" class="btn btn-primary">
+                <i class="fas fa-search-plus mr-2"></i> Análise Geral
+            </button>
+            <!-- NOSSO NOVO BOTÃO AQUI -->
+            <button id="analyzeHooksBtn" data-action="analyzeHooks" class="btn btn-secondary">
+                <i class="fas fa-anchor mr-2"></i> Caçar Ganchos de Retenção
+            </button>
+        </div>
+
+        <!-- O relatório da análise GERAL será injetado aqui -->
         <div id="analysisReportContainer" class="mt-6 text-left"></div>
+        
+        <!-- O relatório dos GANCHOS será injetado aqui -->
+        <div id="hooksReportContainer" class="mt-6 text-left"></div>
     </div>
 </section>
 
@@ -1327,6 +1340,80 @@ ${originalBlock}
         if (tooltip) {
             tooltip.remove();
         }
+    }
+};
+
+
+
+// =========================================================================
+// >>>>> PASSO 2: ADICIONE ESTA NOVA FUNÇÃO COMPLETA AO SEU SCRIPT <<<<<
+// =========================================================================
+const analyzeRetentionHooks = async (button) => {
+    const fullTranscript = getTranscriptOnly();
+    if (!fullTranscript) {
+        window.showToast("Gere o roteiro completo primeiro para caçar os ganchos.");
+        return;
+    }
+
+    showButtonLoading(button);
+    const reportContainer = document.getElementById('hooksReportContainer');
+    reportContainer.innerHTML = DOMPurify.sanitize(`<div class="my-4"><div class="loading-spinner-small mx-auto"></div><p class="text-sm mt-2">Caçando ganchos... A IA está lendo cada linha.</p></div>`);
+
+    const prompt = `Você é um Analista de Roteiros especialista em retenção de audiência para o YouTube. Sua tarefa é analisar o roteiro fornecido e identificar todos os "ganchos de retenção".
+
+**ROTEIRO COMPLETO:**
+---
+${fullTranscript.slice(0, 7500)}
+---
+
+**REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
+Sua resposta DEVE ser um array JSON. Cada objeto no array deve representar UM gancho encontrado e conter EXATAMENTE estas 4 chaves:
+1.  "hook_phrase": (String) A frase exata do roteiro que funciona como gancho.
+2.  "hook_type": (String) O tipo do gancho. Você DEVE escolher um da seguinte lista: ['Pergunta Direta', 'Loop Aberto (Mistério)', 'Dado Surpreendente', 'Conflito/Tensão', 'Anedota Pessoal', 'Afirmação Polêmica'].
+3.  "justification": (String) Uma justificativa curta e objetiva explicando por que essa frase prende a atenção.
+4.  "effectiveness_score": (Número) Uma nota de 1 a 10 para a eficácia do gancho.
+
+Responda APENAS com o array JSON. Não inclua nenhum outro texto.`;
+
+    try {
+        const rawResult = await callGroqAPI(prompt, 4000);
+        const hooks = cleanGeneratedText(rawResult, true);
+
+        if (!hooks || !Array.isArray(hooks) || hooks.length === 0) {
+            throw new Error("A IA não encontrou ganchos ou retornou um formato inválido.");
+        }
+
+        let reportHtml = `<div class="space-y-4">`;
+        hooks.forEach(hook => {
+            const scoreColor = hook.effectiveness_score >= 8 ? 'text-green-500' : hook.effectiveness_score >= 5 ? 'text-yellow-500' : 'text-red-500';
+            
+            reportHtml += `
+                <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 animate-fade-in">
+                    <p class="text-base italic text-gray-700 dark:text-gray-300 mb-2">"${DOMPurify.sanitize(hook.hook_phrase)}"</p>
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                        <span class="tag tag-pace !bg-purple-100 !text-purple-700 dark:!bg-purple-900/50 dark:!text-purple-300">
+                            <i class="fas fa-anchor mr-2"></i> ${DOMPurify.sanitize(hook.hook_type)}
+                        </span>
+                        <span class="font-bold ${scoreColor}">
+                            Eficácia: ${DOMPurify.sanitize(String(hook.effectiveness_score))}/10
+                        </span>
+                    </div>
+                    <p class="text-sm mt-2 text-gray-600 dark:text-gray-400">
+                        <strong>Justificativa:</strong> ${DOMPurify.sanitize(hook.justification)}
+                    </p>
+                </div>
+            `;
+        });
+        reportHtml += `</div>`;
+        
+        reportContainer.innerHTML = reportHtml;
+        window.showToast(`${hooks.length} ganchos de retenção encontrados!`);
+
+    } catch (error) {
+        console.error("Erro detalhado em analyzeRetentionHooks:", error);
+        reportContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">${error.message}</p>`);
+    } finally {
+        hideButtonLoading(button);
     }
 };
 
@@ -5987,79 +6074,82 @@ document.addEventListener('DOMContentLoaded', () => {
     const speakingPaceSelect = document.getElementById('speakingPace');
     if (speakingPaceSelect) { speakingPaceSelect.addEventListener('change', updateAllReadingTimes); }
     
+
     // --- 4. O "GERENTE DE CLIQUES" (versão completa e corrigida) ---
-    const actions = {
-        'suggestStrategy': (btn) => suggestStrategy(btn),
-        'startCrafting': (btn) => startCrafting(),
-        'generateIdeas': (btn) => generateVideoIdeas(btn),
-        'unravelEnigmas': (btn) => unravelEnigmas(btn),
-        'generateOutline': (btn) => generateStrategicOutline(btn),
-        'mapEmotions': (btn) => mapEmotionsAndPacing(btn),
-        'generateDescription': (btn) => generateVideoDescription(btn),
-        'generateTitlesAndThumbnails': (btn) => generateTitlesAndThumbnails(btn),
-        'generateSoundtrack': (btn) => generateSoundtrack(btn),
-        'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
-        'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
-        'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
-        'generateConclusion': (btn) => generateConclusion(btn),
-        'generateCta': (btn) => generateStrategicCta(btn),
-        'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
-        'applySuggestion': (btn) => window.applySuggestion(btn),
-        'applyAllSuggestions': (btn) => applyAllSuggestions(btn),
-        'exportProject': () => exportProject(),
-        'exportPdf': () => downloadPdf(),
-        'exportTranscript': () => handleCopyAndDownloadTranscript(),
-        'resetProject': async () => {
-            const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
-            if (confirmed) { resetApplicationState(); }
-        },
-        'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
-        'select-idea': (btn) => {
-            const ideaString = btn.dataset.idea;
-            if (ideaString) {
-                try {
-                    const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                    document.getElementById('videoTheme').value = ideaObject.title || '';
-                    document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
-                    document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
-                    window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
-                    document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } catch (e) { console.error("Falha ao processar dados da ideia:", e); }
-            }
-        },
-        'select-enigma-idea': (btn) => {
-            const ideaString = btn.dataset.idea;
-            if (ideaString) {
-                try {
-                    const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                    document.getElementById('videoTheme').value = ideaObject.title || '';
-                    document.getElementById('videoDescription').value = ideaObject.synopsis || ideaObject.enigma || '';
-                    document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
-                    window.showToast("Enigma selecionado! Estratégia pré-preenchida.");
-                    document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } catch (e) { console.error("Falha ao processar dados da ideia de enigma:", e); }
-            }
-        },
-        'regenerate': (btn) => window.regenerateSection(btn.dataset.sectionId),
-        'copy': (btn) => {
-            const content = btn.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
-            if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(btn); }
-        },
-        'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
-        'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
-        'refineStyle': (btn) => window.refineStyle(btn),
-        'enrichWithData': (btn) => window.enrichWithData(btn),
-        'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
-        'optimizeGroup': (btn) => {
-            const suggestionText = btn.dataset.suggestionText;
-            if (suggestionText) window.optimizeGroup(btn, suggestionText);
-        },
-        'deleteParagraphGroup': (btn) => {
-            const suggestionText = btn.dataset.suggestionText;
-            if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
-        },
-        'analyzeScript': (btn) => analyzeFullScript(btn)
-    };
+
+const actions = {
+    'suggestStrategy': (btn) => suggestStrategy(btn),
+    'startCrafting': (btn) => startCrafting(),
+    'generateIdeas': (btn) => generateVideoIdeas(btn),
+    'unravelEnigmas': (btn) => unravelEnigmas(btn),
+    'generateOutline': (btn) => generateStrategicOutline(btn),
+    'mapEmotions': (btn) => mapEmotionsAndPacing(btn),
+    'generateDescription': (btn) => generateVideoDescription(btn),
+    'generateTitlesAndThumbnails': (btn) => generateTitlesAndThumbnails(btn),
+    'generateSoundtrack': (btn) => generateSoundtrack(btn),
+    'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
+    'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
+    'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
+    'generateConclusion': (btn) => generateConclusion(btn),
+    'generateCta': (btn) => generateStrategicCta(btn),
+    'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
+    'applySuggestion': (btn) => window.applySuggestion(btn),
+    'applyAllSuggestions': (btn) => applyAllSuggestions(btn),
+    'exportProject': () => exportProject(),
+    'exportPdf': () => downloadPdf(),
+    'exportTranscript': () => handleCopyAndDownloadTranscript(),
+    'resetProject': async () => {
+        const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
+        if (confirmed) { resetApplicationState(); }
+    },
+    'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
+    'select-idea': (btn) => {
+        const ideaString = btn.dataset.idea;
+        if (ideaString) {
+            try {
+                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                document.getElementById('videoTheme').value = ideaObject.title || '';
+                document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
+                document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
+                window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
+                document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) { console.error("Falha ao processar dados da ideia:", e); }
+        }
+    },
+    'select-enigma-idea': (btn) => {
+        const ideaString = btn.dataset.idea;
+        if (ideaString) {
+            try {
+                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                document.getElementById('videoTheme').value = ideaObject.title || '';
+                document.getElementById('videoDescription').value = ideaObject.synopsis || ideaObject.enigma || '';
+                document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
+                window.showToast("Enigma selecionado! Estratégia pré-preenchida.");
+                document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) { console.error("Falha ao processar dados da ideia de enigma:", e); }
+        }
+    },
+    'regenerate': (btn) => window.regenerateSection(btn.dataset.sectionId),
+    'copy': (btn) => {
+        const content = btn.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
+        if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(btn); }
+    },
+    'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
+    'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
+    'refineStyle': (btn) => window.refineStyle(btn),
+    'enrichWithData': (btn) => window.enrichWithData(btn),
+    'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
+    'optimizeGroup': (btn) => {
+        const suggestionText = btn.dataset.suggestionText;
+        if (suggestionText) window.optimizeGroup(btn, suggestionText);
+    },
+    'deleteParagraphGroup': (btn) => {
+        const suggestionText = btn.dataset.suggestionText;
+        if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
+    },
+    'analyzeScript': (btn) => analyzeFullScript(btn),
+    'analyzeHooks': (btn) => analyzeRetentionHooks(btn)
+};
 
     document.addEventListener('click', function(event) {
         // Lógica do Acordeão
