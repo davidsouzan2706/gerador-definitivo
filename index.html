@@ -1492,7 +1492,7 @@ Responda APENAS com o array JSON.`;
 
 
 // =========================================================================
-// >>>>> PASSO 2.2: ADICIONE A FUNÇÃO 'insertViralSuggestion' <<<<<
+// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'insertViralSuggestion' INTEIRA <<<<<
 // =========================================================================
 const insertViralSuggestion = (button) => {
     const { anchorParagraph, suggestedText } = button.dataset;
@@ -1506,18 +1506,15 @@ const insertViralSuggestion = (button) => {
     let inserted = false;
 
     allParagraphs.forEach(p => {
-        if (!inserted && p.textContent.trim() === anchorParagraph.trim()) {
+        // A busca flexível que procura se o parágrafo CONTÉM a âncora
+        if (!inserted && p.textContent.trim().includes(anchorParagraph.trim())) {
             const newDiv = document.createElement('div');
-            // Damos um ID genérico, pois não sabemos o contador exato da seção
             newDiv.id = `inserted-p-${Date.now()}`; 
             
-            // Envolvemos o novo texto no span para a animação
             newDiv.innerHTML = `<span class="highlight-change">${suggestedText}</span>`;
             
-            // Inserimos o novo parágrafo logo após o parágrafo âncora
             p.parentNode.insertBefore(newDiv, p.nextSibling);
 
-            // Sanitização e feedback
             newDiv.innerHTML = DOMPurify.sanitize(newDiv.innerHTML, { ADD_TAGS: ["span"], ADD_ATTR: ["class"] });
             window.showToast("Elemento viral inserido com sucesso!");
 
@@ -1537,7 +1534,6 @@ const insertViralSuggestion = (button) => {
         return;
     }
 
-    // Feedback no botão
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-check mr-2"></i>Aplicada!';
     button.classList.remove('btn-primary');
@@ -1547,7 +1543,7 @@ const insertViralSuggestion = (button) => {
 
 
 // =========================================================================
-// >>>>> PASSO 2.1: SUBSTITUA 'suggestViralElements' INTEIRA <<<<<
+// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'suggestViralElements' INTEIRA <<<<<
 // =========================================================================
 const suggestViralElements = async (button) => {
     const fullTranscript = getTranscriptOnly();
@@ -1559,9 +1555,12 @@ const suggestViralElements = async (button) => {
 
     showButtonLoading(button);
     const reportContainer = document.getElementById('viralSuggestionsContainer');
+    
+    // Limpa o relatório antigo antes de gerar o novo
+    reportContainer.innerHTML = ''; 
+
     reportContainer.innerHTML = DOMPurify.sanitize(`<div class="my-4"><div class="loading-spinner-small mx-auto"></div><p class="text-sm mt-2">Procurando por oportunidades virais...</p></div>`);
 
-    // <<< O PROMPT AGORA PEDE TEXTO CONCRETO E UMA ÂNCORA PRECISA >>>
     const prompt = `Você é um Estrategista de Conteúdo Viral. Sua tarefa é analisar um roteiro e sugerir 3 oportunidades para INSERIR elementos que aumentem a viralidade.
 
 **TEMA DO VÍDEO:** "${videoTheme}"
@@ -1574,10 +1573,26 @@ ${fullTranscript.slice(0, 7500)}
 Sua resposta DEVE ser um array JSON. Cada objeto no array deve representar UMA sugestão e conter EXATAMENTE estas 4 chaves:
 1.  "anchor_paragraph": (String) O texto EXATO do parágrafo que virá IMEDIATAMENTE ANTES da sua sugestão.
 2.  "suggested_text": (String) O parágrafo EXATO, já escrito e pronto para ser inserido.
-3.  "element_type": (String) O tipo de elemento. Escolha de: ['Dado Surpreendente', 'Citação de Autoridade', 'Mini-Revelação (Teaser)', 'Pergunta Compartilhável', 'Anedota Pessoal Rápida'].
+3.  "element_type": (String) O tipo de elemento, escolhido da lista: ['Dado Surpreendente', 'Citação de Autoridade', 'Mini-Revelação (Teaser)', 'Pergunta Compartilhável', 'Anedota Pessoal Rápida'].
 4.  "implementation_idea": (String) Uma descrição curta de como esta inserção melhora o roteiro.
 
-Responda APENAS com o array JSON.`;
+**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO:**
+[
+    {
+        "anchor_paragraph": "E foi assim que ele tomou a decisão que mudaria tudo.",
+        "suggested_text": "De fato, estudos mostram que 78% das decisões que mudam vidas são tomadas em momentos de alta pressão emocional.",
+        "element_type": "Dado Surpreendente",
+        "implementation_idea": "Inserir uma estatística chocante para reforçar o impacto da decisão."
+    },
+    {
+        "anchor_paragraph": "O verdadeiro segredo estava guardado no cofre.",
+        "suggested_text": "Um segredo que, como veremos, não envolvia ouro ou joias, mas algo muito mais valioso.",
+        "element_type": "Mini-Revelação (Teaser)",
+        "implementation_idea": "Adicionar uma prévia para criar suspense e manter o espectador engajado."
+    }
+]
+
+Responda APENAS com o array JSON completo e sintaticamente perfeito.`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
@@ -1587,7 +1602,6 @@ Responda APENAS com o array JSON.`;
             throw new Error("A IA não encontrou oportunidades ou retornou um formato inválido.");
         }
 
-        // <<< A RENDERIZAÇÃO AGORA INCLUI O BOTÃO APLICAR >>>
         let reportHtml = `<div class="space-y-4">`;
         suggestions.forEach(suggestion => {
             const anchorParagraphEscaped = (suggestion.anchor_paragraph || '').replace(/"/g, '"');
@@ -1601,7 +1615,7 @@ Responda APENAS com o array JSON.`;
                         </span>
                     </div>
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                        <strong>Local Sugerido:</strong> Após o parágrafo que contém "${DOMPurify.sanitize(suggestion.anchor_paragraph.substring(0, 70))}..."
+                        <strong>Local Sugerido:</strong> Após o parágrafo que contém "${DOMPurify.sanitize((suggestion.anchor_paragraph || '').substring(0, 70))}..."
                     </p>
                     <p class="text-sm mt-3 text-gray-600 dark:text-gray-400">
                         <strong>Ideia de Implementação:</strong> ${DOMPurify.sanitize(suggestion.implementation_idea)}
