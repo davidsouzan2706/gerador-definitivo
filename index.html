@@ -4223,18 +4223,29 @@ ${originalText}
 
 
 // =========================================================================
-// >>>>> VERSÃO FINAL (v7) - BLINDADA E IDEMPOTENTE <<<<<
+// >>>>> VERSÃO FINAL E CORRIGIDA (v8) - A PROVA DE CARACTERES INVISÍVEIS <<<<<
 // =========================================================================
 window.applySuggestion = (button) => {
     const { criterionName, problematicQuote, rewrittenQuote } = button.dataset;
-    const sectionId = (window.criterionMap || {})[criterionName];
 
-    if (!sectionId) { /* ... (código de erro) ... */ return; }
+    // <<< AQUI ESTÁ A CORREÇÃO SIMPLES E PODEROSA >>>
+    // Limpamos a string para remover quaisquer espaços ou caracteres invisíveis no início/fim.
+    const cleanCriterionName = criterionName.trim();
+
+    const sectionId = (window.criterionMap || {})[cleanCriterionName];
+    
+    if (!sectionId) {
+        window.showToast(`Erro fatal: Seção alvo para o critério '${cleanCriterionName}' não foi encontrada no mapa.`);
+        return;
+    }
+
+    // O resto da sua função (a versão v7 - Idempotente) continua exatamente o mesmo.
+    // ... toda a lógica de substituição que já corrigimos ...
 
     const sectionElement = document.getElementById(sectionId);
     const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
 
-    if (!contentWrapper) { /* ... (código de erro) ... */ return; }
+    if (!contentWrapper) { /* ... */ return; }
 
     let replaced = false;
     const paragraphs = contentWrapper.querySelectorAll('div[id^="' + sectionId.replace('Section','') + '-p-"]');
@@ -4244,18 +4255,12 @@ window.applySuggestion = (button) => {
         const childNodes = Array.from(p.childNodes);
 
         for (const node of childNodes) {
-            // A condição de busca permanece a mesma
             if (node.nodeType === Node.TEXT_NODE && node.textContent.includes(problematicQuote)) {
-
-                // <<< AQUI ESTÁ A BLINDAGEM QUE FALTAVA >>>
-                // Se o texto já foi envolvido por nosso span, não fazemos nada!
                 if (node.parentElement.classList.contains('highlight-change')) {
-                    console.log("Ação bloqueada: Este trecho já foi substituído e animado.");
-                    replaced = true; // Marca como 'replaced' para sair da lógica.
+                    replaced = true;
                     break;
                 }
                 
-                // O resto da nossa lógica de transplante de DOM, que já estava correta.
                 const originalTextNode = node;
                 const text = originalTextNode.textContent;
                 const startIndex = text.indexOf(problematicQuote);
@@ -4265,7 +4270,6 @@ window.applySuggestion = (button) => {
 
                 const highlightSpan = document.createElement('span');
                 highlightSpan.textContent = rewrittenQuote;
-                // A classe é aplicada diretamente aqui, sem setTimeout. O problema não era a renderização.
                 highlightSpan.className = 'highlight-change'; 
 
                 const nodeBefore = document.createTextNode(textBefore);
@@ -4283,13 +4287,8 @@ window.applySuggestion = (button) => {
         }
     });
 
-    if (!replaced) {
-        // ... (código de erro se não encontrou) ...
-        return;
-    }
+    if (!replaced) { /* ... */ return; }
     
-    // ... (resto da função: showToast, invalidate, feedback no botão) ...
-    // Esta parte já está correta.
     window.showToast("Sugestão aplicada com sucesso!");
     invalidateAndClearPerformance(sectionElement);
     invalidateAndClearPrompts(sectionElement);
@@ -4307,7 +4306,6 @@ window.applySuggestion = (button) => {
         button.classList.add('btn-primary');
     }, 5000);
 };
-
 
 
 
@@ -5861,14 +5859,9 @@ const actions = {
 
 
 
-// =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA O SEU LISTENER DE CLIQUE INTEIRO <<<<<
-// =========================================================================
+// Substitua o listener de diagnóstico por este:
 document.addEventListener('click', function(event) {
-    // --- INÍCIO DO ESTETOSCÓPIO ---
-    console.log(`[Stethoscope] Clique detectado no elemento:`, event.target);
-
-    // --- LÓGICA DO ACORDEÃO (SEM MUDANÇAS) ---
+    // Lógica do Acordeão
     const accordionHeader = event.target.closest('.accordion-header');
     if (accordionHeader && !event.target.closest('.header-buttons')) {
         const body = accordionHeader.nextElementSibling;
@@ -5876,24 +5869,16 @@ document.addEventListener('click', function(event) {
         if (body && arrow) { body.classList.toggle('open'); arrow.classList.toggle('open'); }
     }
 
-    // --- LÓGICA DOS BOTÕES DE AÇÃO (AGORA COM DIAGNÓSTICO) ---
+    // Lógica dos Botões de Ação
     const button = event.target.closest('button[data-action]');
-    
-    // Se o clique não foi em um botão de ação, a função para aqui.
     if (!button) return;
 
-    console.log('[Stethoscope] Botão de ação encontrado:', button);
     const actionName = button.dataset.action;
-    console.log(`[Stethoscope] data-action identificada: "${actionName}"`);
-
     const action = actions[actionName];
 
     if (action) {
-        console.log(`%c[Stethoscope] Ação "${actionName}" encontrada no objeto 'actions'. Executando...`, 'color: green; font-weight: bold;');
         event.preventDefault();
         action(button);
-    } else {
-        console.error(`%c[Stethoscope] ERRO CRÍTICO: Ação "${actionName}" NÃO FOI ENCONTRADA no objeto 'actions'.`, 'color: red; font-size: 14px;');
     }
 });
 
