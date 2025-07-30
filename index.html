@@ -1009,6 +1009,8 @@ Ex: 'Fonte: Estudo de Harvard; Dr. João da Silva, especialista...'
             </label>
             <input type="file" id="importFileInput" class="hidden" accept=".json">
 
+            <button id="debugButton" class="btn btn-danger bg-red-600 hover:bg-red-700">TESTAR ANIMAÇÃO</button>
+
             <!-- Botão para Exportar Projeto -->
             <button id="exportProjectBtn" data-action="exportProject" class="btn btn-secondary">
                 <i class="fas fa-download mr-2"></i> Exportar Projeto
@@ -5095,6 +5097,53 @@ Responda APENAS com o array JSON completo e sintaticamente PERFEITO, seguindo EX
     }
 };
 
+
+
+// ==========================================================
+// >>>>> FUNÇÃO DE TESTE ATÔMICO - ADICIONE ESTE BLOCO <<<<<
+// ==========================================================
+window.debugAnimation = () => {
+    console.clear();
+    console.log("--- INICIANDO TESTE DE ANIMAÇÃO ATÔMICA ---");
+
+    // Vamos mirar em um alvo fixo e conhecido: o primeiro parágrafo da introdução.
+    const targetParagraph = document.getElementById('intro-p-0');
+
+    if (!targetParagraph) {
+        console.error("ERRO DE TESTE: O parágrafo #intro-p-0 não foi encontrado. Gere a introdução primeiro.");
+        return;
+    }
+
+    console.log("Alvo do teste encontrado:", targetParagraph);
+
+    // Pegamos o HTML atual do parágrafo.
+    const originalHTML = targetParagraph.innerHTML;
+
+    // A palavra que vamos tentar animar. Baseado no seu log, a palavra "Bíblia" existe.
+    const wordToAnimate = "Bíblia";
+
+    // Verificamos se a palavra existe para evitar erros.
+    if (originalHTML.includes(wordToAnimate)) {
+        // Criamos o HTML de substituição COM A NOSSA CLASSE DE ANIMAÇÃO.
+        const highlightedHTML = `<span class="highlight-change">${wordToAnimate}</span>`;
+        
+        // Substituímos a primeira ocorrência da palavra pelo nosso span.
+        const newHTML = originalHTML.replace(wordToAnimate, highlightedHTML);
+
+        // Aplicamos a mudança.
+        targetParagraph.innerHTML = newHTML;
+
+        console.log("SUCESSO: A substituição foi feita. O HTML agora é:");
+        console.log(targetParagraph.innerHTML);
+        console.log("Verifique a tela. A palavra 'Bíblia' deveria ter piscado.");
+
+    } else {
+        console.error(`ERRO DE TESTE: A palavra "${wordToAnimate}" não foi encontrada no parágrafo alvo.`);
+    }
+};
+
+
+
 // =========================================================================
 // >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO analyzeThumbnails INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
 // =========================================================================
@@ -5912,6 +5961,12 @@ const actions = {
             varyTone(tone);
         }
     });
+
+    // Dentro do seu 'DOMContentLoaded'
+const debugBtn = document.getElementById('debugButton');
+if (debugBtn) {
+    debugBtn.addEventListener('click', window.debugAnimation);
+}
 
 
     // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
