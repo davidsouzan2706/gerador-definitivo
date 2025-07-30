@@ -2404,11 +2404,9 @@ const generateStrategicCta = async (button) => {
     ---
     Sua tarefa agora é escrever APENAS o **Call to Action (CTA)** para o final do vídeo.
     **Diretiva Estratégica para o CTA:** ${ctaDirective}
-    
     **REGRAS CRÍTICAS DE FORMATAÇÃO (A REGRA MAIS IMPORTANTE):**
     1.  **APENAS TEXTO FALADO:** Sua resposta deve conter única e exclusivamente o texto que será narrado.
     2.  **É ESTRITAMENTE PROIBIDO** incluir qualquer tipo de anotação, rótulo de narrador (como 'Narrator:'), descrição de cena (como '(Visuals:...)', '(Opening shot...)') ou qualquer outra formatação que não seja para ser falado em voz alta. A violação desta regra resultará em falha.
-
     Responda APENAS com o texto puro do roteiro para o CTA.`;
 
     try {
@@ -2424,6 +2422,12 @@ const generateStrategicCta = async (button) => {
         
         projectState.cta = true;
         markButtonAsCompleted('generateCtaBtn');
+        
+        // <<< AQUI ESTÁ A LÓGICA DE TRAVAMENTO REINTRODUZIDA >>>
+        const ctaSpecificsElement = document.getElementById('ctaSpecifics');
+        ctaSpecificsElement.disabled = true;
+        ctaSpecificsElement.parentElement.classList.add('opacity-50');
+        
         document.getElementById('conclusionStrategyModule').classList.add('hidden');
         window.showToast("CTA Estratégico gerado! Roteiro finalizado.");
         
