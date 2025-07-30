@@ -4954,26 +4954,57 @@ const generateVideoIdeas = async (button) => {
 
     showButtonLoading(button);
 
-    // PROMPT FINAL E BLINDADO
-    const prompt = `Você é uma API Estrategista de Conteúdo que retorna APENAS um array JSON. Sua missão é gerar 6 ideias de vídeo com alto potencial de engajamento para um canal do YouTube.
+// =========================================================================
+// >>>>> PROMPT FINAL E BLINDADO PARA GERAÇÃO DE IDEIAS DE CONTEÚDO GERAL <<<<<
+// =========================================================================
+const prompt = `Você é uma API de Estratégia de Conteúdo Viral altamente especializada. Sua única função é gerar ideias de vídeo de EXCEPCIONAL qualidade e engajamento para canais do YouTube, baseando-se em um tema genérico fornecido.
 
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
-1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
-2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
-3.  **VÍRGULA FINAL:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último objeto.
-4.  **ESTRUTURA DO OBJETO:** Cada objeto no array DEVE conter EXATAMENTE estas cinco chaves: "title", "angle", "targetAudience", "viralityScore" (um número de 0 a 10), e "videoDescription" (uma string).
-5.  **IDIOMA:** Lembre-se, todos os valores de texto devem estar em **${languageName}**.
+**TAREFA PRINCIPAL:** Gerar 6 ideias de vídeo com POTENCIAL MÁXIMO de viralidade e relevância para o tema fornecido.
 
-**MANUAL DE CONTEÚDO (SIGA EXATAMENTE):**
-- **"title":** Um título "clickbait" mas inteligente (máximo 70 caracteres).
-- **"angle":** O ângulo ou abordagem única em **uma única frase curta e impactante**. (Ex: "Desvendando as estratégias ocultas que os bancos usam para investir seu dinheiro.")
-- **"targetAudience":** O público-alvo específico para esta ideia.
-- **"viralityScore":** Uma nota de 0 a 10 sobre o potencial de viralidade.
-- **"videoDescription":** Uma descrição mais detalhada de **5 a 6 frases substanciais**, otimizada para o YouTube, explicando o que o espectador aprenderá e qual problema será resolvido.
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (ABSOLUTAMENTE INEGOCIÁVEIS):**
+1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, comentário ou explicação é permitido. Pense nisso como uma resposta de API pura e impecável.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar obrigatoriamente aspas duplas (\`"\`).
+3.  **VÍRGULA FINAL OBRIGATÓRIA:** CADA objeto JSON dentro do array DEVE ser seguido por uma vírgula (\`,\`), EXCETO o último objeto.
+4.  **ESTRUTURA DO OBJETO EXATA:** Cada objeto no array DEVE conter EXATAMENTE estas cinco chaves: "title", "angle", "targetAudience", "viralityScore", e "videoDescription".
+5.  **TIPOS DE DADOS EXATOS:**
+    - "title": string.
+    - "angle": string.
+    - "targetAudience": string.
+    - "viralityScore": NÚMERO (inteiro ou decimal) entre 0 e 10.
+    - "videoDescription": string.
+6.  **IDIOMA:** Lembre-se, todos os valores de texto devem estar em **${languageName}**.
 
-**Nicho/Descrição para analisar:** "${nicheDescription}"
+**MANUAL DE CRIAÇÃO DE IDEIAS (SIGA ESTAS INSTRUÇÕES PARA CADA IDEIA):**
+- **"title" (Título Explosivo):**
+    - Deve ser HIPNÓTICO e provocar CURIOSIDADE INTENSA.
+    - Use técnicas de "clickbait" inteligentes: promessas, números, urgência, contraste, perguntas retóricas.
+    - Máximo de 70 caracteres. Seja CONCISO e DIRETO.
+    - Ex: "99% dos Médicos IGNORAM Este Sinal... (E Pode Salvar Sua Vida)"
+- **"angle" (Ângulo Único):**
+    - Esta é a ESSENCIAL da ideia. Deve ser uma frase impactante que resume a ABORDAGEM DISTINTA do vídeo.
+    - Foque em uma revelação, um insight contrário ao senso comum, ou uma conexão inesperada.
+    - Deve soar intrigante e prometer valor único. Use linguagem forte e específica.
+    - Ex: "Este vídeo revela como a 'Lei da Atração' está fundamentada em princípios quânticos reais, não em misticismo."
+- **"targetAudience" (Público-Alvo Específico):**
+    - Identifique um segmento CLARAMENTE definido que se beneficiaria MÁXIMO dessa ideia.
+    - Evite generalidades como "todos" ou "pessoas". Seja específico (ex: "Jovens Profissionais com Ansiedade", "Pais de Crianças com TDAH", "Aposentados Interessados em Tecnologia").
+- **"viralityScore" (Nota de Viralidade):**
+    - Avalie honestamente o potencial de COMPARTILHAMENTO MASSIVO da ideia.
+    - 0-3: Baixo (nicho muito específico, pouca emoção).
+    - 4-6: Médio (interessante, mas convencional).
+    - 7-10: Alto (choque, utilidade extrema, emoção forte, altamente compartilhável).
+- **"videoDescription" (Descrição Rica):**
+    - Uma sinopse detalhada de **5 a 6 frases substanciais**.
+    - Comece prometendo resolver um problema ou responder uma pergunta central.
+    - Liste 2-3 pontos-chave que serão abordados.
+    - Termine com o insight ou takeaway principal.
+    - Escreva como se estivesse otimizando para SEO e curiosidade do espectador. Use palavras-chave naturalmente.
 
-Gere 6 ideias de vídeo seguindo EXATAMENTE as regras e o formato acima.`;
+**TEMA GENÉRICO PARA TRANSFORMAR EM CONTEÚDO VIRAL:**
+"${nicheDescription}"
+
+**AÇÃO FINAL:** Gere AGORA as 6 ideias de vídeo mais fortes, criativas e potencialmente virais possíveis, seguindo EXATAMENTE todas as regras, formatos e instruções acima. Responda APENAS com o array JSON perfeito.
+`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
