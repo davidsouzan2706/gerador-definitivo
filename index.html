@@ -1023,24 +1023,27 @@
         <h2 class="text-xl font-bold">5. Análise de Roteiro (Beta)</h2>
     </div>
     <div class="card text-center">
-        <p class="mb-4 text-gray-600 dark:text-gray-400">Pronto para receber um feedback de nível profissional? Nossas IAs analisarão seu roteiro completo em busca de pontos fortes, oportunidades de melhoria e ganchos de retenção.</p>
+        <p class="mb-4 text-gray-600 dark:text-gray-400">Pronto para receber um feedback de nível profissional? Nossas IAs analisarão seu roteiro em busca de pontos fortes, oportunidades de melhoria e ganchos de retenção.</p>
         
         <!-- Container dos botões -->
         <div class="flex flex-wrap justify-center gap-4">
             <button id="analyzeScriptBtn" data-action="analyzeScript" class="btn btn-primary">
                 <i class="fas fa-search-plus mr-2"></i> Análise Geral
             </button>
-            <!-- NOSSO NOVO BOTÃO AQUI -->
             <button id="analyzeHooksBtn" data-action="analyzeHooks" class="btn btn-secondary">
-                <i class="fas fa-anchor mr-2"></i> Caçar Ganchos de Retenção
+                <i class="fas fa-anchor mr-2"></i> Caçar Ganchos
+            </button>
+            <!-- NOSSO NOVO BOTÃO AQUI -->
+            <button id="suggestViralBtn" data-action="suggestViralElements" class="btn btn-secondary">
+                <i class="fas fa-lightbulb mr-2"></i> Sugerir Elementos Virais
             </button>
         </div>
 
-        <!-- O relatório da análise GERAL será injetado aqui -->
+        <!-- Containers para os relatórios -->
         <div id="analysisReportContainer" class="mt-6 text-left"></div>
-        
-        <!-- O relatório dos GANCHOS será injetado aqui -->
         <div id="hooksReportContainer" class="mt-6 text-left"></div>
+        <!-- NOSSO NOVO CONTAINER DE RELATÓRIO AQUI -->
+        <div id="viralSuggestionsContainer" class="mt-6 text-left"></div>
     </div>
 </section>
 
@@ -1411,6 +1414,79 @@ Responda APENAS com o array JSON. Não inclua nenhum outro texto.`;
 
     } catch (error) {
         console.error("Erro detalhado em analyzeRetentionHooks:", error);
+        reportContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">${error.message}</p>`);
+    } finally {
+        hideButtonLoading(button);
+    }
+};
+
+
+
+// =========================================================================
+// >>>>> PASSO 2: ADICIONE ESTA NOVA FUNÇÃO COMPLETA AO SEU SCRIPT <<<<<
+// =========================================================================
+const suggestViralElements = async (button) => {
+    const fullTranscript = getTranscriptOnly();
+    const videoTheme = document.getElementById('videoTheme')?.value.trim();
+    if (!fullTranscript || !videoTheme) {
+        window.showToast("Gere o roteiro completo e defina um tema para receber sugestões virais.");
+        return;
+    }
+
+    showButtonLoading(button);
+    const reportContainer = document.getElementById('viralSuggestionsContainer');
+    reportContainer.innerHTML = DOMPurify.sanitize(`<div class="my-4"><div class="loading-spinner-small mx-auto"></div><p class="text-sm mt-2">Procurando por oportunidades virais...</p></div>`);
+
+    const prompt = `Você é um Estrategista de Conteúdo Viral para o YouTube. Sua tarefa é analisar um roteiro e sugerir 3 oportunidades para inserir elementos que aumentem o potencial de viralidade.
+
+**TEMA DO VÍDEO (para contexto):** "${videoTheme}"
+
+**ROTEIRO COMPLETO:**
+---
+${fullTranscript.slice(0, 7500)}
+---
+
+**REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
+Sua resposta DEVE ser um array JSON. Cada objeto no array deve representar UMA sugestão e conter EXATAMENTE estas 3 chaves:
+1.  "location": (String) O local exato no roteiro onde a inserção deve ocorrer (ex: "Após o parágrafo que termina com '...'").
+2.  "element_type": (String) O tipo de elemento a ser inserido. Você DEVE escolher um da seguinte lista: ['Dado Surpreendente', 'Citação de Autoridade', 'Mini-Revelação (Teaser)', 'Pergunta Compartilhável', 'Anedota Pessoal Rápida'].
+3.  "implementation_idea": (String) Uma descrição curta e acionável de como implementar a sugestão (ex: "Pesquise uma estatística chocante sobre X e insira aqui para aumentar o impacto.").
+
+Responda APENAS com o array JSON. Não inclua nenhum outro texto.`;
+
+    try {
+        const rawResult = await callGroqAPI(prompt, 4000);
+        const suggestions = cleanGeneratedText(rawResult, true);
+
+        if (!suggestions || !Array.isArray(suggestions) || suggestions.length === 0) {
+            throw new Error("A IA não encontrou oportunidades ou retornou um formato inválido.");
+        }
+
+        let reportHtml = `<div class="space-y-4">`;
+        suggestions.forEach(suggestion => {
+            reportHtml += `
+                <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 animate-fade-in">
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm mb-2">
+                        <span class="tag !bg-blue-100 !text-blue-700 dark:!bg-blue-900/50 dark:!text-blue-300">
+                            <i class="fas fa-lightbulb mr-2"></i> ${DOMPurify.sanitize(suggestion.element_type)}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                        <strong>Local Sugerido:</strong> ${DOMPurify.sanitize(suggestion.location)}
+                    </p>
+                    <p class="text-base text-gray-800 dark:text-gray-200">
+                        <strong>Ideia de Implementação:</strong> ${DOMPurify.sanitize(suggestion.implementation_idea)}
+                    </p>
+                </div>
+            `;
+        });
+        reportHtml += `</div>`;
+        
+        reportContainer.innerHTML = reportHtml;
+        window.showToast(`${suggestions.length} sugestões virais encontradas!`);
+
+    } catch (error) {
+        console.error("Erro detalhado em suggestViralElements:", error);
         reportContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">${error.message}</p>`);
     } finally {
         hideButtonLoading(button);
@@ -6077,6 +6153,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. O "GERENTE DE CLIQUES" (versão completa e corrigida) ---
 
+
 const actions = {
     'suggestStrategy': (btn) => suggestStrategy(btn),
     'startCrafting': (btn) => startCrafting(),
@@ -6148,7 +6225,8 @@ const actions = {
         if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
     },
     'analyzeScript': (btn) => analyzeFullScript(btn),
-    'analyzeHooks': (btn) => analyzeRetentionHooks(btn)
+    'analyzeHooks': (btn) => analyzeRetentionHooks(btn),
+    'suggestViralElements': (btn) => suggestViralElements(btn) // <<< NOSSA NOVA LINHA AQUI
 };
 
     document.addEventListener('click', function(event) {
