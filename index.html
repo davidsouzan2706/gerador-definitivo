@@ -1602,7 +1602,7 @@ const analyzeFullScript = async (button) => {
 
 
 // =========================================================================
-// >>>>> SUBSTITUA A FUNÇÃO 'reverseEngineerStrategy' INTEIRA POR ESTA <<<<<
+// >>>>> SUBSTITUA 'reverseEngineerStrategy' PELA VERSÃO CRIATIVA DE 2 ETAPAS <<<<<
 // =========================================================================
 const reverseEngineerStrategy = async (button) => {
     // A função interna para mostrar o modal permanece a mesma
@@ -1644,8 +1644,10 @@ const reverseEngineerStrategy = async (button) => {
     showButtonLoading(button);
     isSettingStrategy = true;
 
-    // <<< O PROMPT FOI ATUALIZADO AQUI >>>
-    const prompt = `Você é um Engenheiro de Roteiros especialista em engenharia reversa. Sua tarefa é analisar os dados de um vídeo de sucesso e extrair a ESTRATÉGIA NARRATIVA E TÉCNICA por trás dele.
+    // --- ETAPA 1: ANÁLISE E EXTRAÇÃO DA ESTRATÉGIA ---
+    const analysisPrompt = `Você é um Engenheiro de Roteiros especialista em engenharia reversa. Sua tarefa é analisar os dados de um vídeo de sucesso e extrair a ESTRATÉGIA NARRATIVA E TÉCNICA por trás dele... (O resto do prompt de análise, como já tínhamos)`; // O prompt original de análise
+    // (Abaixo está o prompt completo para evitar erros)
+    const analysisPromptFull = `Você é um Engenheiro de Roteiros especialista em engenharia reversa. Sua tarefa é analisar os dados de um vídeo de sucesso e extrair a ESTRATÉGIA NARRATIVA E TÉCNICA por trás dele.
 
 **DADOS DO VÍDEO DE REFERÊNCIA:**
 - **Tema:** "${benchmarkData.theme}"
@@ -1668,18 +1670,37 @@ Sua resposta DEVE ser um único objeto JSON. As chaves deste objeto DEVEM ser ex
 
 Responda APENAS com o objeto JSON.`;
 
+
     try {
-        const rawResult = await callGroqAPI(prompt, 2000);
-        const strategy = cleanGeneratedText(rawResult, true);
+        const rawAnalysisResult = await callGroqAPI(analysisPromptFull, 2000);
+        const strategy = cleanGeneratedText(rawAnalysisResult, true);
 
         if (!strategy || typeof strategy !== 'object') {
             throw new Error("A IA não retornou uma estratégia no formato JSON válido.");
         }
 
-        // <<< A LÓGICA DE PREENCHIMENTO FOI CORRIGIDA AQUI >>>
+        // --- ETAPA 2: CRIAÇÃO DA NOVA DESCRIÇÃO COM BASE NA ESTRATÉGIA ---
+        let newDescription = benchmarkData.description; // Fallback para a descrição original
+        if (benchmarkData.description) {
+            const creationPrompt = `Você é um Copywriter especialista em SEO para YouTube. Sua tarefa é criar uma nova e original descrição de vídeo.
+
+**INSPIRAÇÃO (NÃO COPIAR):**
+- **Tema do Novo Vídeo:** "${benchmarkData.theme}"
+- **Descrição Original (para inspiração de essência):** "${benchmarkData.description}"
+- **Estratégia Extraída (para guia de tom e estilo):** ${JSON.stringify(strategy)}
+
+**REGRAS:**
+1.  Escreva uma descrição de vídeo completamente **nova e otimizada**.
+2.  Capture a **essência e a ideia principal** da descrição original, mas use suas próprias palavras.
+3.  Incorpore palavras-chave do tema.
+4.  Responda APENAS com o texto da nova descrição. Sem preâmbulos, comentários ou títulos.`;
+            
+            newDescription = await callGroqAPI(creationPrompt, 500);
+        }
+
+        // --- ETAPA 3: PREENCHIMENTO DO FORMULÁRIO ---
         document.getElementById('videoTheme').value = benchmarkData.theme;
-        // Preenche com a DESCRIÇÃO do benchmark, não a transcrição. Se estiver vazia, o campo fica vazio.
-        document.getElementById('videoDescription').value = benchmarkData.description; 
+        document.getElementById('videoDescription').value = removeMetaComments(newDescription); 
         
         const keyToElementIdMap = {
             'target_audience': 'targetAudience', 'narrative_theme': 'narrativeTheme',
@@ -1705,7 +1726,7 @@ Responda APENAS com o objeto JSON.`;
             }, 100);
         }
 
-        window.showToast("Estratégia extraída e preenchida com sucesso!");
+        window.showToast("Estratégia extraída e descrição criada com sucesso!");
         document.querySelector('[data-tab="input-tab-estrategia"]')?.click();
 
     } catch (error) {
@@ -1716,7 +1737,6 @@ Responda APENAS com o objeto JSON.`;
         hideButtonLoading(button);
     }
 };
-
 
 
 // =========================================================================
