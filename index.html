@@ -543,7 +543,8 @@
     visibility: hidden;
     opacity: 0;
     width: 300px;
-    background-color: var(--dark-surface); 
+    /* MUDANÇA DE COR: Agora usa o mesmo fundo do popover */
+    background-color: var(--dark-bg); 
     color: var(--dark-text-header);
     text-align: left;
     border-radius: 8px;
@@ -557,7 +558,8 @@
     border: 1px solid var(--dark-border);
     transition: opacity 0.3s;
     pointer-events: none;
-    font-size: 0.9rem; /* <-- AUMENTAMOS A FONTE AQUI */
+    /* MUDANÇA DE FONTE: 1rem é o equivalente a 16px */
+    font-size: 1rem; 
     font-weight: 500;
     line-height: 1.6;
 }
@@ -569,7 +571,8 @@
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: var(--dark-surface) transparent transparent transparent;
+    /* MUDANÇA DE COR DA SETA: Para combinar com o novo fundo */
+    border-color: var(--dark-bg) transparent transparent transparent;
 }
 .tooltip-container:hover .tooltip-text {
     visibility: visible;
