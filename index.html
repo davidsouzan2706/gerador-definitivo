@@ -2727,17 +2727,26 @@ const generateSoundtrack = async (button) => {
     // >>> PROMPT BLINDADO SEGUINDO A ANÁLISE PROFISSIONAL <<<
     const prompt = `Você é um especialista em criação de prompts para IAs de música. Sua missão é gerar 3 parágrafos descritivos para uma trilha sonora baseada no roteiro fornecido.
 
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS E ABSOLUTAMENTE OBRIGATÓRIAS):**
-1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, comentário ou explicação é permitido. Pense nisso como uma resposta de API pura.
-2.  **ASPAS DUPLAS, SEMPRE:** TODAS as strings dentro do array DEVEM usar obrigatoriamente aspas duplas (\`"\`).
-3.  **VÍRGULAS OBRIGATÓRIAS:** CADA string no array, EXCETO a ÚLTIMA, DEVE ser seguida por uma vírgula (\`,\`). Esta é uma regra de sintaxe JSON fundamental.
-4.  **CONTEÚDO:** O array deve conter EXATAMENTE 3 strings, cada uma sendo um parágrafo descritivo distinto.
-5.  **SEM QUEBRAS DE LINHA INTERNAS:** Evite quebras de linha (\`\\n\`) dentro das strings individuais, a menos que sejam parte essencial da descrição.
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (ABSOLUTAMENTE OBRIGATÓRIAS):**
+1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto é permitido.
+2.  **ESTRUTURA DO ARRAY:** O array deve conter EXATAMENTE 3 strings.
+3.  **ASPAS DUPLAS SEMPRE:** CADA string no array DEVE usar obrigatoriamente aspas duplas (\`"\`).
+4.  **VÍRGULAS OBRIGATÓRIAS:** CADA string no array, exceto a ÚLTIMA, DEVE ser seguida por uma vírgula (\`,\`).
+5.  **CONTEÚDO DAS STRINGS:** Cada string deve ser um parágrafo único e bem escrito.
+
+**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO:**
+[
+  "Uma melodia suave e inspiradora com piano e violão, criando uma atmosfera de esperança.",
+  "Ritmo acelerado e eletrizante com sintetizadores, combinando tensão e empolgação para momentos de ação.",
+  "Uma orquestração épica e emocional com cordas, evocando sentimentos de conquista e realização."
+]
 
 **ROTEIRO COMPLETO PARA ANALISAR:**
--${fullTranscript}-
+---
+${fullTranscript}
+---
 
-**REPITA:** Responda APENAS com o array JSON completo e sintaticamente PERFEITO, seguindo EXATAMENTE as regras acima. Nenhum outro texto ou explicação é permitida.`;
+Responda APENAS com o array JSON completo e sintaticamente PERFEITO, seguindo EXATAMENTE as regras acima.`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 1500);
