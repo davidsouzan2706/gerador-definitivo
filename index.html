@@ -1380,8 +1380,9 @@ Responda APENAS com o objeto JSON.`;
 
 
 // =========================================================================
-// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'createReportSection' INTEIRA POR ESTA <<<<<
+// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'createReportSection' INTEIRA POR ESTA <<<<<
 // =========================================================================
+
 const createReportSection = (analysisData) => {
     const sectionDiv = document.createElement('div');
     sectionDiv.className = 'p-4 border rounded-lg mb-4 bg-gray-50 dark:bg-gray-800 animate-fade-in';
@@ -1390,20 +1391,36 @@ const createReportSection = (analysisData) => {
         const errorName = analysisData ? analysisData.criterion_name : 'Seção de Análise';
         sectionDiv.innerHTML = DOMPurify.sanitize(`
             <h4 class="font-bold text-lg text-red-500">${errorName}</h4>
-            <p class="text-red-500 text-sm mt-2">Falha ao processar a análise para esta seção. A resposta da IA pode estar em um formato inesperado.</p>
+            <p class="text-red-500 text-sm mt-2">Falha ao processar a análise para esta seção.</p>
         `);
         return sectionDiv;
     }
 
     let improvementHtml = '';
     if (analysisData.improvement_points && analysisData.improvement_points.length > 0) {
-        improvementHtml = analysisData.improvement_points.map(point => `
+        improvementHtml = analysisData.improvement_points.map(point => {
+            // Escapa as aspas para usar com segurança nos data-attributes
+            const problematicQuoteEscaped = (point.problematic_quote || '').replace(/"/g, '"');
+            const suggestionEscaped = (point.suggestion || '').replace(/"/g, '"');
+
+            return `
             <div class="mt-4 pt-3 border-t border-dashed border-gray-300 dark:border-gray-600">
-                <p class="text-sm italic text-gray-500 dark:text-gray-400 mb-1">" ${DOMPurify.sanitize(point.problematic_quote)} "</p>
+                <p class="text-sm italic text-gray-500 dark:text-gray-400 mb-1">" ${DOMPurify.sanitize(point.problematic_quote || '')} "</p>
                 <p class="text-sm"><strong class="text-yellow-600 dark:text-yellow-400">Crítica:</strong> ${DOMPurify.sanitize(point.critique)}</p>
-                <p class="text-sm"><strong class="text-green-600 dark:text-green-400">Sugestão:</strong> ${DOMPurify.sanitize(point.suggestion)}</p>
-            </div>
-        `).join('');
+                <div class="flex items-center justify-between gap-2">
+                    <p class="text-sm flex-1"><strong class="text-green-600 dark:text-green-400">Sugestão:</strong> ${DOMPurify.sanitize(point.suggestion)}</p>
+                    
+                    <!-- <<< NOSSO "BOTÃO MÁGICO" AQUI >>> -->
+                    <button class="btn btn-primary btn-small flex-shrink-0"
+                            data-action="applySuggestion"
+                            data-criterion-name="${analysisData.criterion_name}"
+                            data-problematic-quote="${problematicQuoteEscaped}"
+                            data-suggestion="${suggestionEscaped}">
+                        Aplicar
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
     }
 
     const content = `
@@ -4199,6 +4216,66 @@ ${originalText}
 
 
 
+// ==========================================================
+//     PASSO 2: ADICIONE ESTA NOVA FUNÇÃO AO SEU JAVASCRIPT
+// ==========================================================
+window.applySuggestion = (button) => {
+    const { criterionName, problematicQuote, suggestion } = button.dataset;
+
+    if (!problematicQuote || !suggestion) {
+        window.showToast("Erro: Informações da sugestão não encontradas.");
+        return;
+    }
+
+    const criterionMap = {
+        'Introdução (Hook)': 'introSection',
+        'Desenvolvimento (Ritmo e Retenção)': 'developmentSection',
+        'Clímax': 'climaxSection',
+        'Conclusão': 'conclusionSection',
+        'CTA (Call to Action)': 'ctaSection'
+    };
+
+    const sectionId = criterionMap[criterionName];
+    if (!sectionId) {
+        window.showToast(`Erro: Seção alvo '${criterionName}' não reconhecida.`);
+        return;
+    }
+
+    const sectionElement = document.getElementById(sectionId);
+    const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+
+    if (!contentWrapper) {
+        window.showToast("Erro: Container de conteúdo do roteiro não encontrado.");
+        return;
+    }
+
+    const originalHtml = contentWrapper.innerHTML;
+    // Precisamos "desescapar" a citação para encontrá-la no HTML
+    const quoteToFind = problematicQuote.replace(/"/g, '"');
+    const highlightedSuggestion = `<span class="highlight-change">${suggestion}</span>`;
+    
+    // Tentativa de substituição simples primeiro
+    const newHtml = originalHtml.replace(quoteToFind, highlightedSuggestion);
+
+    if (newHtml === originalHtml) {
+        window.showToast("Não foi possível aplicar a sugestão automaticamente. O texto pode ter sido editado.");
+        return;
+    }
+
+    contentWrapper.innerHTML = DOMPurify.sanitize(newHtml, { ADD_TAGS: ["span"], ADD_ATTR: ["class"] });
+    window.showToast("Sugestão aplicada com sucesso!");
+    
+    // Invalida outras análises, pois o texto mudou
+    invalidateAndClearPerformance(sectionElement);
+    invalidateAndClearPrompts(sectionElement);
+    updateAllReadingTimes();
+
+    // Desabilita o botão para evitar cliques duplos
+    button.disabled = true;
+    button.textContent = "Aplicada!";
+};
+
+
 
 // =========================================================================
 // >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'window.enrichWithData' INTEIRA POR ESTA <<<<<
@@ -5679,6 +5756,7 @@ const actions = {
         'generateConclusion': (btn) => generateConclusion(btn),
         'generateCta': (btn) => generateStrategicCta(btn),
         'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
+        'applySuggestion': (btn) => window.applySuggestion(btn),
         'exportProject': () => exportProject(),
         'exportPdf': () => downloadPdf(),
         'exportTranscript': () => handleCopyAndDownloadTranscript(),
