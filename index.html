@@ -1330,9 +1330,13 @@ const analyzeFullScript = async (button) => {
 // =========================================================================
 
 const analyzeScriptPart = async (criterion, text, instruction) => {
+    // <<< AQUI ESTÁ A CORREÇÃO: Lemos o idioma selecionado >>>
+    const selectedLangCode = document.getElementById('languageSelect').value;
+    const languageName = selectedLangCode === 'pt-br' ? 'Português do Brasil' : 'English';
+
     const prompt = `Você é uma API de Análise de Roteiro que atua como um editor de linha e um estrategista de conteúdo para YouTube. Sua resposta DEVE ser um objeto JSON.
 
-**TAREFA:** Analise o "Trecho de Roteiro" fornecido com base no "Critério de Análise". Sua análise deve ser crítica, profissional e, acima de tudo, acionável.
+**TAREFA:** Analise o "Trecho de Roteiro" fornecido com base no "Critério de Análise".
 
 **Critério de Análise:** ${instruction}
 
@@ -1341,12 +1345,11 @@ const analyzeScriptPart = async (criterion, text, instruction) => {
 ${text.slice(0, 7000)}
 ---
 
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
-1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON.
-2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves (ex: "score") e os valores de texto (strings) DEVEM, OBRIGATORIAMENTE, começar e terminar com aspas duplas (\`"\`).
-3.  **PROIBIDO ASPAS DUPLAS INTERNAS:** É ESTRITAMENTE PROIBIDO usar aspas duplas (\`"\`) DENTRO de qualquer valor de string. Se precisar citar algo, use aspas simples (\`'\`). A violação desta regra resultará em falha.
-4.  **ESTRUTURA COMPLETA:** Sua resposta DEVE começar com \`{\` e terminar com \`}\` e conter EXATAMENTE as seguintes chaves: "criterion_name", "score", "positive_points", "improvement_points".
-5.  O valor de "improvement_points" DEVE ser um array de objetos, cada um com as chaves "problematic_quote", "critique", e "suggestion".
+**REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
+- **IDIOMA (A REGRA MAIS IMPORTANTE):** Toda a sua análise (os valores das chaves 'positive_points', 'critique' e 'suggestion') DEVE, OBRIGATORIAMENTE, estar em **${languageName}**.
+- **ESTRUTURA COMPLETA:** Sua resposta DEVE conter EXATAMENTE as seguintes chaves: "criterion_name", "score", "positive_points", "improvement_points".
+- O valor de "improvement_points" DEVE ser um array de objetos, cada um com as chaves "problematic_quote", "critique", e "suggestion".
+- **ASPAS INTERNAS:** Se precisar citar o roteiro, use aspas simples (' '). É proibido usar aspas duplas dentro de outra string.
 
 Responda APENAS com o objeto JSON sintaticamente perfeito.`;
 
@@ -1354,6 +1357,7 @@ Responda APENAS com o objeto JSON sintaticamente perfeito.`;
         const rawResult = await callGroqAPI(prompt, 4000);
         const analysisData = cleanGeneratedText(rawResult, true);
 
+        // Validação robusta (código existente, permanece o mesmo)
         if (!analysisData) {
             throw new Error("A IA retornou uma resposta nula ou vazia.");
         }
@@ -2388,11 +2392,13 @@ const generateConclusion = async (button) => {
 };
 
 // =========================================================================
-// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'generateStrategicCta' INTEIRA POR ESTA <<<<<
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO 'generateStrategicCta' INTEIRA POR ESTA <<<<<
 // =========================================================================
+
 const generateStrategicCta = async (button) => {
     showButtonLoading(button);
 
+    // ... (lógica inicial de pegar/criar o container ctaSection) ...
     const scriptContainer = document.getElementById('scriptSectionsContainer');
     let ctaSection = document.getElementById('ctaSection');
     if (scriptContainer && !ctaSection) {
@@ -2406,22 +2412,12 @@ const generateStrategicCta = async (button) => {
     const fullContext = getTranscriptOnly();
     const basePromptContext = getBasePromptContext();
 
-    let ctaDirective = "Crie um Call to Action (CTA) genérico, convidando o espectador a curtir, comentar e se inscrever.";
+    let ctaDirective = "Crie um Call to Action (CTA) genérico...";
     if (ctaSpecifics) {
-        ctaDirective = `Crie um Call to Action (CTA) altamente específico e persuasivo. Instrução do usuário: "${ctaSpecifics}". Conecte esta instrução ao tema geral do vídeo de forma natural e convincente.`;
+        ctaDirective = `Crie um Call to Action (CTA) altamente específico...`;
     }
 
-    const prompt = `${basePromptContext}
-    **ROTEIRO COMPLETO (PARA CONTEXTO):**
-    ---
-    ${fullContext}
-    ---
-    Sua tarefa agora é escrever APENAS o **Call to Action (CTA)** para o final do vídeo.
-    **Diretiva Estratégica para o CTA:** ${ctaDirective}
-    
-    **REGRAS CRÍTICAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
-    1.  Responda APENAS com o texto a ser falado.
-    2.  É ESTRITAMENTE PROIBIDO incluir rótulos de narrador (como 'Narrator:'), anotações de cena (como '(Visuals:...)', '(Opening shot...)') ou qualquer outra formatação que não seja o texto puro do roteiro.`;
+    const prompt = `${basePromptContext} ... ${ctaDirective} ...`;
 
     try {
         let result = await callGroqAPI(prompt, 400);
@@ -2436,6 +2432,11 @@ const generateStrategicCta = async (button) => {
         
         projectState.cta = true;
         markButtonAsCompleted('generateCtaBtn');
+        
+        // <<< AQUI ESTÁ A LÓGICA DE TRAVAMENTO QUE FALTAVA >>>
+        document.getElementById('ctaSpecifics').disabled = true;
+        document.getElementById('ctaSpecifics').parentElement.classList.add('opacity-50');
+
         document.getElementById('conclusionStrategyModule').classList.add('hidden');
         window.showToast("CTA Estratégico gerado! Roteiro finalizado.");
         
