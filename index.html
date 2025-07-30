@@ -1404,7 +1404,7 @@ const applyHookSuggestion = (button) => {
 
 
 // =========================================================================
-// >>>>> PASSO 1.1: SUBSTITUA 'analyzeRetentionHooks' INTEIRA <<<<<
+// >>>>> PASSO ÚNICO: SUBSTITUA 'analyzeRetentionHooks' INTEIRA <<<<<
 // =========================================================================
 const analyzeRetentionHooks = async (button) => {
     const fullTranscript = getTranscriptOnly();
@@ -1415,9 +1415,12 @@ const analyzeRetentionHooks = async (button) => {
 
     showButtonLoading(button);
     const reportContainer = document.getElementById('hooksReportContainer');
+    
+    // <<< AQUI ESTÁ A NOVA LINHA QUE LIMPA O RELATÓRIO ANTIGO >>>
+    reportContainer.innerHTML = '';
+
     reportContainer.innerHTML = DOMPurify.sanitize(`<div class="my-4"><div class="loading-spinner-small mx-auto"></div><p class="text-sm mt-2">Caçando e refinando ganchos...</p></div>`);
 
-    // <<< O PROMPT AGORA PEDE UMA REESCRITA >>>
     const prompt = `Você é um Analista de Roteiros especialista em retenção de audiência. Sua tarefa é analisar o roteiro, identificar "ganchos de retenção" e sugerir como aprimorá-los.
 
 **ROTEIRO COMPLETO:**
@@ -1443,7 +1446,6 @@ Responda APENAS com o array JSON.`;
             throw new Error("A IA não encontrou ganchos ou retornou um formato inválido.");
         }
 
-        // <<< A RENDERIZAÇÃO AGORA INCLUI O BOTÃO APLICAR >>>
         let reportHtml = `<div class="space-y-4">`;
         hooks.forEach((hook, index) => {
             const problematicQuoteEscaped = (hook.hook_phrase || '').replace(/"/g, '"');
