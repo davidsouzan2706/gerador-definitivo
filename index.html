@@ -1602,10 +1602,10 @@ const analyzeFullScript = async (button) => {
 
 
 // =========================================================================
-// >>>>> SUBSTITUA 'reverseEngineerStrategy' PELA VERSÃO CRIATIVA DE 2 ETAPAS <<<<<
+// >>>>> VERSÃO FINAL E FLEXÍVEL DE 'reverseEngineerStrategy' <<<<<
 // =========================================================================
 const reverseEngineerStrategy = async (button) => {
-    // A função interna para mostrar o modal permanece a mesma
+    // A função interna para mostrar o modal agora só exige o Tema
     const showBenchmarkDialog = () => {
         return new Promise(resolve => {
             const overlay = document.getElementById('benchmarkDialogOverlay');
@@ -1625,8 +1625,9 @@ const reverseEngineerStrategy = async (button) => {
                 const theme = document.getElementById('benchmarkTheme').value.trim();
                 const description = document.getElementById('benchmarkDescription').value.trim();
                 const transcript = document.getElementById('benchmarkTranscript').value.trim();
-                if (!theme || !transcript) {
-                    window.showToast("O Tema e a Transcrição são obrigatórios.");
+                // AGORA SÓ O TEMA É OBRIGATÓRIO
+                if (!theme) {
+                    window.showToast("O Tema do vídeo de referência é obrigatório.");
                     return;
                 }
                 closeDialog({ theme, description, transcript });
@@ -1644,68 +1645,67 @@ const reverseEngineerStrategy = async (button) => {
     showButtonLoading(button);
     isSettingStrategy = true;
 
-    // --- ETAPA 1: ANÁLISE E EXTRAÇÃO DA ESTRATÉGIA ---
-    const analysisPrompt = `Você é um Engenheiro de Roteiros especialista em engenharia reversa. Sua tarefa é analisar os dados de um vídeo de sucesso e extrair a ESTRATÉGIA NARRATIVA E TÉCNICA por trás dele... (O resto do prompt de análise, como já tínhamos)`; // O prompt original de análise
-    // (Abaixo está o prompt completo para evitar erros)
-    const analysisPromptFull = `Você é um Engenheiro de Roteiros especialista em engenharia reversa. Sua tarefa é analisar os dados de um vídeo de sucesso e extrair a ESTRATÉGIA NARRATIVA E TÉCNICA por trás dele.
+    let analysisPrompt;
+    
+    // <<< AQUI ESTÁ A LÓGICA INTELIGENTE >>>
+    if (benchmarkData.transcript) {
+        // --- PROMPT DE ALTA FIDELIDADE (ENGENHARIA REVERSA) ---
+        window.showToast("Analisando roteiro completo. Alta precisão...");
+        analysisPrompt = `Você é um Engenheiro de Roteiros especialista em engenharia reversa. Sua tarefa é ANALISAR a transcrição de um vídeo e EXTRAIR a estratégia exata usada.
 
-**DADOS DO VÍDEO DE REFERÊNCIA:**
+**DADOS DO VÍDEO:**
 - **Tema:** "${benchmarkData.theme}"
-- **Descrição:** "${benchmarkData.description}"
-- **Transcrição do Roteiro:**
+- **Transcrição:**
 ---
 ${benchmarkData.transcript.slice(0, 7500)}
 ---
 
-**REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
-Sua resposta DEVE ser um único objeto JSON. As chaves deste objeto DEVEM ser exatamente as seguintes, e os valores devem ser sua melhor análise extraída dos dados:
-- "target_audience": (String) Quem parece ser o público-alvo deste roteiro?
-- "narrative_goal": (String) O objetivo é 'storytelling' (conectar/inspirar) ou 'storyselling' (persuadir/vender)?
-- "narrative_structure": (String) Qual estrutura narrativa foi usada? Escolha uma de: ['documentary', 'heros_journey', 'pixar_spine', 'mystery_loop', 'twist', 'pas', 'bab', 'aida', 'underdog_victory', 'discovery_mentor', 'if_not_found_create'].
-- "narrative_theme": (String) Qual é a "grande ideia" ou mensagem central?
-- "narrative_tone": (String) Analise o tom da narração. Sua resposta para esta chave DEVE OBRIGATORIAMENTE ser uma das seguintes strings: 'inspirador', 'serio', ou 'emocional'.
-- "narrative_voice": (String) Como você descreveria a personalidade do narrador?
-- "central_question": (String) Existe uma pergunta central que guia o roteiro? Se sim, qual?
-- "speaking_pace": (String) O ritmo da fala parece ser 'slow', 'moderate' ou 'fast'?
+**REGRAS:** Analise a transcrição e responda com um objeto JSON contendo sua melhor extração para as seguintes chaves: "target_audience", "narrative_goal", "narrative_structure", "narrative_theme", "narrative_voice", "central_question", "speaking_pace". O valor para "narrative_tone" DEVE ser um de ['inspirador', 'serio', 'emocional'].`;
+        
+    } else {
+        // --- PROMPT DE BAIXA FIDELIDADE (SUGESTÃO ESTRATÉGICA) ---
+        window.showToast("Analisando apenas Título/Descrição. Baixa precisão...");
+        analysisPrompt = `Você é um Estrategista de Conteúdo do YouTube. Sua tarefa é SUGERIR uma estratégia viral completa com base no tema e descrição de um vídeo de sucesso.
 
-Responda APENAS com o objeto JSON.`;
+**DADOS DO VÍDEO:**
+- **Tema:** "${benchmarkData.theme}"
+- **Descrição:** "${benchmarkData.description}"
 
+**REGRAS:** Com base nos dados, INVENTE a melhor estratégia possível. Responda com um objeto JSON preenchendo TODAS as seguintes chaves: "target_audience", "narrative_goal", "narrative_structure", "narrative_theme", "narrative_voice", "central_question", "speaking_pace", "emotional_hook", "emotional_arc", "shocking_ending_hook". O valor para "narrative_tone" DEVE ser um de ['inspirador', 'serio', 'emocional'].`;
+    }
 
     try {
-        const rawAnalysisResult = await callGroqAPI(analysisPromptFull, 2000);
+        const rawAnalysisResult = await callGroqAPI(analysisPrompt, 4000);
         const strategy = cleanGeneratedText(rawAnalysisResult, true);
 
         if (!strategy || typeof strategy !== 'object') {
             throw new Error("A IA não retornou uma estratégia no formato JSON válido.");
         }
 
-        // --- ETAPA 2: CRIAÇÃO DA NOVA DESCRIÇÃO COM BASE NA ESTRATÉGIA ---
-        let newDescription = benchmarkData.description; // Fallback para a descrição original
+        let newDescription = benchmarkData.description;
         if (benchmarkData.description) {
-            const creationPrompt = `Você é um Copywriter especialista em SEO para YouTube. Sua tarefa é criar uma nova e original descrição de vídeo.
+            const creationPrompt = `Você é um Copywriter de YouTube. Crie uma nova e original descrição de vídeo.
 
-**INSPIRAÇÃO (NÃO COPIAR):**
+**INSPIRAÇÃO:**
 - **Tema do Novo Vídeo:** "${benchmarkData.theme}"
-- **Descrição Original (para inspiração de essência):** "${benchmarkData.description}"
-- **Estratégia Extraída (para guia de tom e estilo):** ${JSON.stringify(strategy)}
+- **Descrição Original (para inspiração):** "${benchmarkData.description}"
+- **Estratégia Extraída (para guia de tom):** ${JSON.stringify(strategy)}
 
-**REGRAS:**
-1.  Escreva uma descrição de vídeo completamente **nova e otimizada**.
-2.  Capture a **essência e a ideia principal** da descrição original, mas use suas próprias palavras.
-3.  Incorpore palavras-chave do tema.
-4.  Responda APENAS com o texto da nova descrição. Sem preâmbulos, comentários ou títulos.`;
+**REGRAS:** Escreva uma nova descrição otimizada, capturando a essência da original mas com suas próprias palavras. Responda APENAS com o texto da nova descrição.`;
             
             newDescription = await callGroqAPI(creationPrompt, 500);
         }
 
-        // --- ETAPA 3: PREENCHIMENTO DO FORMULÁRIO ---
+        // Preenchimento do formulário (lógica existente e completa)
         document.getElementById('videoTheme').value = benchmarkData.theme;
         document.getElementById('videoDescription').value = removeMetaComments(newDescription); 
         
         const keyToElementIdMap = {
             'target_audience': 'targetAudience', 'narrative_theme': 'narrativeTheme',
             'narrative_voice': 'narrativeVoice', 'central_question': 'centralQuestion',
-            'narrative_tone': 'narrativeTone', 'speaking_pace': 'speakingPace'
+            'narrative_tone': 'narrativeTone', 'speaking_pace': 'speakingPace',
+            'emotional_hook': 'emotionalHook', 'emotional_arc': 'emotionalArc',
+            'shocking_ending_hook': 'shockingEndingHook'
         };
         for (const key in keyToElementIdMap) {
             if (strategy[key]) {
@@ -1726,7 +1726,7 @@ Responda APENAS com o objeto JSON.`;
             }, 100);
         }
 
-        window.showToast("Estratégia extraída e descrição criada com sucesso!");
+        window.showToast("Estratégia preenchida com sucesso!");
         document.querySelector('[data-tab="input-tab-estrategia"]')?.click();
 
     } catch (error) {
