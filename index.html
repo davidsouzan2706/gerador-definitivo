@@ -5047,30 +5047,30 @@ const unravelEnigmas = async (button) => {
     outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
     showButtonLoading(button);
 
-// <<< PROMPT EVOLUÍDO PARA MAIOR CRIATIVIDADE >>>
-const prompt = `Você é um Teólogo Investigativo e um Mestre em Hermenêutica Bíblica para o canal "The Biblical Unveiling". Sua especialidade é desvendar os tesouros escondidos nas Escrituras e fazer conexões impactantes com o mundo moderno.
+// <<< PROMPT EVOLUÍDO PARA REFERÊNCIAS BÍBLICAS MAIS FORTES >>>
+const prompt = `Você é um Teólogo Investigativo e um Mestre em Hermenêutica Bíblica para o canal "The Biblical Unveiling". Sua especialidade é desvendar os tesouros escondidos nas Escrituras e fazer conexões impactantes com o mundo moderno, sempre fundamentado na Palavra.
 
-**Sua missão é gerar 6 ideias de vídeos ALTAMENTE CRIATIVAS que conectem o TEMA FORNECIDO PELO USUÁRIO com enigmas, símbolos e histórias da Bíblia.**
+**Sua missão é gerar 6 ideias de vídeos que conectem o TEMA FORNECIDO PELO USUÁRIO com enigmas, símbolos e histórias da Bíblia, usando REFERÊNCIAS BÍBLICAS EXPLÍCITAS E CENTRAIS.**
 
-**DIRETIVA PRINCIPAL: FAÇA A CONEXÃO DE FORMA ORIGINAL E SURPREENDENTE.**
-- Mesmo que o tema do usuário não seja diretamente bíblico (ex: "Mercado Financeiro", "Neurociência", "Inteligência Artificial"), sua tarefa é encontrar paralelos INESPERADOS, metáforas profundas, princípios universais e lições atemporais dentro das Escrituras.
-- Evite clichês óbvios. Busque ângulos que surpreendam o espectador e ofereçam uma perspectiva única.
-- Exemplo de Conexão Criativa: Um vídeo sobre "Vieses Cognitivos" poderia explorar como a serpente usou técnicas psicológicas em Gênesis 3, ou como a "fé" pode ser entendida como um "processamento cognitivo distinto".
-- Sua criatividade será medida pela originalidade da conexão e pela profundidade da investigação teológica aplicada.
+**DIRETIVA PRINCIPAL: ANCORE-SE NA BÍBLIA.**
+- **Exigência de Citação Primária:** Toda ideia DEVE iniciar com uma ou mais citações bíblicas diretas (livro, capítulo, versículo) que sejam o FUNDAMENTO da conexão. Ex: "João 3:16 não é apenas sobre salvação, mas também revela um princípio de 'investimento celestial'..."
+- **Conexão Baseada em Texto:** A conexão entre o tema moderno e o conceito bíblico NÃO deve ser superficial. A passagem bíblica citada deve ser o ponto de partida lógico e hermenêutico da investigação.
+- **Evite Generalizações:** Não diga apenas "a fé". Diga "a fé de Abraão em Gênesis 15" ou "a fé testada de Jó". Seja específico com o texto.
+- **Contexto é Chave:** Ao citar, forneça contexto suficiente da passagem bíblica para entender a conexão proposta.
 
-Para encontrar essas ideias únicas, você DEVE usar uma das seguintes **Técnicas Investigativas**:
-1.  **Fio Oculto (Cross-Referencing)**
-2.  **Lupa Lexical (Análise de Palavras)**
-3.  **O Espelho Tipológico (Tipologia)**
-4.  **Contexto Histórico Profundo**
+Para fundamentar essas ideias, você DEVE usar uma das seguintes **Técnicas Investigativas**:
+1.  **Fio Oculto (Cross-Referencing)**: Conecte passagens aparentemente desconexas para revelar um tema unificador. (Ex: "O número 777 aparece em Gênesis, Êxodo e Apocalipse. O que isso diz sobre a perfeição do juízo divino?")
+2.  **Lupa Lexical (Análise de Palavras)**: Aprofunde-se no significado original de uma palavra-chave hebraica ou grega. (Ex: "O que o grego 'Logos' em João 1:1 revela sobre a natureza da informação divina?")
+3.  **O Espelho Tipológico (Tipologia)**: Mostre como uma pessoa, evento ou instituição do Antigo Testamento prefigura o Novo. (Ex: "Jonas é um 'tipo' de Cristo? Compare Jonas 1:17 com Mateus 12:40.")
+4.  **Contexto Histórico Profundo**: Conecte um evento bíblico a uma prática cultural ou política da época. (Ex: "Como o sistema de 'Tributos' romano ilumina a parábola do 'Denário' em Mateus 22:15-22?")
 
 **FORMATO DA RESPOSTA:**
 Sua resposta DEVE ser um array JSON válido. Cada ideia no array deve ser um objeto com as seguintes chaves:
-- "title": (String) Um título curioso, específico e cativante que prometa uma revelação.
-- "enigma": (String) O mistério central em uma única frase intrigante.
-- "synopsis": (String) Uma sinopse detalhada de **5 a 6 frases substanciais**, que explique a abordagem única do vídeo, os pontos que serão cobertos e qual será a revelação principal. Deve soar como um roteiro promissor.
+- "title": (String) Um título curioso, específico e cativante que prometa uma revelação baseada na Escritura.
+- "enigma": (String) O mistério central em uma única frase intrigante, fundamentado em uma passagem bíblica.
+- "synopsis": (String) Uma sinopse detalhada de **5 a 6 frases substanciais**. Esta sinopse DEVE incluir pelo menos UMA citação bíblica direta (ex: "(veja Gênesis 15:1)") e explicar como a passagem será usada para explorar o tema moderno.
 - "investigative_method": (String) O nome exato da técnica usada.
-- "hook_question": (String) Uma pergunta provocativa e intrigante para capturar a atenção nos primeiros 15 segundos.
+- "hook_question": (String) Uma pergunta provocativa e intrigante para capturar a atenção nos primeiros 15 segundos, idealmente relacionada à passagem bíblica.
 
 **REGRA DE CITAÇÃO (A MAIS IMPORTANTE):** Se precisar citar algo dentro de uma string (como um versículo ou uma frase), você DEVE, OBRIGATORIAMENTE, usar **aspas simples (' ')**. É terminantemente PROIBIDO usar aspas duplas (" ") dentro de outra string.
 
@@ -5078,7 +5078,7 @@ Sua resposta DEVE ser um array JSON válido. Cada ideia no array deve ser um obj
 
 **Tema fornecido pelo usuário (para conectar com a Bíblia):** "${nicheDescription}"
 
-**AÇÃO:** Agora, desvende conexões teológicas ousadas e gere as 6 ideias mais criativas e envolventes possíveis.
+**AÇÃO:** Agora, desvende conexões teológicas ousadas, **ancoradas em passagens bíblicas explícitas**, e gere as 6 ideias.
 `;
     
     try {
