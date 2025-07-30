@@ -6154,6 +6154,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 4. O "GERENTE DE CLIQUES" (versão completa e corrigida) ---
 
 
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA O OBJETO 'actions' INTEIRO POR ESTA VERSÃO <<<<<
+// =========================================================================
 const actions = {
     'suggestStrategy': (btn) => suggestStrategy(btn),
     'startCrafting': (btn) => startCrafting(),
@@ -6213,7 +6216,10 @@ const actions = {
     },
     'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
     'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
-    'refineStyle': (btn) => window.refineStyle(btn),
+
+    // <<< A CORREÇÃO ESTÁ AQUI: A chave 'refineStyle' agora chama a função correta 'refineSectionStyle' >>>
+    'refineStyle': (btn) => window.refineSectionStyle(btn),
+
     'enrichWithData': (btn) => window.enrichWithData(btn),
     'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
     'optimizeGroup': (btn) => {
@@ -6226,7 +6232,7 @@ const actions = {
     },
     'analyzeScript': (btn) => analyzeFullScript(btn),
     'analyzeHooks': (btn) => analyzeRetentionHooks(btn),
-    'suggestViralElements': (btn) => suggestViralElements(btn) // <<< NOSSA NOVA LINHA AQUI
+    'suggestViralElements': (btn) => suggestViralElements(btn)
 };
 
     document.addEventListener('click', function(event) {
