@@ -5861,29 +5861,41 @@ const actions = {
 
 
 
-    document.addEventListener('click', function(event) {
-        const target = event.target;
-        
-        // Lógica do Acordeão
-        const accordionHeader = target.closest('.accordion-header');
-        if (accordionHeader && !target.closest('.header-buttons')) {
-            const body = accordionHeader.nextElementSibling;
-            const arrow = accordionHeader.querySelector('.accordion-arrow');
-            if (body && arrow) { body.classList.toggle('open'); arrow.classList.toggle('open'); }
-        }
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA O SEU LISTENER DE CLIQUE INTEIRO <<<<<
+// =========================================================================
+document.addEventListener('click', function(event) {
+    // --- INÍCIO DO ESTETOSCÓPIO ---
+    console.log(`[Stethoscope] Clique detectado no elemento:`, event.target);
 
-        // Lógica dos Botões de Ação
-        const button = target.closest('button[data-action]');
-        if (!button) return;
+    // --- LÓGICA DO ACORDEÃO (SEM MUDANÇAS) ---
+    const accordionHeader = event.target.closest('.accordion-header');
+    if (accordionHeader && !event.target.closest('.header-buttons')) {
+        const body = accordionHeader.nextElementSibling;
+        const arrow = accordionHeader.querySelector('.accordion-arrow');
+        if (body && arrow) { body.classList.toggle('open'); arrow.classList.toggle('open'); }
+    }
 
-        const actionName = button.dataset.action;
-        const action = actions[actionName];
+    // --- LÓGICA DOS BOTÕES DE AÇÃO (AGORA COM DIAGNÓSTICO) ---
+    const button = event.target.closest('button[data-action]');
+    
+    // Se o clique não foi em um botão de ação, a função para aqui.
+    if (!button) return;
 
-        if (action) {
-            event.preventDefault();
-            action(button);
-        }
-    });
+    console.log('[Stethoscope] Botão de ação encontrado:', button);
+    const actionName = button.dataset.action;
+    console.log(`[Stethoscope] data-action identificada: "${actionName}"`);
+
+    const action = actions[actionName];
+
+    if (action) {
+        console.log(`%c[Stethoscope] Ação "${actionName}" encontrada no objeto 'actions'. Executando...`, 'color: green; font-weight: bold;');
+        event.preventDefault();
+        action(button);
+    } else {
+        console.error(`%c[Stethoscope] ERRO CRÍTICO: Ação "${actionName}" NÃO FOI ENCONTRADA no objeto 'actions'.`, 'color: red; font-size: 14px;');
+    }
+});
 
 
     const toneMenu = document.getElementById('tone-variation-menu');
