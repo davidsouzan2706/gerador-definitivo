@@ -1582,10 +1582,9 @@ const analyzeFullScript = async (button) => {
 
 
 // =========================================================================
-// >>>>> VERSÃO FINAL E COMPLETA DE 'analyzeScriptPart' (COM FIREWALL) <<<<<
+// >>>>> VERSÃO FINAL DE 'analyzeScriptPart' (COM CORREÇÃO FORÇADA) <<<<<
 // =========================================================================
 const analyzeScriptPart = async (criterion, text, instruction, context = {}) => {
-    // Mapeia o nome do critério para a chave correta no objeto de esboço
     const sectionKeyMap = {
         'Introdução (Hook)': 'introduction',
         'Desenvolvimento (Ritmo e Retenção)': 'development',
@@ -1596,7 +1595,6 @@ const analyzeScriptPart = async (criterion, text, instruction, context = {}) => 
     const outlineKey = sectionKeyMap[criterion];
     const outlineDirective = context.outline && context.outline[outlineKey] ? context.outline[outlineKey] : 'Nenhuma diretriz específica foi definida.';
 
-    // --- PROMPT REFORÇADO ---
     const prompt = `Você é uma API de Análise de Roteiro. Sua resposta DEVE ser um objeto JSON.
 
 **CONTEXTO ESTRATÉGICO:**
@@ -1612,7 +1610,7 @@ ${text.slice(0, 6500)}
 ---
 
 **REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
-- **"criterion_name"**: (String) O nome do critério.
+- **"criterion_name"**: (String) Use EXATAMENTE este valor: "${criterion}".
 - **"score"**: (Número) Uma nota de 0 a 10.
 - **"positive_points"**: (String) **UM ÚNICO PARÁGRAFO** resumindo os pontos fortes.
 - **"improvement_points"**: (Array de Objetos) Cada objeto com 4 chaves: "problematic_quote", "critique", "suggestion_text", "rewritten_quote".
@@ -1625,38 +1623,35 @@ Responda APENAS com o objeto JSON completo e sintaticamente perfeito.`;
         const rawResult = await callGroqAPI(prompt, 4000);
         const analysisData = cleanGeneratedText(rawResult, true);
 
-        // --- VALIDAÇÃO BÁSICA ---
         if (!analysisData) { throw new Error("A IA retornou uma resposta nula ou vazia."); }
-        const requiredKeys = ['criterion_name', 'score', 'positive_points', 'improvement_points'];
+
+        // <<< AQUI ESTÁ A CORREÇÃO FORÇADA E DEFINITIVA >>>
+        // Não importa o que a IA retornou em 'criterion_name', nós forçamos o valor correto.
+        analysisData.criterion_name = criterion;
+
+        const requiredKeys = ['score', 'positive_points', 'improvement_points'];
         for (const key of requiredKeys) {
             if (!(key in analysisData)) { throw new Error(`A chave '${key}' está ausente na resposta JSON da IA.`); }
         }
         
-        // --- A BLINDAGEM FINAL (O FIREWALL) ---
-        // A IA às vezes retorna 'positive_points' como um array. Nós consertamos isso.
+        // O Firewall que já tínhamos, agora mais importante do que nunca
         if (Array.isArray(analysisData.positive_points)) {
             console.warn("'positive_points' veio como array. Consolidando em uma string.");
             analysisData.positive_points = analysisData.positive_points.join(' ');
         }
         
-        // A validação rigorosa de 'improvement_points' que já tínhamos.
         if (Array.isArray(analysisData.improvement_points)) {
             analysisData.improvement_points = analysisData.improvement_points.map((point, index) => {
                 const correctedPoint = {};
-                // Limpamos todas as chaves de espaços em branco antes de processar
                 for (const key in point) {
                     correctedPoint[key.trim()] = point[key];
                 }
-
                 ['problematic_quote', 'critique', 'suggestion_text', 'rewritten_quote'].forEach(key => {
                     if (typeof correctedPoint[key] !== 'string') {
-                        console.warn(`A chave '${key}' no item ${index} de 'improvement_points' está ausente ou não é uma string. Corrigindo...`, correctedPoint);
                         correctedPoint[key] = correctedPoint[key] || `[Valor ausente para '${key}']`;
                     }
                 });
-
                 if (correctedPoint.rewritten_quote.trim() === "") {
-                    console.warn(`'rewritten_quote' no item ${index} está vazio, violando a regra. Usando a citação original como fallback.`, correctedPoint);
                     correctedPoint.rewritten_quote = correctedPoint.problematic_quote;
                 }
                 return correctedPoint;
