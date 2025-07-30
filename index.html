@@ -888,19 +888,15 @@
 </div>
     
     <!-- O botão final (continua o mesmo) -->
-<div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
-    <!-- NOSSO NOVO BOTÃO DE ENGENHARIA REVERSA -->
-
+    <div class="mt-6 text-center">
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
     <!-- Botão Opcional para ajuda da IA -->
     <button id="suggestStrategyBtn" data-action="suggestStrategy" class="btn btn-secondary w-full sm:w-auto">
-        <i class="fas fa-magic mr-2"></i> Sugerir Estratégia (IA)
+        <i class="fas fa-magic mr-2"></i> Sugerir Estratégia com IA
     </button>
     <!-- Botão Principal para avançar -->
     <button id="startCraftingBtn" data-action="startCrafting" class="btn btn-primary w-full sm:w-auto">
         <i class="fas fa-arrow-right mr-2"></i> Iniciar Criação do Roteiro
-    </button>
-        <button id="reverseEngineerBtn" data-action="reverseEngineer" class="btn btn-secondary w-full sm:w-auto">
-        <i class="fas fa-vial mr-2"></i> Analisar Vídeo de Referência
     </button>
 </div>
 
@@ -1156,38 +1152,6 @@
         <div class="flex justify-end gap-4 mt-6">
             <button id="inputBtnCancel" class="btn btn-secondary">Cancelar</button>
             <button id="inputBtnConfirm" class="btn btn-primary">Usar Tema Personalizado</button>
-        </div>
-    </div>
-</div>
-
-
-
-<!-- ========================================================== -->
-<!--     NOVO MODAL PARA ENGENHARIA REVERSA DE ROTEIRO      -->
-<!-- ========================================================== -->
-<div id="benchmarkDialogOverlay" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
-    <div class="card max-w-2xl w-full animate-fade-in">
-        <h3 class="text-xl font-bold mb-2">Engenharia Reversa de Roteiro</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Cole as informações do vídeo viral de referência. A IA extrairá a estratégia para você.</p>
-        
-        <div class="space-y-4">
-            <div class="input-group">
-                <label for="benchmarkTheme">Tema do Vídeo de Referência:</label>
-                <input type="text" id="benchmarkTheme" placeholder="Ex: A História Secreta da Arca da Aliança">
-            </div>
-            <div class="input-group">
-                <label for="benchmarkDescription">Descrição (Opcional):</label>
-                <textarea id="benchmarkDescription" rows="3" placeholder="Cole a descrição do vídeo aqui..."></textarea>
-            </div>
-            <div class="input-group">
-                <label for="benchmarkTranscript">Transcrição do Roteiro:</label>
-                <textarea id="benchmarkTranscript" rows="8" placeholder="Cole a transcrição completa do roteiro aqui..."></textarea>
-            </div>
-        </div>
-
-        <div class="flex justify-end gap-4 mt-6">
-            <button id="benchmarkBtnCancel" class="btn btn-secondary">Cancelar</button>
-            <button id="benchmarkBtnConfirm" class="btn btn-primary">Analisar e Preencher</button>
         </div>
     </div>
 </div>
@@ -1600,143 +1564,6 @@ const analyzeFullScript = async (button) => {
 };
 
 
-
-// =========================================================================
-// >>>>> VERSÃO FINAL E FLEXÍVEL DE 'reverseEngineerStrategy' <<<<<
-// =========================================================================
-const reverseEngineerStrategy = async (button) => {
-    // A função interna para mostrar o modal agora só exige o Tema
-    const showBenchmarkDialog = () => {
-        return new Promise(resolve => {
-            const overlay = document.getElementById('benchmarkDialogOverlay');
-            const btnConfirm = document.getElementById('benchmarkBtnConfirm');
-            const btnCancel = document.getElementById('benchmarkBtnCancel');
-            
-            overlay.style.display = 'flex';
-
-            const closeDialog = (result) => {
-                overlay.style.display = 'none';
-                btnConfirm.onclick = null;
-                btnCancel.onclick = null;
-                resolve(result);
-            };
-
-            btnConfirm.onclick = () => {
-                const theme = document.getElementById('benchmarkTheme').value.trim();
-                const description = document.getElementById('benchmarkDescription').value.trim();
-                const transcript = document.getElementById('benchmarkTranscript').value.trim();
-                // AGORA SÓ O TEMA É OBRIGATÓRIO
-                if (!theme) {
-                    window.showToast("O Tema do vídeo de referência é obrigatório.");
-                    return;
-                }
-                closeDialog({ theme, description, transcript });
-            };
-            btnCancel.onclick = () => closeDialog(null);
-        });
-    };
-
-    const benchmarkData = await showBenchmarkDialog();
-    if (!benchmarkData) {
-        window.showToast("Operação cancelada.");
-        return;
-    }
-
-    showButtonLoading(button);
-    isSettingStrategy = true;
-
-    let analysisPrompt;
-    
-    // <<< AQUI ESTÁ A LÓGICA INTELIGENTE >>>
-    if (benchmarkData.transcript) {
-        // --- PROMPT DE ALTA FIDELIDADE (ENGENHARIA REVERSA) ---
-        window.showToast("Analisando roteiro completo. Alta precisão...");
-        analysisPrompt = `Você é um Engenheiro de Roteiros especialista em engenharia reversa. Sua tarefa é ANALISAR a transcrição de um vídeo e EXTRAIR a estratégia exata usada.
-
-**DADOS DO VÍDEO:**
-- **Tema:** "${benchmarkData.theme}"
-- **Transcrição:**
----
-${benchmarkData.transcript.slice(0, 7500)}
----
-
-**REGRAS:** Analise a transcrição e responda com um objeto JSON contendo sua melhor extração para as seguintes chaves: "target_audience", "narrative_goal", "narrative_structure", "narrative_theme", "narrative_voice", "central_question", "speaking_pace". O valor para "narrative_tone" DEVE ser um de ['inspirador', 'serio', 'emocional'].`;
-        
-    } else {
-        // --- PROMPT DE BAIXA FIDELIDADE (SUGESTÃO ESTRATÉGICA) ---
-        window.showToast("Analisando apenas Título/Descrição. Baixa precisão...");
-        analysisPrompt = `Você é um Estrategista de Conteúdo do YouTube. Sua tarefa é SUGERIR uma estratégia viral completa com base no tema e descrição de um vídeo de sucesso.
-
-**DADOS DO VÍDEO:**
-- **Tema:** "${benchmarkData.theme}"
-- **Descrição:** "${benchmarkData.description}"
-
-**REGRAS:** Com base nos dados, INVENTE a melhor estratégia possível. Responda com um objeto JSON preenchendo TODAS as seguintes chaves: "target_audience", "narrative_goal", "narrative_structure", "narrative_theme", "narrative_voice", "central_question", "speaking_pace", "emotional_hook", "emotional_arc", "shocking_ending_hook". O valor para "narrative_tone" DEVE ser um de ['inspirador', 'serio', 'emocional'].`;
-    }
-
-    try {
-        const rawAnalysisResult = await callGroqAPI(analysisPrompt, 4000);
-        const strategy = cleanGeneratedText(rawAnalysisResult, true);
-
-        if (!strategy || typeof strategy !== 'object') {
-            throw new Error("A IA não retornou uma estratégia no formato JSON válido.");
-        }
-
-        let newDescription = benchmarkData.description;
-        if (benchmarkData.description) {
-            const creationPrompt = `Você é um Copywriter de YouTube. Crie uma nova e original descrição de vídeo.
-
-**INSPIRAÇÃO:**
-- **Tema do Novo Vídeo:** "${benchmarkData.theme}"
-- **Descrição Original (para inspiração):** "${benchmarkData.description}"
-- **Estratégia Extraída (para guia de tom):** ${JSON.stringify(strategy)}
-
-**REGRAS:** Escreva uma nova descrição otimizada, capturando a essência da original mas com suas próprias palavras. Responda APENAS com o texto da nova descrição.`;
-            
-            newDescription = await callGroqAPI(creationPrompt, 500);
-        }
-
-        // Preenchimento do formulário (lógica existente e completa)
-        document.getElementById('videoTheme').value = benchmarkData.theme;
-        document.getElementById('videoDescription').value = removeMetaComments(newDescription); 
-        
-        const keyToElementIdMap = {
-            'target_audience': 'targetAudience', 'narrative_theme': 'narrativeTheme',
-            'narrative_voice': 'narrativeVoice', 'central_question': 'centralQuestion',
-            'narrative_tone': 'narrativeTone', 'speaking_pace': 'speakingPace',
-            'emotional_hook': 'emotionalHook', 'emotional_arc': 'emotionalArc',
-            'shocking_ending_hook': 'shockingEndingHook'
-        };
-        for (const key in keyToElementIdMap) {
-            if (strategy[key]) {
-                const element = document.getElementById(keyToElementIdMap[key]);
-                if (element) { element.value = strategy[key]; }
-            }
-        }
-
-        if (strategy.narrative_goal) {
-            document.getElementById('narrativeGoal').value = strategy.narrative_goal;
-            updateNarrativeStructureOptions();
-            
-            setTimeout(() => {
-                if (strategy.narrative_structure) {
-                    document.getElementById('narrativeStructure').value = strategy.narrative_structure;
-                    updateMainTooltip();
-                }
-            }, 100);
-        }
-
-        window.showToast("Estratégia preenchida com sucesso!");
-        document.querySelector('[data-tab="input-tab-estrategia"]')?.click();
-
-    } catch (error) {
-        console.error("Erro detalhado em reverseEngineerStrategy:", error);
-        window.showToast(`Falha na análise: ${error.message}`);
-    } finally {
-        isSettingStrategy = false;
-        hideButtonLoading(button);
-    }
-};
 
 
 // =========================================================================
@@ -6328,7 +6155,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 const actions = {
-    'reverseEngineer': (btn) => reverseEngineerStrategy(btn), // <<< NOSSA NOVA LINHA
     'suggestStrategy': (btn) => suggestStrategy(btn),
     'startCrafting': (btn) => startCrafting(),
     'generateIdeas': (btn) => generateVideoIdeas(btn),
@@ -6467,11 +6293,6 @@ const actions = {
         }
     });
 });
-
-
-
-
-
 
 </script>
 </body>
