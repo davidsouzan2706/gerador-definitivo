@@ -1316,34 +1316,52 @@ const analyzeFullScript = async (button) => {
 
 
 // =========================================================================
-// >>>>> AÇÃO 1: SUBSTITUA A FUNÇÃO 'analyzeScriptPart' INTEIRA POR ESTA <<<<<
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO 'analyzeScriptPart' INTEIRA POR ESTA <<<<<
 // =========================================================================
+
 const analyzeScriptPart = async (criterion, text, instruction) => {
-    const prompt = `Você é uma API de Análise de Roteiro... (o prompt longo e blindado permanece o mesmo)`;
+    const prompt = `Sua única tarefa é analisar um trecho de roteiro e retornar um objeto JSON.
+
+**Critério de Análise:** ${instruction}
+
+**Trecho de Roteiro:**
+---
+${text.slice(0, 7000)}
+---
+
+**REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
+Sua resposta DEVE ser um objeto JSON com EXATAMENTE estas chaves:
+- "criterion_name": (String) O nome do critério (ex: "${criterion}").
+- "score": (Número) Uma nota de 0 a 10.
+- "positive_points": (String) Um parágrafo resumindo os pontos fortes.
+- "improvement_points": (Array) Um array de objetos, onde cada objeto tem duas chaves: "critique" (String) e "suggestion" (String). Forneça de 1 a 2 pontos de melhoria.
+- **ASPAS INTERNAS:** Se precisar citar o roteiro, use aspas simples (' '). É proibido usar aspas duplas dentro de outra string.
+
+Responda APENAS com o objeto JSON.`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
         const analysisData = cleanGeneratedText(rawResult, true);
 
-        // <<< AQUI ESTÁ A NOVA BLINDAGEM DE VALIDAÇÃO >>>
         if (!analysisData) {
             throw new Error("A IA retornou uma resposta nula ou vazia.");
         }
         const requiredKeys = ['criterion_name', 'score', 'positive_points', 'improvement_points'];
         for (const key of requiredKeys) {
             if (!(key in analysisData)) {
-                throw new Error(`A chave '${key}' está ausente na resposta JSON da IA.`);
+                analysisData[key] = key === 'improvement_points' ? [] : 'N/A';
+                console.warn(`A chave '${key}' estava ausente na resposta da IA. Um valor padrão foi adicionado.`);
             }
         }
         if (!Array.isArray(analysisData.improvement_points)) {
-            throw new Error("A chave 'improvement_points' deveria ser um array.");
+             console.warn(`'improvement_points' não era um array. Convertendo para array vazio.`);
+             analysisData.improvement_points = [];
         }
 
         return analysisData;
 
     } catch (error) {
         console.error(`Erro ao analisar a parte '${criterion}':`, error);
-        // Retorna um objeto de erro para ser tratado pelo Promise.allSettled
         return { 
             criterion_name: criterion, 
             score: 'Erro', 
