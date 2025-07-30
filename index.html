@@ -776,8 +776,7 @@
 </div>
 
 
-        <!-- Aba 2: Estratégia Narrativa -->
-<!-- Aba 2: Estratégia Narrativa (COM ORDEM REFINADA) -->
+<!-- Aba 2: Estratégia Narrativa (COM TOOLTIPS CORRIGIDOS) -->
 <div id="input-tab-estrategia" class="tab-pane hidden">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -799,54 +798,50 @@
             </div>
         </div>
         <div class="input-group md:col-span-2"><label for="emotionalHook">História Pessoal / Gancho Emocional (Opcional):
-    <span class="help-icon">i
-        <span class="tooltip-text">
-            <strong>Dê uma alma para sua história.</strong> Este é o 'fio condutor' humano. A IA usará esta pequena história para conectar os grandes fatos a uma experiência pessoal, tornando o roteiro muito mais impactante.
-        </span>
-    </span>
-</label><textarea id="emotionalHook" rows="3" placeholder="Qual rosto humano dará alma à sua história? Ex: a jornada de um indivíduo, uma memória pessoal, um arquétipo (o azarão, o mentor)..."></textarea></div>
+            <!-- A CORREÇÃO ESTÁ AQUI: Adicionamos a classe 'tooltip-container' -->
+            <span class="help-icon tooltip-container">i
+                <span class="tooltip-text">
+                    <strong>Dê uma alma para sua história.</strong> Este é o 'fio condutor' humano. A IA usará esta pequena história para conectar os grandes fatos a uma experiência pessoal, tornando o roteiro muito mais impactante.
+                </span>
+            </span>
+        </label><textarea id="emotionalHook" rows="3" placeholder="Qual rosto humano dará alma à sua história? Ex: a jornada de um indivíduo, uma memória pessoal, um arquétipo (o azarão, o mentor)..."></textarea></div>
 
         <!-- Bloco 3: O Tom e a Jornada -->
         <div class="input-group"><label for="narrativeTone">4. Tom da Narração:</label><select id="narrativeTone"><option value="inspirador" selected>Inspirador</option><option value="serio">Sério</option><option value="emocional">Emocional</option></select></div>
         <div class="input-group"><label for="narrativeVoice">5. Voz do Narrador:</label><input type="text" id="narrativeVoice" placeholder="Se seu canal fosse uma pessoa, como ela falaria? Confiante? Engraçada? Misteriosa?"></div>
         <div class="input-group md:col-span-2"><label for="emotionalArc">Arco Emocional Desejado (Opcional):</label><textarea id="emotionalArc" rows="2" placeholder="Ex: Curiosidade -> Tensão -> Surpresa"></textarea></div>
         <div class="input-group md:col-span-2"><label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):
-    <span class="help-icon">i
-        <span class="tooltip-text">
-            <strong>A técnica do 'loop aberto' reverso.</strong> Coloque a frase final e mais chocante da sua história aqui. A IA usará esta frase como a PRIMEIRA linha do vídeo, criando um mistério instantâneo que prende o espectador até o final.
-        </span>
-    </span>
-</label><input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada."></div>
+            <!-- A CORREÇÃO ESTÁ AQUI: Adicionamos a classe 'tooltip-container' -->
+            <span class="help-icon tooltip-container">i
+                <span class="tooltip-text">
+                    <strong>A técnica do 'loop aberto' reverso.</strong> Coloque a frase final e mais chocante da sua história aqui. A IA usará esta frase como a PRIMEIRA linha do vídeo, criando um mistério instantâneo que prende o espectador até o final.
+                </span>
+            </span>
+        </label><input type="text" id="shockingEndingHook" placeholder="Ex: ...e foi por isso que a Arca nunca deveria ser encontrada."></div>
 
     </div>
 </div>
 
-        <!-- Aba 3: Detalhes Técnicos -->
-<div id="input-tab-tecnicos" class="tab-pane hidden"> <!-- A classe 'hidden' é importante -->
+<!-- Aba 3: Detalhes Técnicos (COM TOOLTIPS CORRIGIDOS) -->
+<div id="input-tab-tecnicos" class="tab-pane hidden">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
         <div class="input-group"><label for="languageStyle">Estilo de Linguagem:</label><select id="languageStyle"><option value="inspirador" selected>Inspirador</option><option value="formal">Formal</option></select></div>
         <div class="input-group"><label for="videoObjective">Objetivo do Vídeo:</label><select id="videoObjective"><option value="informar" selected>Informar</option><option value="emocionar">Emocionar</option></select></div>
         <div class="input-group"><label for="speakingPace">Ritmo de Fala:</label><select id="speakingPace"><option value="moderate" selected>Moderado</option><option value="slow">Lento</option><option value="fast">Rápido</option></select></div>
-
-<div class="input-group md:col-span-2">
-
-    <label for="researchData">Fontes e Dados de Pesquisa (Opcional):
-    <span class="help-icon">i
-        <span class="tooltip-text">
-            <strong>Aumente a credibilidade.</strong> Cole aqui nomes, datas, estatísticas, ou citações. A IA irá tecer essas informações na narrativa.
-
-Ex: 'Fonte: Estudo de Harvard; Dr. João da Silva, especialista...'
-        </span>
-    </span>
-</label>
-
-    <textarea id="researchData" rows="4" placeholder="Para aumentar a credibilidade, cole aqui dados, fontes, nomes e links que a IA deve citar e contextualizar no roteiro. Ex: Fonte: Atlas da Violência 2023; Maria da Silva, coordenadora do Instituto Odara..."></textarea>
-</div>
-
+        <div class="input-group md:col-span-2">
+            <label for="researchData">Fontes e Dados de Pesquisa (Opcional):
+                <!-- A CORREÇÃO ESTÁ AQUI: Adicionamos a classe 'tooltip-container' -->
+                <span class="help-icon tooltip-container">i
+                    <span class="tooltip-text">
+                        <strong>Aumente a credibilidade.</strong> Cole aqui nomes, datas, estatísticas, ou citações. A IA irá tecer essas informações na narrativa.
+                        Ex: 'Fonte: Estudo de Harvard; Dr. João da Silva, especialista...'
+                    </span>
+                </span>
+            </label>
+            <textarea id="researchData" rows="4" placeholder="Para aumentar a credibilidade, cole aqui dados, fontes, nomes e links que a IA deve citar e contextualizar no roteiro. Ex: Fonte: Atlas da Violência 2023; Maria da Silva, coordenadora do Instituto Odara..."></textarea>
+        </div>
         <div class="input-group md:col-span-2"><label for="imageDescriptionEngine">Motor de Descrição de Imagem:</label><textarea id="imageDescriptionEngine" rows="2" placeholder="Ex: 'fotografias reais', 'close-up emocional'"></textarea></div>
         <div class="input-group md:col-span-2"><label for="imageStyleSelect">Motor de Qualidade de Imagem:</label><select id="imageStyleSelect"><option value="cinematic" selected>Cinematográfico</option><option value="custom">Personalizado</option><option value="none">Nenhum</option></select></div>
-        <!-- O campo que estava faltando, agora na posição correta -->
         <div id="customImageStyleContainer" class="input-group md:col-span-2" style="display: none;">
             <label for="customImageStyle">Estilo de Imagem Personalizado:</label>
             <textarea id="customImageStyle" rows="3" placeholder="Descreva o seu estilo de imagem aqui... Ex: 'estilo de arte de Van Gogh', 'preto e branco com alto contraste'..."></textarea>
