@@ -5776,80 +5776,88 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const speakingPaceSelect = document.getElementById('speakingPace');
     if (speakingPaceSelect) { speakingPaceSelect.addEventListener('change', updateAllReadingTimes); }
+
+
     
-    // --- 4. O "GERENTE DE CLIQUES" (versão v6.0 - Robusta) ---
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA O OBJETO 'actions' INTEIRO POR ESTE <<<<<
+// =========================================================================
 const actions = {
-        'suggestStrategy': (btn) => suggestStrategy(btn),
-        'startCrafting': (btn) => startCrafting(),
-        'generateIdeas': (btn) => generateVideoIdeas(btn),
-        'unravelEnigmas': (btn) => unravelEnigmas(btn),
-        'generateOutline': (btn) => generateStrategicOutline(btn),
-        'mapEmotions': (btn) => mapEmotionsAndPacing(btn),
-        'generateDescription': (btn) => generateVideoDescription(btn),
-        'generateTitlesAndThumbnails': (btn) => generateTitlesAndThumbnails(btn),
-        'generateSoundtrack': (btn) => generateSoundtrack(btn),
-        'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
-        'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
-        'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
-        'generateConclusion': (btn) => generateConclusion(btn),
-        'generateCta': (btn) => generateStrategicCta(btn),
-        'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
-        'applySuggestion': (btn) => window.applySuggestion(btn),
-        'exportProject': () => exportProject(),
-        'exportPdf': () => downloadPdf(),
-        'exportTranscript': () => handleCopyAndDownloadTranscript(),
-        'resetProject': async () => {
-            const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
-            if (confirmed) { resetApplicationState(); }
-        },
-        'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
-        'select-idea': (btn) => {
-            const ideaString = btn.dataset.idea;
-            if (ideaString) {
-                try {
-                    const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                    document.getElementById('videoTheme').value = ideaObject.title || '';
-                    document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
-                    document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
-                    window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
-                    document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } catch (e) { console.error("Falha ao processar dados da ideia:", e); }
-            }
-        },
-        'select-enigma-idea': (btn) => {
-            const ideaString = btn.dataset.idea;
-            if (ideaString) {
-                try {
-                    const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                    document.getElementById('videoTheme').value = ideaObject.title || '';
-                    document.getElementById('videoDescription').value = ideaObject.synopsis || ideaObject.enigma || '';
-                    document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
-                    window.showToast("Enigma selecionado! Estratégia pré-preenchida.");
-                    document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } catch (e) { console.error("Falha ao processar dados da ideia de enigma:", e); }
-            }
-        },
-        'regenerate': (btn) => window.regenerateSection(btn.dataset.sectionId),
-        'copy': (btn) => {
-            const content = btn.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
-            if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(btn); }
-        },
-        'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
-        'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
-        'refineStyle': (btn) => window.refineSectionStyle(btn),
-        'enrichWithData': (btn) => window.enrichWithData(btn),
-        'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
-        'optimizeGroup': (btn) => {
-            const suggestionText = btn.dataset.suggestionText;
-            if (suggestionText) window.optimizeGroup(btn, suggestionText);
-        },
-        'deleteParagraphGroup': (btn) => {
-            const suggestionText = btn.dataset.suggestionText;
-            if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
-        },
-        // <<< A LINHA QUE FALTAVA ESTÁ AQUI >>>
-        'analyzeScript': (btn) => analyzeFullScript(btn)
-    };
+    'suggestStrategy': (btn) => suggestStrategy(btn),
+    'startCrafting': (btn) => startCrafting(),
+    'generateIdeas': (btn) => generateVideoIdeas(btn),
+    'unravelEnigmas': (btn) => unravelEnigmas(btn),
+    'generateOutline': (btn) => generateStrategicOutline(btn),
+    'mapEmotions': (btn) => mapEmotionsAndPacing(btn),
+    'generateDescription': (btn) => generateVideoDescription(btn),
+    'generateTitlesAndThumbnails': (btn) => generateTitlesAndThumbnails(btn),
+    'generateSoundtrack': (btn) => generateSoundtrack(btn),
+    'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
+    'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
+    'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
+    'generateConclusion': (btn) => generateConclusion(btn),
+    'generateCta': (btn) => generateStrategicCta(btn),
+    'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
+    
+    // --- A CONEXÃO QUE ESTAVA FALTANDO ESTÁ AQUI ---
+    'applySuggestion': (btn) => window.applySuggestion(btn),
+    
+    'exportProject': () => exportProject(),
+    'exportPdf': () => downloadPdf(),
+    'exportTranscript': () => handleCopyAndDownloadTranscript(),
+    'resetProject': async () => {
+        const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
+        if (confirmed) { resetApplicationState(); }
+    },
+    'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
+    'select-idea': (btn) => {
+        const ideaString = btn.dataset.idea;
+        if (ideaString) {
+            try {
+                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                document.getElementById('videoTheme').value = ideaObject.title || '';
+                document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
+                document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
+                window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
+                document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) { console.error("Falha ao processar dados da ideia:", e); }
+        }
+    },
+    'select-enigma-idea': (btn) => {
+        const ideaString = btn.dataset.idea;
+        if (ideaString) {
+            try {
+                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                document.getElementById('videoTheme').value = ideaObject.title || '';
+                document.getElementById('videoDescription').value = ideaObject.synopsis || ideaObject.enigma || '';
+                document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
+                window.showToast("Enigma selecionado! Estratégia pré-preenchida.");
+                document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) { console.error("Falha ao processar dados da ideia de enigma:", e); }
+        }
+    },
+    'regenerate': (btn) => window.regenerateSection(btn.dataset.sectionId),
+    'copy': (btn) => {
+        const content = btn.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
+        if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(btn); }
+    },
+    'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
+    'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
+    'refineStyle': (btn) => window.refineSectionStyle(btn),
+    'enrichWithData': (btn) => window.enrichWithData(btn),
+    'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
+    'optimizeGroup': (btn) => {
+        const suggestionText = btn.dataset.suggestionText;
+        if (suggestionText) window.optimizeGroup(btn, suggestionText);
+    },
+    'deleteParagraphGroup': (btn) => {
+        const suggestionText = btn.dataset.suggestionText;
+        if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
+    },
+    'analyzeScript': (btn) => analyzeFullScript(btn)
+};
+
+
 
 
 
