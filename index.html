@@ -1584,8 +1584,10 @@ const analyzeFullScript = async (button) => {
 // =========================================================================
 // >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'analyzeScriptPart' INTEIRA <<<<<
 // =========================================================================
+// =========================================================================
+// >>>>> VERSÃO BLINDADA DE 'analyzeScriptPart' (PROMPT + VALIDAÇÃO) <<<<<
+// =========================================================================
 const analyzeScriptPart = async (criterion, text, instruction, context = {}) => {
-    // Mapeia o nome do critério para a chave correta no objeto de esboço
     const sectionKeyMap = {
         'Introdução (Hook)': 'introduction',
         'Desenvolvimento (Ritmo e Retenção)': 'development',
@@ -1596,17 +1598,15 @@ const analyzeScriptPart = async (criterion, text, instruction, context = {}) => 
     const outlineKey = sectionKeyMap[criterion];
     const outlineDirective = context.outline && context.outline[outlineKey] ? context.outline[outlineKey] : 'Nenhuma diretriz específica foi definida.';
 
-    // <<< AQUI ESTÁ A GRANDE MUDANÇA: O prompt agora é contextual >>>
-    const prompt = `Você é uma API de Análise de Roteiro que atua como um editor estratégico de conteúdo para YouTube. Sua resposta DEVE ser um objeto JSON.
+    // --- CAMADA 1: PROMPT AINDA MAIS BLINDADO COM EXEMPLO ---
+    const prompt = `Você é uma API de Análise de Roteiro que atua como um editor estratégico. Sua resposta DEVE ser um objeto JSON.
 
-**CONTEXTO ESTRATÉGICO (Use para guiar sua análise):**
-- **Tema Principal do Vídeo:** "${context.theme}"
-- **Pergunta Central a ser Respondida:** "${context.centralQuestion}"
+**CONTEXTO ESTRATÉGICO:**
+- **Tema Principal:** "${context.theme}"
+- **Pergunta Central:** "${context.centralQuestion}"
 - **Objetivo Estratégico DESTA Seção:** "${outlineDirective}"
 
-**TAREFA:** Analise o "Trecho de Roteiro" abaixo. Sua análise deve ser CRÍTICA e ESTRATÉGICA, avaliando se o trecho cumpre seu objetivo dentro do contexto geral.
-
-**Critério de Análise:** ${instruction}
+**TAREFA:** Analise o "Trecho de Roteiro" abaixo, avaliando se ele cumpre seu objetivo dentro do contexto geral.
 
 **Trecho de Roteiro:**
 ---
@@ -1614,35 +1614,48 @@ ${text.slice(0, 6500)}
 ---
 
 **REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
-Sua resposta DEVE ser um objeto JSON com EXATAMENTE estas chaves:
-- "criterion_name": (String) O nome do critério (ex: "${criterion}").
-- "score": (Número) Uma nota de 0 a 10, baseada em quão bem o trecho cumpre seu objetivo estratégico.
-- "positive_points": (String) Um parágrafo resumindo os pontos fortes em relação ao contexto.
-- "improvement_points": (Array) Um array de objetos, onde cada objeto DEVE ter QUATRO chaves:
-    - "problematic_quote": (String) A frase EXATA do roteiro que pode ser melhorada.
-    - "critique": (String) Uma crítica explicando POR QUE este trecho não atinge 100% do seu potencial estratégico.
-    - "suggestion_text": (String) Uma explicação GERAL da sugestão (ex: 'Alinhar melhor com a pergunta central.').
-    - "rewritten_quote": (String) A nova frase, JÁ REESCRITA, que melhora o alinhamento estratégico.
-- **ASPAS INTERNAS:** Use aspas simples (' ') para citações dentro de strings.
+Sua resposta DEVE ser um objeto JSON com as seguintes chaves: "criterion_name", "score", "positive_points", "improvement_points".
 
-Responda APENAS com o objeto JSON.`;
+**PROIBIÇÃO ABSOLUTA:** O valor de "rewritten_quote" NUNCA PODE SER uma string vazia (""). SEMPRE deve conter uma frase reescrita. Se a frase original for problemática, reescreva-a para ser mais forte.
+
+**EXEMPLO DE OBJETO 'improvement_points' CORRETO:**
+{
+  "problematic_quote": "Você consegue imaginar a cena?",
+  "critique": "Essa frase é vaga e não adiciona valor narrativo concreto.",
+  "suggestion_text": "Torne a cena mais vívida e conectada à emoção central.",
+  "rewritten_quote": "A poeira do deserto pairava enquanto o personagem segurava o objeto, cada grão de areia lembrando-o da distância de casa."
+}
+
+Responda APENAS com o objeto JSON completo e sintaticamente perfeito.`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
         const analysisData = cleanGeneratedText(rawResult, true);
 
-        if (!analysisData) {
-            throw new Error("A IA retornou uma resposta nula ou vazia.");
-        }
+        // --- CAMADA 2: VALIDAÇÃO BÁSICA (Pós-Voo) ---
+        if (!analysisData) { throw new Error("A IA retornou uma resposta nula ou vazia."); }
         const requiredKeys = ['criterion_name', 'score', 'positive_points', 'improvement_points'];
         for (const key of requiredKeys) {
-            if (!(key in analysisData)) {
-                throw new Error(`A chave '${key}' está ausente na resposta JSON da IA.`);
+            if (!(key in analysisData)) { throw new Error(`A chave '${key}' está ausente na resposta JSON da IA.`); }
+        }
+        if (!Array.isArray(analysisData.improvement_points)) { throw new Error("A chave 'improvement_points' deveria ser um array."); }
+        
+        // --- CAMADA 3: VALIDAÇÃO RIGOROSA E CORREÇÃO AUTOMÁTICA ---
+        analysisData.improvement_points.forEach((point, index) => {
+            // Garante que todas as chaves existam e sejam strings
+            ['problematic_quote', 'critique', 'suggestion_text', 'rewritten_quote'].forEach(key => {
+                if (typeof point[key] !== 'string') {
+                    console.warn(`A chave '${key}' no item ${index} de 'improvement_points' está ausente ou não é uma string. Corrigindo...`, point);
+                    point[key] = point[key] || `[Valor ausente para '${key}']`; // Correção automática
+                }
+            });
+
+            // A validação crucial: se 'rewritten_quote' estiver vazia, usamos a original como fallback
+            if (point.rewritten_quote.trim() === "") {
+                console.warn(`'rewritten_quote' no item ${index} está vazio, violando a regra. Usando a citação original como fallback.`, point);
+                point.rewritten_quote = point.problematic_quote; // Correção automática
             }
-        }
-        if (!Array.isArray(analysisData.improvement_points)) {
-            throw new Error("A chave 'improvement_points' deveria ser um array.");
-        }
+        });
 
         return analysisData;
 
