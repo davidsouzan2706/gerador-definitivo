@@ -4215,9 +4215,9 @@ ${originalText}
 
 
 
-// ==========================================================
-// >>>>> VERSÃO CORRIGIDA E ROBUSTA DA FUNÇÃO 'applySuggestion' <<<<<
-// ==========================================================
+// =========================================================================
+// >>>>> VERSÃO DEFINITIVA E À PROVA DE FALHAS DA FUNÇÃO 'applySuggestion' <<<<<
+// =========================================================================
 window.applySuggestion = (button) => {
     const { criterionName, problematicQuote, rewrittenQuote } = button.dataset;
 
@@ -4252,27 +4252,28 @@ window.applySuggestion = (button) => {
     const paragraphs = contentWrapper.querySelectorAll('div[id^="' + sectionId.replace('Section','') + '-p-"]');
 
     paragraphs.forEach(p => {
-        // Usamos textContent.includes() que é robusto e ignora as tags de anotação.
-        if (!replaced && p.textContent.includes(problematicQuote)) {
-            
-            // CIRURGIA DE PRECISÃO:
-            // 1. Pegamos o texto atual do parágrafo, que já contém as anotações de performance.
-            const currentTextWithAnnotations = p.textContent;
-            
-            // 2. Substituímos a citação problemática pela reescrita DENTRO deste texto.
-            const newTextWithAnnotations = currentTextWithAnnotations.replace(problematicQuote, rewrittenQuote);
+        if (replaced) return; // Se já substituímos, pulamos os outros parágrafos.
 
-            // 3. Limpamos o parágrafo e o recriamos com o novo texto e o efeito de highlight.
-            // Isso garante que o parágrafo inteiro pisque, mostrando EXATAMENTE onde a mudança ocorreu.
-            p.textContent = newTextWithAnnotations; // Atualiza o texto
-            p.classList.add('highlight-change'); // Adiciona a classe para a animação
-            
-            // Remove a classe após a animação para não interferir em futuras edições.
-            setTimeout(() => {
-                p.classList.remove('highlight-change');
-            }, 8000); // 8 segundos, como você definiu.
+        // <<< AQUI ESTÁ A LÓGICA ROBUSTA >>>
+        // 1. Iteramos sobre os "filhos" do parágrafo (que podem ser texto puro ou outros nós).
+        const childNodes = Array.from(p.childNodes);
 
-            replaced = true;
+        for (const node of childNodes) {
+            // 2. Verificamos se é um nó de texto e se contém nossa citação problemática.
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.includes(problematicQuote)) {
+                // 3. Criamos nosso novo SPAN com a classe de animação.
+                const newSpan = document.createElement('span');
+                newSpan.className = 'highlight-change';
+                newSpan.textContent = rewrittenQuote; // Usamos textContent para segurança.
+
+                // 4. CIRURGIA DE DOM: Substituímos o texto antigo pelo novo span.
+                // Isso mantém quaisquer outras tags (como anotações de performance) intactas.
+                const newHtml = p.innerHTML.replace(problematicQuote, newSpan.outerHTML);
+                p.innerHTML = DOMPurify.sanitize(newHtml, { ADD_TAGS: ["span"], ADD_ATTR: ["class"] });
+
+                replaced = true;
+                break; // Saímos do loop interno, pois já encontramos e substituímos.
+            }
         }
     });
 
@@ -4283,7 +4284,6 @@ window.applySuggestion = (button) => {
     
     window.showToast("Sugestão aplicada com sucesso!");
     
-    // As invalidações continuam as mesmas, garantindo que tudo seja recalculado.
     invalidateAndClearPerformance(sectionElement);
     invalidateAndClearPrompts(sectionElement);
     updateAllReadingTimes();
