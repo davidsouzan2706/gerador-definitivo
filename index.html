@@ -1309,7 +1309,7 @@ ${originalBlock}
 
 
 // =========================================================================
-// >>>>> AÇÃO 2: SUBSTITUA A FUNÇÃO 'analyzeFullScript' INTEIRA POR ESTA <<<<<
+// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'analyzeFullScript' INTEIRA POR ESTA <<<<<
 // =========================================================================
 const analyzeFullScript = async (button) => {
     showButtonLoading(button);
@@ -1327,7 +1327,6 @@ const analyzeFullScript = async (button) => {
             throw new Error("Todas as 5 seções do roteiro (Intro, Dev, Clímax, Conclusão e CTA) devem ser geradas primeiro.");
         }
 
-        // <<< USANDO Promise.allSettled PARA RESILIÊNCIA >>>
         const results = await Promise.allSettled([
             analyzeScriptPart('Introdução (Hook)', introText, `Analise este hook...`),
             analyzeScriptPart('Desenvolvimento (Ritmo e Retenção)', devText, `Analise este desenvolvimento...`),
@@ -1336,15 +1335,25 @@ const analyzeFullScript = async (button) => {
             analyzeScriptPart('CTA (Call to Action)', ctaText, `Analise este CTA...`)
         ]);
 
-        reportContainer.innerHTML = '';
+        reportContainer.innerHTML = ''; // Limpa o container antes de adicionar os resultados
+
+        // --- AQUI ESTÁ A MUDANÇA: Adicionando o botão "Aplicar Todas" ---
+        const headerDiv = document.createElement('div');
+        headerDiv.className = 'flex justify-between items-center mb-4 p-3 bg-gray-100 dark:bg-gray-900/50 rounded-lg';
+        headerDiv.innerHTML = DOMPurify.sanitize(`
+            <h3 class="text-lg font-bold">Relatório de Análise</h3>
+            <button id="applyAllSuggestionsBtn" data-action="applyAllSuggestions" class="btn btn-secondary btn-small">
+                <i class="fas fa-wand-magic-sparkles mr-2"></i>Aplicar Todas
+            </button>
+        `);
+        reportContainer.appendChild(headerDiv);
+        // --- FIM DA MUDANÇA ---
 
         results.forEach(result => {
             if (result.status === 'fulfilled') {
                 reportContainer.appendChild(createReportSection(result.value));
             } else {
                 console.error("Uma micro-análise falhou:", result.reason);
-                // A função analyzeScriptPart já retorna um objeto de erro formatado,
-                // então podemos simplesmente renderizá-lo.
                 reportContainer.appendChild(createReportSection(result.reason));
             }
         });
@@ -4365,6 +4374,45 @@ window.applySuggestion = (button) => {
 
 
 
+// =========================================================================
+// >>>>> PASSO 2: ADICIONE ESTA NOVA FUNÇÃO AO SEU SCRIPT <<<<<
+// =========================================================================
+const applyAllSuggestions = async (button) => {
+    // Encontra todos os botões "Aplicar" que ainda não foram clicados (não estão desabilitados)
+    const allApplyButtons = document.querySelectorAll('#analysisReportContainer button[data-action="applySuggestion"]:not(:disabled)');
+
+    if (allApplyButtons.length === 0) {
+        window.showToast("Nenhuma sugestão nova para aplicar.");
+        return;
+    }
+    
+    showButtonLoading(button);
+    
+    let appliedCount = 0;
+    
+    // Usamos um loop 'for...of' para poder usar 'await' e garantir que as aplicações não se sobreponham
+    for (const applyBtn of allApplyButtons) {
+        try {
+            // Chama a nossa função já existente e robusta
+            window.applySuggestion(applyBtn);
+            appliedCount++;
+            
+            // Uma pequena pausa para o navegador respirar entre as aplicações
+            await new Promise(resolve => setTimeout(resolve, 100)); 
+        } catch (error) {
+            console.error("Erro ao aplicar uma sugestão no modo 'Aplicar Todas':", error);
+        }
+    }
+    
+    hideButtonLoading(button);
+    window.showToast(`${appliedCount} sugest${appliedCount > 1 ? 'ões' : 'ão'} aplicad${appliedCount > 1 ? 'as' : 'a'} com sucesso!`);
+    
+    // Desabilita o botão "Aplicar Todas" após o uso
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-check mr-2"></i>Tudo Aplicado!';
+};
+
+
 
 // =========================================================================
 // >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'window.enrichWithData' INTEIRA POR ESTA <<<<<
@@ -5848,6 +5896,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'generateCta': (btn) => generateStrategicCta(btn),
         'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
         'applySuggestion': (btn) => window.applySuggestion(btn),
+        'applyAllSuggestions': (btn) => applyAllSuggestions(btn),
         'exportProject': () => exportProject(),
         'exportPdf': () => downloadPdf(),
         'exportTranscript': () => handleCopyAndDownloadTranscript(),
