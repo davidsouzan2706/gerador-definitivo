@@ -1582,7 +1582,7 @@ const analyzeFullScript = async (button) => {
 
 
 // =========================================================================
-// >>>>> VERSÃO FINAL E COMPLETA DE 'analyzeScriptPart' (COM LIMPEZA DE CHAVES) <<<<<
+// >>>>> VERSÃO FINAL E COMPLETA DE 'analyzeScriptPart' (COM FIREWALL) <<<<<
 // =========================================================================
 const analyzeScriptPart = async (criterion, text, instruction, context = {}) => {
     // Mapeia o nome do critério para a chave correta no objeto de esboço
@@ -1596,15 +1596,15 @@ const analyzeScriptPart = async (criterion, text, instruction, context = {}) => 
     const outlineKey = sectionKeyMap[criterion];
     const outlineDirective = context.outline && context.outline[outlineKey] ? context.outline[outlineKey] : 'Nenhuma diretriz específica foi definida.';
 
-    // --- CAMADA 1: PROMPT BLINDADO COM EXEMPLO ---
-    const prompt = `Você é uma API de Análise de Roteiro que atua como um editor estratégico. Sua resposta DEVE ser um objeto JSON.
+    // --- PROMPT REFORÇADO ---
+    const prompt = `Você é uma API de Análise de Roteiro. Sua resposta DEVE ser um objeto JSON.
 
 **CONTEXTO ESTRATÉGICO:**
 - **Tema Principal:** "${context.theme}"
 - **Pergunta Central:** "${context.centralQuestion}"
 - **Objetivo Estratégico DESTA Seção:** "${outlineDirective}"
 
-**TAREFA:** Analise o "Trecho de Roteiro" abaixo, avaliando se ele cumpre seu objetivo dentro do contexto geral.
+**TAREFA:** Analise o "Trecho de Roteiro" abaixo.
 
 **Trecho de Roteiro:**
 ---
@@ -1612,17 +1612,12 @@ ${text.slice(0, 6500)}
 ---
 
 **REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
-Sua resposta DEVE ser um objeto JSON com as seguintes chaves: "criterion_name", "score", "positive_points", "improvement_points".
+- **"criterion_name"**: (String) O nome do critério.
+- **"score"**: (Número) Uma nota de 0 a 10.
+- **"positive_points"**: (String) **UM ÚNICO PARÁGRAFO** resumindo os pontos fortes.
+- **"improvement_points"**: (Array de Objetos) Cada objeto com 4 chaves: "problematic_quote", "critique", "suggestion_text", "rewritten_quote".
 
-**PROIBIÇÃO ABSOLUTA:** O valor de "rewritten_quote" NUNCA PODE SER uma string vazia (""). SEMPRE deve conter uma frase reescrita. Se a frase original for problemática, reescreva-a para ser mais forte.
-
-**EXEMPLO DE OBJETO 'improvement_points' CORRETO:**
-{
-  "problematic_quote": "Você consegue imaginar a cena?",
-  "critique": "Essa frase é vaga e não adiciona valor narrativo concreto.",
-  "suggestion_text": "Torne a cena mais vívida e conectada à emoção central.",
-  "rewritten_quote": "A poeira do deserto pairava enquanto o personagem segurava o objeto, cada grão de areia lembrando-o da distância de casa."
-}
+**PROIBIÇÃO ABSOLUTA:** O valor de "rewritten_quote" NUNCA PODE SER uma string vazia (""). SEMPRE deve conter uma frase reescrita.
 
 Responda APENAS com o objeto JSON completo e sintaticamente perfeito.`;
 
@@ -1630,15 +1625,21 @@ Responda APENAS com o objeto JSON completo e sintaticamente perfeito.`;
         const rawResult = await callGroqAPI(prompt, 4000);
         const analysisData = cleanGeneratedText(rawResult, true);
 
-        // --- CAMADA 2: VALIDAÇÃO BÁSICA (Pós-Voo) ---
+        // --- VALIDAÇÃO BÁSICA ---
         if (!analysisData) { throw new Error("A IA retornou uma resposta nula ou vazia."); }
         const requiredKeys = ['criterion_name', 'score', 'positive_points', 'improvement_points'];
         for (const key of requiredKeys) {
             if (!(key in analysisData)) { throw new Error(`A chave '${key}' está ausente na resposta JSON da IA.`); }
         }
-        if (!Array.isArray(analysisData.improvement_points)) { throw new Error("A chave 'improvement_points' deveria ser um array."); }
         
-        // --- CAMADA 3: VALIDAÇÃO RIGOROSA E CORREÇÃO AUTOMÁTICA (APRIMORADA) ---
+        // --- A BLINDAGEM FINAL (O FIREWALL) ---
+        // A IA às vezes retorna 'positive_points' como um array. Nós consertamos isso.
+        if (Array.isArray(analysisData.positive_points)) {
+            console.warn("'positive_points' veio como array. Consolidando em uma string.");
+            analysisData.positive_points = analysisData.positive_points.join(' ');
+        }
+        
+        // A validação rigorosa de 'improvement_points' que já tínhamos.
         if (Array.isArray(analysisData.improvement_points)) {
             analysisData.improvement_points = analysisData.improvement_points.map((point, index) => {
                 const correctedPoint = {};
