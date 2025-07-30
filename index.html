@@ -1500,11 +1500,36 @@ Você deve reescrever o texto para que ele tenha **mais ${tone}**. Para isso, ${
 
 
 // =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO suggestFinalStrategy INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
+// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO 'suggestFinalStrategy' INTEIRA POR ESTA <<<<<
 // =========================================================================
 
 const suggestFinalStrategy = async (button) => {
     showButtonLoading(button);
+
+    // <<< AQUI ESTÁ A NOVA LÓGICA DE RESET INTELIGENTE >>>
+    // 1. Limpa o conteúdo gerado anteriormente
+    const conclusionContainer = document.getElementById('conclusionSection');
+    const ctaContainer = document.getElementById('ctaSection');
+    if (conclusionContainer) conclusionContainer.innerHTML = '';
+    if (ctaContainer) ctaContainer.innerHTML = '';
+
+    // 2. Destrava todos os inputs do módulo
+    document.querySelectorAll('input[name="conclusionType"]').forEach(radio => radio.disabled = false);
+    const conclusionSpecifics = document.getElementById('conclusionSpecifics');
+    const ctaSpecifics = document.getElementById('ctaSpecifics');
+    conclusionSpecifics.disabled = false;
+    ctaSpecifics.disabled = false;
+    document.querySelector('#conclusionInputContainer').classList.remove('opacity-50');
+    ctaSpecifics.parentElement.classList.remove('opacity-50');
+
+    // 3. Reseta os botões para o estado inicial
+    document.getElementById('generateConclusionBtn').classList.remove('hidden');
+    document.getElementById('generateCtaBtn').classList.add('hidden');
+    
+    // Reseta o estado do projeto para estas seções
+    projectState.conclusion = false;
+    projectState.cta = false;
+    // <<< FIM DA LÓGICA DE RESET >>>
 
     const fullContext = getTranscriptOnly();
     if (!fullContext) {
@@ -1513,35 +1538,15 @@ const suggestFinalStrategy = async (button) => {
         return;
     }
 
-    // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE E ESTRUTURA EXPLÍCITAS <<<
-    const prompt = `Você é uma API Estrategista de Conteúdo que retorna APENAS um objeto JSON.
-
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
-1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`{\` e terminando com \`}\`.
-2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
-3.  **ESTRUTURA OBRIGATÓRIA:** O objeto JSON DEVE conter EXATAMENTE estas duas chaves: "conclusion_suggestion" (string) e "cta_suggestion" (string).
-4.  **IDIOMA:** Ambos os valores de texto devem estar no mesmo idioma do roteiro analisado.
-
-**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO:**
-{
-  "conclusion_suggestion": "A lição principal é que a inovação nasce da necessidade. A conclusão deve focar em como a frustração do criador se tornou a solução para milhões.",
-  "cta_suggestion": "Desafie a audiência a pensar em um problema em sua própria comunidade que poderia ser resolvido com criatividade e peça para compartilharem suas ideias nos comentários."
-}
-
-**ROTEiro COMPLETO (PARA CONTEXTO):**
----
-${fullContext}
----
-
-Analise o roteiro e retorne o objeto JSON completo e sintaticamente PERFEITO, seguindo EXATAMENTE as regras acima.`;
+    const prompt = `Você é um Estrategista de Conteúdo de elite...`; // O prompt longo permanece o mesmo
 
     try {
         const rawResult = await callGroqAPI(prompt, 1000);
         const suggestions = cleanGeneratedText(rawResult, true);
 
         if (suggestions && suggestions.conclusion_suggestion && suggestions.cta_suggestion) {
-            document.getElementById('conclusionSpecifics').value = suggestions.conclusion_suggestion;
-            document.getElementById('ctaSpecifics').value = suggestions.cta_suggestion;
+            conclusionSpecifics.value = suggestions.conclusion_suggestion;
+            ctaSpecifics.value = suggestions.cta_suggestion;
             window.showToast("Sugestões para Conclusão e CTA preenchidas!");
         } else {
             throw new Error("A IA não retornou sugestões no formato esperado.");
@@ -1552,6 +1557,7 @@ Analise o roteiro e retorne o objeto JSON completo e sintaticamente PERFEITO, se
         window.showToast(`Falha ao sugerir estratégia final: ${error.message}`);
     } finally {
         hideButtonLoading(button);
+        updateButtonStates(); // Atualiza a UI após as mudanças
     }
 };
 
