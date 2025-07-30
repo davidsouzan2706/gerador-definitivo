@@ -888,11 +888,14 @@
 </div>
     
     <!-- O botão final (continua o mesmo) -->
-    <div class="mt-6 text-center">
-        <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+<div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+    <!-- NOSSO NOVO BOTÃO DE ENGENHARIA REVERSA -->
+    <button id="reverseEngineerBtn" data-action="reverseEngineer" class="btn btn-secondary w-full sm:w-auto">
+        <i class="fas fa-vial mr-2"></i> Analisar Vídeo de Referência
+    </button>
     <!-- Botão Opcional para ajuda da IA -->
     <button id="suggestStrategyBtn" data-action="suggestStrategy" class="btn btn-secondary w-full sm:w-auto">
-        <i class="fas fa-magic mr-2"></i> Sugerir Estratégia com IA
+        <i class="fas fa-magic mr-2"></i> Sugerir Estratégia (IA)
     </button>
     <!-- Botão Principal para avançar -->
     <button id="startCraftingBtn" data-action="startCrafting" class="btn btn-primary w-full sm:w-auto">
@@ -1563,6 +1566,124 @@ const analyzeFullScript = async (button) => {
     }
 };
 
+
+
+// =========================================================================
+// >>>>> ADICIONE ESTA NOVA FUNÇÃO COMPLETA AO SEU SCRIPT <<<<<
+// =========================================================================
+const reverseEngineerStrategy = async (button) => {
+    // Função interna para mostrar/esconder o modal
+    const showBenchmarkDialog = () => {
+        return new Promise(resolve => {
+            const overlay = document.getElementById('benchmarkDialogOverlay');
+            const btnConfirm = document.getElementById('benchmarkBtnConfirm');
+            const btnCancel = document.getElementById('benchmarkBtnCancel');
+            
+            overlay.style.display = 'flex';
+
+            const closeDialog = (result) => {
+                overlay.style.display = 'none';
+                btnConfirm.onclick = null;
+                btnCancel.onclick = null;
+                resolve(result);
+            };
+
+            btnConfirm.onclick = () => {
+                const theme = document.getElementById('benchmarkTheme').value.trim();
+                const description = document.getElementById('benchmarkDescription').value.trim();
+                const transcript = document.getElementById('benchmarkTranscript').value.trim();
+                if (!theme || !transcript) {
+                    window.showToast("O Tema e a Transcrição são obrigatórios.");
+                    return;
+                }
+                closeDialog({ theme, description, transcript });
+            };
+            btnCancel.onclick = () => closeDialog(null);
+        });
+    };
+
+    // Abre o diálogo e espera pelos dados do usuário
+    const benchmarkData = await showBenchmarkDialog();
+    if (!benchmarkData) {
+        window.showToast("Operação cancelada.");
+        return;
+    }
+
+    showButtonLoading(button);
+    isSettingStrategy = true; // Sinaliza que estamos preenchendo o form
+
+    const prompt = `Você é um Engenheiro de Roteiros especialista em engenharia reversa. Sua tarefa é analisar os dados de um vídeo de sucesso e extrair a ESTRATÉGIA NARRATIVA E TÉCNICA por trás dele.
+
+**DADOS DO VÍDEO DE REFERÊNCIA:**
+- **Tema:** "${benchmarkData.theme}"
+- **Descrição:** "${benchmarkData.description}"
+- **Transcrição do Roteiro:**
+---
+${benchmarkData.transcript.slice(0, 7500)}
+---
+
+**REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
+Sua resposta DEVE ser um único objeto JSON. As chaves deste objeto DEVEM ser exatamente as seguintes, e os valores devem ser sua melhor análise extraída dos dados:
+- "target_audience": (String) Quem parece ser o público-alvo deste roteiro?
+- "narrative_goal": (String) O objetivo é 'storytelling' (conectar/inspirar) ou 'storyselling' (persuadir/vender)?
+- "narrative_structure": (String) Qual estrutura narrativa foi usada? Escolha uma de: ['documentary', 'heros_journey', 'pixar_spine', 'mystery_loop', 'twist', 'pas', 'bab', 'aida', 'underdog_victory', 'discovery_mentor', 'if_not_found_create'].
+- "narrative_theme": (String) Qual é a "grande ideia" ou mensagem central?
+- "narrative_tone": (String) Qual é o tom da narração? Escolha um de: ['inspirador', 'serio', 'emocional'].
+- "narrative_voice": (String) Como você descreveria a personalidade do narrador?
+- "central_question": (String) Existe uma pergunta central que guia o roteiro? Se sim, qual?
+- "speaking_pace": (String) O ritmo da fala parece ser 'slow', 'moderate' ou 'fast'?
+
+Responda APENAS com o objeto JSON.`;
+
+    try {
+        const rawResult = await callGroqAPI(prompt, 2000);
+        const strategy = cleanGeneratedText(rawResult, true);
+
+        if (!strategy || typeof strategy !== 'object') {
+            throw new Error("A IA não retornou uma estratégia no formato JSON válido.");
+        }
+
+        // Preenchendo o formulário
+        document.getElementById('videoTheme').value = benchmarkData.theme; // Preenche o tema principal
+        document.getElementById('videoDescription').value = benchmarkData.transcript; // Usa a transcrição como inspiração
+        
+        const keyToElementIdMap = {
+            'target_audience': 'targetAudience', 'narrative_theme': 'narrativeTheme',
+            'narrative_voice': 'narrativeVoice', 'central_question': 'centralQuestion',
+            'narrative_tone': 'narrativeTone', 'speaking_pace': 'speakingPace'
+        };
+        for (const key in keyToElementIdMap) {
+            if (strategy[key]) {
+                const element = document.getElementById(keyToElementIdMap[key]);
+                if (element) { element.value = strategy[key]; }
+            }
+        }
+
+        // Lógica especial para os selects dependentes
+        if (strategy.narrative_goal) {
+            document.getElementById('narrativeGoal').value = strategy.narrative_goal;
+            updateNarrativeStructureOptions(); // Atualiza as opções de estrutura
+            
+            // Um pequeno delay para garantir que as opções foram renderizadas antes de selecionar
+            setTimeout(() => {
+                if (strategy.narrative_structure) {
+                    document.getElementById('narrativeStructure').value = strategy.narrative_structure;
+                    updateMainTooltip();
+                }
+            }, 100);
+        }
+
+        window.showToast("Estratégia extraída e preenchida com sucesso!");
+        document.querySelector('[data-tab="input-tab-estrategia"]')?.click();
+
+    } catch (error) {
+        console.error("Erro detalhado em reverseEngineerStrategy:", error);
+        window.showToast(`Falha na análise: ${error.message}`);
+    } finally {
+        isSettingStrategy = false;
+        hideButtonLoading(button);
+    }
+};
 
 
 
@@ -6155,6 +6276,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 const actions = {
+    'reverseEngineer': (btn) => reverseEngineerStrategy(btn), // <<< NOSSA NOVA LINHA
     'suggestStrategy': (btn) => suggestStrategy(btn),
     'startCrafting': (btn) => startCrafting(),
     'generateIdeas': (btn) => generateVideoIdeas(btn),
@@ -6293,6 +6415,40 @@ const actions = {
         }
     });
 });
+
+
+
+
+<!-- ========================================================== -->
+<!--     NOVO MODAL PARA ENGENHARIA REVERSA DE ROTEIRO      -->
+<!-- ========================================================== -->
+<div id="benchmarkDialogOverlay" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+    <div class="card max-w-2xl w-full animate-fade-in">
+        <h3 class="text-xl font-bold mb-2">Engenharia Reversa de Roteiro</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Cole as informações do vídeo viral de referência. A IA extrairá a estratégia para você.</p>
+        
+        <div class="space-y-4">
+            <div class="input-group">
+                <label for="benchmarkTheme">Tema do Vídeo de Referência:</label>
+                <input type="text" id="benchmarkTheme" placeholder="Ex: A História Secreta da Arca da Aliança">
+            </div>
+            <div class="input-group">
+                <label for="benchmarkDescription">Descrição (Opcional):</label>
+                <textarea id="benchmarkDescription" rows="3" placeholder="Cole a descrição do vídeo aqui..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="benchmarkTranscript">Transcrição do Roteiro:</label>
+                <textarea id="benchmarkTranscript" rows="8" placeholder="Cole a transcrição completa do roteiro aqui..."></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-4 mt-6">
+            <button id="benchmarkBtnCancel" class="btn btn-secondary">Cancelar</button>
+            <button id="benchmarkBtnConfirm" class="btn btn-primary">Analisar e Preencher</button>
+        </div>
+    </div>
+</div>
+
 
 </script>
 </body>
