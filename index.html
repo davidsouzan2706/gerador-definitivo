@@ -5047,14 +5047,18 @@ const unravelEnigmas = async (button) => {
     outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
     showButtonLoading(button);
 
-    // <<< O PROMPT AGORA TEM UMA NOVA REGRA CRÍTICA >>>
-    const prompt = `Você é um Teólogo Investigativo e um Mestre em Hermenêutica Bíblica para o canal "The Biblical Unveiling".
+// <<< PROMPT EVOLUÍDO PARA MAIOR CRIATIVIDADE >>>
+const prompt = `Você é um Teólogo Investigativo e um Mestre em Hermenêutica Bíblica para o canal "The Biblical Unveiling". Sua especialidade é desvendar os tesouros escondidos nas Escrituras e fazer conexões impactantes com o mundo moderno.
 
-**Sua missão é gerar 6 ideias de vídeos que conectem o TEMA FORNECIDO PELO USUÁRIO com enigmas, símbolos e histórias da Bíblia.**
+**Sua missão é gerar 6 ideias de vídeos ALTAMENTE CRIATIVAS que conectem o TEMA FORNECIDO PELO USUÁRIO com enigmas, símbolos e histórias da Bíblia.**
 
-**DIRETIVA PRINCIPAL: FAÇA A CONEXÃO.** Mesmo que o tema do usuário não seja diretamente bíblico (ex: "Mercado Financeiro"), sua tarefa é encontrar paralelos, metáforas, princípios e lições dentro das Escrituras que se apliquem a esse tema. Você deve incluir referências bíblicas (livro, capítulo, versículo) como ponto de partida para a investigação.
+**DIRETIVA PRINCIPAL: FAÇA A CONEXÃO DE FORMA ORIGINAL E SURPREENDENTE.**
+- Mesmo que o tema do usuário não seja diretamente bíblico (ex: "Mercado Financeiro", "Neurociência", "Inteligência Artificial"), sua tarefa é encontrar paralelos INESPERADOS, metáforas profundas, princípios universais e lições atemporais dentro das Escrituras.
+- Evite clichês óbvios. Busque ângulos que surpreendam o espectador e ofereçam uma perspectiva única.
+- Exemplo de Conexão Criativa: Um vídeo sobre "Vieses Cognitivos" poderia explorar como a serpente usou técnicas psicológicas em Gênesis 3, ou como a "fé" pode ser entendida como um "processamento cognitivo distinto".
+- Sua criatividade será medida pela originalidade da conexão e pela profundidade da investigação teológica aplicada.
 
-Para encontrar ideias únicas, você DEVE usar uma das seguintes **Técnicas Investigativas**:
+Para encontrar essas ideias únicas, você DEVE usar uma das seguintes **Técnicas Investigativas**:
 1.  **Fio Oculto (Cross-Referencing)**
 2.  **Lupa Lexical (Análise de Palavras)**
 3.  **O Espelho Tipológico (Tipologia)**
@@ -5062,11 +5066,11 @@ Para encontrar ideias únicas, você DEVE usar uma das seguintes **Técnicas Inv
 
 **FORMATO DA RESPOSTA:**
 Sua resposta DEVE ser um array JSON válido. Cada ideia no array deve ser um objeto com as seguintes chaves:
-- "title": (String) Um título curioso e específico.
-- "enigma": (String) O mistério central em uma única frase.
-- "synopsis": (String) Uma sinopse detalhada de **5 a 6 frases substanciais**, que explica a abordagem do vídeo, os pontos que serão cobertos e qual será a revelação principal.
+- "title": (String) Um título curioso, específico e cativante que prometa uma revelação.
+- "enigma": (String) O mistério central em uma única frase intrigante.
+- "synopsis": (String) Uma sinopse detalhada de **5 a 6 frases substanciais**, que explique a abordagem única do vídeo, os pontos que serão cobertos e qual será a revelação principal. Deve soar como um roteiro promissor.
 - "investigative_method": (String) O nome exato da técnica usada.
-- "hook_question": (String) Uma pergunta intrigante para os primeiros 15 segundos.
+- "hook_question": (String) Uma pergunta provocativa e intrigante para capturar a atenção nos primeiros 15 segundos.
 
 **REGRA DE CITAÇÃO (A MAIS IMPORTANTE):** Se precisar citar algo dentro de uma string (como um versículo ou uma frase), você DEVE, OBRIGATORIAMENTE, usar **aspas simples (' ')**. É terminantemente PROIBIDO usar aspas duplas (" ") dentro de outra string.
 
@@ -5074,7 +5078,8 @@ Sua resposta DEVE ser um array JSON válido. Cada ideia no array deve ser um obj
 
 **Tema fornecido pelo usuário (para conectar com a Bíblia):** "${nicheDescription}"
 
-Agora, gere as 6 ideias.`;
+**AÇÃO:** Agora, desvende conexões teológicas ousadas e gere as 6 ideias mais criativas e envolventes possíveis.
+`;
     
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
