@@ -1548,7 +1548,7 @@ const insertViralSuggestion = (button) => {
 
 
 // =========================================================================
-// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'suggestViralElements' INTEIRA <<<<<
+// >>>>> SUBSTITUA 'suggestViralElements' PELA VERSÃO COM NOTAS DE IMPACTO <<<<<
 // =========================================================================
 const suggestViralElements = async (button) => {
     const fullTranscript = getTranscriptOnly();
@@ -1560,12 +1560,10 @@ const suggestViralElements = async (button) => {
 
     showButtonLoading(button);
     const reportContainer = document.getElementById('viralSuggestionsContainer');
-    
-    // Limpa o relatório antigo antes de gerar o novo
     reportContainer.innerHTML = ''; 
-
     reportContainer.innerHTML = DOMPurify.sanitize(`<div class="my-4"><div class="loading-spinner-small mx-auto"></div><p class="text-sm mt-2">Procurando por oportunidades virais...</p></div>`);
 
+    // <<< O PROMPT AGORA PEDE UMA NOTA DE IMPACTO >>>
     const prompt = `Você é um Estrategista de Conteúdo Viral. Sua tarefa é analisar um roteiro e sugerir 3 oportunidades para INSERIR elementos que aumentem a viralidade.
 
 **TEMA DO VÍDEO:** "${videoTheme}"
@@ -1575,11 +1573,12 @@ ${fullTranscript.slice(0, 7500)}
 ---
 
 **REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
-Sua resposta DEVE ser um array JSON. Cada objeto no array deve representar UMA sugestão e conter EXATAMENTE estas 4 chaves:
+Sua resposta DEVE ser um array JSON. Cada objeto no array deve representar UMA sugestão e conter EXATAMENTE estas 5 chaves:
 1.  "anchor_paragraph": (String) O texto EXATO do parágrafo que virá IMEDIATAMENTE ANTES da sua sugestão.
 2.  "suggested_text": (String) O parágrafo EXATO, já escrito e pronto para ser inserido.
 3.  "element_type": (String) O tipo de elemento, escolhido da lista: ['Dado Surpreendente', 'Citação de Autoridade', 'Mini-Revelação (Teaser)', 'Pergunta Compartilhável', 'Anedota Pessoal Rápida'].
-4.  "implementation_idea": (String) Uma descrição curta de como esta inserção melhora o roteiro.
+4.  "potential_impact_score": (Número) Uma nota de 1 a 10 estimando o potencial de aumento de engajamento que esta inserção pode causar.
+5.  "implementation_idea": (String) Uma descrição curta de como esta inserção melhora o roteiro.
 
 **EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO:**
 [
@@ -1587,13 +1586,8 @@ Sua resposta DEVE ser um array JSON. Cada objeto no array deve representar UMA s
         "anchor_paragraph": "E foi assim que ele tomou a decisão que mudaria tudo.",
         "suggested_text": "De fato, estudos mostram que 78% das decisões que mudam vidas são tomadas em momentos de alta pressão emocional.",
         "element_type": "Dado Surpreendente",
+        "potential_impact_score": 9,
         "implementation_idea": "Inserir uma estatística chocante para reforçar o impacto da decisão."
-    },
-    {
-        "anchor_paragraph": "O verdadeiro segredo estava guardado no cofre.",
-        "suggested_text": "Um segredo que, como veremos, não envolvia ouro ou joias, mas algo muito mais valioso.",
-        "element_type": "Mini-Revelação (Teaser)",
-        "implementation_idea": "Adicionar uma prévia para criar suspense e manter o espectador engajado."
     }
 ]
 
@@ -1607,16 +1601,22 @@ Responda APENAS com o array JSON completo e sintaticamente perfeito.`;
             throw new Error("A IA não encontrou oportunidades ou retornou um formato inválido.");
         }
 
+        // <<< A RENDERIZAÇÃO AGORA INCLUI A NOTA DE IMPACTO >>>
         let reportHtml = `<div class="space-y-4">`;
         suggestions.forEach(suggestion => {
             const anchorParagraphEscaped = (suggestion.anchor_paragraph || '').replace(/"/g, '"');
             const suggestedTextEscaped = (suggestion.suggested_text || '').replace(/"/g, '"');
+            const score = suggestion.potential_impact_score || 0;
+            const scoreColor = score >= 8 ? 'text-green-500' : score >= 5 ? 'text-yellow-500' : 'text-red-500';
 
             reportHtml += `
                 <div class="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 animate-fade-in">
                     <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm mb-2">
                         <span class="tag !bg-blue-100 !text-blue-700 dark:!bg-blue-900/50 dark:!text-blue-300">
                             <i class="fas fa-lightbulb mr-2"></i> ${DOMPurify.sanitize(suggestion.element_type)}
+                        </span>
+                        <span class="font-bold ${scoreColor}">
+                            Impacto Potencial: ${DOMPurify.sanitize(String(score))}/10
                         </span>
                     </div>
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
