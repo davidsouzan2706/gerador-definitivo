@@ -300,25 +300,35 @@
         margin-bottom: 1rem; 
     }
 
-    /* --- Elementos de Feedback --- */
-    .toast { 
-        position: fixed; 
-        bottom: 1.5rem; 
-        right: 1.5rem; 
-        background-color: var(--dark-surface); 
-        color: var(--dark-text-header); 
-        padding: 1rem 1.5rem; 
-        border-radius: 8px; 
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); 
-        z-index: 1000; 
-        opacity: 0; 
-        transform: translateY(100%); 
-        transition: all 0.4s cubic-bezier(0.21, 1.05, 0.51, 1.04); 
-        border-left: 4px solid var(--primary); 
-    }
-    .toast.show { 
-        opacity: 1; 
-        transform: translateY(0); 
+/* --- Elementos de Feedback --- */
+.toast { 
+    position: fixed; 
+    bottom: 1.5rem; 
+    right: 1.5rem; 
+    background-color: var(--dark-surface); 
+    color: var(--dark-text-header); 
+    padding: 1rem 1.5rem; 
+    border-radius: 8px; 
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); 
+    z-index: 1000; 
+    opacity: 0; 
+    transform: translateY(100%); 
+    transition: all 0.4s cubic-bezier(0.21, 1.05, 0.51, 1.04); 
+    /* Cor padrão (azul) */
+    border-left: 4px solid var(--primary); 
+}
+.toast.show { 
+    opacity: 1; 
+    transform: translateY(0); 
+}
+/* NOVA CLASSE DE SUCESSO */
+.toast.toast-success {
+    border-left-color: var(--success); /* Verde */
+}
+/* NOVA CLASSE DE ERRO */
+.toast.toast-danger {
+    border-left-color: var(--danger); /* Vermelho */
+} 
     }
     .loading-spinner { 
         width: 24px; 
@@ -1228,20 +1238,34 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
         };
 
 
-        // ==========================================================
-        // ================== FUNÇÕES DE UTILIDADE ==================
-        // ==========================================================
-        /**
-         * Exibe uma notificação toast na parte inferior da tela.
-         * @param {string} message - A mensagem a ser exibida.
-         */
-        window.showToast = (message) => {
+// ==========================================================
+// ================== FUNÇÕES DE UTILIDADE ==================
+// ==========================================================
+/**
+ * Exibe uma notificação toast na parte inferior da tela.
+ * @param {string} message - A mensagem a ser exibida.
+ * @param {string} type - O tipo de toast ('success', 'danger', ou 'default').
+ */
+window.showToast = (message, type = 'default') => {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toastMessage');
     if (!toast || !toastMessage) return;
+
+    // Limpa classes de tipo anteriores para resetar a cor
+    toast.classList.remove('toast-success', 'toast-danger');
+
+    // Adiciona a classe de tipo correta
+    if (type === 'success') {
+        toast.classList.add('toast-success');
+    } else if (type === 'danger') {
+        toast.classList.add('toast-danger');
+    }
+    // Se for 'default', nenhuma classe extra é adicionada, usando a cor primária.
+
     toastMessage.textContent = message;
     toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 8000);
+    // Aumentamos um pouco o tempo padrão para dar mais tempo de leitura
+    setTimeout(() => { toast.classList.remove('show'); }, 8000); 
 };
 
 
@@ -1348,14 +1372,14 @@ ${originalBlock}
 
 
 
-// =========================================================================
-// >>>>> SUBSTITUA 'applyHookSuggestion' PELA VERSÃO FLEXÍVEL <<<<<
-// =========================================================================
+// ==========================================================
+// >>>>> LOTE 2, FUNÇÃO 1: applyHookSuggestion <<<<<
+// ==========================================================
 const applyHookSuggestion = (button) => {
     const { problematicQuote, rewrittenQuote } = button.dataset;
 
     if (!problematicQuote || !rewrittenQuote) {
-        window.showToast("Erro: Informações da sugestão não encontradas.");
+        window.showToast("Erro: Informações da sugestão não encontradas.", 'danger'); // <<< ALTERAÇÃO AQUI
         return;
     }
     
@@ -1369,18 +1393,13 @@ const applyHookSuggestion = (button) => {
         paragraphs.forEach(p => {
             if (replaced) return;
             
-            // <<< A MUDANÇA ESTÁ AQUI: trocamos 'textContent.includes' por uma busca mais inteligente >>>
-            // Esta busca é mais robusta contra pequenas edições ou reaplicações.
             if (p.textContent.includes(problematicQuote)) {
                 
-                // Criamos o novo conteúdo com o span de destaque
                 const newHtmlContent = p.innerHTML.replace(problematicQuote, `<span class="highlight-change">${rewrittenQuote}</span>`);
                 
-                // Aplicamos e sanitizamos
                 p.innerHTML = DOMPurify.sanitize(newHtmlContent, { ADD_TAGS: ["span"], ADD_ATTR: ["class"] });
-                window.showToast("Gancho aprimorado com sucesso!");
+                window.showToast("Gancho aprimorado com sucesso!", 'success'); // <<< ALTERAÇÃO AQUI
                 
-                // Invalida as análises da seção-mãe
                 const sectionElement = p.closest('.script-section');
                 if (sectionElement) {
                     invalidateAndClearPerformance(sectionElement);
@@ -1394,11 +1413,10 @@ const applyHookSuggestion = (button) => {
     });
 
     if (!replaced) {
-        window.showToast("Não foi possível aplicar. O texto pode ter sido editado.");
+        window.showToast("Não foi possível aplicar. O texto pode ter sido editado.", 'danger'); // <<< ALTERAÇÃO AQUI
         return;
     }
 
-    // Feedback no botão
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-check mr-2"></i>Aplicada!';
     button.classList.remove('btn-primary');
@@ -1406,9 +1424,9 @@ const applyHookSuggestion = (button) => {
 };
 
 
-// =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA 'analyzeRetentionHooks' INTEIRA <<<<<
-// =========================================================================
+// ==========================================================
+// >>>>> LOTE 1, FUNÇÃO 1: analyzeRetentionHooks <<<<<
+// ==========================================================
 const analyzeRetentionHooks = async (button) => {
     const fullTranscript = getTranscriptOnly();
     if (!fullTranscript) {
@@ -1418,10 +1436,7 @@ const analyzeRetentionHooks = async (button) => {
 
     showButtonLoading(button);
     const reportContainer = document.getElementById('hooksReportContainer');
-    
-    // <<< AQUI ESTÁ A NOVA LINHA QUE LIMPA O RELATÓRIO ANTIGO >>>
     reportContainer.innerHTML = '';
-
     reportContainer.innerHTML = DOMPurify.sanitize(`<div class="my-4"><div class="loading-spinner-small mx-auto"></div><p class="text-sm mt-2">Caçando e refinando ganchos...</p></div>`);
 
     const prompt = `Você é um Analista de Roteiros especialista em retenção de audiência. Sua tarefa é analisar o roteiro, identificar "ganchos de retenção" e sugerir como aprimorá-los.
@@ -1484,11 +1499,12 @@ Responda APENAS com o array JSON.`;
         reportHtml += `</div>`;
         
         reportContainer.innerHTML = reportHtml;
-        window.showToast(`${hooks.length} ganchos analisados e aprimorados!`);
+        window.showToast(`${hooks.length} ganchos analisados e aprimorados!`, 'success'); // <<< ALTERAÇÃO AQUI
 
     } catch (error) {
         console.error("Erro detalhado em analyzeRetentionHooks:", error);
         reportContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">${error.message}</p>`);
+        window.showToast(`Falha na caça aos ganchos: ${error.message}`, 'danger'); // <<< ALTERAÇÃO AQUI
     } finally {
         hideButtonLoading(button);
     }
@@ -1496,14 +1512,14 @@ Responda APENAS com o array JSON.`;
 
 
 
-// =========================================================================
-// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'insertViralSuggestion' INTEIRA <<<<<
-// =========================================================================
+// ==========================================================
+// >>>>> LOTE 2, FUNÇÃO 2: insertViralSuggestion <<<<<
+// ==========================================================
 const insertViralSuggestion = (button) => {
     const { anchorParagraph, suggestedText } = button.dataset;
 
     if (!anchorParagraph || !suggestedText) {
-        window.showToast("Erro: Informações da sugestão não encontradas.");
+        window.showToast("Erro: Informações da sugestão não encontradas.", 'danger'); // <<< ALTERAÇÃO AQUI
         return;
     }
 
@@ -1511,7 +1527,6 @@ const insertViralSuggestion = (button) => {
     let inserted = false;
 
     allParagraphs.forEach(p => {
-        // A busca flexível que procura se o parágrafo CONTÉM a âncora
         if (!inserted && p.textContent.trim().includes(anchorParagraph.trim())) {
             const newDiv = document.createElement('div');
             newDiv.id = `inserted-p-${Date.now()}`; 
@@ -1521,7 +1536,7 @@ const insertViralSuggestion = (button) => {
             p.parentNode.insertBefore(newDiv, p.nextSibling);
 
             newDiv.innerHTML = DOMPurify.sanitize(newDiv.innerHTML, { ADD_TAGS: ["span"], ADD_ATTR: ["class"] });
-            window.showToast("Elemento viral inserido com sucesso!");
+            window.showToast("Elemento viral inserido com sucesso!", 'success'); // <<< ALTERAÇÃO AQUI
 
             const sectionElement = p.closest('.script-section');
             if (sectionElement) {
@@ -1535,7 +1550,7 @@ const insertViralSuggestion = (button) => {
     });
 
     if (!inserted) {
-        window.showToast("Não foi possível inserir. O parágrafo âncora pode ter sido editado.");
+        window.showToast("Não foi possível inserir. O parágrafo âncora pode ter sido editado.", 'danger'); // <<< ALTERAÇÃO AQUI
         return;
     }
 
@@ -1547,9 +1562,9 @@ const insertViralSuggestion = (button) => {
 
 
 
-// =========================================================================
-// >>>>> SUBSTITUA 'suggestViralElements' PELA VERSÃO COM NOTAS DE IMPACTO <<<<<
-// =========================================================================
+// ==========================================================
+// >>>>> LOTE 1, FUNÇÃO 2: suggestViralElements <<<<<
+// ==========================================================
 const suggestViralElements = async (button) => {
     const fullTranscript = getTranscriptOnly();
     const videoTheme = document.getElementById('videoTheme')?.value.trim();
@@ -1563,7 +1578,6 @@ const suggestViralElements = async (button) => {
     reportContainer.innerHTML = ''; 
     reportContainer.innerHTML = DOMPurify.sanitize(`<div class="my-4"><div class="loading-spinner-small mx-auto"></div><p class="text-sm mt-2">Procurando por oportunidades virais...</p></div>`);
 
-    // <<< O PROMPT AGORA PEDE UMA NOTA DE IMPACTO >>>
     const prompt = `Você é um Estrategista de Conteúdo Viral. Sua tarefa é analisar um roteiro e sugerir 3 oportunidades para INSERIR elementos que aumentem a viralidade.
 
 **TEMA DO VÍDEO:** "${videoTheme}"
@@ -1601,7 +1615,6 @@ Responda APENAS com o array JSON completo e sintaticamente perfeito.`;
             throw new Error("A IA não encontrou oportunidades ou retornou um formato inválido.");
         }
 
-        // <<< A RENDERIZAÇÃO AGORA INCLUI A NOTA DE IMPACTO >>>
         let reportHtml = `<div class="space-y-4">`;
         suggestions.forEach(suggestion => {
             const anchorParagraphEscaped = (suggestion.anchor_paragraph || '').replace(/"/g, '"');
@@ -1640,11 +1653,12 @@ Responda APENAS com o array JSON completo e sintaticamente perfeito.`;
         reportHtml += `</div>`;
         
         reportContainer.innerHTML = reportHtml;
-        window.showToast(`${suggestions.length} sugestões virais encontradas!`);
+        window.showToast(`${suggestions.length} sugestões virais encontradas!`, 'success'); // <<< ALTERAÇÃO AQUI
 
     } catch (error) {
         console.error("Erro detalhado em suggestViralElements:", error);
         reportContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">${error.message}</p>`);
+        window.showToast(`Falha ao sugerir elementos: ${error.message}`, 'danger'); // <<< ALTERAÇÃO AQUI
     } finally {
         hideButtonLoading(button);
     }
@@ -1652,9 +1666,9 @@ Responda APENAS com o array JSON completo e sintaticamente perfeito.`;
 
 
 
-// =========================================================================
-// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'analyzeFullScript' INTEIRA <<<<<
-// =========================================================================
+// ==========================================================
+// >>>>> LOTE 3, FUNÇÃO 1: analyzeFullScript <<<<<
+// ==========================================================
 const analyzeFullScript = async (button) => {
     showButtonLoading(button);
     const reportContainer = document.getElementById('analysisReportContainer');
@@ -1671,16 +1685,13 @@ const analyzeFullScript = async (button) => {
             throw new Error("Todas as 5 seções do roteiro (Intro, Dev, Clímax, Conclusão e CTA) devem ser geradas primeiro.");
         }
 
-        // <<< AQUI ESTÁ A MUDANÇA: Coletando o contexto leve >>>
         const lightContext = {
             theme: document.getElementById('videoTheme')?.value.trim() || 'Não definido',
             centralQuestion: document.getElementById('centralQuestion')?.value.trim() || 'Não definida',
-            outline: strategicOutline || {} // Pega o esboço estratégico que já temos na memória
+            outline: strategicOutline || {}
         };
-        // --- Fim da mudança ---
 
         const results = await Promise.allSettled([
-            // E agora passamos o contexto para cada chamada
             analyzeScriptPart('Introdução (Hook)', introText, `Analise este hook...`, lightContext),
             analyzeScriptPart('Desenvolvimento (Ritmo e Retenção)', devText, `Analise este desenvolvimento...`, lightContext),
             analyzeScriptPart('Clímax', climaxText, `Analise este clímax...`, lightContext),
@@ -1709,11 +1720,11 @@ const analyzeFullScript = async (button) => {
             }
         });
 
-        window.showToast("Análise do roteiro concluída!");
+        window.showToast("Análise do roteiro concluída!", 'success'); // <<< ALTERAÇÃO AQUI
 
     } catch (error) {
         console.error("Erro detalhado em analyzeFullScript:", error);
-        window.showToast(`Falha na análise: ${error.message}`);
+        window.showToast(`Falha na análise: ${error.message}`, 'danger'); // <<< ALTERAÇÃO AQUI
         reportContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">${error.message}</p>`);
     } finally {
         hideButtonLoading(button);
@@ -2023,23 +2034,20 @@ Responda APENAS com o objeto JSON.`;
  * @param {string} suggestionText - O texto da sugestão que identifica o grupo.
  */
 window.deleteParagraphGroup = async (button, suggestionText) => {
-    // 1. CHAMA O NOSSO MODAL PERSONALIZADO e aguarda a resposta (true/false).
     const userConfirmed = await showConfirmationDialog(
         'Confirmar Deleção',
         'Tem certeza que deseja deletar este bloco de parágrafos? Esta ação não pode ser desfeita.'
     );
 
-    // 2. Se o usuário clicou em "Não" (ou fechou), a função para aqui.
     if (!userConfirmed) {
         return;
     }
 
-    // 3. O resto da lógica continua exatamente como antes.
     const safeSelector = suggestionText.replace(/"/g, '\\"');
     const paragraphsToDelete = document.querySelectorAll(`[data-suggestion-group="${safeSelector}"]`);
 
     if (paragraphsToDelete.length === 0) {
-        window.showToast("Erro: Parágrafos para deletar não encontrados.");
+        window.showToast("Erro: Parágrafos para deletar não encontrados.", 'danger'); // <<< ALTERAÇÃO AQUI
         return;
     }
 
@@ -2053,7 +2061,7 @@ window.deleteParagraphGroup = async (button, suggestionText) => {
         updateAllReadingTimes();
     }
 
-    window.showToast("Bloco de parágrafos deletado com sucesso!");
+    window.showToast("Bloco de parágrafos deletado com sucesso!", 'success'); // <<< ALTERAÇÃO AQUI
 };
 
 
@@ -4816,11 +4824,10 @@ window.applySuggestion = (button) => {
 
 
 
-// =========================================================================
-// >>>>> PASSO 2: ADICIONE ESTA NOVA FUNÇÃO AO SEU SCRIPT <<<<<
-// =========================================================================
+// ==========================================================
+// >>>>> LOTE 3, FUNÇÃO 2: applyAllSuggestions <<<<<
+// ==========================================================
 const applyAllSuggestions = async (button) => {
-    // Encontra todos os botões "Aplicar" que ainda não foram clicados (não estão desabilitados)
     const allApplyButtons = document.querySelectorAll('#analysisReportContainer button[data-action="applySuggestion"]:not(:disabled)');
 
     if (allApplyButtons.length === 0) {
@@ -4832,14 +4839,10 @@ const applyAllSuggestions = async (button) => {
     
     let appliedCount = 0;
     
-    // Usamos um loop 'for...of' para poder usar 'await' e garantir que as aplicações não se sobreponham
     for (const applyBtn of allApplyButtons) {
         try {
-            // Chama a nossa função já existente e robusta
             window.applySuggestion(applyBtn);
             appliedCount++;
-            
-            // Uma pequena pausa para o navegador respirar entre as aplicações
             await new Promise(resolve => setTimeout(resolve, 100)); 
         } catch (error) {
             console.error("Erro ao aplicar uma sugestão no modo 'Aplicar Todas':", error);
@@ -4847,9 +4850,8 @@ const applyAllSuggestions = async (button) => {
     }
     
     hideButtonLoading(button);
-    window.showToast(`${appliedCount} sugest${appliedCount > 1 ? 'ões' : 'ão'} aplicad${appliedCount > 1 ? 'as' : 'a'} com sucesso!`);
+    window.showToast(`${appliedCount} sugest${appliedCount > 1 ? 'ões' : 'ão'} aplicad${appliedCount > 1 ? 'as' : 'a'} com sucesso!`, 'success'); // <<< ALTERAÇÃO AQUI
     
-    // Desabilita o botão "Aplicar Todas" após o uso
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-check mr-2"></i>Tudo Aplicado!';
 };
@@ -4939,6 +4941,9 @@ Responda APENAS com o texto final reescrito.`;
 // =========================================================================
 // >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'generateVideoIdeas' INTEIRA POR ESTA <<<<<
 // =========================================================================
+// ==========================================================
+// >>>>> LOTE 5, FUNÇÃO 1: generateVideoIdeas <<<<<
+// ==========================================================
 const generateVideoIdeas = async (button) => {
     const nicheDescription = document.getElementById('nicheDescription').value.trim();
     if (!nicheDescription) {
@@ -4954,7 +4959,6 @@ const generateVideoIdeas = async (button) => {
 
     showButtonLoading(button);
 
-    // PROMPT FINAL E BLINDADO
     const prompt = `Você é uma API Estrategista de Conteúdo que retorna APENAS um array JSON. Sua missão é gerar 6 ideias de vídeo com alto potencial de engajamento para um canal do YouTube.
 
 **REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
@@ -4966,10 +4970,10 @@ const generateVideoIdeas = async (button) => {
 
 **MANUAL DE CONTEÚDO (SIGA EXATAMENTE):**
 - **"title":** Um título "clickbait" mas inteligente (máximo 70 caracteres).
-- **"angle":** O ângulo ou abordagem única em **uma única frase curta e impactante**. (Ex: "Desvendando as estratégias ocultas que os bancos usam para investir seu dinheiro.")
+- **"angle":** O ângulo ou abordagem única em **uma única frase curta e impactante**.
 - **"targetAudience":** O público-alvo específico para esta ideia.
 - **"viralityScore":** Uma nota de 0 a 10 sobre o potencial de viralidade.
-- **"videoDescription":** Uma descrição mais detalhada de **5 a 6 frases substanciais**, otimizada para o YouTube, explicando o que o espectador aprenderá e qual problema será resolvido.
+- **"videoDescription":** Uma descrição mais detalhada de **5 a 6 frases substanciais**, otimizada para o YouTube.
 
 **Nicho/Descrição para analisar:** "${nicheDescription}"
 
@@ -5013,9 +5017,11 @@ Gere 6 ideias de vídeo seguindo EXATAMENTE as regras e o formato acima.`;
             card.innerHTML = DOMPurify.sanitize(cardContent, { ADD_ATTR: ['data-action', 'data-idea'] });
             outputContainer.appendChild(card);
         });
+        window.showToast("Novas ideias geradas!", 'success'); // <<< ALTERAÇÃO AQUI
 
     } catch (error) {
         console.error("Erro detalhado em generateVideoIdeas:", error);
+        window.showToast(`Falha ao gerar ideias: ${error.message}`, 'danger'); // <<< ALTERAÇÃO AQUI
         if (error.message.includes("A IA não retornou um formato")) {
             outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-yellow-500 text-sm p-4 bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
                 <strong>A IA se recusou a gerar conteúdo para este tema.</strong><br><br>
@@ -5087,6 +5093,7 @@ Agora, gere as 6 ideias.`;
         outputContainer.innerHTML = '';
 
         ideas.forEach((idea, index) => {
+
             const card = document.createElement('div');
             card.className = 'card-background p-4 rounded-lg shadow-md border-l-4 border-purple-500 animate-fade-in flex flex-col justify-between';
             
@@ -5109,8 +5116,13 @@ Agora, gere as 6 ideias.`;
             outputContainer.appendChild(card);
         });
 
+        window.showToast("Enigmas desvendados!", 'success');
+
     } catch (error) {
         console.error("Erro detalhado em unravelEnigmas:", error);
+
+        window.showToast(`Falha ao desvendar enigmas: ${error.message}`, 'danger');
+        
         outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-red-500 text-sm">Falha ao desvendar enigmas: ${error.message}</p>`);
     } finally {
         hideButtonLoading(button);
@@ -6045,86 +6057,83 @@ const resetApplicationState = () => {
          * @param {Event} event - O evento de mudança do input de ficheiro.
          */
         const importProject = (event) => {
-            const file = event.target.files[0];
-            if (!file) { return; }
+        const file = event.target.files[0];
+        if (!file) { return; }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const projectData = JSON.parse(e.target.result);
-                    
-                    resetApplicationState();
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const projectData = JSON.parse(e.target.result);
+            
+            resetApplicationState();
 
-                    // Restaura os inputs
-                    const inputIds = [
-                        'channelName', 'videoTheme', 'videoDescription', 'targetAudience', 
-                        'languageSelect', 'videoObjective', 'videoDuration', 'speakingPace', 
-                        'narrativeGoal', 'narrativeStructure', 'narrativeTheme', 'narrativeTone', 
-                        'narrativeVoice', 'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 
-                        'imageStyleSelect', 'customImageStyle'
-                    ];
-                    inputIds.forEach(id => {
-                        const element = document.getElementById(id);
-                        if (element && projectData.inputs[id] !== undefined) {
-                            element.value = projectData.inputs[id];
-                        }
-                    });
-                    
-                    const structureSelect = document.getElementById('narrativeStructure');
-                    if (structureSelect && projectData.inputs['narrativeStructure']) {
-                        structureSelect.value = projectData.inputs['narrativeStructure'];
-                        // Ensure the tooltip is updated after setting the structure value
-                        
-                    }
-
-                    // Restaura o conteúdo gerado
-                    const outputIds = [
-                        'introSection', 'developmentSection', 'climaxSection', 'conclusionSection', // CTA is now part of conclusionSection
-                        'outlineContent', 'titlesThumbnailsContent', 'videoDescriptionContent'
-                    ];
-                    outputIds.forEach(id => {
-                        const element = document.getElementById(id);
-                        if (element && projectData.outputs[id]) {
-                            element.innerHTML = projectData.outputs[id]; 
-                        }
-                    });
-                    
-                    strategicOutline = projectData.memory.strategicOutline || null;
-                    allImagePrompts = projectData.memory.allImagePrompts || {};
-                    generatedTitlesAndThumbnails = projectData.memory.generatedTitlesAndThumbnails || null;
-                    promptPaginationState = projectData.memory.promptPaginationState || {}; // Load pagination state
-
-                    // Renderiza os prompts de imagem paginados após carregar
-                    const scriptSectionIds = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection'];
-                    scriptSectionIds.forEach(id => {
-                        if (allImagePrompts[id] && allImagePrompts[id].length > 0) {
-                            renderImagePromptsForSection(id);
-                        }
-                    });
-
-                    updateButtonStates();
-                    
-                    if (elements.outlineContent.textContent.trim().length > 100) markButtonAsCompleted('generateOutlineBtn');
-                    if (document.getElementById('introSection').innerHTML.trim()) markButtonAsCompleted('generateIntroBtn');
-                    if (document.getElementById('developmentSection').innerHTML.trim()) markButtonAsCompleted('generateDevelopmentBtn');
-                    if (document.getElementById('climaxSection').innerHTML.trim()) markButtonAsCompleted('climaxBtn');
-                    if (document.getElementById('conclusionSection').innerHTML.trim()) markButtonAsCompleted('conclusionBtn');
-                    if (document.getElementById('videoDescriptionContent').innerHTML.includes('Hashtags')) markButtonAsCompleted('generateDescriptionBtn');
-                    if (document.getElementById('titlesThumbnailsContent').innerHTML.includes('Analisar CTR')) markButtonAsCompleted('generateTitlesAndThumbnailsBtn');
-
-                    updateProgressBar(); 
-                    
-                    elements.projectDashboard.classList.remove('hidden');
-                    window.showToast("Projeto importado com sucesso!");
-
-                } catch (err) {
-                    window.showToast("Erro: Ficheiro de projeto inválido ou corrompido.");
-                    console.error("Erro ao importar projeto:", err);
+            // Restaura os inputs
+            const inputIds = [
+                'channelName', 'videoTheme', 'videoDescription', 'targetAudience', 
+                'languageSelect', 'videoObjective', 'videoDuration', 'speakingPace', 
+                'narrativeGoal', 'narrativeStructure', 'narrativeTheme', 'narrativeTone', 
+                'narrativeVoice', 'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 
+                'imageStyleSelect', 'customImageStyle'
+            ];
+            inputIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element && projectData.inputs[id] !== undefined) {
+                    element.value = projectData.inputs[id];
                 }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        };
+            });
+            
+            const structureSelect = document.getElementById('narrativeStructure');
+            if (structureSelect && projectData.inputs['narrativeStructure']) {
+                structureSelect.value = projectData.inputs['narrativeStructure'];
+            }
+
+            // Restaura o conteúdo gerado
+            const outputIds = [
+                'introSection', 'developmentSection', 'climaxSection', 'conclusionSection',
+                'outlineContent', 'titlesThumbnailsContent', 'videoDescriptionContent'
+            ];
+            outputIds.forEach(id => {
+                const element = document.getElementById(id);
+                if (element && projectData.outputs[id]) {
+                    element.innerHTML = projectData.outputs[id]; 
+                }
+            });
+            
+            strategicOutline = projectData.memory.strategicOutline || null;
+            allImagePrompts = projectData.memory.allImagePrompts || {};
+            generatedTitlesAndThumbnails = projectData.memory.generatedTitlesAndThumbnails || null;
+            promptPaginationState = projectData.memory.promptPaginationState || {};
+
+            const scriptSectionIds = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection'];
+            scriptSectionIds.forEach(id => {
+                if (allImagePrompts[id] && allImagePrompts[id].length > 0) {
+                    renderImagePromptsForSection(id);
+                }
+            });
+
+            updateButtonStates();
+            
+            if (elements.outlineContent.textContent.trim().length > 100) markButtonAsCompleted('generateOutlineBtn');
+            if (document.getElementById('introSection').innerHTML.trim()) markButtonAsCompleted('generateIntroBtn');
+            if (document.getElementById('developmentSection').innerHTML.trim()) markButtonAsCompleted('generateDevelopmentBtn');
+            if (document.getElementById('climaxSection').innerHTML.trim()) markButtonAsCompleted('climaxBtn');
+            if (document.getElementById('conclusionSection').innerHTML.trim()) markButtonAsCompleted('conclusionBtn');
+            if (document.getElementById('videoDescriptionContent').innerHTML.includes('Hashtags')) markButtonAsCompleted('generateDescriptionBtn');
+            if (document.getElementById('titlesThumbnailsContent').innerHTML.includes('Analisar CTR')) markButtonAsCompleted('generateTitlesAndThumbnailsBtn');
+
+            updateProgressBar(); 
+            
+            elements.projectDashboard.classList.remove('hidden');
+            window.showToast("Projeto importado com sucesso!", 'success'); // <<< ALTERAÇÃO AQUI
+
+        } catch (err) {
+            window.showToast("Erro: Ficheiro de projeto inválido ou corrompido.", 'danger'); // <<< ALTERAÇÃO AQUI
+            console.error("Erro ao importar projeto:", err);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+};
 
 
 
