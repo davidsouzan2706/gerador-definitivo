@@ -333,8 +333,9 @@
 
 @keyframes fade-out-highlight {
   from {
-    background-color: color-mix(in srgb, var(--primary) 25%, transparent);
-    outline: 2px solid var(--primary);
+    /* MUDANÇA DE COR AQUI: de --primary para --success */
+    background-color: color-mix(in srgb, var(--success) 25%, transparent);
+    outline: 2px solid var(--success);
   }
   to {
     background-color: transparent;
@@ -4332,7 +4333,7 @@ window.applySuggestion = (button) => {
         button.innerHTML = 'Aplicar';
         button.classList.remove('btn-success');
         button.classList.add('btn-primary');
-    }, 5000);
+    }, 9000);
 };
 
 
