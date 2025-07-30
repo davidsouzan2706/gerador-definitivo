@@ -1333,7 +1333,7 @@ ${originalBlock}
 
 
 // =========================================================================
-// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'analyzeFullScript' INTEIRA POR ESTA <<<<<
+// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'analyzeFullScript' INTEIRA <<<<<
 // =========================================================================
 const analyzeFullScript = async (button) => {
     showButtonLoading(button);
@@ -1351,17 +1351,25 @@ const analyzeFullScript = async (button) => {
             throw new Error("Todas as 5 seções do roteiro (Intro, Dev, Clímax, Conclusão e CTA) devem ser geradas primeiro.");
         }
 
+        // <<< AQUI ESTÁ A MUDANÇA: Coletando o contexto leve >>>
+        const lightContext = {
+            theme: document.getElementById('videoTheme')?.value.trim() || 'Não definido',
+            centralQuestion: document.getElementById('centralQuestion')?.value.trim() || 'Não definida',
+            outline: strategicOutline || {} // Pega o esboço estratégico que já temos na memória
+        };
+        // --- Fim da mudança ---
+
         const results = await Promise.allSettled([
-            analyzeScriptPart('Introdução (Hook)', introText, `Analise este hook...`),
-            analyzeScriptPart('Desenvolvimento (Ritmo e Retenção)', devText, `Analise este desenvolvimento...`),
-            analyzeScriptPart('Clímax', climaxText, `Analise este clímax...`),
-            analyzeScriptPart('Conclusão', conclusionText, `Analise esta conclusão...`),
-            analyzeScriptPart('CTA (Call to Action)', ctaText, `Analise este CTA...`)
+            // E agora passamos o contexto para cada chamada
+            analyzeScriptPart('Introdução (Hook)', introText, `Analise este hook...`, lightContext),
+            analyzeScriptPart('Desenvolvimento (Ritmo e Retenção)', devText, `Analise este desenvolvimento...`, lightContext),
+            analyzeScriptPart('Clímax', climaxText, `Analise este clímax...`, lightContext),
+            analyzeScriptPart('Conclusão', conclusionText, `Analise esta conclusão...`, lightContext),
+            analyzeScriptPart('CTA (Call to Action)', ctaText, `Analise este CTA...`, lightContext)
         ]);
 
-        reportContainer.innerHTML = ''; // Limpa o container antes de adicionar os resultados
+        reportContainer.innerHTML = ''; 
 
-        // --- AQUI ESTÁ A MUDANÇA: Adicionando o botão "Aplicar Todas" ---
         const headerDiv = document.createElement('div');
         headerDiv.className = 'flex justify-between items-center mb-4 p-3 bg-gray-100 dark:bg-gray-900/50 rounded-lg';
         headerDiv.innerHTML = DOMPurify.sanitize(`
@@ -1371,7 +1379,6 @@ const analyzeFullScript = async (button) => {
             </button>
         `);
         reportContainer.appendChild(headerDiv);
-        // --- FIM DA MUDANÇA ---
 
         results.forEach(result => {
             if (result.status === 'fulfilled') {
@@ -1397,31 +1404,48 @@ const analyzeFullScript = async (button) => {
 
 
 // =========================================================================
-// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO 'analyzeScriptPart' INTEIRA POR ESTA <<<<<
+// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'analyzeScriptPart' INTEIRA <<<<<
 // =========================================================================
-const analyzeScriptPart = async (criterion, text, instruction) => {
-    const prompt = `Você é uma API de Análise de Roteiro que atua como um editor de linha e um estrategista de conteúdo para YouTube. Sua resposta DEVE ser um objeto JSON.
+const analyzeScriptPart = async (criterion, text, instruction, context = {}) => {
+    // Mapeia o nome do critério para a chave correta no objeto de esboço
+    const sectionKeyMap = {
+        'Introdução (Hook)': 'introduction',
+        'Desenvolvimento (Ritmo e Retenção)': 'development',
+        'Clímax': 'climax',
+        'Conclusão': 'conclusion',
+        'CTA (Call to Action)': 'cta'
+    };
+    const outlineKey = sectionKeyMap[criterion];
+    const outlineDirective = context.outline && context.outline[outlineKey] ? context.outline[outlineKey] : 'Nenhuma diretriz específica foi definida.';
 
-**TAREFA:** Analise o "Trecho de Roteiro" fornecido com base no "Critério de Análise". Sua análise deve ser crítica, profissional e, acima de tudo, acionável.
+    // <<< AQUI ESTÁ A GRANDE MUDANÇA: O prompt agora é contextual >>>
+    const prompt = `Você é uma API de Análise de Roteiro que atua como um editor estratégico de conteúdo para YouTube. Sua resposta DEVE ser um objeto JSON.
+
+**CONTEXTO ESTRATÉGICO (Use para guiar sua análise):**
+- **Tema Principal do Vídeo:** "${context.theme}"
+- **Pergunta Central a ser Respondida:** "${context.centralQuestion}"
+- **Objetivo Estratégico DESTA Seção:** "${outlineDirective}"
+
+**TAREFA:** Analise o "Trecho de Roteiro" abaixo. Sua análise deve ser CRÍTICA e ESTRATÉGICA, avaliando se o trecho cumpre seu objetivo dentro do contexto geral.
 
 **Critério de Análise:** ${instruction}
 
 **Trecho de Roteiro:**
 ---
-${text.slice(0, 7000)}
+${text.slice(0, 6500)}
 ---
 
 **REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
 Sua resposta DEVE ser um objeto JSON com EXATAMENTE estas chaves:
 - "criterion_name": (String) O nome do critério (ex: "${criterion}").
-- "score": (Número) Uma nota de 0 a 10.
-- "positive_points": (String) Um parágrafo resumindo os pontos fortes.
+- "score": (Número) Uma nota de 0 a 10, baseada em quão bem o trecho cumpre seu objetivo estratégico.
+- "positive_points": (String) Um parágrafo resumindo os pontos fortes em relação ao contexto.
 - "improvement_points": (Array) Um array de objetos, onde cada objeto DEVE ter QUATRO chaves:
-    - "problematic_quote": (String) A frase ou trecho EXATO do roteiro original que representa a maior oportunidade de melhoria.
-    - "critique": (String) Uma crítica construtiva explicando POR QUE este trecho é um ponto fraco.
-    - "suggestion_text": (String) Uma explicação GERAL da sugestão (ex: 'Tente usar uma linguagem mais ativa.').
-    - "rewritten_quote": (String) A nova frase, JÁ REESCRITA, pronta para substituir a original.
-- **ASPAS INTERNAS:** Se precisar citar algo, use aspas simples (' '). É proibido usar aspas duplas dentro de outra string.
+    - "problematic_quote": (String) A frase EXATA do roteiro que pode ser melhorada.
+    - "critique": (String) Uma crítica explicando POR QUE este trecho não atinge 100% do seu potencial estratégico.
+    - "suggestion_text": (String) Uma explicação GERAL da sugestão (ex: 'Alinhar melhor com a pergunta central.').
+    - "rewritten_quote": (String) A nova frase, JÁ REESCRITA, que melhora o alinhamento estratégico.
+- **ASPAS INTERNAS:** Use aspas simples (' ') para citações dentro de strings.
 
 Responda APENAS com o objeto JSON.`;
 
@@ -3201,28 +3225,34 @@ const narrativeStructures = {
         twist: "Narrativa com Virada (Twist)"
     },
     storyselling: {
-        underdog_victory: "Vitória do Vira-lata (Conexão e Superação)",
-        discovery_mentor: "A Grande Descobrir / Mentor Secreto",
-        if_not_found_create: "Não Encontrei, Então Criei (História de Origem)",
+        // --- NOVAS ESTRUTURAS ADICIONADAS AQUI ---
         pas: "Problema-Agitação-Solução (PAS)",
-        bab: "Antes-Depois-Ponte (BAB)"
+        bab: "Antes-Depois-Ponte (BAB)",
+        aida: "Atenção-Interesse-Desejo-Ação (AIDA)",
+        underdog_victory: "Vitória do Azarão (Conexão e Superação)",
+        discovery_mentor: "A Grande Descoberta / Mentor Secreto",
+        if_not_found_create: "Não Encontrei, Então Criei (História de Origem)"
     }
 };
 
 const narrativeTooltips = {
+    // Storytelling
     documentary: "Constrói um argumento com fatos, evidências e uma narração autoritária. Perfeito para vídeos expositivos.",
     heros_journey: "Conta uma história de transformação e superação. Ótimo para narrativas inspiradoras.",
     pixar_spine: "Estrutura emocional de 8 passos (Era uma vez... todo dia... até que...). Perfeita para arcos de personagem rápidos.",
     mystery_loop: "Apresenta uma pergunta no início e a responde no final. Excelente para reter a atenção.",
     twist: "Constrói uma expectativa e a quebra com uma revelação surpreendente no final.",
-    underdog_victory: "Mostra alguém com limitações que venceu contra tudo e todos. Gera alta conexão emocional.",
-    discovery_mentor: "Revela um grande segredo ou uma descoberta que mudou tudo. Posição de autoridade.",
-    if_not_found_create: "Conta a história de origem de um produto ou serviço criado a partir de uma necessidade pessoal.",
-    pas: "Foca em um problema que o público tem, agita a dor e apresenta a solução. Perfeito para vendas diretas.",
-    bab: "Mostra um cenário 'antes' (o problema), um 'depois' (o resultado ideal) e seu conteúdo como 'a ponte' para chegar lá."
+    
+    // Storyselling
+    pas: "Foca em um problema que o público tem (Problema), intensifica a dor que ele causa (Agitação) e apresenta o seu conteúdo/produto como a cura (Solução). Ideal para vendas diretas.",
+    bab: "Mostra um cenário 'Antes' (o mundo com o problema), um 'Depois' (o resultado ideal) e posiciona seu conteúdo como 'a Ponte' que leva de um ao outro.",
+    aida: "Clássico do marketing: primeiro captura a Atenção, depois gera Interesse, cria o Desejo pela solução e, finalmente, chama para a Ação.",
+    underdog_victory: "Mostra alguém (ou uma empresa) com limitações que venceu contra tudo e todos. Gera alta conexão emocional e inspira confiança.",
+    discovery_mentor: "Revela um grande segredo ou uma 'descoberta' que mudou tudo, posicionando o narrador como um mentor que guia o espectador.",
+    if_not_found_create: "Conta a história de origem de um produto ou serviço, nascido de uma necessidade pessoal. 'Eu tinha esse problema, não achei solução, então criei uma'."
 };
 
-// Objeto para o novo popover do "Objetivo da Narrativa"
+// Objeto para o popover do "Objetivo da Narrativa" (permanece o mesmo)
 const narrativeGoalTooltips = {
     storytelling: {
         title: "Storytelling (Conectar & Inspirar)",
