@@ -333,9 +333,9 @@
 
 @keyframes fade-out-highlight {
   from {
-    /* MUDANÇA DE COR AQUI: de --primary para --success */
-    background-color: color-mix(in srgb, var(--success) 25%, transparent);
-    outline: 2px solid var(--success);
+    /* MUDANÇA DE COR AQUI: usando a cor amarela (#f59e0b) */
+    background-color: color-mix(in srgb, #f59e0b 25%, transparent);
+    outline: 2px solid #f59e0b;
   }
   to {
     background-color: transparent;
@@ -4333,7 +4333,7 @@ window.applySuggestion = (button) => {
         button.innerHTML = 'Aplicar';
         button.classList.remove('btn-success');
         button.classList.add('btn-primary');
-    }, 9000);
+    }, 19000);
 };
 
 
