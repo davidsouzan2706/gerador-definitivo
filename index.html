@@ -1423,7 +1423,7 @@ Responda APENAS com o array JSON. Não inclua nenhum outro texto.`;
 
 
 // =========================================================================
-// >>>>> PASSO 2: ADICIONE ESTA NOVA FUNÇÃO COMPLETA AO SEU SCRIPT <<<<<
+// >>>>> SUBSTITUA A FUNÇÃO 'suggestViralElements' INTEIRA POR ESTA VERSÃO <<<<<
 // =========================================================================
 const suggestViralElements = async (button) => {
     const fullTranscript = getTranscriptOnly();
@@ -1437,6 +1437,7 @@ const suggestViralElements = async (button) => {
     const reportContainer = document.getElementById('viralSuggestionsContainer');
     reportContainer.innerHTML = DOMPurify.sanitize(`<div class="my-4"><div class="loading-spinner-small mx-auto"></div><p class="text-sm mt-2">Procurando por oportunidades virais...</p></div>`);
 
+    // <<< O PROMPT AGORA TEM UM EXEMPLO PARA BLINDAR A RESPOSTA >>>
     const prompt = `Você é um Estrategista de Conteúdo Viral para o YouTube. Sua tarefa é analisar um roteiro e sugerir 3 oportunidades para inserir elementos que aumentem o potencial de viralidade.
 
 **TEMA DO VÍDEO (para contexto):** "${videoTheme}"
@@ -1448,11 +1449,25 @@ ${fullTranscript.slice(0, 7500)}
 
 **REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
 Sua resposta DEVE ser um array JSON. Cada objeto no array deve representar UMA sugestão e conter EXATAMENTE estas 3 chaves:
-1.  "location": (String) O local exato no roteiro onde a inserção deve ocorrer (ex: "Após o parágrafo que termina com '...'").
-2.  "element_type": (String) O tipo de elemento a ser inserido. Você DEVE escolher um da seguinte lista: ['Dado Surpreendente', 'Citação de Autoridade', 'Mini-Revelação (Teaser)', 'Pergunta Compartilhável', 'Anedota Pessoal Rápida'].
-3.  "implementation_idea": (String) Uma descrição curta e acionável de como implementar a sugestão (ex: "Pesquise uma estatística chocante sobre X e insira aqui para aumentar o impacto.").
+1.  "location": (String) O local exato no roteiro onde a inserção deve ocorrer.
+2.  "element_type": (String) O tipo de elemento a ser inserido, escolhido da lista: ['Dado Surpreendente', 'Citação de Autoridade', 'Mini-Revelação (Teaser)', 'Pergunta Compartilhável', 'Anedota Pessoal Rápida'].
+3.  "implementation_idea": (String) Uma descrição curta e acionável de como implementar a sugestão.
 
-Responda APENAS com o array JSON. Não inclua nenhum outro texto.`;
+**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO:**
+[
+    {
+        "location": "Após o parágrafo que termina com '...a decisão que mudaria tudo.'",
+        "element_type": "Dado Surpreendente",
+        "implementation_idea": "Insira uma estatística chocante sobre o tema para reforçar o impacto da decisão."
+    },
+    {
+        "location": "No final da introdução",
+        "element_type": "Mini-Revelação (Teaser)",
+        "implementation_idea": "Adicione uma frase como '...mas eles não sabiam que o verdadeiro segredo ainda estava para ser revelado.'"
+    }
+]
+
+Responda APENAS com o array JSON completo e sintaticamente perfeito.`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
