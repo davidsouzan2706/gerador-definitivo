@@ -3815,20 +3815,23 @@ A partir de agora, você deve agir como um "Maestro do Ritmo" e um "Engenheiro d
 **AÇÃO FINAL:** Com base no contexto fornecido, escreva AGORA a seção "${sectionTitle}" com o mais alto nível de qualidade narrativa, engajamento e conformidade com as regras acima.
 `;
 
-    if (contextText) {
-        prompt += `
-**INSTRUÇÃO DE CONTINUIDADE (A REGRA MAIS IMPORTANTE):**
-Você está escrevendo a continuação de um roteiro. O texto abaixo é da seção ANTERIOR.
-- **NÃO REPITA** as ideias, frases ou o tom da seção anterior.
-- Sua tarefa é **AVANÇAR A NARRATIVA**. Comece de onde o texto anterior parou.
-- Introduza novas informações, aprofunde os argumentos ou inicie o próximo ponto da história.
+if (contextText) {
+    prompt += `
+**INSTRUÇÃO DE CONTINUIDADE ESTRATÉGICA (A REGRA MAIS CRÍTICA):**
+Você é um Continuador de Narrativas de elite. Sua tarefa ABSOLUTAMENTE CRÍTICA é escrever a próxima seção de forma que ela se encaixe PERFEITAMENTE na narrativa existente.
 
-**TEXTO DA SEÇÃO ANTERIOR (PARA CONTEXTO):**
+**REGRAS DE CONTINUIDADE (INEGOCIÁVEIS E ABSOLUTAMENTE OBRIGATÓRIAS):**
+1.  **NÃO REPITA, NÃO ECOE:** É TERMINANTEMENTE PROIBIDO repetir ou parafrasear ideias, frases, conceitos ou até mesmo o tom/rítmo da seção anterior. O espectador já viu aquele conteúdo.
+2.  **AVANCE A NARRATIVA:** Sua única função aqui é MOVER a história ou argumento PARA FRENTE. Comece EXATAMENTE onde o texto anterior parou, como se estivesse escrevendo o próximo capítulo de um livro.
+3.  **INTRODUZA NOVIDADE E PROFUNDIDADE:** Esta é sua chance de revelar novas informações, aprofundar significados, explorar nuances ou iniciar o próximo grande ponto da história. Mantenha o momentum narrativo.
+
+**TEXTO DA SEÇÃO ANTERIOR (PARA CONTEXTO E REFERÊNCIA CRÍTICA):**
 ---
 ${contextText}
 ---
 
-Agora, escreva a seção "${sectionTitle}", garantindo que seja uma continuação fluida e sem repetições.`;
+**AÇÃO FINAL:** Com base nesta continuidade crítica, escreva AGORA a seção "${sectionTitle}", garantindo que seja uma transição FLUÍDA, logicamente impecável e totalmente LIVRE de repetições. Responda APENAS com o texto da nova seção.
+`;
     }
 
     if (outlineDirective) {
@@ -3845,7 +3848,15 @@ Agora, escreva a seção "${sectionTitle}", garantindo que seja uma continuaçã
     // >>> BLOCO AGORA 100% COMPLETO, SEM ABREVIAÇÕES OU PLACEHOLDERS <<<
     switch (narrativeStructure) {
         case 'documentary':
-            prompt += `\n\nNARRATIVE STYLE: As this is a 'Documentary', prioritize factual accuracy, a clear timeline, and an authoritative tone. Build your case with evidence and logical progression.`;
+            prompt += `\n\nNARRATIVE STYLE (DOCUMENTARY - BLINDADO PARA EXCELÊNCIA):
+**INSTRUÇÕES ESTRATÉGICAS E CRÍTICAS (SIGA EXATAMENTE):**
+- **Precisão Factual Absoluta:** Todo dado, data, citação ou afirmação deve ser verificável e precisa. Nenhuma informação especulativa sem qualificação clara.
+- **Linha do Tempo Clara e Lógica:** Estruture a narrativa em uma sequência temporal coerente e fácil de seguir. Use marcadores temporais claros ("Nos primeiros anos...", "Em 1945...", "Após a descoberta...").
+- **Tom Autoritativo e Confiável:** Adote um tom de voz que transmita expertise e credibilidade. Evite gírias ou linguagem casual excessiva.
+- **Construção Baseada em Evidências:** Apresente argumentos e desenvolva pontos centrais apoiando-os em fatos concretos, depoimentos, dados históricos ou evidências visuais descritas.
+- **Progressão Lógica e Imparcial:** Conduza a narrativa de forma lógica de um ponto ao próximo. Mesmo em documentários com ponto de vista, a argumentação deve ser clara e justificada, evitando saltos lógicos.
+- **Engajamento Intelectual:** Embora seja informativo, o texto não deve ser monótono. Use a estrutura e os fatos para criar intriga, suspense ou curiosidade intelectual em torno do tema.
+`;
             break;
         case 'heros_journey':
             prompt += `\n\nNARRATIVE STYLE: Following the 'Hero's Journey', structure this section around the hero's call to adventure, trials, or transformation. Emphasize the conflict and growth.`;
@@ -3880,26 +3891,34 @@ Agora, escreva a seção "${sectionTitle}", garantindo que seja uma continuaçã
 
     switch (sectionName) {
         case 'outline':
-            prompt = `${baseContext}
+                prompt = `${baseContext}
 
-Você é um mestre roteirista e estrategista de conteúdo. Sua tarefa é criar um "beat sheet" ou um esboço estratégico detalhado para o vídeo.
+Você é um MESTRE ROTEIRISTA e um ESTRATEGISTA DE CONTEÚDO DE ALTO NÍVEL. Sua tarefa é criar um "beat sheet" ou um esboço estratégico DETALHADO, ACIONÁVEL e PERFEITAMENTE ALINHADO com o contexto fornecido.
 
-**REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
-1.  Responda APENAS com um objeto JSON.
-2.  O objeto deve conter chaves para: "introduction", "development", "climax", "conclusion", e "cta".
-3.  O valor de cada chave deve ser uma string descrevendo o objetivo daquela seção.
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (ABSOLUTAMENTE INEGOCIÁVEIS):**
+1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um objeto JSON válido, começando com \`{\` e terminando com \`}\`. NENHUM outro texto, comentário, metatexto ou explicação é permitido. Pense nisso como uma resposta de API pura e impecável.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar obrigatoriamente aspas duplas (\`"\`).
+3.  **CHAVES EXATAS E OBRIGATÓRIAS:** O objeto DEVE conter EXATAMENTE estas cinco chaves: "introduction", "development", "climax", "conclusion", e "cta".
+4.  **TIPOS EXATOS:** O valor de cada chave DEVE ser uma string.
+5.  **CONTEÚDO DAS STRINGS (ACIONÁVEL E ESTRATÉGICO):** Cada string deve conter uma descrição CLARA, ESPECÍFICA e ACIONÁVEL do objetivo narrativo, emocional e estratégico daquela seção. Evite descrições vagas ou genéricas. Foque no QUE será feito e QUAL o impacto esperado.
 
-**REGRA DE SINTAXE CRÍTICA:**
-- **Certifique-se de que cada valor de string no JSON comece e termine com aspas duplas (\`).** É estritamente proibido misturar aspas simples e duplas ou esquecer de fechar uma string corretamente.
+**INSTRUÇÕES DETALHADAS PARA CADA SEÇÃO DO ESBOÇO:**
+-   **"introduction" (Introdução com Impacto):** Defina com precisão o objetivo da introdução. Qual é o GANCHO inicial? Que PERGUNTA central ou emoção você quer instigar desde o início para prender a atenção?
+-   **"development" (Desenvolvimento com Profundidade):** Liste e descreva os PONTOS PRINCIPAIS que serão abordados no desenvolvimento. Como a informação será ESTRUTURADA? Que ARGUMENTOS, EVIDÊNCIAS ou HISTÓRIAS serão usados para construir a narrativa?
+-   **"climax" (Clímax com Tensão/Revelação):** Identifique qual é o MOMENTO DE MAIOR TENSÃO, REVELAÇÃO ou IMPACTO EMOCIONAL. O que o espectador DEVE SENTIR ou ENTENDER neste ponto crucial?
+-   **"conclusion" (Conclusão com Takeaway):** Explique como a LIÇÃO PRINCIPAL será RESUMIDA e REFORÇADA. Qual TAKEAWAY ou INSIGHT você quer deixar gravado na mente do espectador?
+-   **"cta" (Chamada para Ação com Propósito):** Defina qual é a CHAMADA PARA AÇÃO ESPECÍFICA e como ela se conecta com o conteúdo do vídeo. O que você quer que o espectador FAÇA após assistir? (Ex: Comentar, Compartilhar, Se Inscrever, Visitar um Link).
 
-**EXEMPLO DE FORMATO PERFEITO:**
+**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO (SIGA ESTE EXATO MODELO):**
 {
-  "introduction": "Começar com uma pergunta retórica chocante sobre a mortalidade.",
-  "development": "Construir a narrativa explorando o luto das irmãs de Lázaro.",
-  "climax": "O momento de maior tensão no túmulo.",
-  "conclusion": "Resumir a lição: o milagre não é sobre desafiar a morte, mas sobre o poder da fé.",
-  "cta": "Fazer uma chamada para ação suave."
+  "introduction": "Começar com uma pergunta retórica chocante sobre a mortalidade para prender a atenção imediatamente e levantar a questão central da fé diante da finitude.",
+  "development": "Construir a narrativa explorando o luto profundo das irmãs de Lázaro, estabelecendo a conexão humana com a história e desenvolvendo o contexto emocional e teológico.",
+  "climax": "O momento de maior tensão no túmulo, quando Jesus chama Lázaro após quatro dias de morte, criando a expectativa máxima para o milagre e o ponto alto da narrativa.",
+  "conclusion": "Resumir a lição central: o verdadeiro milagre não é desafiar a morte em si, mas demonstrar o poder absoluto da fé e da promessa divina, conectando ao tema central.",
+  "cta": "Fazer uma chamada para ação suave, convidando o espectador a refletir sobre um momento em que sentiu a presença de Deus em meio às dificuldades e compartilhar nos comentários."
 }
+
+**AÇÃO FINAL:** Com base no contexto estratégico fornecido, crie AGORA o esboço JSON completo e sintaticamente PERFEITO, seguindo EXATAMENTE todas as regras, instruções e o exemplo acima. Responda APENAS com o objeto JSON.
 `;
             maxTokens = 2000;
             break;
