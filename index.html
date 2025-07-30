@@ -4,7 +4,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Roteiros Virais v3.8</title>
+    <title>Gerador de Roteiros Virais v3.9</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
@@ -654,7 +654,7 @@
         <header class="bg-white dark:bg-gray-800 shadow-sm">
             <div class="container mx-auto px-4 py-4 flex justify-between items-center">
                 <h1 class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                    <i class="fas fa-video mr-2"></i>Gerador de Roteiros Virais v3.8
+                    <i class="fas fa-video mr-2"></i>Gerador de Roteiros Virais v3.9
                 </h1>
                 <div class="flex items-center space-x-4">
                     <button id="darkModeToggle" class="theme-toggle">
@@ -3797,20 +3797,22 @@ const constructScriptPrompt = (sectionName, sectionTitle, outlineDirective = nul
     }
 
     let prompt = `${baseContext}
+Você é um MESTRE ROTEIRISTA DE YOUTUBE e um ESPECIALISTA EM ENGAJAMENTO. Sua tarefa é escrever o texto CATIVANTE, ESTRATÉGICO e PERFEITAMENTE TIMBRADO para a seção **"${sectionTitle}"** do roteiro.
 
-Você é um mestre roteirista de YouTube. Sua tarefa é escrever o texto para a seção **"${sectionTitle}"** do roteiro.
-    ${durationInstruction}
+${durationInstruction}
 
-**REGRAS CRÍTICAS E INEGOCIÁVEIS:**
-1.  **FOCO TOTAL:** Sua resposta deve ser APENAS e SOMENTE o texto para a seção **"${sectionTitle}"**.
-2.  **SEM EXTRAS:** É estritamente proibido incluir preâmbulos (como "Aqui está a introdução:"), resumos, traduções ou qualquer outro texto que não seja o próprio roteiro. A violação desta regra resultará em falha.
-3.  **FORMATO LIMPO:** Não inclua rótulos de cena, de áudio ou de narrador (como [CENA], (Música sobe), Narrador:). Apenas o texto a ser falado.
+**REGRAS CRÍTICAS E INEGOCIÁVEIS (ABSOLUTAMENTE OBRIGATÓRIAS):**
+1.  **FOCO TOTAL E EXCLUSIVO:** Sua resposta deve ser APENAS e SOMENTE o texto a ser falado para a seção **"${sectionTitle}"**. NENHUM outro conteúdo é permitido.
+2.  **RESPOSTA PURA E LIMPA:** É TERMINANTEMENTE PROIBIDO incluir qualquer preâmbulo (como "Aqui está a introdução:", "Claro, vou escrever isso"), resumos, metatextos, traduções ou qualquer texto que não seja o roteiro propriamente dito. Qualquer violação resultará em falha total.
+3.  **FORMATO IMPECAVEL:** NÃO inclua NENHUM rótulo de cena, descrição de áudio, anotação técnica ou rótulo de narrador (ex: [CENA], (Música sobe), Narrador:, Host:). Retorne APENAS o conteúdo textual final que será dito em voz alta.
 
-**NOVA REGRA PERMANENTE: MAESTRO DO RITMO NARRATIVO**
-A partir de agora, você deve agir como um "Maestro do Ritmo". Sua escrita precisa ser dinâmica e cativante, não monótona. Para isso, você DEVE:
-- **Variar o Comprimento das Frases:** Alterne entre frases curtas e diretas (para criar impacto e tensão) e frases mais longas e complexas (para descrever ou aprofundar um conceito).
-- **Usar Perguntas Retóricas:** Ocasionalmente, faça perguntas diretas ao espectador para provocar reflexão e aumentar o engajamento. (Ex: "Mas o que isso realmente significava?", "Você consegue imaginar a cena?").
-- **Criar Pausas Dramáticas:** Use parágrafos muito curtos, às vezes de uma única frase, para criar pausas e dar peso a uma revelação.
+**NOVA REGRA PERMANENTE: MAESTRO DO RITMO NARRATIVO & ENGAJAMENTO MÁXIMO**
+A partir de agora, você deve agir como um "Maestro do Ritmo" e um "Engenheiro de Engajamento". Sua escrita NÃO PODE ser monótona. Você DEVE aplicar técnicas avançadas para prender a atenção:
+- **Variação Dinâmica de Frases:** Alterne estrategicamente entre frases CURTAS e DE IMPACTO (para criar tensão, ritmo e ênfase) e frases MAIS LONGAS e RICAS EM DETALHES (para descrever, aprofundar conceitos ou construir narrativas). Esta variação é essencial para o ritmo.
+- **Perguntas Retóricas Envolvedoras:** Integre PERGUNTAS RETÓRICAS bem posicionadas para provocar reflexão direta no espectador e aumentar significativamente o engajamento cognitivo. (Ex: "Mas o que isso realmente significava para João?", "Você já parou para pensar quantas vezes isso acontece?").
+- **Pausas e Revelações Dramáticas:** Utilize parágrafos MUITO CURTOS, ou mesmo frases soltas em um parágrafo próprio, para criar PAUSAS CALCULADAS, gerar ANTICIPAÇÃO e dar PESO MÁXIMO a revelações ou insights chave.
+
+**AÇÃO FINAL:** Com base no contexto fornecido, escreva AGORA a seção "${sectionTitle}" com o mais alto nível de qualidade narrativa, engajamento e conformidade com as regras acima.
 `;
 
     if (contextText) {
