@@ -1160,6 +1160,38 @@
 </div>
 
 
+
+<!-- ========================================================== -->
+<!--     NOVO MODAL PARA ENGENHARIA REVERSA DE ROTEIRO      -->
+<!-- ========================================================== -->
+<div id="benchmarkDialogOverlay" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+    <div class="card max-w-2xl w-full animate-fade-in">
+        <h3 class="text-xl font-bold mb-2">Engenharia Reversa de Roteiro</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Cole as informações do vídeo viral de referência. A IA extrairá a estratégia para você.</p>
+        
+        <div class="space-y-4">
+            <div class="input-group">
+                <label for="benchmarkTheme">Tema do Vídeo de Referência:</label>
+                <input type="text" id="benchmarkTheme" placeholder="Ex: A História Secreta da Arca da Aliança">
+            </div>
+            <div class="input-group">
+                <label for="benchmarkDescription">Descrição (Opcional):</label>
+                <textarea id="benchmarkDescription" rows="3" placeholder="Cole a descrição do vídeo aqui..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="benchmarkTranscript">Transcrição do Roteiro:</label>
+                <textarea id="benchmarkTranscript" rows="8" placeholder="Cole a transcrição completa do roteiro aqui..."></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-4 mt-6">
+            <button id="benchmarkBtnCancel" class="btn btn-secondary">Cancelar</button>
+            <button id="benchmarkBtnConfirm" class="btn btn-primary">Analisar e Preencher</button>
+        </div>
+    </div>
+</div>
+
+
     <script type="module">
 
         // ==========================================================
@@ -6419,35 +6451,6 @@ const actions = {
 
 
 
-<!-- ========================================================== -->
-<!--     NOVO MODAL PARA ENGENHARIA REVERSA DE ROTEIRO      -->
-<!-- ========================================================== -->
-<div id="benchmarkDialogOverlay" style="display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
-    <div class="card max-w-2xl w-full animate-fade-in">
-        <h3 class="text-xl font-bold mb-2">Engenharia Reversa de Roteiro</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Cole as informações do vídeo viral de referência. A IA extrairá a estratégia para você.</p>
-        
-        <div class="space-y-4">
-            <div class="input-group">
-                <label for="benchmarkTheme">Tema do Vídeo de Referência:</label>
-                <input type="text" id="benchmarkTheme" placeholder="Ex: A História Secreta da Arca da Aliança">
-            </div>
-            <div class="input-group">
-                <label for="benchmarkDescription">Descrição (Opcional):</label>
-                <textarea id="benchmarkDescription" rows="3" placeholder="Cole a descrição do vídeo aqui..."></textarea>
-            </div>
-            <div class="input-group">
-                <label for="benchmarkTranscript">Transcrição do Roteiro:</label>
-                <textarea id="benchmarkTranscript" rows="8" placeholder="Cole a transcrição completa do roteiro aqui..."></textarea>
-            </div>
-        </div>
-
-        <div class="flex justify-end gap-4 mt-6">
-            <button id="benchmarkBtnCancel" class="btn btn-secondary">Cancelar</button>
-            <button id="benchmarkBtnConfirm" class="btn btn-primary">Analisar e Preencher</button>
-        </div>
-    </div>
-</div>
 
 
 </script>
