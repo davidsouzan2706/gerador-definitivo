@@ -6200,37 +6200,48 @@ const suggestStrategy = async (button) => {
         speaking_pace: `['${Array.from(document.getElementById('speakingPace').options).map(o => o.value).filter(Boolean).join("', '")}']`,
     };
 
-    // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE E ESTRUTURA EXPLÍCITAS <<<
-    const prompt = `Você é uma API que retorna um objeto JSON para definir a estratégia de um vídeo.
+// =========================================================================
+// >>>>> PROMPT FINAL E BLINDADO PARA PREENCHIMENTO INICIAL <<<<<
+// =========================================================================
+const prompt = `Você é uma API de Estratégia de Conteúdo Viral altamente especializada. Sua única função é gerar um objeto JSON contendo uma estratégia de vídeo de EXCEPCIONAL qualidade com base em um tema e descrição fornecidos.
 
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
-1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`{\` e terminando com \`}\`.
-2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
-3.  **PREENCHIMENTO TOTAL:** Você DEVE preencher TODAS as chaves listadas no manual abaixo com valores criativos e relevantes.
+**TAREFA PRINCIPAL:** Analisar o tema e a descrição, e criar uma estratégia de vídeo completa, envolvente e com alto potencial de engajamento.
 
-**MANUAL DE PREENCHIMENTO (SIGA EXATAMENTE):**
--   **"target_audience":** (String) Descreva o público-alvo ideal.
--   **"narrative_goal":** (String) Escolha EXATAMENTE UM valor da lista: ${validOptions.narrative_goal}.
--   **"narrative_structure":** (String) Com base no "narrative_goal", escolha uma estrutura compatível: se 'storytelling', escolha de ["documentary", "heros_journey", "pixar_spine", "mystery_loop", "twist"]; se 'storyselling', escolha de ["underdog_victory", "discovery_mentor", "if_not_found_create", "pas", "bab"].
--   **"narrative_theme":** (String) Defina o tema principal.
--   **"narrative_tone":** (String) Escolha EXATAMENTE UM valor da lista: ${validOptions.narrative_tone}.
--   **"narrative_voice":** (String) Descreva a personalidade do narrador.
--   **"central_question":** (String) Formule a pergunta central do vídeo.
--   **"emotional_arc":** (String) Descreva a jornada emocional do espectador.
--   **"emotional_hook":** (String) Crie uma história pessoal para ser o fio condutor.
--   **"shocking_ending_hook":** (String) Crie uma frase chocante para o início do vídeo.
--   **"language_style":** (String) Escolha EXATAMENTE UM valor da lista: ${validOptions.language_style}.
--   **"video_objective":** (String) Escolha EXATAMENTE UM valor da lista: ${validOptions.video_objective}.
--   **"speaking_pace":** (String) Escolha EXATAMENTE UM valor da lista: ${validOptions.speaking_pace}.
--   **"image_description_engine":** (String) Sugira palavras-chave para o estilo visual.
--   **"research_data":** (String) Sugira quais dados pesquisar para o roteiro (NÃO INVENTE DADOS).
--   **IDIOMA:** Lembre-se, todos os valores de texto devem estar em **${languageName}**.
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (ABSOLUTAMENTE INEGOCIÁVEIS):**
+1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um objeto JSON válido, começando com \`{\` e terminando com \`}\`. NENHUM outro texto, comentário ou explicação é permitido. Pense nisso como uma resposta de API pura e impecável.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar obrigatoriamente aspas duplas (\`"\`).
+3.  **PREENCHIMENTO TOTAL E EXATO:** Você DEVE preencher EXATAMENTE as chaves listadas no "MANUAL DE PREENCHIMENTO" abaixo. Nenhuma chave pode estar faltando, e nenhuma chave extra deve ser adicionada.
+4.  **TIPOS DE DADOS EXATOS:**
+    - Todas as chaves e valores devem ser strings.
+    - Para campos com escolhas pré-definidas (como "narrative_goal", "narrative_structure", etc.), você DEVE escolher EXATAMENTE um dos valores permitidos listados.
+5.  **IDIOMA:** Lembre-se, todos os valores de texto devem estar em **${languageName}**.
 
-**Tema do Vídeo:** "${theme}"
-**Descrição:** "${description}"
+**MANUAL DE PREENCHIMENTO (SIGA ESTAS INSTRUÇÕES PARA CADA CAMPO):**
+-   **"target_audience" (Público-Alvo Específico):** Defina um segmento CLARAMENTE caracterizado que se beneficiará MÁXIMO deste vídeo. Evite generalidades. Seja demográfico, psicográfico ou comportamental. (Ex: "Jovens em transição de carreira buscando propósito", "Pais de adolescentes com dificuldades escolares")
+-   **"narrative_goal" (Objetivo Narrativo Central):** Escolha EXATAMENTE UM valor de: ${validOptions.narrative_goal}. Justifique sua escolha com base no tema.
+-   **"narrative_structure" (Estrutura Narrativa Ideal):** Com base no "narrative_goal" escolhido, selecione uma estrutura compatível:
+    -   Se 'storytelling', escolha de: ["documentary", "heros_journey", "pixar_spine", "mystery_loop", "twist"].
+    -   Se 'storyselling', escolha de: ["underdog_victory", "discovery_mentor", "if_not_found_create", "pas", "bab"].
+    Explique brevemente por que esta estrutura se encaixa.
+-   **"narrative_theme" (Tema Principal Profundo):** Defina o tema central de forma concisa, mas com profundidade. Vá além do tópico óbvio. (Ex: "Não é sobre 'produtividade', é sobre 'recuperar o controle do próprio tempo'")
+-   **"narrative_tone" (Tom Emocional do Vídeo):** Escolha EXATAMENTE UM valor de: ${validOptions.narrative_tone}. Este tom deve guiar toda a narrativa.
+-   **"narrative_voice" (Personalidade do Narrador):** Descreva a voz do narrador de forma vívida. Quem está falando com o espectador? (Ex: "Um mentor sábio e compassivo", "Um amigo curioso e um pouco sarcástico")
+-   **"central_question" (A Pergunta que Tudo Conecta):** Formule uma pergunta poderosa e envolvente que será o fio condutor lógico e emocional do vídeo. Esta pergunta deve ser respondida ao longo do conteúdo.
+-   **"emotional_arc" (Jornada Emocional do Espectador):** Descreva a jornada emocional em 3 atos: Como o espectador deve se SENTIR no início, no meio e no clímax do vídeo? (Ex: "Início: Curioso e um pouco ansioso. Meio: Empático e intrigado. Clímax: Inspirado e determinado.")
+-   **"emotional_hook" (História Pessoal Cativante):** Crie uma história pessoal (real ou fictícia, mas plausível) que servirá como fio condutor emocional. Esta história deve ilustrar a "central_question".
+-   **"shocking_ending_hook" (Frase de Impacto Inicial):** Crie uma frase curta, impactante e intrigante para ser usada como gancho inicial (hook) do vídeo. Deve prender a atenção imediatamente.
+-   **"language_style" (Estilo Linguístico):** Escolha EXATAMENTE UM valor de: ${validOptions.language_style}. Este estilo deve ser consistente em todo o roteiro.
+-   **"video_objective" (Objetivo Final do Vídeo):** Escolha EXATAMENTE UM valor de: ${validOptions.video_objective}. Qual é o resultado desejado no espectador após assistir?
+-   **"speaking_pace" (Ritmo da Narração):** Escolha EXATAMENTE UM valor de: ${validOptions.speaking_pace}. Este ritmo deve refletir o "narrative_tone" e o "video_objective".
+-   **"image_description_engine" (Palavras-Chave Visuais):** Sugira 3-5 palavras-chave que definam o estilo visual e os elementos principais para as imagens/animções do vídeo.
+-   **"research_data" (Diretrizes de Pesquisa):** Liste 2-3 pontos ESPECÍFICOS de dados, estatísticas ou informações que DEVEM ser pesquisados para embasar o roteiro. NÃO invente dados; apenas direcione a pesquisa.
 
-Responda APENAS com o objeto JSON completo e sintaticamente PERFEITO.`;
+**DADOS DE ENTRADA PARA ANALISAR E ESTRATEGIZAR:**
+- **Tema do Vídeo:** "${theme}"
+- **Descrição:** "${description}"
 
+**AÇÃO FINAL:** Gere AGORA o objeto JSON completo e sintaticamente PERFEITO, preenchendo todas as chaves com valores criativos, estratégicos e totalmente alinhados com o tema e descrição fornecidos. Responda APENAS com o objeto JSON.
+`;
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
         const strategy = cleanGeneratedText(rawResult, true);
