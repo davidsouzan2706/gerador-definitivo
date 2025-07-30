@@ -890,9 +890,7 @@
     <!-- O botão final (continua o mesmo) -->
 <div class="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
     <!-- NOSSO NOVO BOTÃO DE ENGENHARIA REVERSA -->
-    <button id="reverseEngineerBtn" data-action="reverseEngineer" class="btn btn-secondary w-full sm:w-auto">
-        <i class="fas fa-vial mr-2"></i> Analisar Vídeo de Referência
-    </button>
+
     <!-- Botão Opcional para ajuda da IA -->
     <button id="suggestStrategyBtn" data-action="suggestStrategy" class="btn btn-secondary w-full sm:w-auto">
         <i class="fas fa-magic mr-2"></i> Sugerir Estratégia (IA)
@@ -900,6 +898,9 @@
     <!-- Botão Principal para avançar -->
     <button id="startCraftingBtn" data-action="startCrafting" class="btn btn-primary w-full sm:w-auto">
         <i class="fas fa-arrow-right mr-2"></i> Iniciar Criação do Roteiro
+    </button>
+        <button id="reverseEngineerBtn" data-action="reverseEngineer" class="btn btn-secondary w-full sm:w-auto">
+        <i class="fas fa-vial mr-2"></i> Analisar Vídeo de Referência
     </button>
 </div>
 
@@ -1601,10 +1602,10 @@ const analyzeFullScript = async (button) => {
 
 
 // =========================================================================
-// >>>>> ADICIONE ESTA NOVA FUNÇÃO COMPLETA AO SEU SCRIPT <<<<<
+// >>>>> SUBSTITUA A FUNÇÃO 'reverseEngineerStrategy' INTEIRA POR ESTA <<<<<
 // =========================================================================
 const reverseEngineerStrategy = async (button) => {
-    // Função interna para mostrar/esconder o modal
+    // A função interna para mostrar o modal permanece a mesma
     const showBenchmarkDialog = () => {
         return new Promise(resolve => {
             const overlay = document.getElementById('benchmarkDialogOverlay');
@@ -1634,7 +1635,6 @@ const reverseEngineerStrategy = async (button) => {
         });
     };
 
-    // Abre o diálogo e espera pelos dados do usuário
     const benchmarkData = await showBenchmarkDialog();
     if (!benchmarkData) {
         window.showToast("Operação cancelada.");
@@ -1642,8 +1642,9 @@ const reverseEngineerStrategy = async (button) => {
     }
 
     showButtonLoading(button);
-    isSettingStrategy = true; // Sinaliza que estamos preenchendo o form
+    isSettingStrategy = true;
 
+    // <<< O PROMPT FOI ATUALIZADO AQUI >>>
     const prompt = `Você é um Engenheiro de Roteiros especialista em engenharia reversa. Sua tarefa é analisar os dados de um vídeo de sucesso e extrair a ESTRATÉGIA NARRATIVA E TÉCNICA por trás dele.
 
 **DADOS DO VÍDEO DE REFERÊNCIA:**
@@ -1660,7 +1661,7 @@ Sua resposta DEVE ser um único objeto JSON. As chaves deste objeto DEVEM ser ex
 - "narrative_goal": (String) O objetivo é 'storytelling' (conectar/inspirar) ou 'storyselling' (persuadir/vender)?
 - "narrative_structure": (String) Qual estrutura narrativa foi usada? Escolha uma de: ['documentary', 'heros_journey', 'pixar_spine', 'mystery_loop', 'twist', 'pas', 'bab', 'aida', 'underdog_victory', 'discovery_mentor', 'if_not_found_create'].
 - "narrative_theme": (String) Qual é a "grande ideia" ou mensagem central?
-- "narrative_tone": (String) Qual é o tom da narração? Escolha um de: ['inspirador', 'serio', 'emocional'].
+- "narrative_tone": (String) Analise o tom da narração. Sua resposta para esta chave DEVE OBRIGATORIAMENTE ser uma das seguintes strings: 'inspirador', 'serio', ou 'emocional'.
 - "narrative_voice": (String) Como você descreveria a personalidade do narrador?
 - "central_question": (String) Existe uma pergunta central que guia o roteiro? Se sim, qual?
 - "speaking_pace": (String) O ritmo da fala parece ser 'slow', 'moderate' ou 'fast'?
@@ -1675,9 +1676,10 @@ Responda APENAS com o objeto JSON.`;
             throw new Error("A IA não retornou uma estratégia no formato JSON válido.");
         }
 
-        // Preenchendo o formulário
-        document.getElementById('videoTheme').value = benchmarkData.theme; // Preenche o tema principal
-        document.getElementById('videoDescription').value = benchmarkData.transcript; // Usa a transcrição como inspiração
+        // <<< A LÓGICA DE PREENCHIMENTO FOI CORRIGIDA AQUI >>>
+        document.getElementById('videoTheme').value = benchmarkData.theme;
+        // Preenche com a DESCRIÇÃO do benchmark, não a transcrição. Se estiver vazia, o campo fica vazio.
+        document.getElementById('videoDescription').value = benchmarkData.description; 
         
         const keyToElementIdMap = {
             'target_audience': 'targetAudience', 'narrative_theme': 'narrativeTheme',
@@ -1691,12 +1693,10 @@ Responda APENAS com o objeto JSON.`;
             }
         }
 
-        // Lógica especial para os selects dependentes
         if (strategy.narrative_goal) {
             document.getElementById('narrativeGoal').value = strategy.narrative_goal;
-            updateNarrativeStructureOptions(); // Atualiza as opções de estrutura
+            updateNarrativeStructureOptions();
             
-            // Um pequeno delay para garantir que as opções foram renderizadas antes de selecionar
             setTimeout(() => {
                 if (strategy.narrative_structure) {
                     document.getElementById('narrativeStructure').value = strategy.narrative_structure;
