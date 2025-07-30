@@ -328,9 +328,16 @@
         border-radius: 50%; 
         animation: spin 1s linear infinite; 
     }
-    @keyframes spin { 
-        to { transform: rotate(360deg); } 
-    }
+  @keyframes fade-out-highlight {
+  from {
+    background-color: color-mix(in srgb, var(--primary) 25%, transparent) !important;
+    outline: 2px solid var(--primary) !important;
+  }
+  to {
+    background-color: transparent !important;
+    outline: 2px solid transparent !important;
+  }
+}
     .progress-bar { 
         height: 8px; 
         background: var(--dark-border); 
@@ -4216,25 +4223,12 @@ ${originalText}
 
 
 // =========================================================================
-// >>>>> VERSÃO FINAL (v5) - A CIRURGIA DE TRANSPLANTE DE DOM <<<<<
+// >>>>> VERSÃO FINAL (v6) - A CIRURGIA DE RENDERIZAÇÃO FORÇADA <<<<<
 // =========================================================================
 window.applySuggestion = (button) => {
     const { criterionName, problematicQuote, rewrittenQuote } = button.dataset;
-
-    if (!problematicQuote || !rewrittenQuote) {
-        window.showToast("Erro: Informações da sugestão não encontradas.");
-        return;
-    }
-
-    const criterionMap = {
-        'Introdução (Hook)': 'introSection',
-        'Desenvolvimento (Ritmo e Retenção)': 'developmentSection',
-        'Clímax': 'climaxSection',
-        'Conclusão': 'conclusionSection',
-        'CTA (Call to Action)': 'ctaSection'
-    };
-
-    const sectionId = criterionMap[criterionName];
+    const sectionId = (window.criterionMap || {})[criterionName]; // Usando um mapa global seguro
+    
     if (!sectionId) {
         window.showToast(`Erro: Seção alvo '${criterionName}' não reconhecida.`);
         return;
@@ -4253,43 +4247,36 @@ window.applySuggestion = (button) => {
 
     paragraphs.forEach(p => {
         if (replaced) return;
-
-        // Iteramos sobre todos os nós filhos do parágrafo
         const childNodes = Array.from(p.childNodes);
 
         for (const node of childNodes) {
-            // Buscamos um nó que seja do tipo TEXTO e que contenha nossa citação
             if (node.nodeType === Node.TEXT_NODE && node.textContent.includes(problematicQuote)) {
-                
-                // <<< AQUI COMEÇA A CIRURGIA DE TRANSPLANTE >>>
-
                 const originalTextNode = node;
                 const text = originalTextNode.textContent;
                 const startIndex = text.indexOf(problematicQuote);
 
-                // 1. Dividimos o nó de texto em três partes: antes, durante e depois da citação.
-                const textBefore = text.substring(0, startIndex);
-                const textAfter = text.substring(startIndex + problematicQuote.length);
+                // --- A NOVA LÓGICA DE DUPLO PASSO ---
 
-                // 2. Criamos nosso SPAN animado com o novo texto.
+                // 1. Criamos nosso SPAN, MAS SEM A CLASSE DE ANIMAÇÃO AINDA.
                 const highlightSpan = document.createElement('span');
-                highlightSpan.className = 'highlight-change';
+                highlightSpan.id = `highlight-${Date.now()}`; // Damos um ID único para encontrá-lo depois.
                 highlightSpan.textContent = rewrittenQuote;
 
-                // 3. Criamos os nós de texto para o conteúdo antes e depois.
-                const nodeBefore = document.createTextNode(textBefore);
-                const nodeAfter = document.createTextNode(textAfter);
-
-                // 4. O TRANSPLANTE: Pegamos o pai do nó original...
-                const parent = originalTextNode.parentNode;
+                // 2. Fazemos a cirurgia de DOM normalmente.
+                const newHtml = p.innerHTML.replace(problematicQuote, highlightSpan.outerHTML);
+                p.innerHTML = DOMPurify.sanitize(newHtml, { ADD_TAGS: ["span"], ADD_ATTR: ["class", "id"] });
                 
-                // ...e substituímos o nó de texto antigo pela nossa nova sequência: [texto antes] + [span animado] + [texto depois]
-                parent.replaceChild(nodeAfter, originalTextNode);
-                parent.insertBefore(highlightSpan, nodeAfter);
-                parent.insertBefore(nodeBefore, highlightSpan);
+                // 3. O TRUQUE DE MESTRE: Usamos setTimeout com um delay mínimo.
+                // Isso força o navegador a renderizar o span primeiro, e SÓ DEPOIS aplicar a classe.
+                setTimeout(() => {
+                    const spanToAnimate = document.getElementById(highlightSpan.id);
+                    if (spanToAnimate) {
+                        spanToAnimate.classList.add('highlight-change');
+                    }
+                }, 20); // 20 milissegundos é o suficiente.
 
                 replaced = true;
-                break; // Cirurgia concluída, saímos do loop.
+                break;
             }
         }
     });
@@ -4317,6 +4304,16 @@ window.applySuggestion = (button) => {
         button.classList.remove('btn-success');
         button.classList.add('btn-primary');
     }, 5000);
+};
+
+// Adicione este mapa ao escopo global para a função acima ter acesso.
+// Pode colocar logo antes da declaração da função applySuggestion.
+window.criterionMap = {
+    'Introdução (Hook)': 'introSection',
+    'Desenvolvimento (Ritmo e Retenção)': 'developmentSection',
+    'Clímax': 'climaxSection',
+    'Conclusão': 'conclusionSection',
+    'CTA (Call to Action)': 'ctaSection'
 };
 
 
