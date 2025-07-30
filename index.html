@@ -534,51 +534,51 @@
       outline-offset: 2px;
     }
 
-    /* --- Tooltips de Ajuda (Unificado) --- */
-    .tooltip-container {
-        position: relative;
-        display: inline-flex;
-    }
-    .tooltip-container .tooltip-text {
-        visibility: hidden;
-        opacity: 0;
-        width: 300px;
-        background-color: var(--dark-surface); /* Alterado para surface para melhor contraste */
-        color: var(--dark-text-header);
-        text-align: left;
-        border-radius: 8px;
-        padding: 1rem;
-        position: absolute;
-        z-index: 1001;
-        bottom: 115%; /* Um pouco mais para cima para não colar no botão */
-        left: 50%;
-        transform: translateX(-50%);
-        box-shadow: var(--shadow);
-        border: 1px solid var(--dark-border);
-        transition: opacity 0.3s;
-        pointer-events: none;
-        font-size: 0.875rem;
-        font-weight: 500;
-        line-height: 1.6;
-    }
-    .tooltip-container .tooltip-text::after {
-        content: "";
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        margin-left: -5px;
-        border-width: 5px;
-        border-style: solid;
-        border-color: var(--dark-surface) transparent transparent transparent;
-    }
-    .tooltip-container:hover .tooltip-text {
-        visibility: visible;
-        opacity: 1;
-    }
-    .tooltip-container .tooltip-text strong {
-        font-weight: 700;
-        color: var(--primary);
-    }
+/* --- Tooltips de Ajuda (Unificado) --- */
+.tooltip-container {
+    position: relative;
+    display: inline-flex;
+}
+.tooltip-container .tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    width: 300px;
+    background-color: var(--dark-surface); 
+    color: var(--dark-text-header);
+    text-align: left;
+    border-radius: 8px;
+    padding: 1rem;
+    position: absolute;
+    z-index: 1001;
+    bottom: 115%; 
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--dark-border);
+    transition: opacity 0.3s;
+    pointer-events: none;
+    font-size: 0.9rem; /* <-- AUMENTAMOS A FONTE AQUI */
+    font-weight: 500;
+    line-height: 1.6;
+}
+.tooltip-container .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--dark-surface) transparent transparent transparent;
+}
+.tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+.tooltip-container .tooltip-text strong {
+    font-weight: 700;
+    color: var(--primary);
+}
     
     /* Estilos específicos para o ícone (i), se necessário */
     .help-icon {
