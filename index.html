@@ -4463,10 +4463,15 @@ ${promptContext}`;
 };
 
 
+// =========================================================================
+// >>>>> SUBSTITUA A FUNÇÃO 'window.refineSectionStyle' INTEIRA POR ESTA VERSÃO SEGURA <<<<<
+// =========================================================================
 
-// =========================================================================
-// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO DE REFINAR ESTILO POR ESTA <<<<<
-// =========================================================================
+/**
+ * Pega o texto de uma seção, pede para a IA refinar o estilo (remover repetições, melhorar fluidez)
+ * e substitui o conteúdo original pelo texto refinado.
+ * @param {HTMLElement} buttonElement - O botão "Refinar Estilo" que foi clicado.
+ */
 window.refineSectionStyle = async (buttonElement) => {
     showButtonLoading(buttonElement);
 
@@ -4506,24 +4511,30 @@ ${originalText}
         const newParagraphs = refinedText.split('\n').filter(p => p.trim() !== '');
         const sectionId = sectionElement.id.replace('Section', '');
         
+        // Constrói o novo HTML
         const newHtml = newParagraphs.map((p, index) => 
             `<div id="${sectionId}-p-${index}">${p}</div>`
         ).join('');
 
+        // <<< AQUI ESTÁ A IMPLEMENTAÇÃO DE SEGURANÇA >>>
+        // Sanitiza o HTML antes de inseri-lo no DOM
         contentWrapper.innerHTML = DOMPurify.sanitize(newHtml);
 
+        // Invalida análises anteriores, pois o texto mudou
         invalidateAndClearPerformance(sectionElement);
         invalidateAndClearPrompts(sectionElement);
         const analysisOutput = sectionElement.querySelector('.section-analysis-output');
         if (analysisOutput) {
-            analysisOutput.innerHTML = '';
+            analysisOutput.innerHTML = ''; // Limpa a análise de retenção
         }
 
+        // Atualiza o tempo de leitura
         updateAllReadingTimes();
+
         window.showToast("Estilo do roteiro refinado com sucesso!");
 
     } catch (error) {
-        console.error("Erro detalhado em refineSectionStyle:", error);
+        console.error("Erro detalhado em refineSectionStyle:", error); // Adicionado log de erro
         window.showToast(`Falha ao refinar o estilo: ${error.message}`);
     } finally {
         hideButtonLoading(buttonElement);
@@ -6139,100 +6150,84 @@ document.addEventListener('DOMContentLoaded', () => {
     const speakingPaceSelect = document.getElementById('speakingPace');
     if (speakingPaceSelect) { speakingPaceSelect.addEventListener('change', updateAllReadingTimes); }
     
-// =========================================================================
-// >>>>> SUBSTITUA TODO O BLOCO FINAL DO SEU SCRIPT POR ESTA VERSÃO <<<<<
-// =========================================================================
 
-    // --- 4. O "GERENTE DE CLIQUES" (versão final com a super-função) ---
-    const actions = {
-        // Ações da nova super-função de estratégia
-        'creativeStrategy': (btn) => getStrategy(btn, false),
-        'referenceStrategy': (btn) => getReferenceStrategy(btn),
+    // --- 4. O "GERENTE DE CLIQUES" (versão completa e corrigida) ---
 
-        // Ações do fluxo principal
-        'startCrafting': (btn) => startCrafting(),
-        'generateIdeas': (btn) => generateVideoIdeas(btn),
-        'unravelEnigmas': (btn) => unravelEnigmas(btn),
-        'generateOutline': (btn) => generateStrategicOutline(btn),
 
-        // Ações de geração de metadados
-        'mapEmotions': (btn) => mapEmotionsAndPacing(btn),
-        'generateDescription': (btn) => generateVideoDescription(btn),
-        'generateTitlesAndThumbnails': (btn) => generateTitlesAndThumbnails(btn),
-        'generateSoundtrack': (btn) => generateSoundtrack(btn),
-        
-        // Ações de geração de seções do roteiro
-        'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
-        'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
-        'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
-        'generateConclusion': (btn) => generateConclusion(btn),
-        'generateCta': (btn) => generateStrategicCta(btn),
-
-        // Ações do painel de análise
-        'applySuggestion': (btn) => window.applySuggestion(btn),
-        'applyAllSuggestions': (btn) => applyAllSuggestions(btn),
-        'analyzeScript': (btn) => analyzeFullScript(btn),
-        'analyzeHooks': (btn) => analyzeRetentionHooks(btn),
-        'suggestViralElements': (btn) => suggestViralElements(btn),
-
-        // Ações de gerenciamento de projeto
-        'exportProject': () => exportProject(),
-        'exportPdf': () => downloadPdf(),
-        'exportTranscript': () => handleCopyAndDownloadTranscript(),
-        'resetProject': async () => {
-            const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
-            if (confirmed) { resetApplicationState(); }
-        },
-        
-        // Ações de edição e refinamento dentro das seções
-        'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
-        'regenerate': (btn) => window.regenerateSection(btn.dataset.sectionId),
-        'copy': (btn) => {
-            const content = btn.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
-            if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(btn); }
-        },
-        'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
-        'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
-        'refineStyle': (btn) => window.refineSectionStyle(btn), // CORREÇÃO APLICADA AQUI
-        'enrichWithData': (btn) => window.enrichWithData(btn),
-        'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
-        'optimizeGroup': (btn) => {
-            const suggestionText = btn.dataset.suggestionText;
-            if (suggestionText) window.optimizeGroup(btn, suggestionText);
-        },
-        'deleteParagraphGroup': (btn) => {
-            const suggestionText = btn.dataset.suggestionText;
-            if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
-        },
-
-        // Ações de seleção de ideias
-        'select-idea': (btn) => {
-            const ideaString = btn.dataset.idea;
-            if (ideaString) {
-                try {
-                    const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                    document.getElementById('videoTheme').value = ideaObject.title || '';
-                    document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
-                    document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
-                    window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
-                    document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } catch (e) { console.error("Falha ao processar dados da ideia:", e); }
-            }
-        },
-        'select-enigma-idea': (btn) => {
-            const ideaString = btn.dataset.idea;
-            if (ideaString) {
-                try {
-                    const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                    document.getElementById('videoTheme').value = ideaObject.title || '';
-                    document.getElementById('videoDescription').value = ideaObject.synopsis || ideaObject.enigma || '';
-                    document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
-                    window.showToast("Enigma selecionado! Estratégia pré-preenchida.");
-                    document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                } catch (e) { console.error("Falha ao processar dados da ideia de enigma:", e); }
-            }
+const actions = {
+    'suggestStrategy': (btn) => suggestStrategy(btn),
+    'startCrafting': (btn) => startCrafting(),
+    'generateIdeas': (btn) => generateVideoIdeas(btn),
+    'unravelEnigmas': (btn) => unravelEnigmas(btn),
+    'generateOutline': (btn) => generateStrategicOutline(btn),
+    'mapEmotions': (btn) => mapEmotionsAndPacing(btn),
+    'generateDescription': (btn) => generateVideoDescription(btn),
+    'generateTitlesAndThumbnails': (btn) => generateTitlesAndThumbnails(btn),
+    'generateSoundtrack': (btn) => generateSoundtrack(btn),
+    'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
+    'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
+    'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
+    'generateConclusion': (btn) => generateConclusion(btn),
+    'generateCta': (btn) => generateStrategicCta(btn),
+    'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
+    'applySuggestion': (btn) => window.applySuggestion(btn),
+    'applyAllSuggestions': (btn) => applyAllSuggestions(btn),
+    'exportProject': () => exportProject(),
+    'exportPdf': () => downloadPdf(),
+    'exportTranscript': () => handleCopyAndDownloadTranscript(),
+    'resetProject': async () => {
+        const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
+        if (confirmed) { resetApplicationState(); }
+    },
+    'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
+    'select-idea': (btn) => {
+        const ideaString = btn.dataset.idea;
+        if (ideaString) {
+            try {
+                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                document.getElementById('videoTheme').value = ideaObject.title || '';
+                document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
+                document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
+                window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
+                document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) { console.error("Falha ao processar dados da ideia:", e); }
         }
-    };
+    },
+    'select-enigma-idea': (btn) => {
+        const ideaString = btn.dataset.idea;
+        if (ideaString) {
+            try {
+                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                document.getElementById('videoTheme').value = ideaObject.title || '';
+                document.getElementById('videoDescription').value = ideaObject.synopsis || ideaObject.enigma || '';
+                document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
+                window.showToast("Enigma selecionado! Estratégia pré-preenchida.");
+                document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) { console.error("Falha ao processar dados da ideia de enigma:", e); }
+        }
+    },
+    'regenerate': (btn) => window.regenerateSection(btn.dataset.sectionId),
+    'copy': (btn) => {
+        const content = btn.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
+        if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(btn); }
+    },
+    'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
+    'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
+    'refineStyle': (btn) => window.refineStyle(btn),
+    'enrichWithData': (btn) => window.enrichWithData(btn),
+    'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
+    'optimizeGroup': (btn) => {
+        const suggestionText = btn.dataset.suggestionText;
+        if (suggestionText) window.optimizeGroup(btn, suggestionText);
+    },
+    'deleteParagraphGroup': (btn) => {
+        const suggestionText = btn.dataset.suggestionText;
+        if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
+    },
+    'analyzeScript': (btn) => analyzeFullScript(btn),
+    'analyzeHooks': (btn) => analyzeRetentionHooks(btn),
+    'suggestViralElements': (btn) => suggestViralElements(btn) // <<< NOSSA NOVA LINHA AQUI
+};
 
     document.addEventListener('click', function(event) {
         // Lógica do Acordeão
