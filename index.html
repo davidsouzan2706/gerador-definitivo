@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
 
-    <style>
+<style>
     /* ================================================================= */
     /* =================== ARQUITETURA DE DESIGN (THEME) ================= */
     /* ================================================================= */
@@ -328,31 +328,9 @@
         border-radius: 50%; 
         animation: spin 1s linear infinite; 
     }
- 
-
-
-@keyframes fade-out-highlight {
-  from {
-    /* MUDANÇA DE COR AQUI: usando a cor amarela (#f59e0b) */
-    background-color: color-mix(in srgb, #f59e0b 25%, transparent);
-    outline: 2px solid #f59e0b;
-  }
-  to {
-    background-color: transparent;
-    outline: 2px solid transparent;
-  }
-}
-
-.highlight-change {
-  /* MUDE O NÚMERO AQUI PARA O TEMPO QUE DESEJAR */
-  animation: fade-out-highlight 15s ease-out forwards;
-  border-radius: 4px;
-  outline-offset: 2px;
-}
-
-
-
-}
+    @keyframes spin { 
+        to { transform: rotate(360deg); } 
+    }
     .progress-bar { 
         height: 8px; 
         background: var(--dark-border); 
@@ -539,10 +517,71 @@
         box-shadow: 0 0 15px color-mix(in srgb, var(--primary) 30%, transparent); 
     }
 
-    /* --- Tooltips de Ajuda dos Ícones (i) --- */
-    .help-icon {
+    /* --- Feedback Visual de Alteração ("Pisca") --- */
+    @keyframes fade-out-highlight {
+      from {
+        background-color: color-mix(in srgb, #f59e0b 25%, transparent);
+        outline: 2px solid #f59e0b;
+      }
+      to {
+        background-color: transparent;
+        outline: 2px solid transparent;
+      }
+    }
+    .highlight-change {
+      animation: fade-out-highlight 15s ease-out forwards;
+      border-radius: 4px;
+      outline-offset: 2px;
+    }
+
+    /* --- Tooltips de Ajuda (Unificado) --- */
+    .tooltip-container {
         position: relative;
         display: inline-flex;
+    }
+    .tooltip-container .tooltip-text {
+        visibility: hidden;
+        opacity: 0;
+        width: 300px;
+        background-color: var(--dark-surface); /* Alterado para surface para melhor contraste */
+        color: var(--dark-text-header);
+        text-align: left;
+        border-radius: 8px;
+        padding: 1rem;
+        position: absolute;
+        z-index: 1001;
+        bottom: 115%; /* Um pouco mais para cima para não colar no botão */
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--dark-border);
+        transition: opacity 0.3s;
+        pointer-events: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        line-height: 1.6;
+    }
+    .tooltip-container .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: var(--dark-surface) transparent transparent transparent;
+    }
+    .tooltip-container:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+    .tooltip-container .tooltip-text strong {
+        font-weight: 700;
+        color: var(--primary);
+    }
+    
+    /* Estilos específicos para o ícone (i), se necessário */
+    .help-icon {
         align-items: center;
         justify-content: center;
         width: 16px;
@@ -560,89 +599,44 @@
         background-color: var(--primary);
         color: white;
     }
-    .help-icon .tooltip-text {
-        visibility: hidden;
-        opacity: 0;
-        width: 300px;
-        background-color: var(--dark-bg);
-        color: var(--dark-text-header);
-        text-align: left;
-        border-radius: 8px;
-        padding: 1rem;
-        position: absolute;
-        z-index: 1001;
-        bottom: 150%;
-        left: 50%;
-        transform: translateX(-50%);
-        box-shadow: var(--shadow);
-        border: 1px solid var(--dark-border);
-        transition: opacity 0.3s;
-        pointer-events: none;
-        font-size: 0.875rem;
-        font-weight: 500;
-        line-height: 1.6;
-    }
-    .help-icon .tooltip-text::after {
-        content: "";
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        margin-left: -5px;
-        border-width: 5px;
-        border-style: solid;
-        border-color: var(--dark-bg) transparent transparent transparent;
-    }
-    .help-icon:hover .tooltip-text {
-        visibility: visible;
-        opacity: 1;
-    }
-    .help-icon .tooltip-text strong {
-        font-weight: 700;
-        color: var(--primary);
-    }
 
     /* ========================================================== */
-/*     PASSO 1: ADICIONE ESTE NOVO BLOCO AO SEU CSS           */
-/* ========================================================== */
-
-#tone-variation-menu {
-    position: absolute;
-    /* <<< MUDANÇA DE COR AQUI >>> */
-    background-color: var(--dark-bg); /* Cor de fundo principal, mais escura */
-    border: 1px solid var(--dark-border);
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-    padding: 0.5rem;
-    z-index: 1002;
-    display: flex;
-    gap: 0.5rem;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s, transform 0.2s;
-    transform: translateY(10px);
-}
-
-#tone-variation-menu.visible {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-#tone-variation-menu button {
-    background-color: transparent;
-    border: none;
-    color: var(--primary);
-    padding: 0.5rem 0.75rem;
-    cursor: pointer;
-    border-radius: 6px;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-#tone-variation-menu button:hover {
-    background-color: var(--dark-border);
-    color: var(--dark-text-header);
-
+    /* =================== Menu de Variação de Tom =================== */
+    /* ========================================================== */
+    #tone-variation-menu {
+        position: absolute;
+        background-color: var(--dark-bg);
+        border: 1px solid var(--dark-border);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        padding: 0.5rem;
+        z-index: 1002;
+        display: flex;
+        gap: 0.5rem;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s, transform 0.2s;
+        transform: translateY(10px);
+    }
+    #tone-variation-menu.visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    #tone-variation-menu button {
+        background-color: transparent;
+        border: none;
+        color: var(--primary);
+        padding: 0.5rem 0.75rem;
+        cursor: pointer;
+        border-radius: 6px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    #tone-variation-menu button:hover {
+        background-color: var(--dark-border);
+        color: var(--dark-text-header);
+    }
 </style>
 
 
@@ -2913,15 +2907,9 @@ const invalidateAndClearPrompts = (sectionElement) => {
         };
     
 // =========================================================================
-// >>>>> PASSO 1: SUBSTITUA A FUNÇÃO generateSectionHtmlContent INTEIRA POR ESTA VERSÃO <<<<<
+// >>>>> SUBSTITUA A FUNÇÃO 'generateSectionHtmlContent' INTEIRA POR ESTA <<<<<
 // =========================================================================
-
-// =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO generateSectionHtmlContent INTEIRA POR ESTA <<<<<
-// =========================================================================
-
 const generateSectionHtmlContent = (sectionId, title, content) => {
-    // ---- PASSO 1: Criar os Elementos Principais (esqueleto) ----
     const accordionItem = document.createElement('div');
     accordionItem.className = 'accordion-item card !p-0 mb-4 animate-fade-in';
 
@@ -2932,7 +2920,6 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
     accordionBody.id = `${sectionId}Body`;
     accordionBody.className = 'accordion-body';
 
-    // ---- PASSO 2: Construir o CABEÇALHO (Header) peça por peça ----
     const headerTitleGroup = document.createElement('div');
     headerTitleGroup.className = 'header-title-group';
     const h3 = document.createElement('h3');
@@ -2953,13 +2940,13 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
     regenerateBtn.title = 'Re-gerar esta seção';
     regenerateBtn.dataset.action = 'regenerate';
     regenerateBtn.dataset.sectionId = `${sectionId}Section`;
-    regenerateBtn.innerHTML = DOMPurify.sanitize(`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>`);
+    regenerateBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/></svg>`;
 
     const copyBtn = document.createElement('button');
     copyBtn.className = 'copy-btn';
     copyBtn.title = 'Copiar Roteiro';
     copyBtn.dataset.action = 'copy';
-    copyBtn.innerHTML = DOMPurify.sanitize(`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5-.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>`);
+    copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5-.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>`;
     headerButtons.appendChild(regenerateBtn);
     headerButtons.appendChild(copyBtn);
 
@@ -2970,37 +2957,65 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
     arrowSvg.setAttribute('height', '16');
     arrowSvg.setAttribute('fill', 'currentColor');
     arrowSvg.setAttribute('viewBox', '0 0 16 16');
-    arrowSvg.innerHTML = DOMPurify.sanitize(`<path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>`);
+    arrowSvg.innerHTML = `<path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>`;
     
     headerActionsGroup.appendChild(headerButtons);
     headerActionsGroup.appendChild(arrowSvg);
     accordionHeader.appendChild(headerTitleGroup);
     accordionHeader.appendChild(headerActionsGroup);
 
-    // ---- PASSO 3: Construir o CORPO (Body) ----
     const contentWrapper = document.createElement('div');
     contentWrapper.className = 'generated-content-wrapper';
     contentWrapper.setAttribute('contenteditable', 'true');
-    contentWrapper.innerHTML = DOMPurify.sanitize(content);
+    contentWrapper.innerHTML = content;
 
     const analysisTools = document.createElement('div');
-    const addChapterButtonHtml = sectionId === 'development' ? `<button class="btn btn-primary btn-small" data-action="addDevelopmentChapter"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/></svg> Adicionar Capítulo</button>` : '';
+    const addChapterButtonHtml = sectionId === 'development' ? `
+        <div class="tooltip-container">
+            <button class="btn btn-primary btn-small" data-action="addDevelopmentChapter">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/></svg> 
+                Adicionar Capítulo
+            </button>
+        </div>
+    ` : '';
     
+    // <<< AQUI ESTÁ A GRANDE MUDANÇA COM OS TOOLTIPS >>>
     const toolsHtml = `
         <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-6">
             <div class="text-center">
                 <h5 class="font-semibold text-base mb-2 text-gray-800 dark:text-gray-200">Passo 1: Diagnóstico e Criativo</h5>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">Analise, edite ou enriqueça o texto para máxima qualidade.</p>
                 <div class="flex items-center justify-center gap-2 flex-wrap">
-                    <button class="btn btn-secondary btn-small" data-action="analyzeRetention" data-section-id="${sectionId}Section">Analisar Retenção</button>
-                    <button class="btn btn-secondary btn-small" data-action="refineStyle">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gem" viewBox="0 0 16 16"><path d="M3.1.7a.5.5 0 0 1 .4-.2h9a.5.5 0 0 1 .4.2l2.976 3.974c.149.199.224.458.224.726v1.2a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1-.5-.5v-1.2c0-.268.075-.527.224-.726L3.1.7zM1.49 4.107l-1.18-1.575a.5.5 0 0 1 .4-.8h13.56a.5.5 0 0 1 .4.8L14.51 4.107H1.49zM.5 5.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1 0 1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h.5a.5.5 0 0 1 .5-.5v-1a.5.5 0 0 1-.5.5zM2 13.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
-                        Refinar Estilo
-                    </button>
-                    <button class="btn btn-secondary btn-small" data-action="enrichWithData">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.5 2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-1 0v-11a.5.5 0 0 1 .5-.5z"/><path d="M2 7.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
-                        Enriquecer com Dados
-                    </button>
+                    
+                    <div class="tooltip-container">
+                        <button class="btn btn-secondary btn-small" data-action="analyzeRetention" data-section-id="${sectionId}Section">Analisar Retenção</button>
+                        <span class="tooltip-text">
+                            <strong>Função:</strong> Diagnóstico.<br>
+                            <strong>O que faz:</strong> Age como um "médico". Ele escaneia o texto e te diz: "Aqui está bom, aqui tem um ponto de atenção, e aqui tem um ponto de risco". Ele te dá o diagnóstico, mas não a cura.
+                        </span>
+                    </div>
+
+                    <div class="tooltip-container">
+                        <button class="btn btn-secondary btn-small" data-action="refineStyle">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gem" viewBox="0 0 16 16"><path d="M3.1.7a.5.5 0 0 1 .4-.2h9a.5.5 0 0 1 .4.2l2.976 3.974c.149.199.224.458.224.726v1.2a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1-.5-.5v-1.2c0-.268.075-.527.224-.726L3.1.7zM1.49 4.107l-1.18-1.575a.5.5 0 0 1 .4-.8h13.56a.5.5 0 0 1 .4.8L14.51 4.107H1.49zM.5 5.5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-.5.5H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1 0-1H1v-1H.5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm15 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1 0 1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h-.5a.5.5 0 0 1 0-1H15v-1h.5a.5.5 0 0 1 .5-.5v-1a.5.5 0 0 1-.5.5zM2 13.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+                            Refinar Estilo
+                        </button>
+                        <span class="tooltip-text">
+                            <strong>Função:</strong> Polimento.<br>
+                            <strong>O que faz:</strong> Age como um "polidor de carros". Ele pega o texto inteiro, remove repetições e melhora a fluidez. Ele deixa o texto mais bonito e brilhante, mas não muda a sua essência.
+                        </span>
+                    </div>
+
+                    <div class="tooltip-container">
+                        <button class="btn btn-secondary btn-small" data-action="enrichWithData">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.5 2a.5.5 0 0 1 .5.5v11a.5.5 0 0 1-1 0v-11a.5.5 0 0 1 .5-.5z"/><path d="M2 7.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+                            Enriquecer com Dados
+                        </button>
+                        <span class="tooltip-text">
+                            <strong>Função:</strong> Adição.<br>
+                            <strong>O que faz:</strong> Age como um "engenheiro de reforço". Você seleciona um trecho e lhe dá uma nova informação (um dado, uma fonte). Ele reforça aquele trecho com mais credibilidade.
+                        </span>
+                    </div>
                     ${addChapterButtonHtml}
                 </div>
                 <div id="analysis-output-${sectionId}" class="section-analysis-output mt-3 text-left"></div>
@@ -3019,7 +3034,7 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
             </div>
         </div>
     `;
-    analysisTools.innerHTML = DOMPurify.sanitize(toolsHtml, { ADD_TAGS: ["svg", "path"], ADD_ATTR: ["d", "fill", "viewBox", "xmlns", "width", "height", "class"] });
+    analysisTools.innerHTML = DOMPurify.sanitize(toolsHtml, { ADD_TAGS: ["svg", "path", "span", "br", "strong"], ADD_ATTR: ["d", "fill", "viewBox", "xmlns", "width", "height", "class"] });
     
     accordionBody.appendChild(contentWrapper);
     accordionBody.appendChild(analysisTools);
