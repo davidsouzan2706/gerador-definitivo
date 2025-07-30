@@ -1334,8 +1334,11 @@ Sua resposta DEVE ser um objeto JSON com EXATAMENTE estas chaves:
 - "criterion_name": (String) O nome do critério (ex: "${criterion}").
 - "score": (Número) Uma nota de 0 a 10.
 - "positive_points": (String) Um parágrafo resumindo os pontos fortes.
-- "improvement_points": (Array) Um array de objetos, onde cada objeto tem duas chaves: "critique" (String) e "suggestion" (String). Forneça de 1 a 2 pontos de melhoria.
-- **ASPAS INTERNAS:** Se precisar citar o roteiro, use aspas simples (' '). É proibido usar aspas duplas dentro de outra string.
+- "improvement_points": (Array) Um array de objetos, onde cada objeto DEVE ter três chaves:
+    - "problematic_quote": (String) A frase ou trecho EXATO do roteiro original que pode ser melhorado. Esta chave é OBRIGATÓRIA.
+    - "critique": (String) Uma crítica construtiva explicando POR QUE este trecho é um ponto fraco.
+    - "suggestion": (String) Uma sugestão acionável de como reescrever o trecho.
+- **ASPAS INTERNAS:** Se precisar citar algo, use aspas simples (' '). É proibido usar aspas duplas dentro de outra string.
 
 Responda APENAS com o objeto JSON.`;
 
