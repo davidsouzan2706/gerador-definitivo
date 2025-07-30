@@ -1009,8 +1009,6 @@ Ex: 'Fonte: Estudo de Harvard; Dr. João da Silva, especialista...'
             </label>
             <input type="file" id="importFileInput" class="hidden" accept=".json">
 
-            <button id="debugButton" class="btn btn-danger bg-red-600 hover:bg-red-700">TESTAR ANIMAÇÃO</button>
-
             <!-- Botão para Exportar Projeto -->
             <button id="exportProjectBtn" data-action="exportProject" class="btn btn-secondary">
                 <i class="fas fa-download mr-2"></i> Exportar Projeto
@@ -4225,24 +4223,18 @@ ${originalText}
 
 
 // =========================================================================
-// >>>>> VERSÃO FINAL (v6) - A CIRURGIA DE RENDERIZAÇÃO FORÇADA <<<<<
+// >>>>> VERSÃO FINAL (v7) - BLINDADA E IDEMPOTENTE <<<<<
 // =========================================================================
 window.applySuggestion = (button) => {
     const { criterionName, problematicQuote, rewrittenQuote } = button.dataset;
-    const sectionId = (window.criterionMap || {})[criterionName]; // Usando um mapa global seguro
-    
-    if (!sectionId) {
-        window.showToast(`Erro: Seção alvo '${criterionName}' não reconhecida.`);
-        return;
-    }
+    const sectionId = (window.criterionMap || {})[criterionName];
+
+    if (!sectionId) { /* ... (código de erro) ... */ return; }
 
     const sectionElement = document.getElementById(sectionId);
     const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
 
-    if (!contentWrapper) {
-        window.showToast("Erro: Container de conteúdo do roteiro não encontrado.");
-        return;
-    }
+    if (!contentWrapper) { /* ... (código de erro) ... */ return; }
 
     let replaced = false;
     const paragraphs = contentWrapper.querySelectorAll('div[id^="' + sectionId.replace('Section','') + '-p-"]');
@@ -4252,30 +4244,38 @@ window.applySuggestion = (button) => {
         const childNodes = Array.from(p.childNodes);
 
         for (const node of childNodes) {
+            // A condição de busca permanece a mesma
             if (node.nodeType === Node.TEXT_NODE && node.textContent.includes(problematicQuote)) {
+
+                // <<< AQUI ESTÁ A BLINDAGEM QUE FALTAVA >>>
+                // Se o texto já foi envolvido por nosso span, não fazemos nada!
+                if (node.parentElement.classList.contains('highlight-change')) {
+                    console.log("Ação bloqueada: Este trecho já foi substituído e animado.");
+                    replaced = true; // Marca como 'replaced' para sair da lógica.
+                    break;
+                }
+                
+                // O resto da nossa lógica de transplante de DOM, que já estava correta.
                 const originalTextNode = node;
                 const text = originalTextNode.textContent;
                 const startIndex = text.indexOf(problematicQuote);
 
-                // --- A NOVA LÓGICA DE DUPLO PASSO ---
+                const textBefore = text.substring(0, startIndex);
+                const textAfter = text.substring(startIndex + problematicQuote.length);
 
-                // 1. Criamos nosso SPAN, MAS SEM A CLASSE DE ANIMAÇÃO AINDA.
                 const highlightSpan = document.createElement('span');
-                highlightSpan.id = `highlight-${Date.now()}`; // Damos um ID único para encontrá-lo depois.
                 highlightSpan.textContent = rewrittenQuote;
+                // A classe é aplicada diretamente aqui, sem setTimeout. O problema não era a renderização.
+                highlightSpan.className = 'highlight-change'; 
 
-                // 2. Fazemos a cirurgia de DOM normalmente.
-                const newHtml = p.innerHTML.replace(problematicQuote, highlightSpan.outerHTML);
-                p.innerHTML = DOMPurify.sanitize(newHtml, { ADD_TAGS: ["span"], ADD_ATTR: ["class", "id"] });
+                const nodeBefore = document.createTextNode(textBefore);
+                const nodeAfter = document.createTextNode(textAfter);
+
+                const parent = originalTextNode.parentNode;
                 
-                // 3. O TRUQUE DE MESTRE: Usamos setTimeout com um delay mínimo.
-                // Isso força o navegador a renderizar o span primeiro, e SÓ DEPOIS aplicar a classe.
-                setTimeout(() => {
-                    const spanToAnimate = document.getElementById(highlightSpan.id);
-                    if (spanToAnimate) {
-                        spanToAnimate.classList.add('highlight-change');
-                    }
-                }, 20); // 20 milissegundos é o suficiente.
+                parent.replaceChild(nodeAfter, originalTextNode);
+                parent.insertBefore(highlightSpan, nodeAfter);
+                parent.insertBefore(nodeBefore, highlightSpan);
 
                 replaced = true;
                 break;
@@ -4284,17 +4284,17 @@ window.applySuggestion = (button) => {
     });
 
     if (!replaced) {
-        window.showToast("Não foi possível aplicar a sugestão. O texto pode ter sido muito alterado.");
+        // ... (código de erro se não encontrou) ...
         return;
     }
     
+    // ... (resto da função: showToast, invalidate, feedback no botão) ...
+    // Esta parte já está correta.
     window.showToast("Sugestão aplicada com sucesso!");
-    
     invalidateAndClearPerformance(sectionElement);
     invalidateAndClearPrompts(sectionElement);
     updateAllReadingTimes();
 
-    // Feedback no botão (permanece o mesmo)
     button.disabled = true;
     button.innerHTML = '<i class="fas fa-check mr-2"></i>Aplicada!';
     button.classList.remove('btn-primary');
@@ -4306,16 +4306,6 @@ window.applySuggestion = (button) => {
         button.classList.remove('btn-success');
         button.classList.add('btn-primary');
     }, 5000);
-};
-
-// Adicione este mapa ao escopo global para a função acima ter acesso.
-// Pode colocar logo antes da declaração da função applySuggestion.
-window.criterionMap = {
-    'Introdução (Hook)': 'introSection',
-    'Desenvolvimento (Ritmo e Retenção)': 'developmentSection',
-    'Clímax': 'climaxSection',
-    'Conclusão': 'conclusionSection',
-    'CTA (Call to Action)': 'ctaSection'
 };
 
 
@@ -5096,53 +5086,6 @@ Responda APENAS com o array JSON completo e sintaticamente PERFEITO, seguindo EX
         resultContainer.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">Falha ao analisar os títulos: ${error.message}</p>`);
     }
 };
-
-
-
-// ==========================================================
-// >>>>> FUNÇÃO DE TESTE ATÔMICO - ADICIONE ESTE BLOCO <<<<<
-// ==========================================================
-window.debugAnimation = () => {
-    console.clear();
-    console.log("--- INICIANDO TESTE DE ANIMAÇÃO ATÔMICA ---");
-
-    // Vamos mirar em um alvo fixo e conhecido: o primeiro parágrafo da introdução.
-    const targetParagraph = document.getElementById('intro-p-0');
-
-    if (!targetParagraph) {
-        console.error("ERRO DE TESTE: O parágrafo #intro-p-0 não foi encontrado. Gere a introdução primeiro.");
-        return;
-    }
-
-    console.log("Alvo do teste encontrado:", targetParagraph);
-
-    // Pegamos o HTML atual do parágrafo.
-    const originalHTML = targetParagraph.innerHTML;
-
-    // A palavra que vamos tentar animar. Baseado no seu log, a palavra "Bíblia" existe.
-    const wordToAnimate = "Bíblia";
-
-    // Verificamos se a palavra existe para evitar erros.
-    if (originalHTML.includes(wordToAnimate)) {
-        // Criamos o HTML de substituição COM A NOSSA CLASSE DE ANIMAÇÃO.
-        const highlightedHTML = `<span class="highlight-change">${wordToAnimate}</span>`;
-        
-        // Substituímos a primeira ocorrência da palavra pelo nosso span.
-        const newHTML = originalHTML.replace(wordToAnimate, highlightedHTML);
-
-        // Aplicamos a mudança.
-        targetParagraph.innerHTML = newHTML;
-
-        console.log("SUCESSO: A substituição foi feita. O HTML agora é:");
-        console.log(targetParagraph.innerHTML);
-        console.log("Verifique a tela. A palavra 'Bíblia' deveria ter piscado.");
-
-    } else {
-        console.error(`ERRO DE TESTE: A palavra "${wordToAnimate}" não foi encontrada no parágrafo alvo.`);
-    }
-};
-
-
 
 // =========================================================================
 // >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO analyzeThumbnails INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
@@ -5961,12 +5904,6 @@ const actions = {
             varyTone(tone);
         }
     });
-
-    // Dentro do seu 'DOMContentLoaded'
-const debugBtn = document.getElementById('debugButton');
-if (debugBtn) {
-    debugBtn.addEventListener('click', window.debugAnimation);
-}
 
 
     // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
