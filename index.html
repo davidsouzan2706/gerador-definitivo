@@ -779,7 +779,7 @@
 </div>
 
 
-<!-- Aba 2: Estratégia Narrativa (COM TOOLTIPS CORRIGIDOS) -->
+<!-- Aba 2: Estratégia Narrativa (COM NOVOS POPOVERS E TOOLTIPS) -->
 <div id="input-tab-estrategia" class="tab-pane hidden">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -789,7 +789,20 @@
         <div class="input-group md:col-span-2"><label for="centralQuestion">Pergunta Central (Opcional):</label><textarea id="centralQuestion" rows="2" placeholder="Qual mistério ou 'coceira mental' você vai criar e prometer resolver?"></textarea></div>
 
         <!-- Bloco 2: A Estrutura e a Alma -->
-        <div class="input-group"><label for="narrativeGoal">1. Objetivo da Narrativa:</label><select id="narrativeGoal"><option value="storytelling">Storytelling</option><option value="storyselling">Storyselling</option></select></div>
+        <!-- MUDANÇA AQUI: Adicionamos a estrutura para o novo popover -->
+        <div class="relative group">
+            <div class="input-group">
+                <label for="narrativeGoal">1. Objetivo da Narrativa:</label>
+                <select id="narrativeGoal">
+                    <option value="storytelling">Storytelling</option>
+                    <option value="storyselling">Storyselling</option>
+                </select>
+            </div>
+            <div id="goalPopover" class="card popover-bg absolute bottom-full left-0 mb-2 w-[400px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-20 pointer-events-none group-hover:pointer-events-auto">
+                <h4 class="font-bold text-lg text-indigo-400 mb-2"></h4>
+                <p class="text-sm leading-relaxed"></p>
+            </div>
+        </div>
         <div class="relative group">
             <div class="input-group">
                 <div class="flex items-center gap-2 mb-2"><label for="narrativeStructure">2. Estrutura Específica:</label></div>
@@ -801,7 +814,6 @@
             </div>
         </div>
         <div class="input-group md:col-span-2"><label for="emotionalHook">História Pessoal / Gancho Emocional (Opcional):
-            <!-- A CORREÇÃO ESTÁ AQUI: Adicionamos a classe 'tooltip-container' -->
             <span class="help-icon tooltip-container">i
                 <span class="tooltip-text">
                     <strong>Dê uma alma para sua história.</strong> Este é o 'fio condutor' humano. A IA usará esta pequena história para conectar os grandes fatos a uma experiência pessoal, tornando o roteiro muito mais impactante.
@@ -810,11 +822,31 @@
         </label><textarea id="emotionalHook" rows="3" placeholder="Qual rosto humano dará alma à sua história? Ex: a jornada de um indivíduo, uma memória pessoal, um arquétipo (o azarão, o mentor)..."></textarea></div>
 
         <!-- Bloco 3: O Tom e a Jornada -->
-        <div class="input-group"><label for="narrativeTone">4. Tom da Narração:</label><select id="narrativeTone"><option value="inspirador" selected>Inspirador</option><option value="serio">Sério</option><option value="emocional">Emocional</option></select></div>
-        <div class="input-group"><label for="narrativeVoice">5. Voz do Narrador:</label><input type="text" id="narrativeVoice" placeholder="Se seu canal fosse uma pessoa, como ela falaria? Confiante? Engraçada? Misteriosa?"></div>
-        <div class="input-group md:col-span-2"><label for="emotionalArc">Arco Emocional Desejado (Opcional):</label><textarea id="emotionalArc" rows="2" placeholder="Ex: Curiosidade -> Tensão -> Surpresa"></textarea></div>
+        <div class="input-group"><label for="narrativeTone">4. Tom da Narração:
+            <!-- NOVO TOOLTIP AQUI -->
+            <span class="help-icon tooltip-container">i
+                <span class="tooltip-text">
+                    <strong>Define o "sentimento" do vídeo.</strong> É sério e sombrio? Leve e inspirador? A escolha do tom guia a música, o ritmo e o estilo da narração.
+                </span>
+            </span>
+        </label><select id="narrativeTone"><option value="inspirador" selected>Inspirador</option><option value="serio">Sério</option><option value="emocional">Emocional</option></select></div>
+        <div class="input-group"><label for="narrativeVoice">5. Voz do Narrador:
+            <!-- NOVO TOOLTIP AQUI -->
+            <span class="help-icon tooltip-container">i
+                <span class="tooltip-text">
+                    <strong>Imagine que seu canal é uma pessoa.</strong> Como ela falaria? Um mentor sábio? Um amigo entusiasmado? Um investigador misterioso? Isso define a personalidade da sua narração.
+                </span>
+            </span>
+        </label><input type="text" id="narrativeVoice" placeholder="Ex: Confiante, Engraçada, Misteriosa..."></div>
+        <div class="input-group md:col-span-2"><label for="emotionalArc">Arco Emocional Desejado (Opcional):
+            <!-- NOVO TOOLTIP AQUI -->
+            <span class="help-icon tooltip-container">i
+                <span class="tooltip-text">
+                    <strong>Qual jornada de sentimentos você quer que o espectador percorra?</strong> Começa com curiosidade, vai para a tensão e termina em alívio? Planejar isso cria um vídeo muito mais impactante.
+                </span>
+            </span>
+        </label><textarea id="emotionalArc" rows="2" placeholder="Ex: Curiosidade -> Tensão -> Surpresa -> Alívio"></textarea></div>
         <div class="input-group md:col-span-2"><label for="shockingEndingHook">O Desfecho Chocante (Hook Opcional):
-            <!-- A CORREÇÃO ESTÁ AQUI: Adicionamos a classe 'tooltip-container' -->
             <span class="help-icon tooltip-container">i
                 <span class="tooltip-text">
                     <strong>A técnica do 'loop aberto' reverso.</strong> Coloque a frase final e mais chocante da sua história aqui. A IA usará esta frase como a PRIMEIRA linha do vídeo, criando um mistério instantâneo que prende o espectador até o final.
@@ -3157,37 +3189,50 @@ const removeMetaComments = (text) => {
     return cleanedText.replace(/^\s*\n|\n\s*$/g, '');
 };
 
-        // --- INÍCIO DO NOVO MÓDULO DE NARRATIVA ---
 
-        const narrativeStructures = {
-            storytelling: {
-                documentary: "Documentário (Factual e Investigativo)",
-                heros_journey: "Jornada do Herói (Estrutura Épica)",
-                pixar_spine: "Espinha Dorsal - Pixar (Estrutura Emocional)",
-                mystery_loop: "Mistério (com Loop Aberto)",
-                twist: "Narrativa com Virada (Twist)"
-            },
-            storyselling: {
-                underdog_victory: "Vitória do Vira-lata (Conexão e Superação)",
-                discovery_mentor: "A Grande Descobrir / Mentor Secreto",
-                if_not_found_create: "Não Encontrei, Então Criei (História de Origem)",
-                pas: "Problema-Agitação-Solução (PAS)",
-                bab: "Antes-Depois-Ponte (BAB)"
-            }
-        };
+// --- INÍCIO DO NOVO MÓDULO DE NARRATIVA ---
 
-        const narrativeTooltips = {
-            documentary: "Constrói um argumento com fatos, evidências e uma narração autoritária. Perfeito para vídeos expositivos.",
-            heros_journey: "Conta uma história de transformação e superação. Ótimo para narrativas inspiradoras.",
-            pixar_spine: "Estrutura emocional de 8 passos (Era uma vez... todo dia... até que...). Pergunta para arcos de personagem rápidos.",
-            mystery_loop: "Apresenta uma pergunta no início e a responde no final. Excelente para reter a atenção.",
-            twist: "Constrói uma expectativa e a quebra com uma revelação surpreendente no final.",
-            underdog_victory: "Mostra alguém com limitações que venceu contra tudo e todos. Gera alta conexão emocional.",
-            discovery_mentor: "Revela um grande segredo ou uma descoberta que mudou tudo. Posição de autoridade.",
-            if_not_found_create: "Conta a história de origem de um produto ou serviço criado a partir de uma necessidade pessoal.",
-            pas: "Foca em um problema que o público tem, agita a dor e apresenta a solução. Perfeito para vendas diretas.",
-            bab: "Mostra um cenário 'antes' (o problema), um 'depois' (o resultado ideal) e seu conteúdo como 'a ponte' para chegar lá."
-        };
+const narrativeStructures = {
+    storytelling: {
+        documentary: "Documentário (Factual e Investigativo)",
+        heros_journey: "Jornada do Herói (Estrutura Épica)",
+        pixar_spine: "Espinha Dorsal - Pixar (Estrutura Emocional)",
+        mystery_loop: "Mistério (com Loop Aberto)",
+        twist: "Narrativa com Virada (Twist)"
+    },
+    storyselling: {
+        underdog_victory: "Vitória do Vira-lata (Conexão e Superação)",
+        discovery_mentor: "A Grande Descobrir / Mentor Secreto",
+        if_not_found_create: "Não Encontrei, Então Criei (História de Origem)",
+        pas: "Problema-Agitação-Solução (PAS)",
+        bab: "Antes-Depois-Ponte (BAB)"
+    }
+};
+
+const narrativeTooltips = {
+    documentary: "Constrói um argumento com fatos, evidências e uma narração autoritária. Perfeito para vídeos expositivos.",
+    heros_journey: "Conta uma história de transformação e superação. Ótimo para narrativas inspiradoras.",
+    pixar_spine: "Estrutura emocional de 8 passos (Era uma vez... todo dia... até que...). Perfeita para arcos de personagem rápidos.",
+    mystery_loop: "Apresenta uma pergunta no início e a responde no final. Excelente para reter a atenção.",
+    twist: "Constrói uma expectativa e a quebra com uma revelação surpreendente no final.",
+    underdog_victory: "Mostra alguém com limitações que venceu contra tudo e todos. Gera alta conexão emocional.",
+    discovery_mentor: "Revela um grande segredo ou uma descoberta que mudou tudo. Posição de autoridade.",
+    if_not_found_create: "Conta a história de origem de um produto ou serviço criado a partir de uma necessidade pessoal.",
+    pas: "Foca em um problema que o público tem, agita a dor e apresenta a solução. Perfeito para vendas diretas.",
+    bab: "Mostra um cenário 'antes' (o problema), um 'depois' (o resultado ideal) e seu conteúdo como 'a ponte' para chegar lá."
+};
+
+// Objeto para o novo popover do "Objetivo da Narrativa"
+const narrativeGoalTooltips = {
+    storytelling: {
+        title: "Storytelling (Conectar & Inspirar)",
+        description: "O foco é construir uma narrativa envolvente e emocional. O objetivo é fazer o público sentir, pensar e se conectar com a história. Ideal para documentários, lições de vida e conteúdo inspirador."
+    },
+    storyselling: {
+        title: "Storyselling (Persuadir & Vender)",
+        description: "Usa técnicas de narrativa para construir um argumento e levar o público a uma ação específica (comprar, inscrever-se, etc.). O foco é resolver um problema claro para o espectador. Ideal para marketing, lançamento de produtos e vídeos de vendas."
+    }
+};
 
 
    // ==========================================================
@@ -3241,7 +3286,27 @@ const updateMainTooltip = () => {
     
     // Chama a nossa nova função para atualizar o texto do tooltip!
    updateMainTooltip();
+   updateGoalPopover();
  };
+
+
+ const updateGoalPopover = () => {
+    const goalSelect = document.getElementById('narrativeGoal');
+    const popover = document.getElementById('goalPopover');
+    const popoverTitle = popover.querySelector('h4');
+    const popoverDescription = popover.querySelector('p');
+
+    if (!goalSelect || !popover || !popoverTitle || !popoverDescription) return;
+
+    const selectedKey = goalSelect.value;
+    const data = narrativeGoalTooltips[selectedKey];
+    
+    if (data) {
+        popoverTitle.textContent = data.title;
+        popoverDescription.textContent = data.description;
+    }
+};
+
 
 
 // =========================================================================
@@ -5855,6 +5920,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateProgressBar();
     updateButtonStates();
     updateNarrativeStructureOptions();
+    updateGoalPopover();
 
     // --- 3. EVENT LISTENERS ESPECÍFICOS ---
     const goalSelect = document.getElementById('narrativeGoal');
