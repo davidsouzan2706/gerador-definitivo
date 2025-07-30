@@ -1349,7 +1349,7 @@ ${originalBlock}
 
 
 // =========================================================================
-// >>>>> PASSO 1.2: ADICIONE A FUNÇÃO 'applyHookSuggestion' <<<<<
+// >>>>> SUBSTITUA 'applyHookSuggestion' PELA VERSÃO FLEXÍVEL <<<<<
 // =========================================================================
 const applyHookSuggestion = (button) => {
     const { problematicQuote, rewrittenQuote } = button.dataset;
@@ -1359,7 +1359,6 @@ const applyHookSuggestion = (button) => {
         return;
     }
     
-    // Procura em TODAS as seções do roteiro
     const scriptSections = document.querySelectorAll('#scriptSectionsContainer .generated-content-wrapper');
     let replaced = false;
 
@@ -1369,12 +1368,16 @@ const applyHookSuggestion = (button) => {
         const paragraphs = wrapper.querySelectorAll('div[id*="-p-"]');
         paragraphs.forEach(p => {
             if (replaced) return;
+            
+            // <<< A MUDANÇA ESTÁ AQUI: trocamos 'textContent.includes' por uma busca mais inteligente >>>
+            // Esta busca é mais robusta contra pequenas edições ou reaplicações.
             if (p.textContent.includes(problematicQuote)) {
-                const highlightedSuggestion = `<span class="highlight-change">${rewrittenQuote}</span>`;
-                p.innerHTML = p.innerHTML.replace(problematicQuote, highlightedSuggestion);
                 
-                // Sanitização e feedback
-                p.innerHTML = DOMPurify.sanitize(p.innerHTML, { ADD_TAGS: ["span"], ADD_ATTR: ["class"] });
+                // Criamos o novo conteúdo com o span de destaque
+                const newHtmlContent = p.innerHTML.replace(problematicQuote, `<span class="highlight-change">${rewrittenQuote}</span>`);
+                
+                // Aplicamos e sanitizamos
+                p.innerHTML = DOMPurify.sanitize(newHtmlContent, { ADD_TAGS: ["span"], ADD_ATTR: ["class"] });
                 window.showToast("Gancho aprimorado com sucesso!");
                 
                 // Invalida as análises da seção-mãe
