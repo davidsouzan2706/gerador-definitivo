@@ -4215,16 +4215,20 @@ ${originalText}
 
 
 
-// =========================================================================
-// >>>>> VERSÃO DEFINITIVA E À PROVA DE FALHAS DA FUNÇÃO 'applySuggestion' <<<<<
-// =========================================================================
+// ==========================================================
+// >>>>> VERSÃO DE DIAGNÓSTICO - NÃO TENTA CORRIGIR, APENAS REGISTRA <<<<<
+// ==========================================================
 window.applySuggestion = (button) => {
+    // Limpa o console para uma nova análise
+    console.clear();
+    console.log('%c--- INICIANDO DIAGNÓSTICO applySuggestion ---', 'color: #f0ad4e; font-size: 16px; font-weight: bold;');
+
     const { criterionName, problematicQuote, rewrittenQuote } = button.dataset;
 
-    if (!problematicQuote || !rewrittenQuote) {
-        window.showToast("Erro: Informações da sugestão não encontradas.");
-        return;
-    }
+    console.log('1. DADOS RECEBIDOS DO BOTÃO:');
+    console.log(`   - Citação Problemática: "${problematicQuote}"`);
+    console.log(`   - Citação Reescrevida: "${rewrittenQuote}"`);
+    console.log(`   - Critério (Seção): "${criterionName}"`);
 
     const criterionMap = {
         'Introdução (Hook)': 'introSection',
@@ -4233,73 +4237,48 @@ window.applySuggestion = (button) => {
         'Conclusão': 'conclusionSection',
         'CTA (Call to Action)': 'ctaSection'
     };
-
     const sectionId = criterionMap[criterionName];
-    if (!sectionId) {
-        window.showToast(`Erro: Seção alvo '${criterionName}' não reconhecida.`);
-        return;
-    }
-
     const sectionElement = document.getElementById(sectionId);
     const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-
+    
     if (!contentWrapper) {
-        window.showToast("Erro: Container de conteúdo do roteiro não encontrado.");
+        console.error('ERRO CRÍTICO: Não foi possível encontrar o .generated-content-wrapper para a seção ' + sectionId);
         return;
     }
+
+    console.log(`2. BUSCANDO EM: Seção #${sectionId}`);
     
     let replaced = false;
     const paragraphs = contentWrapper.querySelectorAll('div[id^="' + sectionId.replace('Section','') + '-p-"]');
+    
+    console.log(`   - Encontrados ${paragraphs.length} parágrafos para verificar.`);
 
-    paragraphs.forEach(p => {
-        if (replaced) return; // Se já substituímos, pulamos os outros parágrafos.
+    paragraphs.forEach((p, index) => {
+        console.log(`\n--- Verificando Parágrafo #${index} (ID: ${p.id}) ---`);
+        
+        const paragraphTextContent = p.textContent;
+        const paragraphInnerHTML = p.innerHTML;
 
-        // <<< AQUI ESTÁ A LÓGICA ROBUSTA >>>
-        // 1. Iteramos sobre os "filhos" do parágrafo (que podem ser texto puro ou outros nós).
-        const childNodes = Array.from(p.childNodes);
+        console.log('   CONTEÚDO DE TEXTO (p.textContent):');
+        console.log(`   "${paragraphTextContent}"`);
+        
+        console.log('   CONTEÚDO HTML (p.innerHTML):');
+        console.log(`   \`${paragraphInnerHTML}\``);
 
-        for (const node of childNodes) {
-            // 2. Verificamos se é um nó de texto e se contém nossa citação problemática.
-            if (node.nodeType === Node.TEXT_NODE && node.textContent.includes(problematicQuote)) {
-                // 3. Criamos nosso novo SPAN com a classe de animação.
-                const newSpan = document.createElement('span');
-                newSpan.className = 'highlight-change';
-                newSpan.textContent = rewrittenQuote; // Usamos textContent para segurança.
-
-                // 4. CIRURGIA DE DOM: Substituímos o texto antigo pelo novo span.
-                // Isso mantém quaisquer outras tags (como anotações de performance) intactas.
-                const newHtml = p.innerHTML.replace(problematicQuote, newSpan.outerHTML);
-                p.innerHTML = DOMPurify.sanitize(newHtml, { ADD_TAGS: ["span"], ADD_ATTR: ["class"] });
-
-                replaced = true;
-                break; // Saímos do loop interno, pois já encontramos e substituímos.
-            }
+        if (paragraphTextContent.includes(problematicQuote)) {
+            console.log('%c[SUCESSO] Citação encontrada neste parágrafo usando .textContent.includes()!', 'color: green; font-weight: bold;');
+            replaced = true;
+        } else {
+            console.log('%c[FALHA] Citação NÃO encontrada neste parágrafo.', 'color: red;');
         }
     });
 
-    if (!replaced) {
-        window.showToast("Não foi possível aplicar a sugestão. O texto pode ter sido muito alterado.");
-        return;
+    console.log('\n--- DIAGNÓSTICO FINAL ---');
+    if (replaced) {
+        console.log('%cA citação foi encontrada em pelo menos um parágrafo. O problema provavelmente está na lógica de substituição ou na animação CSS.', 'color: green;');
+    } else {
+        console.log('%cERRO FUNDAMENTAL: A citação problemática NUNCA foi encontrada no texto. A busca inicial está falhando. Verifique se a citação do botão corresponde exatamente ao texto, incluindo espaços e pontuação.', 'color: red; font-size: 14px;');
     }
-    
-    window.showToast("Sugestão aplicada com sucesso!");
-    
-    invalidateAndClearPerformance(sectionElement);
-    invalidateAndClearPrompts(sectionElement);
-    updateAllReadingTimes();
-
-    // Feedback no botão (permanece o mesmo)
-    button.disabled = true;
-    button.innerHTML = '<i class="fas fa-check mr-2"></i>Aplicada!';
-    button.classList.remove('btn-primary');
-    button.classList.add('btn-success');
-
-    setTimeout(() => {
-        button.disabled = false;
-        button.innerHTML = 'Aplicar';
-        button.classList.remove('btn-success');
-        button.classList.add('btn-primary');
-    }, 5000);
 };
 
 
