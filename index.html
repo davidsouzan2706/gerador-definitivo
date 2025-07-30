@@ -4215,20 +4215,16 @@ ${originalText}
 
 
 
-// ==========================================================
-// >>>>> VERSÃO DE DIAGNÓSTICO - NÃO TENTA CORRIGIR, APENAS REGISTRA <<<<<
-// ==========================================================
+// =========================================================================
+// >>>>> VERSÃO FINAL (v5) - A CIRURGIA DE TRANSPLANTE DE DOM <<<<<
+// =========================================================================
 window.applySuggestion = (button) => {
-    // Limpa o console para uma nova análise
-    console.clear();
-    console.log('%c--- INICIANDO DIAGNÓSTICO applySuggestion ---', 'color: #f0ad4e; font-size: 16px; font-weight: bold;');
-
     const { criterionName, problematicQuote, rewrittenQuote } = button.dataset;
 
-    console.log('1. DADOS RECEBIDOS DO BOTÃO:');
-    console.log(`   - Citação Problemática: "${problematicQuote}"`);
-    console.log(`   - Citação Reescrevida: "${rewrittenQuote}"`);
-    console.log(`   - Critério (Seção): "${criterionName}"`);
+    if (!problematicQuote || !rewrittenQuote) {
+        window.showToast("Erro: Informações da sugestão não encontradas.");
+        return;
+    }
 
     const criterionMap = {
         'Introdução (Hook)': 'introSection',
@@ -4237,48 +4233,90 @@ window.applySuggestion = (button) => {
         'Conclusão': 'conclusionSection',
         'CTA (Call to Action)': 'ctaSection'
     };
+
     const sectionId = criterionMap[criterionName];
-    const sectionElement = document.getElementById(sectionId);
-    const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
-    
-    if (!contentWrapper) {
-        console.error('ERRO CRÍTICO: Não foi possível encontrar o .generated-content-wrapper para a seção ' + sectionId);
+    if (!sectionId) {
+        window.showToast(`Erro: Seção alvo '${criterionName}' não reconhecida.`);
         return;
     }
 
-    console.log(`2. BUSCANDO EM: Seção #${sectionId}`);
-    
+    const sectionElement = document.getElementById(sectionId);
+    const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
+
+    if (!contentWrapper) {
+        window.showToast("Erro: Container de conteúdo do roteiro não encontrado.");
+        return;
+    }
+
     let replaced = false;
     const paragraphs = contentWrapper.querySelectorAll('div[id^="' + sectionId.replace('Section','') + '-p-"]');
-    
-    console.log(`   - Encontrados ${paragraphs.length} parágrafos para verificar.`);
 
-    paragraphs.forEach((p, index) => {
-        console.log(`\n--- Verificando Parágrafo #${index} (ID: ${p.id}) ---`);
-        
-        const paragraphTextContent = p.textContent;
-        const paragraphInnerHTML = p.innerHTML;
+    paragraphs.forEach(p => {
+        if (replaced) return;
 
-        console.log('   CONTEÚDO DE TEXTO (p.textContent):');
-        console.log(`   "${paragraphTextContent}"`);
-        
-        console.log('   CONTEÚDO HTML (p.innerHTML):');
-        console.log(`   \`${paragraphInnerHTML}\``);
+        // Iteramos sobre todos os nós filhos do parágrafo
+        const childNodes = Array.from(p.childNodes);
 
-        if (paragraphTextContent.includes(problematicQuote)) {
-            console.log('%c[SUCESSO] Citação encontrada neste parágrafo usando .textContent.includes()!', 'color: green; font-weight: bold;');
-            replaced = true;
-        } else {
-            console.log('%c[FALHA] Citação NÃO encontrada neste parágrafo.', 'color: red;');
+        for (const node of childNodes) {
+            // Buscamos um nó que seja do tipo TEXTO e que contenha nossa citação
+            if (node.nodeType === Node.TEXT_NODE && node.textContent.includes(problematicQuote)) {
+                
+                // <<< AQUI COMEÇA A CIRURGIA DE TRANSPLANTE >>>
+
+                const originalTextNode = node;
+                const text = originalTextNode.textContent;
+                const startIndex = text.indexOf(problematicQuote);
+
+                // 1. Dividimos o nó de texto em três partes: antes, durante e depois da citação.
+                const textBefore = text.substring(0, startIndex);
+                const textAfter = text.substring(startIndex + problematicQuote.length);
+
+                // 2. Criamos nosso SPAN animado com o novo texto.
+                const highlightSpan = document.createElement('span');
+                highlightSpan.className = 'highlight-change';
+                highlightSpan.textContent = rewrittenQuote;
+
+                // 3. Criamos os nós de texto para o conteúdo antes e depois.
+                const nodeBefore = document.createTextNode(textBefore);
+                const nodeAfter = document.createTextNode(textAfter);
+
+                // 4. O TRANSPLANTE: Pegamos o pai do nó original...
+                const parent = originalTextNode.parentNode;
+                
+                // ...e substituímos o nó de texto antigo pela nossa nova sequência: [texto antes] + [span animado] + [texto depois]
+                parent.replaceChild(nodeAfter, originalTextNode);
+                parent.insertBefore(highlightSpan, nodeAfter);
+                parent.insertBefore(nodeBefore, highlightSpan);
+
+                replaced = true;
+                break; // Cirurgia concluída, saímos do loop.
+            }
         }
     });
 
-    console.log('\n--- DIAGNÓSTICO FINAL ---');
-    if (replaced) {
-        console.log('%cA citação foi encontrada em pelo menos um parágrafo. O problema provavelmente está na lógica de substituição ou na animação CSS.', 'color: green;');
-    } else {
-        console.log('%cERRO FUNDAMENTAL: A citação problemática NUNCA foi encontrada no texto. A busca inicial está falhando. Verifique se a citação do botão corresponde exatamente ao texto, incluindo espaços e pontuação.', 'color: red; font-size: 14px;');
+    if (!replaced) {
+        window.showToast("Não foi possível aplicar a sugestão. O texto pode ter sido muito alterado.");
+        return;
     }
+    
+    window.showToast("Sugestão aplicada com sucesso!");
+    
+    invalidateAndClearPerformance(sectionElement);
+    invalidateAndClearPrompts(sectionElement);
+    updateAllReadingTimes();
+
+    // Feedback no botão (permanece o mesmo)
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-check mr-2"></i>Aplicada!';
+    button.classList.remove('btn-primary');
+    button.classList.add('btn-success');
+
+    setTimeout(() => {
+        button.disabled = false;
+        button.innerHTML = 'Aplicar';
+        button.classList.remove('btn-success');
+        button.classList.add('btn-primary');
+    }, 5000);
 };
 
 
