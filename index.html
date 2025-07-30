@@ -1582,12 +1582,10 @@ const analyzeFullScript = async (button) => {
 
 
 // =========================================================================
-// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'analyzeScriptPart' INTEIRA <<<<<
-// =========================================================================
-// =========================================================================
-// >>>>> VERSÃO BLINDADA DE 'analyzeScriptPart' (PROMPT + VALIDAÇÃO) <<<<<
+// >>>>> VERSÃO FINAL E COMPLETA DE 'analyzeScriptPart' (COM LIMPEZA DE CHAVES) <<<<<
 // =========================================================================
 const analyzeScriptPart = async (criterion, text, instruction, context = {}) => {
+    // Mapeia o nome do critério para a chave correta no objeto de esboço
     const sectionKeyMap = {
         'Introdução (Hook)': 'introduction',
         'Desenvolvimento (Ritmo e Retenção)': 'development',
@@ -1598,7 +1596,7 @@ const analyzeScriptPart = async (criterion, text, instruction, context = {}) => 
     const outlineKey = sectionKeyMap[criterion];
     const outlineDirective = context.outline && context.outline[outlineKey] ? context.outline[outlineKey] : 'Nenhuma diretriz específica foi definida.';
 
-    // --- CAMADA 1: PROMPT AINDA MAIS BLINDADO COM EXEMPLO ---
+    // --- CAMADA 1: PROMPT BLINDADO COM EXEMPLO ---
     const prompt = `Você é uma API de Análise de Roteiro que atua como um editor estratégico. Sua resposta DEVE ser um objeto JSON.
 
 **CONTEXTO ESTRATÉGICO:**
@@ -1640,22 +1638,29 @@ Responda APENAS com o objeto JSON completo e sintaticamente perfeito.`;
         }
         if (!Array.isArray(analysisData.improvement_points)) { throw new Error("A chave 'improvement_points' deveria ser um array."); }
         
-        // --- CAMADA 3: VALIDAÇÃO RIGOROSA E CORREÇÃO AUTOMÁTICA ---
-        analysisData.improvement_points.forEach((point, index) => {
-            // Garante que todas as chaves existam e sejam strings
-            ['problematic_quote', 'critique', 'suggestion_text', 'rewritten_quote'].forEach(key => {
-                if (typeof point[key] !== 'string') {
-                    console.warn(`A chave '${key}' no item ${index} de 'improvement_points' está ausente ou não é uma string. Corrigindo...`, point);
-                    point[key] = point[key] || `[Valor ausente para '${key}']`; // Correção automática
+        // --- CAMADA 3: VALIDAÇÃO RIGOROSA E CORREÇÃO AUTOMÁTICA (APRIMORADA) ---
+        if (Array.isArray(analysisData.improvement_points)) {
+            analysisData.improvement_points = analysisData.improvement_points.map((point, index) => {
+                const correctedPoint = {};
+                // Limpamos todas as chaves de espaços em branco antes de processar
+                for (const key in point) {
+                    correctedPoint[key.trim()] = point[key];
                 }
-            });
 
-            // A validação crucial: se 'rewritten_quote' estiver vazia, usamos a original como fallback
-            if (point.rewritten_quote.trim() === "") {
-                console.warn(`'rewritten_quote' no item ${index} está vazio, violando a regra. Usando a citação original como fallback.`, point);
-                point.rewritten_quote = point.problematic_quote; // Correção automática
-            }
-        });
+                ['problematic_quote', 'critique', 'suggestion_text', 'rewritten_quote'].forEach(key => {
+                    if (typeof correctedPoint[key] !== 'string') {
+                        console.warn(`A chave '${key}' no item ${index} de 'improvement_points' está ausente ou não é uma string. Corrigindo...`, correctedPoint);
+                        correctedPoint[key] = correctedPoint[key] || `[Valor ausente para '${key}']`;
+                    }
+                });
+
+                if (correctedPoint.rewritten_quote.trim() === "") {
+                    console.warn(`'rewritten_quote' no item ${index} está vazio, violando a regra. Usando a citação original como fallback.`, correctedPoint);
+                    correctedPoint.rewritten_quote = correctedPoint.problematic_quote;
+                }
+                return correctedPoint;
+            });
+        }
 
         return analysisData;
 
