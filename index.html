@@ -328,15 +328,28 @@
         border-radius: 50%; 
         animation: spin 1s linear infinite; 
     }
-  @keyframes fade-out-highlight {
+ 
+
+
+@keyframes fade-out-highlight {
   from {
-    background-color: color-mix(in srgb, var(--primary) 25%, transparent) !important;
-    outline: 2px solid var(--primary) !important;
+    background-color: color-mix(in srgb, var(--primary) 25%, transparent);
+    outline: 2px solid var(--primary);
   }
   to {
-    background-color: transparent !important;
-    outline: 2px solid transparent !important;
+    background-color: transparent;
+    outline: 2px solid transparent;
   }
+}
+
+.highlight-change {
+  animation: fade-out-highlight 8s ease-out forwards;
+  border-radius: 4px;
+  outline-offset: 2px;
+}
+
+
+
 }
     .progress-bar { 
         height: 8px; 
@@ -4222,14 +4235,24 @@ ${originalText}
 
 
 
+window.criterionMap = {
+    'Introdução (Hook)': 'introSection',
+    'Desenvolvimento (Ritmo e Retenção)': 'developmentSection',
+    'Clímax': 'climaxSection',
+    'Conclusão': 'conclusionSection',
+    'CTA (Call to Action)': 'ctaSection'
+};
+
+
+
+
 // =========================================================================
-// >>>>> VERSÃO FINAL E CORRIGIDA (v8) - A PROVA DE CARACTERES INVISÍVEIS <<<<<
+// >>>>> SUBSTITUA A FUNÇÃO 'applySuggestion' INTEIRA POR ESTA VERSÃO <<<<<
 // =========================================================================
 window.applySuggestion = (button) => {
     const { criterionName, problematicQuote, rewrittenQuote } = button.dataset;
 
-    // <<< AQUI ESTÁ A CORREÇÃO SIMPLES E PODEROSA >>>
-    // Limpamos a string para remover quaisquer espaços ou caracteres invisíveis no início/fim.
+    // Limpamos o nome do critério para remover quaisquer caracteres invisíveis.
     const cleanCriterionName = criterionName.trim();
 
     const sectionId = (window.criterionMap || {})[cleanCriterionName];
@@ -4239,13 +4262,13 @@ window.applySuggestion = (button) => {
         return;
     }
 
-    // O resto da sua função (a versão v7 - Idempotente) continua exatamente o mesmo.
-    // ... toda a lógica de substituição que já corrigimos ...
-
     const sectionElement = document.getElementById(sectionId);
     const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
 
-    if (!contentWrapper) { /* ... */ return; }
+    if (!contentWrapper) {
+        window.showToast("Erro: Container de conteúdo do roteiro não encontrado.");
+        return;
+    }
 
     let replaced = false;
     const paragraphs = contentWrapper.querySelectorAll('div[id^="' + sectionId.replace('Section','') + '-p-"]');
@@ -4256,6 +4279,7 @@ window.applySuggestion = (button) => {
 
         for (const node of childNodes) {
             if (node.nodeType === Node.TEXT_NODE && node.textContent.includes(problematicQuote)) {
+                
                 if (node.parentElement.classList.contains('highlight-change')) {
                     replaced = true;
                     break;
@@ -4287,9 +4311,13 @@ window.applySuggestion = (button) => {
         }
     });
 
-    if (!replaced) { /* ... */ return; }
+    if (!replaced) {
+        window.showToast("Não foi possível aplicar a sugestão. O texto pode ter sido muito alterado.");
+        return;
+    }
     
     window.showToast("Sugestão aplicada com sucesso!");
+    
     invalidateAndClearPerformance(sectionElement);
     invalidateAndClearPrompts(sectionElement);
     updateAllReadingTimes();
@@ -5724,9 +5752,8 @@ const startCrafting = () => {
 };
 
 // =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA O BLOCO DOMContentLoaded INTEIRO POR ESTE <<<<<
+// >>>>> SUBSTITUA O SEU LISTENER DOMContentLoaded INTEIRO POR ESTE <<<<<
 // =========================================================================
-
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. MAPEAMENTO INICIAL DE ELEMENTOS ---
     document.querySelectorAll('[id]').forEach(el => {
@@ -5774,118 +5801,104 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const speakingPaceSelect = document.getElementById('speakingPace');
     if (speakingPaceSelect) { speakingPaceSelect.addEventListener('change', updateAllReadingTimes); }
+    
+    // --- 4. O "GERENTE DE CLIQUES" (versão completa e corrigida) ---
+    const actions = {
+        'suggestStrategy': (btn) => suggestStrategy(btn),
+        'startCrafting': (btn) => startCrafting(),
+        'generateIdeas': (btn) => generateVideoIdeas(btn),
+        'unravelEnigmas': (btn) => unravelEnigmas(btn),
+        'generateOutline': (btn) => generateStrategicOutline(btn),
+        'mapEmotions': (btn) => mapEmotionsAndPacing(btn),
+        'generateDescription': (btn) => generateVideoDescription(btn),
+        'generateTitlesAndThumbnails': (btn) => generateTitlesAndThumbnails(btn),
+        'generateSoundtrack': (btn) => generateSoundtrack(btn),
+        'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
+        'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
+        'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
+        'generateConclusion': (btn) => generateConclusion(btn),
+        'generateCta': (btn) => generateStrategicCta(btn),
+        'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
+        'applySuggestion': (btn) => window.applySuggestion(btn),
+        'exportProject': () => exportProject(),
+        'exportPdf': () => downloadPdf(),
+        'exportTranscript': () => handleCopyAndDownloadTranscript(),
+        'resetProject': async () => {
+            const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
+            if (confirmed) { resetApplicationState(); }
+        },
+        'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
+        'select-idea': (btn) => {
+            const ideaString = btn.dataset.idea;
+            if (ideaString) {
+                try {
+                    const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                    document.getElementById('videoTheme').value = ideaObject.title || '';
+                    document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
+                    document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
+                    window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
+                    document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } catch (e) { console.error("Falha ao processar dados da ideia:", e); }
+            }
+        },
+        'select-enigma-idea': (btn) => {
+            const ideaString = btn.dataset.idea;
+            if (ideaString) {
+                try {
+                    const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                    document.getElementById('videoTheme').value = ideaObject.title || '';
+                    document.getElementById('videoDescription').value = ideaObject.synopsis || ideaObject.enigma || '';
+                    document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
+                    window.showToast("Enigma selecionado! Estratégia pré-preenchida.");
+                    document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } catch (e) { console.error("Falha ao processar dados da ideia de enigma:", e); }
+            }
+        },
+        'regenerate': (btn) => window.regenerateSection(btn.dataset.sectionId),
+        'copy': (btn) => {
+            const content = btn.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
+            if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(btn); }
+        },
+        'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
+        'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
+        'refineStyle': (btn) => window.refineStyle(btn),
+        'enrichWithData': (btn) => window.enrichWithData(btn),
+        'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
+        'optimizeGroup': (btn) => {
+            const suggestionText = btn.dataset.suggestionText;
+            if (suggestionText) window.optimizeGroup(btn, suggestionText);
+        },
+        'deleteParagraphGroup': (btn) => {
+            const suggestionText = btn.dataset.suggestionText;
+            if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
+        },
+        'analyzeScript': (btn) => analyzeFullScript(btn)
+    };
 
-
-    
-// =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA O OBJETO 'actions' INTEIRO POR ESTE <<<<<
-// =========================================================================
-const actions = {
-    'suggestStrategy': (btn) => suggestStrategy(btn),
-    'startCrafting': (btn) => startCrafting(),
-    'generateIdeas': (btn) => generateVideoIdeas(btn),
-    'unravelEnigmas': (btn) => unravelEnigmas(btn),
-    'generateOutline': (btn) => generateStrategicOutline(btn),
-    'mapEmotions': (btn) => mapEmotionsAndPacing(btn),
-    'generateDescription': (btn) => generateVideoDescription(btn),
-    'generateTitlesAndThumbnails': (btn) => generateTitlesAndThumbnails(btn),
-    'generateSoundtrack': (btn) => generateSoundtrack(btn),
-    'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
-    'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
-    'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
-    'generateConclusion': (btn) => generateConclusion(btn),
-    'generateCta': (btn) => generateStrategicCta(btn),
-    'suggestFinalStrategy': (btn) => suggestFinalStrategy(btn),
-    
-    // --- A CONEXÃO QUE ESTAVA FALTANDO ESTÁ AQUI ---
-    'applySuggestion': (btn) => window.applySuggestion(btn),
-    
-    'exportProject': () => exportProject(),
-    'exportPdf': () => downloadPdf(),
-    'exportTranscript': () => handleCopyAndDownloadTranscript(),
-    'resetProject': async () => {
-        const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
-        if (confirmed) { resetApplicationState(); }
-    },
-    'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
-    'select-idea': (btn) => {
-        const ideaString = btn.dataset.idea;
-        if (ideaString) {
-            try {
-                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                document.getElementById('videoTheme').value = ideaObject.title || '';
-                document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
-                document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
-                window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
-                document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } catch (e) { console.error("Falha ao processar dados da ideia:", e); }
+    document.addEventListener('click', function(event) {
+        // Lógica do Acordeão
+        const accordionHeader = event.target.closest('.accordion-header');
+        if (accordionHeader && !event.target.closest('.header-buttons')) {
+            const body = accordionHeader.nextElementSibling;
+            const arrow = accordionHeader.querySelector('.accordion-arrow');
+            if (body && arrow) { body.classList.toggle('open'); arrow.classList.toggle('open'); }
         }
-    },
-    'select-enigma-idea': (btn) => {
-        const ideaString = btn.dataset.idea;
-        if (ideaString) {
-            try {
-                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
-                document.getElementById('videoTheme').value = ideaObject.title || '';
-                document.getElementById('videoDescription').value = ideaObject.synopsis || ideaObject.enigma || '';
-                document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
-                window.showToast("Enigma selecionado! Estratégia pré-preenchida.");
-                document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } catch (e) { console.error("Falha ao processar dados da ideia de enigma:", e); }
+
+        // Lógica dos Botões de Ação
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+
+        const actionName = button.dataset.action;
+        const action = actions[actionName];
+
+        if (action) {
+            event.preventDefault();
+            action(button);
         }
-    },
-    'regenerate': (btn) => window.regenerateSection(btn.dataset.sectionId),
-    'copy': (btn) => {
-        const content = btn.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
-        if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(btn); }
-    },
-    'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
-    'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
-    'refineStyle': (btn) => window.refineSectionStyle(btn),
-    'enrichWithData': (btn) => window.enrichWithData(btn),
-    'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
-    'optimizeGroup': (btn) => {
-        const suggestionText = btn.dataset.suggestionText;
-        if (suggestionText) window.optimizeGroup(btn, suggestionText);
-    },
-    'deleteParagraphGroup': (btn) => {
-        const suggestionText = btn.dataset.suggestionText;
-        if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
-    },
-    'analyzeScript': (btn) => analyzeFullScript(btn)
-};
-
-
-
-
-
-// Substitua o listener de diagnóstico por este:
-document.addEventListener('click', function(event) {
-    // Lógica do Acordeão
-    const accordionHeader = event.target.closest('.accordion-header');
-    if (accordionHeader && !event.target.closest('.header-buttons')) {
-        const body = accordionHeader.nextElementSibling;
-        const arrow = accordionHeader.querySelector('.accordion-arrow');
-        if (body && arrow) { body.classList.toggle('open'); arrow.classList.toggle('open'); }
-    }
-
-    // Lógica dos Botões de Ação
-    const button = event.target.closest('button[data-action]');
-    if (!button) return;
-
-    const actionName = button.dataset.action;
-    const action = actions[actionName];
-
-    if (action) {
-        event.preventDefault();
-        action(button);
-    }
-});
-
+    });
 
     const toneMenu = document.getElementById('tone-variation-menu');
 
-    // Listener para mostrar o menu quando um texto é selecionado
     document.addEventListener('selectionchange', () => {
         const selection = window.getSelection();
         const selectedText = selection.toString().trim();
@@ -5904,7 +5917,6 @@ document.addEventListener('click', function(event) {
         }
     });
 
-    // Listener para os cliques nos botões do menu
     toneMenu.addEventListener('click', (event) => {
         const button = event.target.closest('button[data-tone]');
         if (button) {
@@ -5913,8 +5925,6 @@ document.addEventListener('click', function(event) {
         }
     });
 
-
-    // --- 5. LÓGICA PARA RESETAR ROTEIRO ---
     const strategicInputIds = ['videoTheme', 'videoDescription', 'videoDuration', 'speakingPace', 'visualPacing', 'narrativeGoal', 'narrativeStructure', 'narrativeTheme', 'narrativeTone', 'narrativeVoice', 'centralQuestion', 'emotionalArc', 'shockingEndingHook', 'imageDescriptionEngine', 'imageStyleSelect', 'researchData', 'emotionalHook'];
     
     strategicInputIds.forEach(id => {
