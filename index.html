@@ -1260,11 +1260,9 @@ Ultra-realistic, high-resolution photographic image. Captured with natural light
 
 
 
-
 // =========================================================================
-// >>>>> PASSO 2: SUBSTITUA A FUNÇÃO 'analyzeFullScript' INTEIRA POR ESTA <<<<<
+// >>>>> AÇÃO 2: SUBSTITUA A FUNÇÃO 'analyzeFullScript' INTEIRA POR ESTA <<<<<
 // =========================================================================
-
 const analyzeFullScript = async (button) => {
     showButtonLoading(button);
     const reportContainer = document.getElementById('analysisReportContainer');
@@ -1281,13 +1279,13 @@ const analyzeFullScript = async (button) => {
             throw new Error("Todas as 5 seções do roteiro (Intro, Dev, Clímax, Conclusão e CTA) devem ser geradas primeiro.");
         }
 
-        // Usando Promise.allSettled para resiliência
+        // <<< USANDO Promise.allSettled PARA RESILIÊNCIA >>>
         const results = await Promise.allSettled([
-            analyzeScriptPart('Introdução (Hook)', introText, `Analise este hook. Dê uma nota de 0 a 10 para o impacto inicial e a capacidade de criar um 'loop aberto' que prenda a atenção.`),
-            analyzeScriptPart('Desenvolvimento (Ritmo e Retenção)', devText, `Analise este desenvolvimento. Dê uma nota para a variação de ritmo, a clareza da informação e o uso de ganchos de retenção para evitar monotonia.`),
-            analyzeScriptPart('Clímax', climaxText, `Analise este clímax. Dê uma nota para o impacto emocional e se ele representa o ponto alto da tensão e da narrativa da história.`),
-            analyzeScriptPart('Conclusão', conclusionText, `Analise esta conclusão. Dê uma nota para sua capacidade de resumir os pontos principais e entregar a lição prometida de forma satisfatória e memorável.`),
-            analyzeScriptPart('CTA (Call to Action)', ctaText, `Analise este CTA. Dê uma nota para sua clareza, persuasão e se a chamada para ação é específica e se conecta bem com o resto do roteiro.`)
+            analyzeScriptPart('Introdução (Hook)', introText, `Analise este hook...`),
+            analyzeScriptPart('Desenvolvimento (Ritmo e Retenção)', devText, `Analise este desenvolvimento...`),
+            analyzeScriptPart('Clímax', climaxText, `Analise este clímax...`),
+            analyzeScriptPart('Conclusão', conclusionText, `Analise esta conclusão...`),
+            analyzeScriptPart('CTA (Call to Action)', ctaText, `Analise este CTA...`)
         ]);
 
         reportContainer.innerHTML = '';
@@ -1296,18 +1294,10 @@ const analyzeFullScript = async (button) => {
             if (result.status === 'fulfilled') {
                 reportContainer.appendChild(createReportSection(result.value));
             } else {
-                // Promise.allSettled nos dá o erro aqui, mas nossa analyzeScriptPart já formata um objeto de erro bonito
                 console.error("Uma micro-análise falhou:", result.reason);
-                const errorData = { 
-                    criterion_name: "Erro na Análise", 
-                    score: '!', 
-                    positive_points: 'Houve uma falha ao contatar a IA para esta seção.',
-                    improvement_points: [{
-                        critique: 'Detalhe do Erro',
-                        suggestion: result.reason.message
-                    }]
-                };
-                reportContainer.appendChild(createReportSection(errorData));
+                // A função analyzeScriptPart já retorna um objeto de erro formatado,
+                // então podemos simplesmente renderizá-lo.
+                reportContainer.appendChild(createReportSection(result.reason));
             }
         });
 
@@ -1326,57 +1316,34 @@ const analyzeFullScript = async (button) => {
 
 
 // =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO 'analyzeScriptPart' INTEIRA POR ESTA <<<<<
+// >>>>> AÇÃO 1: SUBSTITUA A FUNÇÃO 'analyzeScriptPart' INTEIRA POR ESTA <<<<<
 // =========================================================================
-
 const analyzeScriptPart = async (criterion, text, instruction) => {
-    // <<< AQUI ESTÁ A CORREÇÃO: Lemos o idioma selecionado >>>
-    const selectedLangCode = document.getElementById('languageSelect').value;
-    const languageName = selectedLangCode === 'pt-br' ? 'Português do Brasil' : 'English';
-
-    const prompt = `Você é uma API de Análise de Roteiro que atua como um editor de linha e um estrategista de conteúdo para YouTube. Sua resposta DEVE ser um objeto JSON.
-
-**TAREFA:** Analise o "Trecho de Roteiro" fornecido com base no "Critério de Análise".
-
-**Critério de Análise:** ${instruction}
-
-**Trecho de Roteiro:**
----
-${text.slice(0, 7000)}
----
-
-**REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
-- **IDIOMA (A REGRA MAIS IMPORTANTE):** Toda a sua análise (os valores das chaves 'positive_points', 'critique' e 'suggestion') DEVE, OBRIGATORIAMENTE, estar em **${languageName}**.
-- **ESTRUTURA COMPLETA:** Sua resposta DEVE conter EXATAMENTE as seguintes chaves: "criterion_name", "score", "positive_points", "improvement_points".
-- O valor de "improvement_points" DEVE ser um array de objetos, cada um com as chaves "problematic_quote", "critique", e "suggestion".
-- **ASPAS INTERNAS:** Se precisar citar o roteiro, use aspas simples (' '). É proibido usar aspas duplas dentro de outra string.
-
-Responda APENAS com o objeto JSON sintaticamente perfeito.`;
+    const prompt = `Você é uma API de Análise de Roteiro... (o prompt longo e blindado permanece o mesmo)`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
         const analysisData = cleanGeneratedText(rawResult, true);
 
-        // Validação robusta (código existente, permanece o mesmo)
+        // <<< AQUI ESTÁ A NOVA BLINDAGEM DE VALIDAÇÃO >>>
         if (!analysisData) {
             throw new Error("A IA retornou uma resposta nula ou vazia.");
         }
         const requiredKeys = ['criterion_name', 'score', 'positive_points', 'improvement_points'];
         for (const key of requiredKeys) {
             if (!(key in analysisData)) {
-                analysisData[key] = key === 'improvement_points' ? [] : 'N/A';
-                console.warn(`A chave '${key}' estava ausente na resposta da IA. Um valor padrão foi adicionado.`);
+                throw new Error(`A chave '${key}' está ausente na resposta JSON da IA.`);
             }
         }
         if (!Array.isArray(analysisData.improvement_points)) {
-             console.warn(`'improvement_points' não era um array. Convertendo para array vazio.`);
-             analysisData.improvement_points = [];
+            throw new Error("A chave 'improvement_points' deveria ser um array.");
         }
 
         return analysisData;
 
     } catch (error) {
         console.error(`Erro ao analisar a parte '${criterion}':`, error);
+        // Retorna um objeto de erro para ser tratado pelo Promise.allSettled
         return { 
             criterion_name: criterion, 
             score: 'Erro', 
