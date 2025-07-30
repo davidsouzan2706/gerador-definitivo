@@ -1506,14 +1506,12 @@ Você deve reescrever o texto para que ele tenha **mais ${tone}**. Para isso, ${
 const suggestFinalStrategy = async (button) => {
     showButtonLoading(button);
 
-    // <<< AQUI ESTÁ A NOVA LÓGICA DE RESET INTELIGENTE >>>
-    // 1. Limpa o conteúdo gerado anteriormente
+    // LÓGICA DE RESET INTELIGENTE
     const conclusionContainer = document.getElementById('conclusionSection');
     const ctaContainer = document.getElementById('ctaSection');
     if (conclusionContainer) conclusionContainer.innerHTML = '';
     if (ctaContainer) ctaContainer.innerHTML = '';
 
-    // 2. Destrava todos os inputs do módulo
     document.querySelectorAll('input[name="conclusionType"]').forEach(radio => radio.disabled = false);
     const conclusionSpecifics = document.getElementById('conclusionSpecifics');
     const ctaSpecifics = document.getElementById('ctaSpecifics');
@@ -1522,14 +1520,11 @@ const suggestFinalStrategy = async (button) => {
     document.querySelector('#conclusionInputContainer').classList.remove('opacity-50');
     ctaSpecifics.parentElement.classList.remove('opacity-50');
 
-    // 3. Reseta os botões para o estado inicial
     document.getElementById('generateConclusionBtn').classList.remove('hidden');
     document.getElementById('generateCtaBtn').classList.add('hidden');
     
-    // Reseta o estado do projeto para estas seções
     projectState.conclusion = false;
     projectState.cta = false;
-    // <<< FIM DA LÓGICA DE RESET >>>
 
     const fullContext = getTranscriptOnly();
     if (!fullContext) {
@@ -1538,7 +1533,21 @@ const suggestFinalStrategy = async (button) => {
         return;
     }
 
-    const prompt = `Você é um Estrategista de Conteúdo de elite...`; // O prompt longo permanece o mesmo
+    // O NOVO PROMPT, MAIS DIRETO E MENOS "PESSOAL"
+    const prompt = `Sua única função é analisar um roteiro e retornar um objeto JSON com sugestões para o final.
+
+**ROTEIRO COMPLETO (PARA CONTEXTO):**
+---
+${fullContext}
+---
+
+**REGRAS CRÍTICAS DE RESPOSTA (JSON ESTRITO):**
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON.
+2.  **ESTRUTURA OBRIGATÓRIA:** O objeto DEVE conter EXATAMENTE duas chaves: "conclusion_suggestion" e "cta_suggestion".
+3.  **CONTEÚDO:** O valor de "conclusion_suggestion" deve ser uma lição poderosa. O valor de "cta_suggestion" deve ser um Call to Action criativo e engajador.
+4.  **IDIOMA:** Ambos os textos devem estar no mesmo idioma do roteiro.
+
+Responda APENAS com o objeto JSON.`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 1000);
@@ -1557,10 +1566,9 @@ const suggestFinalStrategy = async (button) => {
         window.showToast(`Falha ao sugerir estratégia final: ${error.message}`);
     } finally {
         hideButtonLoading(button);
-        updateButtonStates(); // Atualiza a UI após as mudanças
+        updateButtonStates();
     }
 };
-
 
 // =========================================================================
 // >>>>> ADICIONE ESTA NOVA FUNÇÃO AO SEU SCRIPT <<<<<
