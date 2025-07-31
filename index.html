@@ -4396,17 +4396,17 @@ window.analyzeSectionRetention = async (button, sectionId) => {
         const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
         
         // >>> PROMPT BLINDADO COM A NOVA REGRA DE ASPAS INTERNAS <<<
-        const prompt = `Você é uma API ESPECIALISTA EM ANÁLISE DE RETENÇÃO DE ROTEIROS. Sua tarefa é analisar cuidadosamente o texto fornecido e identificar pontos específicos que possam causar perda de atenção ou engajamento fraco no espectador.
+const prompt = `Você é uma API ESPECIALISTA EM ANÁLISE DE RETENÇÃO DE ROTEIROS. Sua tarefa é analisar cuidadosamente o texto fornecido e identificar pontos específicos que possam causar perda de atenção ou engajamento fraco no espectador.
 
 **REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA JSON (SIGA EXATAMENTE):**
 1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, comentário ou metadado deve ser incluído. Pense nisso como uma resposta de API pura e impecável.
 2.  **ASPAS DUPLAS, SEMPRE E EXCLUSIVAMENTE:** TODAS as chaves e valores de texto DEVEM usar obrigatoriamente aspas duplas (\`"\`). É TERMINANTEMENTE PROIBIDO o uso de aspas simples (\`'\`) ou crases (\`\`) para delimitar QUALQUER string.
 3.  **VÍRGULA FINAL OBRIGATÓRIA:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula (\`,\`), EXCETO o último objeto.
-4.  **CHAVES EXATAS E OBRIGATÓRIAS:** Cada objeto no array DEVE conter EXATAMENTE estas três chaves: "paragraphIndex", "retentionScore", e "suggestion".
+4.  **CHAVES EXATAS E OBRIGATÓRIAS:** Cada objeto no array DEVE conter EXATAMENTE estas três chaves: "paragraph_index", "retention_score", e "suggestion".
 5.  **TIPOS EXATOS:** Os valores das chaves devem ser:
-    - `"paragraphIndex"`: Um número inteiro representando o índice do parágrafo problemático.
-    - `"retentionScore"`: Uma string que deve ser EXATAMENTE "green", "yellow" ou "red".
-    - `"suggestion"`: Uma string contendo uma sugestão específica de melhoria. Se precisar usar aspas internas, use ASPAS SIMPLES (\`'\`) obrigatoriamente.
+    - \`"paragraph_index"\`: Um número inteiro representando o índice do parágrafo problemático.
+    - \`"retention_score"\`: Uma string que deve ser EXATAMENTE "green", "yellow" ou "red".
+    - \`"suggestion"\`: Uma string contendo uma sugestão específica de melhoria. Se precisar usar aspas internas, use ASPAS SIMPLES (\`'\`) obrigatoriamente.
 6.  **REVISÃO FINAL OBRIGATÓRIA:** Antes de responder, revise sua própria saída com EXTREMA ATENÇÃO para garantir que a sintaxe JSON está PERFEITA e todas as regras foram seguidas.
 
 **CRITÉRIOS DE ANÁLISE (SIGA EXATAMENTE):**
@@ -4416,7 +4416,7 @@ window.analyzeSectionRetention = async (button, sectionId) => {
     - **Repetições desnecessárias.**
     - **Falta de ritmo ou variação na escrita.**
     - **Frases longas demais ou muito complexas.**
-- **Pontuação de Retenção ("retentionScore"):**
+- **Pontuação de Retenção ("retention_score"):**
     - **"green":** O parágrafo está claro, dinâmico e mantém o espectador engajado.
     - **"yellow":** Há algum ponto específico que pode melhorar a retenção, mas o parágrafo geralmente funciona bem.
     - **"red":** O parágrafo apresenta problemas significativos que podem causar perda de atenção.
