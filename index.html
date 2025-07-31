@@ -1343,109 +1343,167 @@ Ultra-realistic, high-resolution photographic image captured with masterfully re
 
 
 // =========================================================================
-// >>>>> SUBSTITUA A FUNÇÃO 'window.optimizeGroup' INTEIRA <<<<<
+// >>>>> VERSÃO FINAL E BLINDADA DE 'window.optimizeGroup' <<<<<
 // =========================================================================
+/**
+ * Otimiza um grupo de parágrafos com base em uma sugestão da IA de análise de retenção.
+ * @param {HTMLElement} button - O botão que foi clicado.
+ * @param {string} suggestionText - O texto da sugestão fornecida pela IA.
+ */
 window.optimizeGroup = async (button, suggestionText) => {
-    // <<< CORREÇÃO CRÍTICA: escapa as aspas para o seletor funcionar >>>
+    if (!button || !suggestionText) {
+        console.error("Erro crítico em optimizeGroup: Parâmetros inválidos.", { button, suggestionText });
+        window.showToast("Erro crítico: Parâmetros da função estão faltando.");
+        return;
+    }
+
+    // <<< CORREÇÃO CRÍTICA: Escapa as aspas para o seletor funcionar corretamente >>>
     const safeSelector = suggestionText.replace(/"/g, '\\"');
     const paragraphsToOptimize = document.querySelectorAll(`[data-suggestion-group="${safeSelector}"]`);
 
     if (paragraphsToOptimize.length === 0) {
         window.showToast("Erro: parágrafos para otimizar não encontrados.");
+        console.warn("Nenhum parágrafo encontrado com o seletor:", `[data-suggestion-group="${safeSelector}"]`);
         return;
     }
 
+    // <<< INDICADOR VISUAL DE PROCESSAMENTO >>>
     const originalButtonText = button.innerHTML;
+    const originalButtonState = button.disabled;
     button.innerHTML = '<div class="loading-spinner" style="width:16px; height:16px; border-width: 2px; margin: auto;"></div>';
     button.disabled = true;
 
     try {
+        // <<< PREPARAÇÃO DOS DADOS PARA A IA >>>
         const originalBlock = Array.from(paragraphsToOptimize).map(p => p.textContent.trim()).join('\n\n');
         
-        // <<< AQUI ESTÁ O ENRIQUECIMENTO DO PROMPT >>>
+        if (!originalBlock || originalBlock.trim() === "") {
+             throw new Error("O bloco de texto original está vazio.");
+        }
+
+        // <<< ENRIQUECIMENTO DO CONTEXTO PARA A IA >>>
         const basePromptContext = getBasePromptContext(); // Pega o contexto estratégico
         const fullScriptContext = getTranscriptOnly();   // Pega o roteiro completo
         
-        const prompt = `Você é um Editor de Roteiro de elite e um especialista em reescrita (copywriter). Sua tarefa é reescrever um bloco de texto problemático, garantindo que a nova versão não apenas corrija o problema, mas também se alinhe perfeitamente ao tom e contexto geral do roteiro.
+        // >>>>> PROMPT FINAL E BLINDADO PARA OTIMIZAÇÃO DE GRUPO <<<<<
+        const prompt = `Você é um EDITOR DE ROTEIRO DE ELITE e um ESPECIALISTA EM REESCRITA (Copywriter) de MÁXIMA PRECISÃO. Sua tarefa ÚNICA E CRÍTICA é REESCREVER um bloco de texto problemático para que ele se alinhe PERFEITAMENTE ao tom, estilo e narrativa geral do roteiro, resolvendo o problema apontado na sugestão.
 
-**CONTEXTO GERAL DO PROJETO (para alinhar o tom e o estilo):**
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (SIGA EXATAMENTE):**
+1.  **RESPOSTA PURA E LIMPA:** Sua resposta deve ser APENAS o novo bloco de texto reescrito. NENHUM outro texto, comentário, preâmbulo, metadado ou explicação é permitido. Pense nisso como uma resposta de API pura e impecável.
+2.  **FLUXO NATURAL E COESÃO:** O novo bloco deve fluir de forma NATURAL e COESA com o restante do roteiro. Evite rupturas ou desconexões óbvias.
+3.  **RESPEITO AO TOM E AO CONTEXTO:** Mantenha o TOM e o ESTILO definidos no contexto geral do projeto. A voz do narrador NÃO deve mudar abruptamente.
+
+**CONTEXTO GERAL DO PROJETO (PARA ALINHAR TOM E ESTILO):**
 ---
 ${basePromptContext}
 ---
 
-**ROTEIRO COMPLETO (para entender a narrativa geral):**
+**ROTEIRO COMPLETO (PARA ENTENDER A NARRATIVA GERAL E MANTER CONSISTÊNCIA):**
 ---
-${fullScriptContext}
+${fullScriptContext.substring(0, 2000)}... (continuação do roteiro pode ser carregada se necessário)
 ---
 
-**TAREFA ESPECÍFICA:**
-
-**PROBLEMA A SER CORRIGIDO (Sugestão):** "${suggestionText}"
-
-**BLOCO DE TEXTO ORIGINAL (Para Re-escrever):**
+**TAREFA ESPECÍFICA E FOCALIZADA:**
+- **PROBLEMA A SER CORRIGIDO (Sugestão da Análise de Retenção):** "${suggestionText}"
+- **BLOCO DE TEXTO ORIGINAL (PARA REESCREVER INTEIRAMENTE):**
 ---
 ${originalBlock}
 ---
 
-**REGRAS CRÍTICAS:**
-1. Reescreva o bloco de texto inteiro para que ele flua melhor e resolva o problema apontado na sugestão.
-2. Você pode juntar parágrafos, dividi-los ou reordená-los se isso melhorar a clareza e o impacto.
-3. A nova versão DEVE soar como uma continuação natural do resto do roteiro, respeitando o tom e a voz definidos no contexto.
-4. Responda APENAS com o novo bloco de texto reescrito. Sem comentários, preâmbulos ou explicações.`;
+**REGRAS OPERACIONAIS ESTRITAS (SIGA EXATAMENTE):**
+1.  **Reescrita Completa do Bloco:** Reescreva o bloco de texto inteiro fornecido em "BLOCO DE TEXTO ORIGINAL". NÃO apenas edite partes isoladas; recrie o bloco como um todo coeso.
+2.  **Flexibilidade Estrutural:** Você tem LIBERDADE para juntar parágrafos, dividi-los ou reordená-los SE ISSO melhorar significativamente a clareza, o ritmo e a resolução do problema apontado.
+3.  **Alinhamento Perfeito com o Contexto:** A nova versão DEVE soar como uma continuação NATURAL e INTEGRADA do restante do roteiro. Qualquer desconexão com o tom, estilo ou narrativa será considerada uma falha.
+4.  **RESPOSTA FINAL EXCLUSIVA:** Responda APENAS com o novo bloco de texto reescrito, conforme as regras acima. NENHUM outro conteúdo deve ser incluído.
 
-        const rawResult = await callGroqAPI(prompt, 2000);
-        const newContent = removeMetaComments(rawResult.trim());
+**AÇÃO FINAL E CRÍTICA:** Reescreva AGORA o bloco de texto fornecido, corrigindo o problema e integrando-o perfeitamente ao roteiro. Responda APENAS com o novo bloco de texto reescrito, seguindo EXATAMENTE todas as regras e o contexto fornecidos.
+`;
+        // >>>>> FIM DO PROMPT BLINDADO <<<<<
+
+        // <<< CHAMADA À IA E PROCESSAMENTO DA RESPOSTA >>>
+        const rawResult = await callGroqAPI(prompt, 3000); // Aumentado levemente o limite de tokens
+        let newContent = removeMetaComments(rawResult.trim());
+
+        if (!newContent || newContent.trim() === "") {
+            throw new Error("A IA não retornou um conteúdo válido ou a resposta foi completamente limpa.");
+        }
+
         const newParagraphs = newContent.split('\n').filter(p => p.trim() !== '');
 
         if (newParagraphs.length === 0) {
-            throw new Error("A IA não retornou um conteúdo válido.");
+            throw new Error("A IA não retornou um conteúdo válido após a divisão em parágrafos.");
         }
 
+        // <<< ATUALIZAÇÃO DO DOM >>>
         const firstParagraph = paragraphsToOptimize[0];
         const contentWrapper = firstParagraph.parentElement;
+        const sectionElement = firstParagraph.closest('.script-section');
         
-        // Substitui o primeiro parágrafo e o destaca
-        firstParagraph.innerHTML = DOMPurify.sanitize(newParagraphs[0] || ''); // Usa innerHTML para poder adicionar o span
-        firstParagraph.classList.add('highlight-change'); // Reutilizando nossa classe de animação!
+        if (!contentWrapper) {
+             throw new Error("Não foi possível encontrar o elemento pai para inserir o novo conteúdo.");
+        }
+
+        // Substitui o conteúdo do primeiro parágrafo e o destaca
+        firstParagraph.innerHTML = DOMPurify.sanitize(newParagraphs[0] || '');
+        firstParagraph.classList.add('highlight-change');
         firstParagraph.removeAttribute('data-suggestion-group');
 
-        // Adiciona os novos parágrafos, se houver
+        // Adiciona os novos parágrafos subsequentes, se houver
         let lastElement = firstParagraph;
         for (let i = 1; i < newParagraphs.length; i++) {
             const newDiv = document.createElement('div');
             newDiv.innerHTML = DOMPurify.sanitize(newParagraphs[i]);
-            newDiv.className = 'highlight-change'; // Animação em todos os novos parágrafos
+            newDiv.className = 'highlight-change';
             contentWrapper.insertBefore(newDiv, lastElement.nextSibling);
             lastElement = newDiv;
         }
 
-        // Remove os parágrafos antigos restantes
+        // Remove os parágrafos antigos restantes do grupo
         for (let i = 1; i < paragraphsToOptimize.length; i++) {
             paragraphsToOptimize[i].remove();
         }
 
-        const sectionElement = firstParagraph.closest('.script-section');
+        // <<< INVALIDAÇÃO E ATUALIZAÇÃO DE COMPONENTES RELACIONADOS >>>
         if (sectionElement) {
             invalidateAndClearPerformance(sectionElement);
             invalidateAndClearPrompts(sectionElement);
+            // Se houver uma função para atualizar tempos de leitura, chame-a aqui
+            // updateAllReadingTimes(); 
         }
 
         window.showToast("Bloco de parágrafos otimizado com sucesso!");
 
     } catch (error) {
-        window.showToast(`Falha ao otimizar: ${error.message}`);
-        console.error("Erro detalhado em optimizeGroup:", error);
-    } finally {
-        button.innerHTML = originalButtonText;
-        button.disabled = false;
+        console.error("Erro detalhado e crítico em optimizeGroup:", error);
+        window.showToast(`Falha ao otimizar o bloco: ${error.message}`);
         
-        // Remove o tooltip inteiro após a otimização
-        const tooltip = button.closest('.retention-tooltip');
-        if (tooltip) {
-            tooltip.remove();
+        // <<< RECUPERAÇÃO DE ERRO VISUAL >>>
+        // Em caso de erro, tenta restaurar o estado visual do botão
+        try {
+            button.innerHTML = originalButtonText;
+            button.disabled = originalButtonState;
+        } catch (uiError) {
+            console.warn("Não foi possível restaurar o estado visual do botão após erro.", uiError);
+        }
+    } finally {
+        // <<< LIMPEZA FINAL E REMOÇÃO DO TOOLTIP >>>
+        try {
+            button.innerHTML = originalButtonText;
+            button.disabled = false;
+            
+            // Remove o tooltip inteiro após a otimização/conclusão
+            const tooltip = button.closest('.retention-tooltip');
+            if (tooltip) {
+                tooltip.remove();
+            }
+        } catch (cleanupError) {
+            console.warn("Erro menor durante a limpeza final do tooltip em optimizeGroup:", cleanupError);
         }
     }
 };
+// =========================================================================
+// >>>>> FIM DA VERSÃO BLINDADA DE 'window.optimizeGroup' <<<<<
+// =========================================================================
 
 
 
