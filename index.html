@@ -4395,41 +4395,21 @@ window.analyzeSectionRetention = async (button, sectionId) => {
     try {
         const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
         
-// >>> PROMPT BLINDADO COM A NOVA REGRA DE ASPAS INTERNAS <<<
-const prompt = `Você é uma API ESPECIALISTA EM ANÁLISE DE RETENÇÃO DE ROTEIROS. Sua tarefa é analisar cuidadosamente o texto fornecido e identificar pontos específicos que possam causar perda de atenção ou engajamento fraco no espectador.
+        // >>> PROMPT BLINDADO COM A NOVA REGRA DE ASPAS INTERNAS <<<
+        const prompt = `Você é uma API de análise de retenção que retorna um array JSON.
 
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA JSON (SIGA EXATAMENTE):**
-1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, comentário ou metadado deve ser incluído. Pense nisso como uma resposta de API pura e impecável.
-2.  **ASPAS DUPLAS, SEMPRE E EXCLUSIVAMENTE:** TODAS as chaves e valores de texto DEVEM usar obrigatoriamente aspas duplas (\`"\`). É TERMINANTEMENTE PROIBIDO o uso de aspas simples (\`'\`) ou crases (\`\`) para delimitar QUALQUER string.
-3.  **VÍRGULA FINAL OBRIGATÓRIA:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula (\`,\`), EXCETO o último objeto.
-4.  **CHAVES EXATAS E OBRIGATÓRIAS:** Cada objeto no array DEVE conter EXATAMENTE estas três chaves: "paragraph_index", "retention_score", e "suggestion".
-5.  **OBJETO COMPLETO:** Cada objeto no array deve conter EXATAMENTE as três chaves: "paragraphIndex", "retentionScore" ("green", "yellow", ou "red"), e "suggestion" (em Português-Brasil).
-6.  **REVISÃO FINAL OBRIGATÓRIA:** Antes de responder, revise sua própria saída com EXTREMA ATENÇÃO para garantir que a sintaxe JSON está PERFEITA e todas as regras foram seguidas.
-
-**CRITÉRIOS DE ANÁLISE (SIGA EXATAMENTE):**
-- **Identificação de Pontos Críticos:** Para cada parágrafo fornecido, avalie cuidadosamente se há qualquer elemento que possa causar perda de atenção ou engajamento fraco. Isso inclui:
-    - **Densidade excessiva de informações.**
-    - **Trechos confusos ou ambíguos.**
-    - **Repetições desnecessárias.**
-    - **Falta de ritmo ou variação na escrita.**
-    - **Frases longas demais ou muito complexas.**
-- **Pontuação de Retenção ("retention_score"):**
-    - **"green":** O parágrafo está claro, dinâmico e mantém o espectador engajado.
-    - **"yellow":** Há algum ponto específico que pode melhorar a retenção, mas o parágrafo geralmente funciona bem.
-    - **"red":** O parágrafo apresenta problemas significativos que podem causar perda de atenção.
-- **Sugestões de Melhoria ("suggestion"):**
-    - Forneça uma sugestão CLARA, CONCISA e ACIONÁVEL de como reescrever ou melhorar o trecho identificado como problemático. Foque em torná-lo mais claro, direto, envolvente ou ritmicamente eficaz. Exemplos:
-        - "Divida esta frase longa em duas para melhorar a clareza."
-        - "Substitua 'muitas vezes' por um exemplo específico para tornar mais vívido."
-        - "Adicione uma pergunta retórica aqui para engajar o espectador."
+**REGRAS CRÍTICAS DE SINTAXE (INEGOCIÁVEIS):**
+1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON.
+2.  **ESTRUTURA COMPLETA:** Sua resposta DEVE começar com um colchete de abertura \`[\` e, OBRIGATORIAMENTE, terminar com um colchete de fechamento \`]\`.
+3.  **ASPAS DUPLAS EXTERNAS:** TODAS as chaves (ex: "suggestion") E todos os valores de texto (strings) DEVEM usar aspas duplas (\`"\`).
+4.  **ASPAS SIMPLES INTERNAS (A REGRA MAIS IMPORTANTE):** Se você precisar usar aspas DENTRO de uma string de "suggestion", você DEVE, OBRIGATORIAMENTE, usar aspas simples (\`'\`). É estritamente proibido usar aspas duplas dentro de outra string.
+5.  **VÍRGULA FINAL:** Cada objeto JSON dentro do array DEVE ser seguido por uma vírgula, EXCETO o último objeto.
+6.  **OBJETO COMPLETO:** Cada objeto no array deve conter EXATAMENTE as três chaves: "paragraphIndex", "retentionScore" ("green", "yellow", ou "red"), e "suggestion" (em Português-Brasil).
 
 **DADOS PARA ANÁLISE:**
----
 ${JSON.stringify(paragraphsWithIndexes, null, 2)}
----
 
-**AÇÃO FINAL:** Analise AGORA o texto fornecido com base nas regras e no manual. Identifique os pontos problemáticos, atribua pontuações de retenção e gere as sugestões de melhoria. Responda APENAS com o array JSON perfeito, seguindo EXATAMENTE todas as regras de sintaxe e conteúdo definidas acima.
-`;
+Analise os dados e retorne o array JSON completo e sintaticamente perfeito.`;
 
         const rawResult = await callGroqAPI(prompt, 4000);
         let analysis = cleanGeneratedText(rawResult, true);
