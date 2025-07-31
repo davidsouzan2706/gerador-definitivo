@@ -6736,11 +6736,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // =========================================================================
-// >>>>> PASSO 3: SUBSTITUA O OBJETO 'actions' INTEIRO POR ESTA VERSÃO <<<<<
+// >>>>> SUBSTITUA SEU OBJETO 'actions' INTEIRO POR ESTA VERSÃO CORRIGIDA <<<<<
 // =========================================================================
+
 const actions = {
-    'suggestStrategy': (btn) => suggestStrategy(btn, null),
-    'referenceStrategy': (btn) => getReferenceStrategy(btn),
+    'suggestStrategy': (btn) => suggestStrategy(btn),
     'startCrafting': (btn) => startCrafting(),
     'generateIdeas': (btn) => generateVideoIdeas(btn),
     'unravelEnigmas': (btn) => unravelEnigmas(btn),
@@ -6771,7 +6771,8 @@ const actions = {
         const ideaString = btn.dataset.idea;
         if (ideaString) {
             try {
-                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                // CORREÇÃO: Usamos replaceAll para garantir que todas as ocorrências de " sejam substituídas
+                const ideaObject = JSON.parse(ideaString.replaceAll('"', '"'));
                 document.getElementById('videoTheme').value = ideaObject.title || '';
                 document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
                 document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
@@ -6784,7 +6785,8 @@ const actions = {
         const ideaString = btn.dataset.idea;
         if (ideaString) {
             try {
-                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                // CORREÇÃO: Usamos replaceAll para garantir que todas as ocorrências de " sejam substituídas
+                const ideaObject = JSON.parse(ideaString.replaceAll('"', '"'));
                 document.getElementById('videoTheme').value = ideaObject.title || '';
                 document.getElementById('videoDescription').value = ideaObject.synopsis || ideaObject.enigma || '';
                 document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
@@ -6813,7 +6815,7 @@ const actions = {
     },
     'analyzeScript': (btn) => analyzeFullScript(btn),
     'analyzeHooks': (btn) => analyzeRetentionHooks(btn),
-    'suggestViralElements': (btn) => suggestViralElements(btn),
+    'suggestViralElements': (btn) => suggestViralElements(btn), // <<< A VÍRGULA CORRIGIDA ESTÁ AQUI
 };
 
     document.addEventListener('click', function(event) {
