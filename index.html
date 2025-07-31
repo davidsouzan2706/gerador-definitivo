@@ -5375,16 +5375,9 @@ window.regenerateSection = (fullSectionId) => {
 
 
 // =========================================================================
-// >>>>> SUBSTITUA A SUA FUNÇÃO generatePromptsForSection INTEIRA PELA VERSÃO BLINDADA <<<<<
-// =========================================================================
-// =========================================================================
 // >>>>> VERSÃO FINAL E BLINDADA DE 'generatePromptsForSection' <<<<<
 // =========================================================================
-/**
- * Gera prompts de imagem cinematográficos para uma seção do roteiro, baseando-se no conteúdo, contexto emocional e ritmo.
- * @param {HTMLElement} button - O botão que foi clicado.
- * @param {string} sectionElementId - O ID do elemento HTML da seção.
- */
+
 window.generatePromptsForSection = async (button, sectionElementId) => {
     const sectionElement = document.getElementById(sectionElementId);
     const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
