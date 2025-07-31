@@ -4214,7 +4214,7 @@ const actions = {
          * @returns {{prompt: string, maxTokens: number}} O prompt e o limite de tokens.
          */
 
-const constructScriptPrompt = (sectionName, sectionTitle, outlineDirective = null, contextText = null) => {
+const constructScriptPrompt = (sectionName, sectionTitle, outlineDirective = null, contextText = null, finalDirective = null) => {
     const baseContext = getBasePromptContext();
     const videoDuration = document.getElementById('videoDuration').value;
     const selectedLanguage = document.getElementById('languageSelect').value;
