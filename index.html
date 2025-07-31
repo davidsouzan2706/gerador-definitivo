@@ -5448,23 +5448,23 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
 3.  **PROIBIÇÃO ABSOLUTA DE ASPAS INTERNAS DUPLAS:** Dentro dos valores de "imageDescription", É ESTRITAMENTE PROIBIDO o uso de aspas duplas internas. Se precisar dar ênfase ou citar algo visualmente, USE OBRIGATORIAMENTE aspas simples (\`'\`).
 4.  **REVISÃO FINAL OBRIGATÓRIA:** Antes de responder, revise sua própria saída com EXTREMA ATENÇÃO para garantir que cada string está corretamente aberta e fechada com aspas duplas (\`"\`) e que a sintaxe JSON está PERFEITA.
 
-**MANUAL DE CONTEÚDO E CRIAÇÃO DE PROMPTS VISUAIS (SIGA EXATAMENTE):**
-1.  **UM OBJETO POR PARÁGRAFO (EXATIDÃO PERFEITA):** Crie um objeto JSON para CADA parágrafo fornecido. O array final deve ter EXATAMENTE ${batch.length} objetos. Nenhum a mais, nenhum a menos.
-2.  **DESCRIÇÃO VISUAL CINEMATOGRÁFICA E HIPERDETALHADA (O CORAÇÃO DA TAREFA):**
-    - Sua principal função é criar uma descrição visual INCRIVELMENTE RICA, VÍVIDA e CINEMATOGRÁFICA para cada parágrafo.
-    - **ELEMENTOS OBRIGATÓRIOS PARA CADA "imageDescription":**
-        - **Cenário e Ambiente:** Descreva o local, o cenário físico e o ambiente com riqueza sensorial (ex: "Uma sala de estar acolhedora, banhada por uma luz dourada do entardecer que filtra através de cortinas semi-transparentes.").
-        - **Composição Visual:** Defina os elementos principais da imagem e como eles são organizados (ex: "Um homem sentado sozinho em um sofá, com as mãos cobrindo o rosto, enquanto uma fotografia antiga cai lentamente em primeiro plano.").
-        - **Iluminação:** Especifique a qualidade, direção e tipo de luz (ex: "Luz dura e direcional criando sombras profundas, contrastando com uma luz suave e difusa no fundo.").
-        - **Paleta de Cores:** Indique as cores dominantes e o tom geral (ex: "Tons quentes de laranja e vermelho, com toques de azul escuro para criar tensão.").
-        - **Ângulo da Câmera e Perspectiva:** Defina claramente o ângulo e a perspectiva (ex: "Plano médio frontal, levemente abaixo do nível dos olhos, criando uma sensação de vulnerabilidade.").
-        - **Estilo Visual:** Sugira um estilo artístico ou fotográfico (ex: "Estilo cinematográfico de filme 35mm, com grãos leves e contraste elevado.").
-        - **Foco e Profundidade de Campo:** Indique o que está em foco e o efeito de desfoque (ex: "Fundo desfocado (bokeh suave), mantendo o rosto do sujeito em foco nítido.").
-        - **Elementos Emocionais Visuais:** Integre elementos visuais que reflitam a emoção do parágrafo (ex: "Gotas de chuva visíveis no ar, simbolizando a tristeza contida.").
-    - **OBJETIVO:** Cada descrição deve ser tão detalhada que uma IA de geração de imagem possa criar uma representação visual fiel e impactante.
-3.  **DURAÇÃO ESTIMADA REALISTA E CONTEXTUAL:**
-    - O valor de "estimated_duration" DEVE ser um NÚMERO INTEIRO entre **${durationRange}** segundos.
-    - Esta duração deve refletir a complexidade e o ritmo emocional do parágrafo. Cenas mais dinâmicas tendem a ter durações menores.
+**MANUAL DE CONTEÚDO E CRIAÇÃO DE PROMPTS VISUAIS CINEMATOGRÁFICOS (SIGA EXATAMENTE CADA ITEM):**
+1.  **CORRESPONDÊNCIA EXATA E OBRIGATÓRIA (PRECISÃO PERFEITA):**
+    - Crie um, e apenas um, objeto JSON para CADA parágrafo fornecido na seção "DADOS PARA ANÁLISE". O array final deve ter EXATAMENTE ${batch.length} objetos. Nenhum parágrafo deve ser ignorado, e nenhum objeto extra deve ser criado. Esta é uma regra de correspondência um-para-um absoluta.
+2.  **DESCRIÇÃO VISUAL HIPERDETALHADA E CINEMATOGRÁFICA (O CORAÇÃO DA TAREFA - CONTEÚDO DA CHAVE "imageDescription"):**
+    Sua principal função é criar uma descrição visual INCRIVELMENTE RICA, VÍVIDA e CINEMATOGRÁFICA para cada parágrafo. Esta descrição será usada por uma IA de geração de imagem, então cada detalhe importa. Foque em criar uma imagem que encapsule a essência emocional e narrativa do parágrafo. Cada "imageDescription" deve conter os seguintes elementos obrigatórios, integrados de forma fluida e natural:
+    - **Cenário e Ambiente (Onde?):** Descreva o local físico e o ambiente com riqueza sensorial. Qual é o cenário? (ex: "Interior de uma cabana de madeira, à meia-luz, com chamas tremulantes de uma lareira"). Inclua detalhes atmosféricos (ex: "fumaça leve subindo do fogo", "sombras dançando nas paredes de toras").
+    - **Composição Visual (O Que e Como?):** Defina os ELEMENTOS PRINCIPAIS da imagem e como eles são ORGANIZADOS dentro do quadro. Quem ou o que está na cena? Onde estão posicionados? (ex: "Um homem idoso senta-se sozinho em uma poltrona desgastada, inclinado para frente, olhando fixamente para as chamas."). Descreva a ação ou pose central.
+    - **Iluminação (Como é a Luz?):** Especifique a QUALIDADE, DIREÇÃO e TIPO de luz de forma precisa. Isso é crucial para o clima. (ex: "Iluminação quente e suave da lareira, criando sombras profundas e contrastantes no rosto do homem, com um fundo envolto em escuridão"). Evite termos genéricos como "boa iluminação".
+    - **Paleta de Cores (Quais Cores?):** Indique as CORES DOMINANTES e o TOM GERAL da cena. As cores devem refletir a emoção. (ex: "Tons quentes de âmbar, laranja e vermelho das chamas contrastando com tons frios de preto e cinza escuro do ambiente"). Use nomes de cores específicos quando possível.
+    - **Ângulo da Câmera e Perspectiva (De Onde Olhamos?):** Defina claramente o ÂNGULO e a PERSPECTIVA da tomada. Isso muda completamente a percepção. (ex: "Plano americano, filmado levemente por baixo (low angle) para enfatizar a solidão e a introspecção do sujeito"). Use termos cinematográficos se souber (plano geral, médio, close, cenital, contrapicado, etc.).
+    - **Estilo Visual (Qual é a Estética?):** Sugira um ESTILO ARTÍSTICO ou FOTOGRÁFICO específico. Isso guia a "textura" da imagem. (ex: "Estilo cinematográfico realista, com textura granulada de filme 35mm, profundidade de campo rasa"). Outros exemplos: "Estilo hiper-realista de fotografia editorial", "Estilo pintura a óleo impressionista", "Estilo de fotografia analógica vintage".
+    - **Foco e Profundidade de Campo (O Que Está Nítido?):** Indique claramente o que está em FOCO NÍTIDO e o efeito do DESFOQUE no fundo ou primeiro plano. (ex: "Fundo desfocado (bokeh suave), mantendo o rosto e as mãos do homem em foco nítido"). Isso ajuda a direcionar a atenção.
+    - **Elementos Emocionais Visuais (O Que Sente?):** Integre ELEMENTOS VISUAIS que REFLETIAM e AMPLIEM a EMOÇÃO do parágrafo. Como a imagem transmite o sentimento? (ex: "Gotas de chuva visíveis no ar, refratando a luz da lareira, simbolizando a tristeza contida do personagem"). Procure metáforas visuais.
+3.  **DURAÇÃO ESTIMADA REALISTA E CONTEXTUAL (CONTEÚDO DA CHAVE "estimated_duration"):**
+    - O valor DEVE ser um NÚMERO INTEIRO (sem decimais) representando a duração em SEGUNDOS.
+    - O número deve estar EXCLUSIVAMENTE dentro do intervalo definido: **entre ${durationRange} segundos**.
+    - Esta duração deve ser uma ESTIMATIVA REALISTA baseada na COMPLEXIDADE da cena descrita e no RITMO EMOCIONAL indicado no contexto (ex: cenas contemplativas com muitos detalhes visuais podem exigir mais tempo, enquanto ações rápidas podem precisar de menos). Evite valores no limite inferior ou superior sem justificativa clara.
 
 **DADOS PARA ANÁLISE E GERAÇÃO (LOTE ATUAL - ANALISE CADA PARÁGRAFO):**
 ---
