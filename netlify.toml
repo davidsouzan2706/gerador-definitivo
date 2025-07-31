@@ -1,0 +1,6 @@
+# netlify.toml
+
+[functions]
+  # Aumenta o timeout de TODAS as funções para o máximo permitido no seu plano
+  # Se você estiver no Pro ou superior, pode tentar valores maiores aqui
+  timeout = 10 
