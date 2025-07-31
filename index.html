@@ -5639,30 +5639,31 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
 // FUNÇÃO DE RE-GERAÇÃO CORRIGIDA
 // ==========================================================
 window.regenerateSection = (fullSectionId) => {
-            const sectionName = fullSectionId.replace('Section', '');
-            
-            const sectionMap = {
-    'intro': { title: 'Introdução', elementId: 'intro' },
-    'development': { title: 'Desenvolvimento', elementId: 'development' },
-    'climax': { title: 'Clímax', elementId: 'climax' },
-    'conclusion': { title: 'Conclusão', elementId: 'conclusion' }, // Título corrigido
-    'cta': { title: 'Call to Action (CTA)', elementId: 'cta' } // <<< ADICIONADO
-};
+    const sectionName = fullSectionId.replace('Section', '');
+    
+    const sectionMap = {
+        'intro': { title: 'Introdução', elementId: 'intro' },
+        'development': { title: 'Desenvolvimento', elementId: 'development' },
+        'climax': { title: 'Clímax', elementId: 'climax' },
+        'conclusion': { title: 'Conclusão', elementId: 'conclusion' },
+        'cta': { title: 'Call to Action (CTA)', elementId: 'cta' }
+    };
 
-            const sectionInfo = sectionMap[sectionName];
-            
-            if (sectionInfo) {
-                // Encontra o botão de re-gerar que foi clicado, em vez de um botão antigo
-                const button = document.querySelector(`[data-action='regenerate'][data-section-id='${fullSectionId}']`);
-                if (button) {
-                     handleGenerateSection(button, sectionName, sectionInfo.title, sectionInfo.elementId);
-                } else {
-                    console.error(`Botão de re-gerar não encontrado para a seção: ${fullSectionId}`);
-                }
-            } else {
-                console.error(`Informações da seção não encontradas para: ${sectionName}`);
-            }
-        };
+    const sectionInfo = sectionMap[sectionName];
+    
+    if (sectionInfo) {
+        // CORREÇÃO: Usamos aspas duplas dentro dos acentos graves para um seletor CSS válido.
+        const button = document.querySelector(`[data-action="regenerate"][data-section-id="${fullSectionId}"]`);
+        
+        if (button) {
+             handleGenerateSection(button, sectionName, sectionInfo.title, sectionInfo.elementId);
+        } else {
+            console.error(`Botão de re-gerar não encontrado para a seção: ${fullSectionId}`);
+        }
+    } else {
+        console.error(`Informações da seção não encontradas para: ${sectionName}`);
+    }
+};
 
 
 
