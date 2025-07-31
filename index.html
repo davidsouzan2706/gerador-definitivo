@@ -3915,51 +3915,47 @@ Você é um MESTRE ROTEIRISTA e um ESTRATEGISTA DE CONTEÚDO DE ALTO NÍVEL. Sua
             maxTokens = 2000;
             break;
 
-        // =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA O "case 'intro':" INTEIRO POR ESTE BLOCO <<<<<
+
 // =========================================================================
-
-        // =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA O "case 'intro':" INTEIRO PELA VERSÃO CORRIGIDA <<<<<
+// >>>>> BLOCO 'intro' EVOLUÍDO E BLINDADO <<<<<
 // =========================================================================
+case 'intro':
+    const shockingHook = document.getElementById('shockingEndingHook')?.value.trim();
+    
+    prompt += `\n\n**INSTRUÇÕES CRÍTICAS E ESTRATÉGICAS PARA A INTRODUÇÃO (ESTILO YOUTUBE VIRAL DE ALTO IMPACTO):**
+Sua tarefa é escrever a **Introdução** do vídeo com o ÚNICO objetivo de criar um "hook" MAGNÉTICO e IRRESISTÍVEL que prenda a atenção do espectador nos CRUCIAIS primeiros 15-30 segundos.`;
 
-        case 'intro':
-            const shockingHook = document.getElementById('shockingEndingHook')?.value.trim();
-            
-            prompt += `
+    // <<< LÓGICA CONDICIONAL INTELIGENTE E BLINDADA >>>
+    if (shockingHook) {
+        prompt += `\n\n**REGRA DE HOOK PRIORITÁRIA ABSOLUTA (A ÚNICA E MAIS IMPORTANTE):**
+1.  **INÍCIO OBRIGATÓRIO:** Você DEVE, SEM EXCEÇÕES, começar o roteiro EXATAMENTE com a frase fornecida no campo 'Desfecho Chocante'.
+2.  **NADA ANTES:** É TERMINANTEMENTE PROIBIDO adicionar qualquer palavra, frase ou elemento antes desta frase obrigatória.
+3.  **CONTEXTO E MISTÉRIO PÓS-HOOK:** Imediatamente após a frase obrigatória, sua tarefa é construir o restante da introdução de forma brilhante, criando um profundo MISTÉRIO e uma irresistível CURIOSIDADE sobre como a história chegou a esse ponto dramático.
+**FRASE OBRIGATÓRIA A SER USADA EXATAMENTE NO INÍCIO:** "${shockingHook}"`;
+    } else {
+        prompt += `\n\n**REGRAS DE CONTEÚDO E CRIAÇÃO DE HOOK VIRAL (ESCOLHA A MAIS IMPACTANTE):**
+1.  **PROIBIDO COMEÇO LENTO OU ÓBVIO:** É ABSOLUTAMENTE IMPERMISSÍVEL um início fraco. Você DEVE escolher, de forma estratégica, UMA das seguintes técnicas de gancho inicial:
+    - **In Media Res (No Meio da Ação):** Mergulhe diretamente no momento de MÁXIMA ação, tensão ou emoção da história. Prenda o espectador instantaneamente no calor da ação.
+    - **Estatística Chocante e Contra-Intuitiva:** Apresente um DADO surpreendente e extremamente difícil de acreditar, que desafie as expectativas do espectador e o force a prestar atenção.
+    - **Pergunta Provocativa e Pessoal:** Faça uma PERGUNTA DIRETA, EMOCIONAL e que crie uma conexão IMEDIATA e PESSOAL com o espectador, fazendo-o refletir intensamente.
+2.  **CRIAÇÃO OBRIGATÓRIA DE UM 'LOOP ABERTO' (Engajamento Garantido):**
+    - Após o gancho inicial, você DEVE imediatamente introduzir uma promessa clara, uma revelação parcial ou uma pergunta INTRIGANTE.
+    - Este 'loop aberto' deve ser tão cativante que o espectador SINTA A NECESSIDADE de assistir o vídeo inteiro para ter suas dúvidas respondidas ou ver o mistério resolvido.`;
+    }
 
-**INSTRUÇÕES CRÍTICAS PARA A INTRODUÇÃO (ESTILO YOUTUBE VIRAL):**
-Sua tarefa é escrever a **Introdução** do vídeo. O objetivo é criar um "hook" magnético que prenda a atenção do espectador nos primeiros 15-30 segundos.`;
+    prompt += `\n\n**REGRAS GERAIS E CRÍTICAS PARA A INTRODUÇÃO (SIGA EXATAMENTE):**
+- **Concisão e Poder:** Seja EXTREMAMENTE conciso e direto. Use frases CURTAS, DINÂMICAS e com PODER MÁXIMO de impacto. Evite rodeios.
+- **Foco Absoluto:** O foco ÚNICO e INQUESTIONÁVEL é criar CURIOSIDADE INTENSA e URGENTE para que o espectador NÃO TENHA DÚVIDA de que deve continuar assistindo.`;
 
-            // <<< AQUI ESTÁ A LÓGICA CONDICIONAL INTELIGENTE >>>
-            if (shockingHook) {
-                prompt += `
+    if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
+        prompt += `\n\n**IMPORTANTE E INEGOCIÁVEL: Todo o texto da introdução DEVE ser escrito em Português do Brasil (pt-br).**`;
+    }
 
-**REGRA DE HOOK PRIORITÁRIA (A MAIS IMPORTANTE):**
-Você DEVE começar o roteiro EXATAMENTE com a seguinte frase fornecida pelo usuário no campo 'Desfecho Chocante'. NÃO adicione nada antes dela. Após usar esta frase, construa o resto da introdução para criar um profundo mistério sobre como a história chegou a este ponto.
-**Frase Obrigatória:** "${shockingHook}"`;
-            } else {
-                prompt += `
-
-**REGRAS DE CONTEÚDO (HOOK VIRAL):**
-1.  **PROIBIDO COMEÇO LENTO:** Você DEVE começar de uma das seguintes formas (escolha a mais impactante para o tema):
-    - **In Media Res:** Comece no meio do momento de maior ação ou tensão da história.
-    - **Estatística Chocante:** Apresente um dado ou estatística surpreendente e contra-intuitivo.
-    - **Pergunta Provocativa:** Faça uma pergunta direta e pessoal que crie uma conexão imediata com o espectador.
-2.  **CRIE UM LOOP ABERTO:** Após o impacto inicial, você DEVE fazer uma promessa clara ou uma pergunta intrigante que só será totalmente respondida no final do vídeo. Crie um mistério.`;
-            }
-
-            prompt += `
-**REGRAS GERAIS PARA A INTRODUÇÃO:**
-- Seja conciso e direto. Use frases curtas e poderosas.
-- O foco é criar curiosidade e urgência para que o espectador continue assistindo.`;
-
-            if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
-                prompt += `\n**IMPORTANTE: Todo o texto DEVE ser em Português.**`;
-            }
-
-            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500;
-            break;
+    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500;
+    break;
+// =========================================================================
+// >>>>> FIM DO BLOCO 'intro' EVOLUÍDO <<<<<
+// =========================================================================
 
        case 'development':
             prompt += `
