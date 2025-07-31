@@ -5320,6 +5320,7 @@ const prompt = `Você é uma API de Estratégia de Conteúdo Viral altamente esp
     - "targetAudience": string.
     - "viralityScore": NÚMERO (inteiro ou decimal) entre 0 e 10.
     - "videoDescription": string.
+
 6.  **IDIOMA:** Lembre-se, todos os valores de texto devem estar em **${languageName}**.
 
 **MANUAL DE CRIAÇÃO DE IDEIAS (SIGA ESTAS INSTRUÇÕES PARA CADA IDEIA):**
@@ -5659,7 +5660,7 @@ window.regenerateSection = (fullSectionId) => {
 
 
 // =========================================================================
-// >>>>> VERSÃO FINAL E BLINDADA DE 'generatePromptsForSection' <<<<<
+// >>>>> VERSÃO FINAL E HÍBRIDA DE 'generatePromptsForSection' <<<<<
 // =========================================================================
 
 window.generatePromptsForSection = async (button, sectionElementId) => {
@@ -5680,7 +5681,6 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
     promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
 
     try {
-        // >>>>> PROCESSAMENTO ESTRUTURADO DO CONTEÚDO <<<<<
         const allChildren = Array.from(contentWrapper.children);
         const paragraphsWithContext = [];
         let currentChapterTitle = "Contexto Geral";
@@ -5700,19 +5700,13 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
 
         const baseIndexMatch = paragraphsWithContext[0]?.originalId.match(/-p-(\d+)$/);
         const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-        const batchSize = 3; // Processa em lotes para não sobrecarregar a API
+        const batchSize = 3;
         const apiPromises = [];
 
-        // >>>>> DEFINIÇÃO DE PARÂMETROS DE ESTILO VISUAL <<<<<
         const visualPacing = document.getElementById('visualPacing').value;
-        const durationMap = {
-            'dinamico': '3 e 8',
-            'normal': '8 e 15',
-            'contemplativo': '15 e 25'
-        };
+        const durationMap = { 'dinamico': '3 e 8', 'normal': '8 e 15', 'contemplativo': '15 e 25' };
         const durationRange = durationMap[visualPacing] || '3 e 8';
 
-        // >>>>> GERAÇÃO DOS PROMPTS PARA A IA (EM LOTES) <<<<<
         for (let i = 0; i < paragraphsWithContext.length; i += batchSize) {
             const batch = paragraphsWithContext.slice(i, i + batchSize);
             let promptContextForAI = '';
@@ -5723,19 +5717,17 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
                 promptContextForAI += `\nParágrafo ${globalIndex}:\n- Título do Capítulo (Guia Temático): "${item.chapter}"\n- Texto do Parágrafo: "${item.text}"\n- Contexto Emocional: (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})`;
             });
             
-            // >>>>> PROMPT FINAL E BLINDADO PARA GERAÇÃO DE PROMPTS DE IMAGEM <<<<<
+            // <<< ESTE É O PROMPT HÍBRIDO, COM SUA LISTA DETALHADA E A ESTRUTURA BLINDADA >>>
             const prompt = `Você é uma API ESPECIALISTA em Criação de Prompts Visuais Cinematográficos para IAs de Geração de Imagem. Sua tarefa é analisar os parágrafos fornecidos e gerar prompts de imagem DESCritivos, RICOS EM DETALHES e TOTALMENTE ALINHADOS com o contexto narrativo e emocional.
 
 **REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA JSON (ABSOLUTAMENTE INEGOCIÁVEIS):**
-1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, comentário ou metadado deve ser incluído. Pense nisso como uma resposta de API pura e impecável.
-2.  **ASPAS DUPLAS, SEMPRE E EXCLUSIVAMENTE:** TODAS as chaves (ex: "imageDescription") E todos os valores de texto (strings) DEVEM usar obrigatoriamente aspas duplas (\`"\`). É TERMINANTEMENTE PROIBIDO o uso de aspas simples (\`'\`) ou crases (\`\`) para delimitar QUALQUER string.
-3.  **PROIBIÇÃO ABSOLUTA DE ASPAS INTERNAS DUPLAS:** Dentro dos valores de "imageDescription", É ESTRITAMENTE PROIBIDO o uso de aspas duplas internas. Se precisar dar ênfase ou citar algo visualmente, USE OBRIGATORIAMENTE aspas simples (\`'\`).
-4.  **REVISÃO FINAL OBRIGATÓRIA:** Antes de responder, revise sua própria saída com EXTREMA ATENÇÃO para garantir que cada string está corretamente aberta e fechada com aspas duplas (\`"\`) e que a sintaxe JSON está PERFEITA.
+1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. Nenhum outro texto é permitido.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar obrigatoriamente aspas duplas (\`"\`).
+3.  **PROIBIÇÃO DE ASPAS INTERNAS:** Dentro dos valores de texto (como "imageDescription"), É ESTRITAMENTE PROIBIDO usar aspas duplas internas. Se precisar de ênfase, USE OBRIGATORIAMENTE aspas simples (\`'\`).
+4.  **ESTRUTURA COMPLETA:** O array deve conter EXATAMENTE ${batch.length} objetos. Cada objeto deve ter EXATAMENTE duas chaves: "imageDescription" (string) e "estimated_duration" (número inteiro).
 
-**MANUAL DE CONTEÚDO E CRIAÇÃO DE PROMPTS VISUAIS CINEMATOGRÁFICOS (SIGA EXATAMENTE CADA ITEM):**
-1.  **CORRESPONDÊNCIA EXATA E OBRIGATÓRIA (PRECISÃO PERFEITA):**
-    - Crie um, e apenas um, objeto JSON para CADA parágrafo fornecido na seção "DADOS PARA ANÁLISE". O array final deve ter EXATAMENTE ${batch.length} objetos. Nenhum parágrafo deve ser ignorado, e nenhum objeto extra deve ser criado. Esta é uma regra de correspondência um-para-um absoluta.
-2.  **DESCRIÇÃO VISUAL HIPERDETALHADA E CINEMATOGRÁFICA (O CORAÇÃO DA TAREFA - CONTEÚDO DA CHAVE "imageDescription"):**
+
+**DESCRIÇÃO VISUAL HIPERDETALHADA E CINEMATOGRÁFICA (O CORAÇÃO DA TAREFA - CONTEÚDO DA CHAVE "imageDescription"):**
     Sua principal função é criar uma descrição visual INCRIVELMENTE RICA, VÍVIDA e CINEMATOGRÁFICA para cada parágrafo. Esta descrição será usada por uma IA de geração de imagem, então cada detalhe importa. Foque em criar uma imagem que encapsule a essência emocional e narrativa do parágrafo. Cada "imageDescription" deve conter os seguintes elementos obrigatórios, integrados de forma fluida e natural:
     - **Cenário e Ambiente (Onde?):** Descreva o local físico e o ambiente com riqueza sensorial. Qual é o cenário? (ex: "Interior de uma cabana de madeira, à meia-luz, com chamas tremulantes de uma lareira"). Inclua detalhes atmosféricos (ex: "fumaça leve subindo do fogo", "sombras dançando nas paredes de toras").
     - **Composição Visual (O Que e Como?):** Defina os ELEMENTOS PRINCIPAIS da imagem e como eles são ORGANIZADOS dentro do quadro. Quem ou o que está na cena? Onde estão posicionados? (ex: "Um homem idoso senta-se sozinho em uma poltrona desgastada, inclinado para frente, olhando fixamente para as chamas."). Descreva a ação ou pose central.
@@ -5751,23 +5743,22 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
     - **Texturas e Materiais (Como se Sente?):** Inclua DESCRIÇÕES DE TEXTURAS e MATERIAIS para elementos-chave da cena para aumentar a sensação de realismo e tactilidade. (ex: "Superfície áspera e rachada de tijolos antigos", "Tecido de veludo vermelho desgastado e desbotado", "Superfície metálica brilhante e refletiva."). Use adjetivos sensoriais.
     - **Profundidade e Escala (Como é o Espaço?):** Especifique elementos que criem uma sensação de PROFUNDIDADE e ESCALA na imagem. Use elementos de primeiro plano, meio e fundo. (ex: "Um longo corredor escuro se estende até um ponto de fuga distante, com silhuetas de portas alinhadas nas paredes laterais, criando uma forte perspectiva linear."). Isso evita composições planas.
     - **Elementos Temporais ou Climáticos (Quando e Como está o Tempo?):** Se o contexto do parágrafo implicar um momento específico do dia, clima ou estação, INCLUA ESSES DETALHES. (ex: "Cena noturna sob uma lua crescente, com névoa leve pairando sobre o lago.", "Interior abafado de uma cozinha no verão, com luz do sol forte entrando pelas janelas."). Isso define o "clima" da cena visual.
-3.  **DURAÇÃO ESTIMADA REALISTA E CONTEXTUAL (CONTEÚDO DA CHAVE "estimated_duration"):**
+
+**DURAÇÃO ESTIMADA REALISTA E CONTEXTUAL (CONTEÚDO DA CHAVE "estimated_duration"):**
     - O valor DEVE ser um NÚMERO INTEIRO (sem decimais) representando a duração em SEGUNDOS.
     - O número deve estar EXCLUSIVAMENTE dentro do intervalo definido: **entre ${durationRange} segundos**.
     - Esta duração deve ser uma ESTIMATIVA REALISTA baseada na COMPLEXIDADE da cena descrita e no RITMO EMOCIONAL indicado no contexto (ex: cenas contemplativas com muitos detalhes visuais podem exigir mais tempo, enquanto ações rápidas podem precisar de menos). Evite valores no limite inferior ou superior sem justificativa clara.
 
-**DADOS PARA ANÁLISE E GERAÇÃO (LOTE ATUAL - ANALISE CADA PARÁGRAFO):**
+**DADOS PARA ANÁLISE (LOTE ATUAL):**
 ---
 ${promptContextForAI}
 ---
 
-**AÇÃO FINAL E CRÍTICA:** Com base nestas instruções rigorosas, analise AGORA cada parágrafo fornecido e gere AGORA o array JSON com os prompts visuais correspondentes, seguindo EXATAMENTE todas as regras, formatos e níveis de detalhe especificados. Responda APENAS com o array JSON perfeito.
-`;
+**AÇÃO FINAL:** Com base nestas instruções rigorosas, gere AGORA o array JSON com os prompts visuais, seguindo EXATAMENTE todas as regras.`;
 
-            apiPromises.push(callGroqAPI(prompt, 4000).then(res => cleanGeneratedText(res, true)));
+apiPromises.push(callGroqAPI(prompt, 4000).then(res => cleanGeneratedText(res, true)));
         }
 
-        // >>>>> PROCESSAMENTO DOS RESULTADOS <<<<<
         const allBatchResults = await Promise.all(apiPromises);
         let allGeneratedPrompts = allBatchResults.flat();
 
@@ -5775,15 +5766,12 @@ ${promptContextForAI}
             throw new Error("A IA não retornou um prompt para cada parágrafo.");
         }
 
-        const curatedPrompts = allGeneratedPrompts.map((promptData, index) => {
-            return {
-                scriptPhrase: paragraphsWithContext[index].text,
-                imageDescription: promptData.imageDescription || "Falha ao gerar descrição. Tente re-gerar.",
-                estimated_duration: promptData.estimated_duration || 5
-            };
-        });
+        const curatedPrompts = allGeneratedPrompts.map((promptData, index) => ({
+            scriptPhrase: paragraphsWithContext[index].text,
+            imageDescription: promptData.imageDescription || "Falha ao gerar descrição. Tente re-gerar.",
+            estimated_duration: promptData.estimated_duration || 5
+        }));
 
-        // >>>>> ARMAZENAMENTO E RENDERIZAÇÃO <<<<<
         allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
         promptPaginationState[sectionElementId] = 0;
 
@@ -5802,6 +5790,9 @@ ${promptContextForAI}
         hideButtonLoading(button);
     }
 };
+
+
+
 // =========================================================================
 // >>>>> FIM DA VERSÃO BLINDADA DE 'generatePromptsForSection' <<<<<
 // =========================================================================
