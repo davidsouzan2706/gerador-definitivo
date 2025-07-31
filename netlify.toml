@@ -1,0 +1,18 @@
+# ===============================================
+# netlify.toml - Versão Segura e à Prova de Balas
+# ===============================================
+
+# Configurações de Build
+# Deixe o comando vazio se você não tem um passo de build (como 'npm run build')
+[build]
+  command = ""
+  # MUITO IMPORTANTE: Coloque aqui o nome da pasta que a Netlify deve publicar.
+  # Se seus arquivos HTML, CSS e JS estão na raiz, use "/".
+  # Se estiverem numa pasta "public" ou "dist", mude para "public" ou "dist".
+  publish = "/"
+
+# Configurações das Funções Serverless
+[functions]
+  # Define o timeout padrão para TODAS as funções em segundos.
+  # O máximo no plano gratuito da Netlify é 10.
+  timeout = 10
