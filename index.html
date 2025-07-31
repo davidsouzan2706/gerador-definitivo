@@ -3578,41 +3578,70 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
 };
 
     
+// =========================================================================
+// >>>>> PASSO ÚNICO: SUBSTITUA SUA FUNÇÃO cleanGeneratedText PELA VERSÃO FINAL <<<<<
+// =========================================================================
 const cleanGeneratedText = (text, expectJson = false) => {
     if (!text) return null;
     if (!expectJson) return text.trim();
 
     console.log("Iniciando limpeza de JSON. Texto bruto (início):", text.substring(0, 200) + '...');
+    
+    // Encontra o primeiro caractere JSON, ignorando preâmbulos.
+    const firstJsonCharMatch = text.match(/[\{\[]/);
+    if (!firstJsonCharMatch) {
+        throw new Error("Nenhum caractere de início JSON ('{' ou '[') foi encontrado na resposta da IA.");
+    }
+    const firstChar = firstJsonCharMatch[0];
+    const startIndex = firstJsonCharMatch.index;
 
     try {
-        // ETAPA 1: O "Detetive" - Encontra todos os fragmentos que parecem objetos JSON.
-        // A expressão regular /\{[\s\S]*?\}/g encontra tudo desde um '{' até o '}' correspondente.
-        const objectRegex = /\{[\s\S]*?\}/g;
-        const jsonObjects = text.match(objectRegex);
+        // LÓGICA DO "CIRURGIÃO": Decide se é um array ou um objeto.
+        if (firstChar === '[') {
+            // Se começa com '[', tratamos como um ARRAY de objetos.
+            console.log("Detectado formato de Array. Ativando modo 'Detetive'.");
+            const objectRegex = /\{[\s\S]*?\}/g;
+            const jsonObjects = text.match(objectRegex);
 
-        // Se o detetive não encontrou nenhum objeto, é um erro.
-        if (!jsonObjects || jsonObjects.length === 0) {
-            throw new Error("Nenhum fragmento de objeto JSON válido foi encontrado na resposta da IA.");
+            if (!jsonObjects || jsonObjects.length === 0) {
+                throw new Error("Array JSON iniciado, mas nenhum objeto válido foi encontrado dentro dele.");
+            }
+            console.log(`Detetive encontrou ${jsonObjects.length} fragmentos de objeto JSON.`);
+            
+            const jsonArrayString = `[${jsonObjects.join(',')}]`;
+            const parsedJson = JSON.parse(jsonArrayString);
+            console.log("Sucesso! Array JSON montado e validado com sucesso.");
+            return parsedJson;
+
+        } else { // Se começa com '{', tratamos como um ÚNICO objeto.
+            console.log("Detectado formato de Objeto. Ativando modo 'Extrator'.");
+            const matchingLastChar = '}';
+            let level = 1;
+            let endIndex = -1;
+
+            for (let i = startIndex + 1; i < text.length; i++) {
+                if (text[i] === '{') level++;
+                if (text[i] === '}') level--;
+                if (level === 0) {
+                    endIndex = i;
+                    break;
+                }
+            }
+            if (endIndex === -1) {
+                throw new Error("Objeto JSON não foi fechado corretamente na resposta da IA.");
+            }
+            
+            const jsonObjectString = text.substring(startIndex, endIndex + 1);
+            const parsedJson = JSON.parse(jsonObjectString);
+            console.log("Sucesso! Objeto JSON extraído e validado com sucesso.");
+            return parsedJson;
         }
-        
-        console.log(`Detetive encontrou ${jsonObjects.length} fragmentos de objeto JSON.`);
-
-        // ETAPA 2: O "Montador" - Junta todos os fragmentos limpos com vírgulas.
-        const jsonArrayString = `[${jsonObjects.join(',')}]`;
-        
-        console.log("Tentando fazer o parse do JSON montado...");
-
-        // ETAPA 3: A "Verificação Final" - Tenta fazer o parse do resultado final.
-        const parsedJson = JSON.parse(jsonArrayString);
-        console.log("Sucesso! JSON montado e validado com sucesso.");
-        return parsedJson;
 
     } catch (error) {
-        // Se mesmo após a montagem o JSON ainda for inválido, reportamos o erro.
-        console.error("=== FALHA CRÍTICA NA MONTAGEM DO JSON ===");
+        console.error("=== FALHA CRÍTICA NA LIMPEZA/EXTRAÇÃO DO JSON ===");
         console.error("Motivo:", error.message);
         console.error("Texto original problemático (início):", text.substring(0, 1000));
-        throw new Error(`A IA retornou um JSON fragmentado que não pôde ser reparado. Motivo: ${error.message}`);
+        throw new Error(`A IA retornou um JSON inválido que não pôde ser reparado. Motivo: ${error.message}`);
     }
 };
 
