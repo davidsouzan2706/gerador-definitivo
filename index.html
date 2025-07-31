@@ -3995,8 +3995,7 @@ ${researchData}
 // =========================================================================
 // >>>>> ADICIONE ESTAS 3 NOVAS FUNÇÕES AO SEU SCRIPT <<<<<
 // =========================================================================
-
-// Função para dirigir o CLÍMAX
+// Função para dirigir o CLÍMAX (Versão correta, sem criar contêiner)
 const directAndGenerateClimax = async (button) => {
     const devSection = document.querySelector('#developmentSection .generated-content-wrapper');
     if (!devSection || !devSection.textContent.trim()) {
@@ -4020,16 +4019,29 @@ const directAndGenerateClimax = async (button) => {
             climaxSuggestions
         );
 
-        if (!userDirective) return window.showToast("Geração do clímax cancelada.");
+        if (!userDirective) {
+            window.showToast("Geração do clímax cancelada.");
+            return;
+        }
         await handleGenerateSection(button, 'climax', 'Clímax', 'climax', userDirective);
+
     } catch (error) {
         hideButtonLoading(button);
         window.showToast(`Falha ao preparar o clímax: ${error.message}`);
     }
 };
 
-// Função para dirigir a CONCLUSÃO
+// Função para dirigir a CONCLUSÃO (Versão corrigida, que CRIA o contêiner)
 const directAndGenerateConclusion = async (button) => {
+    // PASSO 1: Garante que o contêiner para a Conclusão exista na página.
+    const scriptContainer = document.getElementById('scriptSectionsContainer');
+    if (scriptContainer && !document.getElementById('conclusionSection')) {
+        const conclusionDiv = document.createElement('div');
+        conclusionDiv.id = 'conclusionSection';
+        conclusionDiv.classList.add('script-section');
+        scriptContainer.appendChild(conclusionDiv);
+    }
+    
     showButtonLoading(button);
     const scriptContext = getTranscriptOnly();
     const suggestionPrompt = `Analise o roteiro a seguir e sugira 3 mensagens ou lições finais para a CONCLUSÃO. Responda APENAS com um array JSON de 3 strings.\nRoteiro:\n${scriptContext}`;
@@ -4046,10 +4058,14 @@ const directAndGenerateConclusion = async (button) => {
             conclusionSuggestions
         );
 
-        if (!userDirective) return window.showToast("Geração da conclusão cancelada.");
+        if (!userDirective) {
+            window.showToast("Geração da conclusão cancelada.");
+            return;
+        }
+
+        // PASSO 2: Agora, com o contêiner garantido, gera e exibe o conteúdo.
         await handleGenerateSection(button, 'conclusion', 'Conclusão', 'conclusion', userDirective);
         
-        // Esconde o módulo de estratégia e mostra o botão do CTA
         button.closest('#conclusionStrategyModule').classList.add('hidden');
         document.getElementById('generateCtaBtn').classList.remove('hidden');
         window.showToast("Conclusão gerada! Agora, vamos para o CTA.");
@@ -4060,14 +4076,23 @@ const directAndGenerateConclusion = async (button) => {
     }
 };
 
-// Função para dirigir o CTA
+// Função para dirigir o CTA (Versão corrigida, que CRIA o contêiner)
 const directAndGenerateCta = async (button) => {
+    // PASSO 1: Garante que o contêiner para o CTA exista na página.
+    const scriptContainer = document.getElementById('scriptSectionsContainer');
+    if (scriptContainer && !document.getElementById('ctaSection')) {
+        const ctaDiv = document.createElement('div');
+        ctaDiv.id = 'ctaSection';
+        ctaDiv.classList.add('script-section');
+        scriptContainer.appendChild(ctaDiv);
+    }
+
     showButtonLoading(button);
     const scriptContext = getTranscriptOnly();
     const suggestionPrompt = `Com base no roteiro, sugira 3 tipos de Call to Action (CTA): um para engajamento, um para inscrição e um para um produto/link específico. Responda APENAS com um array JSON de 3 strings.\nRoteiro:\n${scriptContext}`;
 
     try {
-        const rawSuggestions = await callGroqAPI(suggestionPrompt, 800);
+        const rawSuggestions = await callGroqAPI(prompt, 800);
         const ctaSuggestions = cleanGeneratedText(rawSuggestions, true) || [];
         hideButtonLoading(button);
         
@@ -4078,11 +4103,20 @@ const directAndGenerateCta = async (button) => {
             ctaSuggestions
         );
 
-        if (!userDirective) return window.showToast("Geração do CTA cancelada.");
+        if (!userDirective) {
+            window.showToast("Geração do CTA cancelada.");
+            return;
+        }
+
+        // PASSO 2: Agora, com o contêiner garantido, gera e exibe o conteúdo.
         await handleGenerateSection(button, 'cta', 'Call to Action (CTA)', 'cta', userDirective);
 
-        // Esconde o botão do CTA após o uso
         button.classList.add('hidden');
+        const analysisSection = document.getElementById('scriptAnalysisSection');
+        if (analysisSection) {
+            analysisSection.classList.remove('hidden');
+            analysisSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
 
     } catch (error) {
         hideButtonLoading(button);
