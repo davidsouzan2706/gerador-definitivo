@@ -3923,7 +3923,7 @@ case 'intro':
     const shockingHook = document.getElementById('shockingEndingHook')?.value.trim();
     
     prompt += `\n\n**INSTRUÇÕES CRÍTICAS E ESTRATÉGICAS PARA A INTRODUÇÃO (ESTILO YOUTUBE VIRAL DE ALTO IMPACTO):**
-Sua tarefa é escrever a **Introdução** do vídeo com o ÚNICO objetivo de criar um "hook" MAGNÉTICO e IRRESISTÍVEL que prenda a atenção do espectador nos CRUCIAIS primeiros 20-40 segundos.`;
+Sua tarefa é escrever a **Introdução** do vídeo com o ÚNICO objetivo de criar um "hook" MAGNÉTICO e IRRESISTÍVEL que prenda a atenção do espectador nos CRUCIAIS primeiros 15-35 segundos.`;
 
     // <<< LÓGICA CONDICIONAL INTELIGENTE E BLINDADA >>>
     if (shockingHook) {
@@ -4177,6 +4177,13 @@ const createScriptSectionPlaceholder = (sectionId, title, buttonId, actionName) 
  * Adiciona um novo capítulo ao desenvolvimento, com prompt refinado para evitar repetição do título e "ecos".
  * @param {HTMLElement} button - O botão que foi clicado.
  */
+// =========================================================================
+// >>>>> VERSÃO FINAL E BLINDADA DE 'addDevelopmentChapter' <<<<<
+// =========================================================================
+/**
+ * Adiciona um novo capítulo ao desenvolvimento, com prompt refinado para evitar repetição do título e "ecos".
+ * @param {HTMLElement} button - O botão que foi clicado.
+ */
 window.addDevelopmentChapter = async (button) => {
     const devSection = document.getElementById('developmentSection');
     const contentWrapper = devSection?.querySelector('.generated-content-wrapper');
@@ -4190,20 +4197,32 @@ window.addDevelopmentChapter = async (button) => {
     showButtonLoading(button);
 
     try {
-        const suggestionPrompt = `Você é um Estrategista de Roteiro. Baseado no roteiro abaixo, sugira 3 temas distintos e lógicos para o próximo capítulo. Responda APENAS com um array JSON de 3 strings.
+        // >>>>> PROMPT BLINDADO PARA GERAÇÃO DE SUGESTÕES <<<<<
+        const suggestionPrompt = `Você é um ESTRATEGISTA DE ROTEIRO DE ALTO NÍVEL especializado em continuidade narrativa. Sua tarefa é sugerir 3 temas distintos, coerentes e logicamente conectados ao fluxo narrativo existente para o PRÓXIMO CAPÍTULO do desenvolvimento.
 
-        ROTEIRO ATUAL:
-        ---
-        ${existingText.slice(-2000)}
-        ---
-        
-        Exemplo de resposta: ["A Batalha dos Números", "O Legado Fora de Campo", "Momentos Decisivos"]`;
+**REGRAS CRÍTICAS DE SINTAXE E CONTEÚDO (SIGA EXATAMENTE):**
+1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, comentário ou explicação é permitido.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as strings dentro do array DEVEM usar obrigatoriamente aspas duplas (\`"\`).
+3.  **VÍRGULAS OBRIGATÓRIAS:** CADA string no array, EXCETO a ÚLTIMA, DEVE ser seguida por uma vírgula (\`,\`).
+4.  **CONTEÚDO:** O array deve conter EXATAMENTE 3 strings. Cada string deve ser um título ou tema sugestivo e específico para um capítulo.
+5.  **ORIGINALIDADE E RELEVÂNCIA:** Cada sugestão deve ser ORIGINAL, RELEVANTE para o contexto e avançar a narrativa de forma lógica. Evite temas vagos ou repetidos.
 
-        const rawSuggestions = await callGroqAPI(suggestionPrompt, 300);
+**ROTEIRO ATUAL (PARA ANÁLISE DE CONTINUIDADE):**
+---
+${existingText.slice(-2500)} // Aumentado levemente o contexto
+---
+
+**EXEMPLO DE FORMATO PERFEITO E OBRIGATÓRIO (SIGA ESTE EXATO MODELO):**
+["A Batalha dos Números", "O Legado Fora de Campo", "Momentos Decisivos"]
+
+**AÇÃO FINAL:** Com base no roteiro fornecido, gere AGORA o array JSON com as 3 sugestões, seguindo EXATAMENTE todas as regras acima.`;
+
+        const rawSuggestions = await callGroqAPI(suggestionPrompt, 400); // Aumentado levemente o token limit
         const chapterSuggestions = cleanGeneratedText(rawSuggestions, true) || [];
         
         hideButtonLoading(button);
 
+        // >>>>> INTERFACE DE USUÁRIO PARA ESCOLHA DO TEMA <<<<<
         const chapterTheme = await showInputDialog(
             'Adicionar Novo Capítulo',
             'Escolha uma sugestão da IA ou digite seu próprio tema abaixo.',
@@ -4219,64 +4238,77 @@ window.addDevelopmentChapter = async (button) => {
 
         showButtonLoading(button);
 
+        // >>>>> PROMPT BLINDADO PARA GERAÇÃO DO CONTEÚDO DO CAPÍTULO <<<<<
         const basePrompt = getBasePromptContext();
         const continuationPrompt = `${basePrompt}
         
-Você é um roteirista de documentários investigativos. Sua tarefa é escrever um novo capítulo para um roteiro existente.
+**TAREFA ESTRATÉGICA CRÍTICA: GERAR CONTEÚDO DE CAPÍTULO DE DOCUMENTÁRIO INVESTIGATIVO**
+Você é um ROTEIRISTA DE DOCUMENTÁRIOS INVESTIGATIVOS de elite. Sua tarefa é escrever um NOVO CAPÍTULO CATIVANTE e INFORMAÇÃO-RIQUÍSSIMO para um roteiro existente.
 
-**TEMA OBRIGATÓRIO PARA ESTE CAPÍTULO:** "${chapterTheme}"
+**TEMA OBRIGATÓRIO E CENTRAL PARA ESTE CAPÍTULO:** "${chapterTheme}"
 
-**INSTRUÇÃO CRÍTICA DE CONTINUIDADE:**
-- O texto abaixo é o roteiro escrito até agora. **NÃO REPITA** as informações contidas nele.
-- Sua tarefa é escrever um novo capítulo que avance a narrativa, focado **EXCLUSIVAMENTE** no tema "${chapterTheme}".
+**INSTRUÇÕES CRÍTICAS E ESTRATÉGICAS DE CONTINUIDADE (SIGA EXATAMENTE):**
+1.  **NÃO REPITA, NÃO ECOE:** O texto fornecido abaixo é o roteiro escrito até agora. É TERMINANTEMENTE PROIBIDO repetir ou parafrasear quaisquer informações, ideias, frases ou conceitos já contidos nele. O espectador já viu aquele conteúdo.
+2.  **AVANCE A NARRATIVA ESPECIFICAMENTE:** Sua única função aqui é MOVER a história ou investigação PARA FRENTE, explorando EXCLUSIVAMENTE o tema "${chapterTheme}". Comece EXATAMENTE onde o texto anterior parou, como se estivesse escrevendo o próximo capítulo de um livro.
+3.  **INTRODUZA NOVIDADE E PROFUNDIDADE:** Esta é sua chance de revelar novas informações, aprofundar significados ou explorar nuances específicas do tema "${chapterTheme}". Mantenha o momentum narrativo e investigativo.
 
-**REGRA DE FORMATAÇÃO (MUITO IMPORTANTE):**
-- Sua resposta deve ser APENAS o texto do roteiro.
-- **NÃO inclua o título do capítulo ("${chapterTheme}") ou qualquer outro subtítulo no corpo do texto.** Apenas o conteúdo a ser falado.
+**REGRAS DE FORMATAÇÃO E CONTEÚDO (INEGOCIÁVEIS):**
+- **RESPOSTA PURA E LIMPA:** Sua resposta deve ser APENAS o texto do roteiro a ser falado. NENHUM outro conteúdo é permitido.
+- **SEM TÍTULOS NO CONTEÚDO:** É ESTRITAMENTE PROIBIDO incluir o título do capítulo ("${chapterTheme}") ou qualquer outro subtítulo dentro do corpo do texto gerado. Apenas o conteúdo narrativo/investigativo a ser dito.
+- **FOCO INVESTIGATIVO E FACTUAL:** Mantenha um tom rigorosamente **factual, investigativo e baseado em evidências** durante todo o capítulo. Seja preciso e objetivo.
+- **CONCENTRAÇÃO TEMÁTICA ABSOLUTA:** Foque-se intensamente em apresentar informações, eventos, dados e a narrativa específica do tema "${chapterTheme}". Toda a escrita deve girar em torno deste eixo.
+- **PROIBIÇÃO ABSOLUTA DE CONCLUSÕES GENÉRICAS:** É ESTRITAMENTE PROIBIDO adicionar conclusões gerais, opiniões pessoais, sermões, moralidades ou chamadas para ação genéricas no final do capítulo. Deixe as reflexões finais e as chamadas para mudança para a seção de conclusão do roteiro. O capítulo deve terminar com o desenvolvimento do tema, não com uma conclusão.
 
-// ==========================================================
-// >>>>> AQUI ESTÁ A NOVA REGRA "ANTI-ECO" <<<<<
-// ==========================================================
-**REGRA DE FOCO (A MAIS IMPORTANTE):**
-- Mantenha um tom **factual e investigativo** durante todo o capítulo.
-- Concentre-se em apresentar informações, eventos e a narrativa específica do tema "${chapterTheme}".
-- **É ESTRITAMENTE PROIBIDO adicionar conclusões gerais, opiniões pessoais, sermões ou chamadas para ação genéricas no final do capítulo.** Deixe as conclusões e as chamadas para mudança para a seção final do roteiro.
-// ==========================================================
-
-**ROTEIRO ESCRITO ATÉ AGORA (PARA CONTEXTO):**
+**ROTEIRO ESCRITO ATÉ AGORA (PARA CONTEXTO CRÍTICO E REFERÊNCIA):**
 ---
 ${existingText}
 ---
 
-Agora, escreva o novo capítulo sobre "${chapterTheme}", seguindo TODAS as regras.`;
+**AÇÃO FINAL E CRÍTICA:** Com base nestas instruções rigorosas, escreva AGORA o novo capítulo sobre "${chapterTheme}", garantindo que seja uma transição FLUÍDA, logicamente impecável, totalmente LIVRE de repetições e estritamente focado no tema. Responda APENAS com o texto do capítulo.
+`;
 
         const rawResult = await callGroqAPI(continuationPrompt, 4000);
         const newChapter = removeMetaComments(rawResult.trim());
         
-        const chapterTitleHtml = `<div class="font-bold text-lg mt-4 mb-2">Capítulo: ${chapterTheme}</div>`;
+        // >>>>> PROCESSAMENTO E INSERÇÃO DO NOVO CONTEÚDO <<<<<
+        if (!newChapter || newChapter.trim() === "") {
+             throw new Error("A IA não retornou um conteúdo válido para o novo capítulo.");
+        }
+
+        const chapterTitleHtml = `<div class="font-bold text-lg mt-6 mb-3 pb-1 border-b border-gray-300 dark:border-gray-600">Capítulo: ${DOMPurify.sanitize(chapterTheme)}</div>`;
         
         const existingParagraphsCount = contentWrapper.querySelectorAll('div[id]').length;
         const newParagraphs = newChapter.split('\n').filter(p => p.trim() !== '');
+        
+        if (newParagraphs.length === 0) {
+             throw new Error("O conteúdo do capítulo não pôde ser dividido em parágrafos.");
+        }
+
         const newContentWithDivs = newParagraphs.map((p, index) => 
-            `<div id="development-p-${existingParagraphsCount + index}">${p}</div>`
+            `<div id="development-p-${existingParagraphsCount + index}">${DOMPurify.sanitize(p)}</div>`
         ).join('');
 
         contentWrapper.insertAdjacentHTML('beforeend', chapterTitleHtml + newContentWithDivs);
         
+        // >>>>> INVALIDAÇÃO E ATUALIZAÇÃO DE COMPONENTES RELACIONADOS <<<<<
         invalidateAndClearPerformance(devSection);
         invalidateAndClearPrompts(devSection);
         updateAllReadingTimes();
         
         window.showToast("Novo capítulo adicionado com sucesso!");
-        contentWrapper.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Scroll para o novo título do capítulo para melhor UX
+        contentWrapper.lastElementChild.previousElementSibling?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     } catch (error) {
+        console.error("Erro detalhado em addDevelopmentChapter:", error);
         window.showToast(`Falha ao adicionar capítulo: ${error.message}`);
-        console.error("Erro detalhado em continuationPrompt:", error);
     } finally {
         hideButtonLoading(button);
     }
 };
+// =========================================================================
+// >>>>> FIM DA VERSÃO BLINDADA DE 'addDevelopmentChapter' <<<<<
+// =========================================================================
 
 
 
