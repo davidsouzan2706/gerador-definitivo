@@ -3601,65 +3601,71 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
 };
 
     
-        // ==========================================================
-        // >>>>> SUBSTITUA SUA FUNÇÃO cleanGeneratedText INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
-        // ==========================================================
-        const cleanGeneratedText = (text, expectJson = false) => {
-            if (!text) return null;
-            if (!expectJson) return text.trim();
+// ==========================================================
+// >>>>> GARANTA QUE SUA 'cleanGeneratedText' SEJA ESTA VERSÃO <<<<<
+// ==========================================================
 
-            const startIndex = text.search(/[\{\[]/);
-            if (startIndex === -1) {
-                console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.", text);
-                throw new Error("A IA não retornou um formato JSON reconhecível.");
-            }
-            const firstChar = text[startIndex];
-            const matchingLastChar = firstChar === '{' ? '}' : ']';
-            let level = 1;
-            let endIndex = -1;
-            for (let i = startIndex + 1; i < text.length; i++) {
-                if (text[i] === firstChar) level++;
-                if (text[i] === matchingLastChar) level--;
-                if (level === 0) {
-                    endIndex = i;
-                    break;
-                }
-            }
-            if (endIndex === -1) {
-                console.warn("JSON não foi fechado corretamente, tentando encontrar o final de forma aproximada.");
-                endIndex = text.length;
-            }
+const cleanGeneratedText = (text, expectJson = false) => {
+    if (!text) return null;
+
+    // Filtro para remover os "turnos" da IA e qualquer texto que venha depois
+    const stopToken = "<|end_header_id|>";
+    const stopTokenIndex = text.indexOf(stopToken);
+    if (stopTokenIndex !== -1) {
+        text = text.substring(0, stopTokenIndex);
+    }
+
+    if (!expectJson) return text.trim();
+
+    const startIndex = text.search(/[\{\[]/);
+    if (startIndex === -1) {
+        console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.", text);
+        throw new Error("A IA não retornou um formato JSON reconhecível.");
+    }
+    
+    // Remove qualquer texto antes do primeiro colchete ou chave
+    text = text.substring(startIndex);
+    
+    const firstChar = text[0];
+    const matchingLastChar = firstChar === '{' ? '}' : ']';
+    let level = 1;
+    let endIndex = -1;
+    for (let i = 1; i < text.length; i++) {
+        if (text[i] === firstChar) level++;
+        if (text[i] === matchingLastChar) level--;
+        if (level === 0) {
+            endIndex = i;
+            break;
+        }
+    }
+    if (endIndex === -1) {
+        console.warn("JSON não foi fechado corretamente, tentando encontrar o final de forma aproximada.");
+        const lastBracketIndex = text.lastIndexOf(matchingLastChar);
+        endIndex = lastBracketIndex > 0 ? lastBracketIndex : text.length;
+    }
+    
+    let jsonString = text.substring(0, endIndex + 1);
+    let sanitizedJsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
+
+    try {
+        return JSON.parse(sanitizedJsonString);
+    } catch (e) {
+        console.warn("Parse inicial (sanitizado) falhou. Tentando reparos estruturais...", e.message);
+        try {
+            let repairedString = sanitizedJsonString;
+            repairedString = repairedString.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
+            repairedString = repairedString.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+            repairedString = repairedString.replace(/:\s*'([^']*)'/g, ': "$1"');
+            repairedString = repairedString.replace(/,\s*([}\]])/g, "$1");
             
-            let jsonString = text.substring(startIndex, endIndex + 1);
-            let sanitizedJsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
-
-            try {
-                return JSON.parse(sanitizedJsonString);
-            } catch (e) {
-                console.warn("Parse inicial (sanitizado) falhou. Tentando reparos estruturais...", e.message);
-                try {
-                    let repairedString = sanitizedJsonString;
-
-                    // >>>>> CIRURGIA INTELIGENTE DE ASPAS <<<<<
-                    // 1. Garante que todas as chaves (keys) estejam com aspas duplas.
-                    repairedString = repairedString.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
-                    repairedString = repairedString.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
-
-                    // 2. Troca aspas simples por duplas APENAS em valores que são strings completas.
-                    // Isso preserva as aspas simples dentro das strings.
-                    repairedString = repairedString.replace(/:\s*'([^']*)'/g, ': "$1"');
-
-                    // 3. Remove vírgulas extras no final de objetos/arrays.
-                    repairedString = repairedString.replace(/,\s*([}\]])/g, "$1");
-                    
-                    return JSON.parse(repairedString);
-                } catch (finalError) {
-                    console.error("Falha ao fazer o parse do JSON, mesmo após todas as cirurgias:", finalError.message);
-                    console.error("JSON problemático (original):", text);
-                    throw new Error("A IA retornou um JSON com sintaxe interna inválida que não pôde ser corrigido.");
-                }
-            }
-        };
+            return JSON.parse(repairedString);
+        } catch (finalError) {
+            console.error("Falha ao fazer o parse do JSON, mesmo após todas as cirurgias:", finalError.message);
+            console.error("JSON problemático (original):", text);
+            throw new Error("A IA retornou um JSON com sintaxe interna inválida que não pôde ser corrigido.");
+        }
+    }
+};
 
 
 // =========================================================================
@@ -5303,76 +5309,69 @@ const generateVideoIdeas = async (button) => {
     showButtonLoading(button);
 
 // =========================================================================
-// >>>>> PROMPT FINAL E BLINDADO PARA GERAÇÃO DE IDEIAS DE CONTEÚDO GERAL <<<<<
+// >>>>> VERSÃO DEFINITIVA DE 'generateVideoIdeas' (QUALIDADE MÁXIMA + CONFIABILIDADE) <<<<<
 // =========================================================================
-const prompt = `Você é uma API de Estratégia de Conteúdo Viral altamente especializada. Sua única função é gerar ideias de vídeo de EXCEPCIONAL qualidade e engajamento para canais do YouTube, baseando-se em um tema genérico fornecido.
 
-**TAREFA PRINCIPAL:** Gerar 6 ideias de vídeo com POTENCIAL MÁXIMO de viralidade e relevância para o tema fornecido.
+const generateVideoIdeas = async (button) => {
+    const nicheDescription = document.getElementById('nicheDescription').value.trim();
+    if (!nicheDescription) {
+        window.showToast("Por favor, descreva o nicho do seu canal.");
+        return;
+    }
 
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (ABSOLUTAMENTE INEGOCIÁVEIS):**
-1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, comentário ou explicação é permitido. Pense nisso como uma resposta de API pura e impecável.
+    const selectedLangCode = document.getElementById('languageSelect').value;
+    const languageName = selectedLangCode === 'pt-br' ? 'Português do Brasil' : 'English';
+
+    const outputContainer = document.getElementById('ideasOutput');
+    outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
+
+    showButtonLoading(button);
+
+    // <<< ESTE É O PROMPT FINAL. NOTE COMO SUAS IDEIAS ESTÃO PRESERVADAS >>>
+    const prompt = `Você é uma API de Estratégia de Conteúdo Viral. Sua função é gerar 6 ideias de vídeo e retornar sua resposta EXCLUSIVAMENTE como um array JSON sintaticamente perfeito.
+
+// --- INÍCIO DO CONTRATO TÉCNICO (REGRAS INEGOCIÁVEIS) ---
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (VIOLAÇÃO CAUSARÁ FALHA TOTAL):**
+1.  **JSON PURO, SEM INTERRUPÇÕES:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. É TERMINANTEMENTE PROIBIDO que sua resposta contenha qualquer texto, comentário, explicação, ou tokens de controle como '<|end_header_id|>' ou pedidos de desculpas. A tarefa deve ser completada em uma única e contínua geração de JSON.
 2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar obrigatoriamente aspas duplas (\`"\`).
-3.  **VÍRGULA FINAL OBRIGATÓRIA:** CADA objeto JSON dentro do array DEVE ser seguido por uma vírgula (\`,\`), EXCETO o último objeto.
-4.  **ESTRUTURA DO OBJETO EXATA:** Cada objeto no array DEVE conter EXATAMENTE estas cinco chaves: "title", "angle", "targetAudience", "viralityScore", e "videoDescription".
-5.  **TIPOS DE DADOS EXATOS:**
-    - "title": string.
-    - "angle": string.
-    - "targetAudience": string.
-    - "viralityScore": NÚMERO (inteiro ou decimal) entre 0 e 10.
-    - "videoDescription": string.
+3.  **PROIBIÇÃO DE ASPAS INTERNAS:** Dentro dos valores de string (como em "videoDescription"), É ESTRITAMENTE PROIBIDO usar aspas duplas internas. Use aspas simples ('') se precisar de ênfase.
+4.  **ESTRUTURA DO OBJETO EXATA:** O array deve conter EXATAMENTE 6 objetos. Cada objeto DEVE conter EXATAMENTE estas cinco chaves: "title", "angle", "targetAudience", "viralityScore", e "videoDescription".
+// --- FIM DO CONTRATO TÉCNICO ---
 
-6.  **IDIOMA:** Lembre-se, todos os valores de texto devem estar em **${languageName}**.
 
+// --- INÍCIO DO BRIEFING CRIATIVO (O CORAÇÃO DA TAREFA) ---
 **MANUAL DE CRIAÇÃO DE IDEIAS (SIGA ESTAS INSTRUÇÕES PARA CADA IDEIA):**
-- **"title" (Título Explosivo):**
-    - Deve ser HIPNÓTICO e provocar CURIOSIDADE INTENSA.
-    - Use técnicas de "clickbait" inteligentes: promessas, números, urgência, contraste, perguntas retóricas.
-    - Máximo de 70 caracteres. Seja CONCISO e DIRETO.
-    - Ex: "99% dos Médicos IGNORAM Este Sinal... (E Pode Salvar Sua Vida)"
-- **"angle" (Ângulo Único):**
-    - Esta é a ESSENCIAL da ideia. Deve ser uma frase impactante que resume a ABORDAGEM DISTINTA do vídeo.
-    - Foque em uma revelação, um insight contrário ao senso comum, ou uma conexão inesperada.
-    - Deve soar intrigante e prometer valor único. Use linguagem forte e específica.
-    - Ex: "Este vídeo revela como a 'Lei da Atração' está fundamentada em princípios quânticos reais, não em misticismo."
-- **"targetAudience" (Público-Alvo Específico):**
-    - Identifique um segmento CLARAMENTE definido que se beneficiaria MÁXIMO dessa ideia.
-    - Evite generalidades como "todos" ou "pessoas". Seja específico (ex: "Jovens Profissionais com Ansiedade", "Pais de Crianças com TDAH", "Aposentados Interessados em Tecnologia").
-- **"viralityScore" (Nota de Viralidade):**
-    - Avalie honestamente o potencial de COMPARTILHAMENTO MASSIVO da ideia.
-    - 0-3: Baixo (nicho muito específico, pouca emoção).
-    - 4-6: Médio (interessante, mas convencional).
-    - 7-10: Alto (choque, utilidade extrema, emoção forte, altamente compartilhável).
-- **"videoDescription" (Descrição Rica):**
-    - Uma sinopse detalhada de **8 a 10 frases substanciais**.
-    - Comece prometendo resolver um problema ou responder uma pergunta central.
-    - Liste 2-3 pontos-chave que serão abordados.
-    - Termine com o insight ou takeaway principal.
-    - Escreva como se estivesse otimizando para SEO e curiosidade do espectador. Use palavras-chave naturalmente.
 
-**TEMA GENÉRICO PARA TRANSFORMAR EM CONTEÚDO VIRAL:**
+-   **"title" (Título Explosivo):** Deve ser HIPNÓTICO e provocar CURIOSIDADE INTENSA, use técnicas de "clickbait" inteligentes: promessas, números, urgência, contraste, perguntas retóricas, seja CONCISO e DIRETO. máximo de 70 caracteres.
+-   **"angle" (Ângulo Único):** A essência da ideia, uma frase impactante que resume a ABORDAGEM DISTINTA do vídeo, foque em uma revelação, um insight contrário ao senso comum, ou uma conexão inesperada, deve soar intrigante e prometer valor único. Use linguagem forte e específica.
+-   **"targetAudience" (Público-Alvo Específico):** Identifique um segmento CLARAMENTE definido. Seja específico (ex: "Jovens Profissionais com Ansiedade", "Pais de Crianças com TDAH").
+-   **"viralityScore" (Nota de Viralidade):** Avalie honestamente o potencial de COMPARTILHAMENTO MASSIVO da ideia: (0-3) Baixo (nicho muito específico, pouca emoção), (4-6) Médio (interessante, mas convencional) e (7-10) Alto (choque, utilidade extrema, emoção forte, altamente compartilhável).
+-   **"videoDescription" (Descrição Rica):** Uma sinopse detalhada de 8 a 10 frases substanciais, comece prometendo resolver um problema ou responder uma pergunta central, liste 2-3 pontos-chave que serão abordados, termine com o insight ou takeaway principal, escreva como se estivesse otimizando para SEO e curiosidade do espectador. Use palavras-chave naturalmente.
+
+-   **IDIOMA:** Todos os valores de texto devem estar em **${languageName}**.
+// --- FIM DO BRIEFING CRIATIVO ---
+
+**TEMA PARA TRANSFORMAR EM CONTEÚDO VIRAL:**
 "${nicheDescription}"
 
-**AÇÃO FINAL:** Gere AGORA as 6 ideias de vídeo mais fortes, criativas e potencialmente virais possíveis, seguindo EXATAMENTE todas as regras, formatos e instruções acima. Responda APENAS com o array JSON perfeito.
-`;
-
+**AÇÃO FINAL:** Gere as 6 ideias de vídeo, seguindo à risca tanto o Contrato Técnico quanto o Briefing Criativo. Entregue um único e perfeito array JSON.`;
+    
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
         const ideas = cleanGeneratedText(rawResult, true);
 
-        if (!ideas || !Array.isArray(ideas) || ideas.length === 0) {
-            throw new Error("A IA não retornou ideias no formato esperado.");
+        if (!ideas || !Array.isArray(ideas) || ideas.length < 4) { // Aceitamos se ela entregar um pouco menos, mas não se quebrar
+            throw new Error("A IA não retornou ideias suficientes ou em um formato válido.");
         }
 
-        outputContainer.innerHTML = '';
+        outputContainer.innerHTML = ''; 
 
         ideas.forEach((idea, index) => {
             const title = idea.title || "Ideia sem título";
             const displayDescription = idea.videoDescription || idea.angle || "Descrição não disponível.";
             const viralityScore = idea.viralityScore || "N/A";
-
             const card = document.createElement('div');
-            card.className = 'card-background p-4 rounded-lg shadow-md border-l-4 border-indigo-500 animate-fade-in flex flex-col justify-between min-h-[140px]';
-            
+            card.className = 'card bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-l-4 border-indigo-500 animate-fade-in flex flex-col justify-between min-h-[140px]';
             const escapedIdea = escapeIdeaForOnclick(idea);
             const cardContent = `
                 <div>
@@ -5390,20 +5389,12 @@ const prompt = `Você é uma API de Estratégia de Conteúdo Viral altamente esp
                     Potencial: ${DOMPurify.sanitize(String(viralityScore))} / 10
                 </span>
             `;
-            card.innerHTML = DOMPurify.sanitize(cardContent, { ADD_ATTR: ['data-action', 'data-idea'] });
+            card.innerHTML = cardContent;
             outputContainer.appendChild(card);
         });
-
     } catch (error) {
         console.error("Erro detalhado em generateVideoIdeas:", error);
-        if (error.message.includes("A IA não retornou um formato")) {
-            outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-yellow-500 text-sm p-4 bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
-                <strong>A IA se recusou a gerar conteúdo para este tema.</strong><br><br>
-                Isso geralmente acontece com tópicos considerados sensíveis ou controversos. Tente reformular sua descrição.
-            </p>`);
-        } else {
-            outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-red-500 text-sm">Falha ao gerar ideias: ${error.message}</p>`);
-        }
+        outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-red-500 text-sm">Falha ao gerar ideias: ${error.message}</p>`);
     } finally {
         hideButtonLoading(button);
     }
