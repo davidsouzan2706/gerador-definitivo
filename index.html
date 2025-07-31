@@ -4697,18 +4697,36 @@ window.refineSectionStyle = async (buttonElement) => {
         return;
     }
 
-    const prompt = `Você é um Editor de Estilo (Copy Editor) de elite. Sua tarefa é reescrever o texto a seguir para melhorar sua qualidade, fluidez e impacto, sem alterar o significado, o tom ou a mensagem central.
+// =========================================================================
+// >>>>> PROMPT FINAL E BLINDADO PARA 'refineSectionStyle' <<<<<
+// =========================================================================
+const prompt = `Você é um EDITOR DE ESTILO (Copy Editor) DE ALTO DESEMPENHO e um ESPECIALISTA EM FLUÍDEZ NARRATIVA. Sua tarefa é REESCREVER o texto fornecido para elevar drasticamente sua QUALIDADE, FLUÍDEZ, IMPACTO e ORIGINALIDADE, sem alterar o significado, o tom ou a mensagem central.
 
-**TEXTO ORIGINAL:**
+**TEXTO ORIGINAL (PARA REFINAMENTO):**
 ---
 ${originalText}
 ---
 
-**REGRAS DE REFINAMENTO (INEGOCIÁVEIS):**
-1.  **Elimine Repetições:** Identifique e remova palavras e estruturas de frases repetitivas. Use sinônimos e varie a construção das sentenças.
-2.  **Melhore a Fluidez:** Conecte as ideias de forma mais suave e lógica. Garanta que o texto flua bem quando lido em voz alta.
-3.  **Mantenha a Essência:** NÃO adicione novas informações, opiniões ou mude o significado original. Seu trabalho é polir, não recriar.
-4.  **RESPOSTA LIMPA:** Sua resposta deve ser APENAS o texto refinado. Sem preâmbulos, comentários ou explicações.`;
+**REGRAS DE REFINAMENTO ESTRATÉGICAS E CRÍTICAS (SIGA EXATAMENTE):**
+1.  **ELIMINAÇÃO RIGOROSA DE REPETIÇÕES E REDUNDÂNCIAS:**
+    - **Identificação Profunda:** Analise cuidadosamente o texto para identificar NÃO APENAS palavras repetidas, mas também IDEIAS, CONCEITOS e ESTRUTURAS DE FRASE repetitivas ou muito semelhantes.
+    - **Remoção/Apresentação Variada:** Elimine completamente as repetições ou, quando a ideia for essencial, reexpresse-a de forma TOTALMENTE DIFERENTE usando sinônimos, metáforas, mudanças de perspectiva ou reestruturação completa da frase.
+    - **Variação Sintática:** Diversifique drasticamente o tamanho e a construção das frases. Alterne entre frases curtas e longas, simples e complexas, para criar ritmo.
+2.  **OTIMIZAÇÃO MÁXIMA DA FLUÍDEZ E COESÃO:**
+    - **Conectivos Inteligentes:** Use conectivos lógicos e transições sutis para ligar as ideias de forma IMPECAVEL, garantindo um fluxo narrativo suave e natural.
+    - **Leitura Aloud:** Certifique-se de que o texto, quando lido em voz alta, soe NATURAL, RÍTMICO e CATIVANTE. Evite travas linguísticas ou estruturas desconfortáveis.
+3.  **PRESERVAÇÃO ESTRITAMENTE FIEL DO CONTEÚDO ORIGINAL:**
+    - **Intocável:** NÃO adicione novas informações, opiniões, interpretações ou altere o significado central do texto original.
+    - **Foco em Polir:** Sua única função é POLIR, APRIMORAR e REESCREVER para maior clareza e impacto, NÃO recriar o conteúdo.
+4.  **RESPOSTA PURA E LIMPA (SEM EXTRAS):**
+    - **Apenas o Texto Refinado:** Sua resposta deve ser APENAS o texto refinado, completo. NENHUM preâmbulo, comentário, metatexto, explicação ou nota adicional deve ser incluída.
+    - **Formato Puro:** Retorne APENAS o conteúdo textual final, pronto para substituir o texto original.
+
+**AÇÃO FINAL:** Reescreva AGORA o texto fornecido, aplicando EXATAMENTE todas as regras acima para entregar uma versão significativamente mais refinada, fluida, impactante e livre de repetições. Responda APENAS com o texto final refinado.
+`;
+// =========================================================================
+// >>>>> FIM DO PROMPT PARA 'refineSectionStyle' <<<<<
+// =========================================================================
 
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
@@ -4922,28 +4940,39 @@ window.enrichWithData = async (buttonElement) => {
     const sectionElement = buttonElement.closest('.script-section');
 
     try {
-        // <<< O PROMPT FOI COMPLETAMENTE REESCRITO PARA SER À PROVA DE FALHAS >>>
-        const prompt = `Você é um Editor de Roteiro de elite. Sua única função é reescrever um trecho de texto para integrar uma nova informação de forma sutil e profissional.
+   
+  // =========================================================================
+// >>>>> PROMPT FINAL E BLINDADO PARA INTEGRAR DADOS EXTERNOS <<<<<
+// =========================================================================
+const prompt = `Você é um EDITOR DE ROTEIRO DE ALTO DESEMPENHO e um ESPECIALISTA EM INTEGRAÇÃO DE INFORMAÇÕES. Sua tarefa ÚNICA, CRÍTICA e INEGOCIÁVEL é REESCREVER um trecho de texto para integrar uma NOVA INFORMAÇÃO de forma TOTALMENTE NATURAL, FLUÍDA e PROFISSIONAL, sem comprometer a integridade do texto original.
 
-**Trecho Original do Roteiro:**
+**TRECHO ORIGINAL DO ROTEIRO (PARA SER REESCRITO):**
 ---
 ${selectedText}
 ---
 
-**Nova Informação a ser Integrada:**
+**NOVA INFORMAÇÃO A SER INTEGRADA (DADO EXTERNO):**
 ---
 ${newData}
 ---
 
-**SUA TAREFA (A ÚNICA REGRA):**
-Reescreva o "Trecho Original do Roteiro", tecendo a "Nova Informação a ser Integrada" de forma natural e fluida. O resultado final deve ser um parágrafo (ou parágrafos) coeso e bem escrito, que mantenha o tom e a mensagem do texto original, mas agora enriquecido com o novo dado.
+**SUA TAREFA ESTRATÉGICA E CRÍTICA (A ÚNICA E MAIS IMPORTANTE):**
+- REESCREVA o "Trecho Original do Roteiro" com o OBJETIVO PRIMÁRIO de TECER a "Nova Informação a ser Integrada" de forma PERFEITAMENTE NATURAL e FLUÍDA.
+- O resultado final DEVE ser um ou mais parágrafos COESOS, BEM ESCRITOS e LOGICAMENTE INTEGRADOS.
+- O texto reescrito DEVE manter o TOM, o RITMO e a MENSAGEM CENTRAL do texto original, agora ENRIQUECIDO e ATUALIZADO com o novo dado fornecido.
+- A integração deve ser TÃO SUTIL que o leitor não perceba uma costura; deve soar como se a informação sempre tivesse estado lá.
 
-**É ESTRITAMENTE PROIBIDO:**
-- Apresentar-se ou falar sobre suas habilidades.
-- Adicionar qualquer comentário, título ou explicação.
-- Desviar-se da tarefa de reescrever o texto.
+**REGRAS ABSOLUTAMENTE INEGOCIÁVEIS (VIOLAÇÕES RESULTARÃO EM FALHA):**
+1.  **RESPOSTA PURA E LIMPA:** Sua resposta deve ser APENAS o texto final reescrito. NENHUM outro conteúdo (preâmbulos, comentários, títulos, explicações, metadados) é permitido.
+2.  **SEM AUTO-REFERÊNCIA:** É TERMINANTEMENTE PROIBIDO apresentar-se, falar sobre suas habilidades ou qualquer forma de metatexto.
+3.  **SEM DESVIO DE TAREFA:** É ESTRITAMENTE PROIBIDO desviar-se da tarefa precisa de reescrever e integrar. Foque exclusivamente na fusão perfeita dos dois textos.
+4.  **PRESERVAÇÃO DO CONTEXTO:** NÃO altere o significado central ou o tom do "Trecho Original". A nova informação deve se encaixar como uma peça complementar, não como uma substituição.
 
-Responda APENAS com o texto final reescrito.`;
+**AÇÃO FINAL:** Reescreva AGORA o trecho, integrando a nova informação com MÁXIMA habilidade e conformidade. Responda APENAS com o texto final reescrito e integrado.
+`;
+// =========================================================================
+// >>>>> FIM DO PROMPT BLINDADO <<<<<
+// =========================================================================
 
         const rawResult = await callGroqAPI(prompt, 1000);
         const enrichedText = removeMetaComments(rawResult);
