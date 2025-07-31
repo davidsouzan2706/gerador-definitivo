@@ -1057,42 +1057,19 @@
 
 
 <div id="conclusionStrategyModule" class="card mb-6 hidden">
-    <div class="text-center mb-4">
-        <h3 class="text-lg font-bold">Qual é o objetivo final do seu vídeo?</h3>
-        <!-- <<< NOSSO NOVO BOTÃO DE AJUDA AQUI >>> -->
-        <button id="suggestFinalStrategyBtn" data-action="suggestFinalStrategy" class="btn btn-secondary btn-small mt-2">
-            <i class="fas fa-magic mr-2"></i> Sugerir Estratégia Final
-        </button>
-    </div>
-    <div class="flex justify-center flex-wrap gap-4 mb-6">
-        <label class="radio-label">
-            <input type="radio" name="conclusionType" value="lesson" checked>
-            <span><i class="fas fa-graduation-cap mr-2"></i>Deixar uma Lição / Reflexão</span>
-        </label>
-        <label class="radio-label">
-            <input type="radio" name="conclusionType" value="answer">
-            <span><i class="fas fa-question-circle mr-2"></i>Responder uma Pergunta Central</span>
-        </label>
-        <label class="radio-label">
-            <input type="radio" name="conclusionType" value="cliffhanger">
-            <span><i class="fas fa-bolt mr-2"></i>Criar um Gancho / Mistério Contínuo</span>
-        </label>
-    </div>
-    <div id="conclusionInputContainer" class="input-group">
-        <label for="conclusionSpecifics">Detalhes para a Conclusão:</label>
-        <textarea id="conclusionSpecifics" rows="3" placeholder="Qual sentimento ou ideia final você quer deixar com o espectador? Esperança? Indignação? Uma nova perspectiva?"></textarea>
-    </div>
-    <div class="input-group mt-4">
-        <label for="ctaSpecifics">Detalhes para o Call to Action (CTA) Específico (Opcional):</label>
-        <textarea id="ctaSpecifics" rows="2" placeholder="Qual ação específica você quer que o espectador tome? Ex: Visitar um site, apoiar uma causa, comprar um produto..."></textarea>
-    </div>
-    <div class="text-center mt-6">
-        <button id="generateConclusionBtn" data-action="generateConclusion" class="btn btn-primary">
-            <i class="fas fa-pen-fancy mr-2"></i>Gerar Conclusão
-        </button>
-        <button id="generateCtaBtn" data-action="generateCta" class="btn btn-primary hidden">
-            <i class="fas fa-bullhorn mr-2"></i>Gerar CTA Estratégico
-        </button>
+    <div class="text-center">
+        <h3 class="text-lg font-bold mb-4">Finalize o seu Roteiro</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">Gere a Conclusão para amarrar a história e, em seguida, crie um Call to Action (CTA) para engajar seu público.</p>
+        <div class="flex flex-wrap justify-center gap-4">
+            <!-- Botão para gerar a Conclusão -->
+            <button id="generateConclusionBtn" data-action="generateConclusion" class="btn btn-primary">
+                <i class="fas fa-pen-fancy mr-2"></i>Gerar Conclusão
+            </button>
+            <!-- Botão para gerar o CTA (inicialmente escondido) -->
+            <button id="generateCtaBtn" data-action="generateCta" class="btn btn-primary hidden">
+                <i class="fas fa-bullhorn mr-2"></i>Gerar CTA Estratégico
+            </button>
+        </div>
     </div>
 </div>
 
@@ -4037,6 +4014,195 @@ ${researchData}
 };
 
 
+
+// =========================================================================
+// >>>>> ADICIONE ESTAS 3 NOVAS FUNÇÕES AO SEU SCRIPT <<<<<
+// =========================================================================
+
+// Função para dirigir o CLÍMAX
+const directAndGenerateClimax = async (button) => {
+    const devSection = document.querySelector('#developmentSection .generated-content-wrapper');
+    if (!devSection || !devSection.textContent.trim()) {
+        window.showToast("Gere o Desenvolvimento primeiro para dar contexto ao Clímax.");
+        return;
+    }
+    
+    showButtonLoading(button);
+    const scriptContext = getTranscriptOnly();
+    const suggestionPrompt = `Analise o roteiro a seguir e sugira 3 abordagens distintas para o CLÍMAX. Responda APENAS com um array JSON de 3 strings.\nRoteiro:\n${scriptContext}`;
+
+    try {
+        const rawSuggestions = await callGroqAPI(suggestionPrompt, 800);
+        const climaxSuggestions = cleanGeneratedText(rawSuggestions, true) || [];
+        hideButtonLoading(button);
+
+        const userDirective = await showInputDialog(
+            'Dirija a Cena do Clímax',
+            'Como você quer que o clímax se desenrole? Escolha uma sugestão ou escreva sua própria direção.',
+            'Direção Personalizada:', 'Ex: Revelar que o vilão era o mentor o tempo todo.',
+            climaxSuggestions
+        );
+
+        if (!userDirective) return window.showToast("Geração do clímax cancelada.");
+        await handleGenerateSection(button, 'climax', 'Clímax', 'climax', userDirective);
+    } catch (error) {
+        hideButtonLoading(button);
+        window.showToast(`Falha ao preparar o clímax: ${error.message}`);
+    }
+};
+
+// Função para dirigir a CONCLUSÃO
+const directAndGenerateConclusion = async (button) => {
+    showButtonLoading(button);
+    const scriptContext = getTranscriptOnly();
+    const suggestionPrompt = `Analise o roteiro a seguir e sugira 3 mensagens ou lições finais para a CONCLUSÃO. Responda APENAS com um array JSON de 3 strings.\nRoteiro:\n${scriptContext}`;
+    
+    try {
+        const rawSuggestions = await callGroqAPI(suggestionPrompt, 800);
+        const conclusionSuggestions = cleanGeneratedText(rawSuggestions, true) || [];
+        hideButtonLoading(button);
+
+        const userDirective = await showInputDialog(
+            'Dirija a Conclusão',
+            'Qual é a mensagem final? O que o espectador deve levar consigo? Escolha ou crie.',
+            'Mensagem Personalizada:', 'Ex: A verdadeira lição é que o fracasso ensina mais que o sucesso.',
+            conclusionSuggestions
+        );
+
+        if (!userDirective) return window.showToast("Geração da conclusão cancelada.");
+        await handleGenerateSection(button, 'conclusion', 'Conclusão', 'conclusion', userDirective);
+        
+        // Esconde o módulo de estratégia e mostra o botão do CTA
+        button.closest('#conclusionStrategyModule').classList.add('hidden');
+        document.getElementById('generateCtaBtn').classList.remove('hidden');
+        window.showToast("Conclusão gerada! Agora, vamos para o CTA.");
+
+    } catch (error) {
+        hideButtonLoading(button);
+        window.showToast(`Falha ao gerar conclusão: ${error.message}`);
+    }
+};
+
+// Função para dirigir o CTA
+const directAndGenerateCta = async (button) => {
+    showButtonLoading(button);
+    const scriptContext = getTranscriptOnly();
+    const suggestionPrompt = `Com base no roteiro, sugira 3 tipos de Call to Action (CTA): um para engajamento, um para inscrição e um para um produto/link específico. Responda APENAS com um array JSON de 3 strings.\nRoteiro:\n${scriptContext}`;
+
+    try {
+        const rawSuggestions = await callGroqAPI(suggestionPrompt, 800);
+        const ctaSuggestions = cleanGeneratedText(rawSuggestions, true) || [];
+        hideButtonLoading(button);
+        
+        const userDirective = await showInputDialog(
+            'Dirija o Call to Action (CTA)',
+            'Qual ação você quer que o espectador tome? Seja específico.',
+            'CTA Personalizado:', 'Ex: Peça para compartilharem uma história pessoal nos comentários.',
+            ctaSuggestions
+        );
+
+        if (!userDirective) return window.showToast("Geração do CTA cancelada.");
+        await handleGenerateSection(button, 'cta', 'Call to Action (CTA)', 'cta', userDirective);
+
+        // Esconde o botão do CTA após o uso
+        button.classList.add('hidden');
+
+    } catch (error) {
+        hideButtonLoading(button);
+        window.showToast(`Falha ao gerar CTA: ${error.message}`);
+    }
+};
+
+
+
+const actions = {
+    'suggestStrategy': (btn) => suggestStrategy(btn),
+    'startCrafting': (btn) => startCrafting(),
+    'generateIdeas': (btn) => generateVideoIdeas(btn),
+    'unravelEnigmas': (btn) => unravelEnigmas(btn),
+    'generateOutline': (btn) => generateStrategicOutline(btn),
+    'mapEmotions': (btn) => mapEmotionsAndPacing(btn),
+    'generateDescription': (btn) => generateVideoDescription(btn),
+    'generateTitlesAndThumbnails': (btn) => generateTitlesAndThumbnails(btn),
+    'generateSoundtrack': (btn) => generateSoundtrack(btn),
+    'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
+    'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
+
+    // --- Nossas novas ações com autonomia de prompt ---
+    'generateClimax': (btn) => directAndGenerateClimax(btn),
+    'generateConclusion': (btn) => directAndGenerateConclusion(btn),
+    'generateCta': (btn) => directAndGenerateCta(btn),
+    // --------------------------------------------------
+
+    'applySuggestion': (btn) => window.applySuggestion(btn),
+    'applyAllSuggestions': (btn) => applyAllSuggestions(btn),
+    'applyHookSuggestion': (btn) => applyHookSuggestion(btn),
+    'insertViralSuggestion': (btn) => insertViralSuggestion(btn),
+    'exportProject': () => exportProject(),
+    'exportPdf': () => downloadPdf(),
+    'exportTranscript': () => handleCopyAndDownloadTranscript(),
+    'resetProject': async () => {
+        const confirmed = await showConfirmationDialog("Começar um Novo Projeto?","Isso limpará todos os campos e o trabalho realizado. Esta ação não pode ser desfeita. Deseja continuar?");
+        if (confirmed) { resetApplicationState(); }
+    },
+    'addDevelopmentChapter': (btn) => window.addDevelopmentChapter(btn),
+    'select-idea': (btn) => {
+        const ideaString = btn.dataset.idea;
+        if (ideaString) {
+            try {
+                // A decodificação de JSON aqui é um pouco mais robusta
+                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                document.getElementById('videoTheme').value = ideaObject.title || '';
+                document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
+                document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
+                window.showToast("Ideia selecionada! Estratégia pré-preenchida.");
+                document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) { console.error("Falha ao processar dados da ideia:", e); }
+        }
+    },
+    'select-enigma-idea': (btn) => {
+        const ideaString = btn.dataset.idea;
+        if (ideaString) {
+            try {
+                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
+                document.getElementById('videoTheme').value = ideaObject.title || '';
+                document.getElementById('videoDescription').value = ideaObject.synopsis || ideaObject.enigma || '';
+                document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
+                window.showToast("Enigma selecionado! Estratégia pré-preenchida.");
+                document.getElementById('inputTabsNav').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) { console.error("Falha ao processar dados da ideia de enigma:", e); }
+        }
+    },
+    'regenerate': (btn) => window.regenerateSection(btn.dataset.sectionId),
+    'copy': (btn) => {
+        const content = btn.closest('.accordion-item')?.querySelector('.generated-content-wrapper');
+        if (content) { window.copyTextToClipboard(content.textContent); window.showCopyFeedback(btn); }
+    },
+    'generate-prompts': (btn) => window.generatePromptsForSection(btn, btn.dataset.sectionId),
+    'analyzeRetention': (btn) => window.analyzeSectionRetention(btn, btn.dataset.sectionId),
+    'refineStyle': (btn) => window.refineSectionStyle(btn),
+    'enrichWithData': (btn) => window.enrichWithData(btn),
+    'suggestPerformance': (btn) => window.suggestPerformance(btn, btn.dataset.sectionId),
+    'optimizeGroup': (btn) => {
+        const suggestionText = btn.dataset.suggestionText;
+        if (suggestionText) window.optimizeGroup(btn, suggestionText);
+    },
+    'deleteParagraphGroup': (btn) => {
+        const suggestionText = btn.dataset.suggestionText;
+        if (suggestionText) window.deleteParagraphGroup(btn, suggestionText);
+    },
+    'analyzeScript': (btn) => analyzeFullScript(btn),
+    'analyzeHooks': (btn) => analyzeRetentionHooks(btn),
+    'suggestViralElements': (btn) => suggestViralElements(btn)
+};
+
+
+// =========================================================================
+// >>>>> FINALMENTE, ATUALIZE O SEU OBJETO 'actions' PARA USAR TUDO ISSO <<<<<
+// =========================================================================
+
+
+
 // =========================================================================
 // >>>>> SUBSTITUA SUA FUNÇÃO constructScriptPrompt INTEIRA PELA VERSÃO FINAL E COMPLETA <<<<<
 // =========================================================================
@@ -4078,6 +4244,19 @@ A partir de agora, você deve agir como um "Maestro do Ritmo" e um "Engenheiro d
 
 **AÇÃO FINAL:** Com base no contexto fornecido, escreva AGORA a seção "${sectionTitle}" com o mais alto nível de qualidade narrativa, engajamento e conformidade com as regras acima.
 `;
+
+
+if (finalDirective) {
+        prompt += `
+**DIRETIVA FINAL DO DIRETOR (A REGRA MAIS IMPORTANTE):**
+Sua tarefa principal é executar esta seção seguindo a seguinte direção criativa fornecida pelo usuário. Esta é a "alma" da cena e deve ser seu foco principal.
+---
+**Instrução do Usuário:** "${finalDirective}"
+---
+`;
+    }
+
+
 
 if (contextText) {
     prompt += `
@@ -5529,11 +5708,11 @@ const selectIdea = (idea) => {
 
 
 // =========================================================================
-// >>>>> AÇÃO 2: SUBSTITUA A FUNÇÃO handleGenerateSection COMPLETA <<<<<
+// >>>>> CLIMAX <<<<<
 // =========================================================================
-const handleGenerateSection = async (button, sectionName, sectionTitle, elementId) => {
+const handleGenerateSection = async (button, sectionName, sectionTitle, elementId, finalDirective = null) => {
     if (!validateInputs()) return;
-    if (!strategicOutline && sectionName !== 'intro') { // A intro pode ser gerada sem esboço se necessário
+    if (!strategicOutline && sectionName !== 'intro') {
         window.showToast("Crie o Esboço Estratégico primeiro!");
         return;
     }
@@ -5571,29 +5750,24 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
             contextText = previousSectionsContent.join('\n\n---\n\n');
         }
 
-        const keyMap = { intro: 'introduction', development: 'development', climax: 'climax', conclusion: 'conclusion' };
+        const keyMap = { intro: 'introduction', development: 'development', climax: 'climax', conclusion: 'conclusion', cta: 'cta' };
         const outlineKey = keyMap[sectionName];
         const directive = strategicOutline ? strategicOutline[outlineKey] : null;
         
-        const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive, contextText);
+        const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive, contextText, finalDirective);
         
         let rawResult = await callGroqAPI(prompt, maxTokens);
         let cleanedResult = removeMetaComments(rawResult.trim());
 
         const paragraphs = cleanedResult.split('\n').filter(p => p.trim() !== '');
         const contentWithDivs = paragraphs.map((p, index) => 
-            `<div id="${elementId}-p-${index}">${p}</div>`
+            `<div id="${elementId}-p-${index}">${DOMPurify.sanitize(p)}</div>`
         ).join('');
         
         if (targetSectionElement) {
-            // <<< AQUI ESTÁ A CORREÇÃO CRÍTICA >>>
-            // Chamamos nossa função segura que retorna um ELEMENTO, não uma string.
             const sectionElement = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
-            
-            // Limpamos o container e adicionamos o novo elemento usando appendChild.
             targetSectionElement.innerHTML = ''; 
             targetSectionElement.appendChild(sectionElement);
-            
             targetSectionElement.classList.remove('card', 'card-placeholder', 'flex', 'justify-between', 'items-center');
         } else {
             console.error(`Elemento alvo com ID '${elementId}Section' não encontrado.`);
