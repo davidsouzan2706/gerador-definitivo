@@ -3600,71 +3600,66 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
     return accordionItem;
 };
 
-
-// ==========================================================
-// >>>>> SUBSTITUA 'cleanGeneratedText' PELA VERSÃO ATUALIZADA <<<<<
-// ==========================================================
-
-const cleanGeneratedText = (text, expectJson = false) => {
-    if (!text) return null;
-
-    // <<< NOVA CAMADA DE LIMPEZA: Remove os "turnos" da IA >>>
-    // Isso remove o token especial e qualquer texto que venha depois dele.
-    const stopToken = "assistant<|end_header_id|>";
-    const stopTokenIndex = text.indexOf(stopToken);
-    if (stopTokenIndex !== -1) {
-        text = text.substring(0, stopTokenIndex);
-    }
-    // <<< FIM DA NOVA CAMADA >>>
-
-    if (!expectJson) return text.trim();
-
-    const startIndex = text.search(/[\{\[]/);
-    if (startIndex === -1) {
-        console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.", text);
-        throw new Error("A IA não retornou um formato JSON reconhecível.");
-    }
-    const firstChar = text[startIndex];
-    const matchingLastChar = firstChar === '{' ? '}' : ']';
-    let level = 1;
-    let endIndex = -1;
-    for (let i = startIndex + 1; i < text.length; i++) {
-        if (text[i] === firstChar) level++;
-        if (text[i] === matchingLastChar) level--;
-        if (level === 0) {
-            endIndex = i;
-            break;
-        }
-    }
-    if (endIndex === -1) {
-        console.warn("JSON não foi fechado corretamente, tentando encontrar o final de forma aproximada.");
-        // Em vez de pegar até o fim, pega até o último caractere de fechamento encontrado
-        const lastBracketIndex = text.lastIndexOf(matchingLastChar);
-        endIndex = lastBracketIndex > startIndex ? lastBracketIndex : text.length;
-    }
     
-    let jsonString = text.substring(startIndex, endIndex + 1);
-    let sanitizedJsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
+        // ==========================================================
+        // >>>>> SUBSTITUA SUA FUNÇÃO cleanGeneratedText INTEIRA POR ESTA VERSÃO BLINDADA <<<<<
+        // ==========================================================
+        const cleanGeneratedText = (text, expectJson = false) => {
+            if (!text) return null;
+            if (!expectJson) return text.trim();
 
-    try {
-        return JSON.parse(sanitizedJsonString);
-    } catch (e) {
-        console.warn("Parse inicial (sanitizado) falhou. Tentando reparos estruturais...", e.message);
-        try {
-            let repairedString = sanitizedJsonString;
-            repairedString = repairedString.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
-            repairedString = repairedString.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
-            repairedString = repairedString.replace(/:\s*'([^']*)'/g, ': "$1"');
-            repairedString = repairedString.replace(/,\s*([}\]])/g, "$1");
+            const startIndex = text.search(/[\{\[]/);
+            if (startIndex === -1) {
+                console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.", text);
+                throw new Error("A IA não retornou um formato JSON reconhecível.");
+            }
+            const firstChar = text[startIndex];
+            const matchingLastChar = firstChar === '{' ? '}' : ']';
+            let level = 1;
+            let endIndex = -1;
+            for (let i = startIndex + 1; i < text.length; i++) {
+                if (text[i] === firstChar) level++;
+                if (text[i] === matchingLastChar) level--;
+                if (level === 0) {
+                    endIndex = i;
+                    break;
+                }
+            }
+            if (endIndex === -1) {
+                console.warn("JSON não foi fechado corretamente, tentando encontrar o final de forma aproximada.");
+                endIndex = text.length;
+            }
             
-            return JSON.parse(repairedString);
-        } catch (finalError) {
-            console.error("Falha ao fazer o parse do JSON, mesmo após todas as cirurgias:", finalError.message);
-            console.error("JSON problemático (original):", text);
-            throw new Error("A IA retornou um JSON com sintaxe interna inválida que não pôde ser corrigido.");
-        }
-    }
-};
+            let jsonString = text.substring(startIndex, endIndex + 1);
+            let sanitizedJsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
+
+            try {
+                return JSON.parse(sanitizedJsonString);
+            } catch (e) {
+                console.warn("Parse inicial (sanitizado) falhou. Tentando reparos estruturais...", e.message);
+                try {
+                    let repairedString = sanitizedJsonString;
+
+                    // >>>>> CIRURGIA INTELIGENTE DE ASPAS <<<<<
+                    // 1. Garante que todas as chaves (keys) estejam com aspas duplas.
+                    repairedString = repairedString.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
+                    repairedString = repairedString.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+
+                    // 2. Troca aspas simples por duplas APENAS em valores que são strings completas.
+                    // Isso preserva as aspas simples dentro das strings.
+                    repairedString = repairedString.replace(/:\s*'([^']*)'/g, ': "$1"');
+
+                    // 3. Remove vírgulas extras no final de objetos/arrays.
+                    repairedString = repairedString.replace(/,\s*([}\]])/g, "$1");
+                    
+                    return JSON.parse(repairedString);
+                } catch (finalError) {
+                    console.error("Falha ao fazer o parse do JSON, mesmo após todas as cirurgias:", finalError.message);
+                    console.error("JSON problemático (original):", text);
+                    throw new Error("A IA retornou um JSON com sintaxe interna inválida que não pôde ser corrigido.");
+                }
+            }
+        };
 
 
 // =========================================================================
@@ -4347,47 +4342,36 @@ Sua tarefa é gerar uma descrição otimizada de ALTO IMPACTO para um vídeo do 
          * @returns {Promise<string>} A resposta bruta da IA.
          * @throws {Error} Se a chamada à API falhar.
          */
+        const callGroqAPI = async (prompt, maxTokens) => {
+            const proxyUrl = "/.netlify/functions/groq"; // Endpoint do proxy
 
+            const payload = {
+                prompt: prompt,
+                maxTokens: maxTokens
+            };
 
-const callGroqAPI = async (prompt, maxTokens) => {
-    const proxyUrl = "/.netlify/functions/groq"; // Endpoint do proxy
+            const request = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
 
-    const payload = {
-        prompt: prompt,
-        maxTokens: maxTokens
-    };
-
-    const request = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    };
-
-    try {
-        const response = await fetch(proxyUrl, request);
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: { message: 'Erro desconhecido do servidor proxy.' } }));
-            throw new Error(`Erro na API via Proxy: ${errorData.error?.message || 'Erro do servidor'}`);
-        }
-
-        const result = await response.json();
-        const rawContent = result.choices?.[0]?.message?.content;
-
-        if (rawContent) {
-            return rawContent;
-        } else {
-            throw new Error("Resposta inesperada da API Groq.");
-        }
-    } catch (error) { // A chave do 'try' foi fechada corretamente antes daqui
-        console.error("Fetch da API via Netlify Function falhou:", error);
-        window.showToast(`Falha na API: ${error.message}`);
-        throw error;
-    }
-};
-
-
-
+            try {
+                const response = await fetch(proxyUrl, request);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: { message: 'Erro desconhecido do servidor proxy.' } }));
+                    throw new Error(`Erro na API via Proxy: ${errorData.error?.message || 'Erro do servidor'}`);
+                }
+                const result = await response.json();
+                const rawContent = result.choices?.[0]?.message?.content;
+                if (rawContent) { return rawContent; }
+                else { throw new Error("Resposta inesperada da API Groq."); }
+            } catch (error) {
+                console.error("Fetch da API via Netlify Function falhou:", error);
+                window.showToast(`Falha na API: ${error.message}`);
+                throw error;
+           }
+        };
 
         /**
          * Valida os inputs essenciais antes de gerar conteúdo.
@@ -5319,66 +5303,76 @@ const generateVideoIdeas = async (button) => {
     showButtonLoading(button);
 
 // =========================================================================
-// >>>>> VERSÃO CORRIGIDA DE 'generateVideoIdeas' (COM A SINTAXE CERTA) <<<<<
+// >>>>> PROMPT FINAL E BLINDADO PARA GERAÇÃO DE IDEIAS DE CONTEÚDO GERAL <<<<<
 // =========================================================================
+const prompt = `Você é uma API de Estratégia de Conteúdo Viral altamente especializada. Sua única função é gerar ideias de vídeo de EXCEPCIONAL qualidade e engajamento para canais do YouTube, baseando-se em um tema genérico fornecido.
 
-const generateVideoIdeas = async (button) => {
-    const nicheDescription = document.getElementById('nicheDescription').value.trim();
-    if (!nicheDescription) {
-        window.showToast("Por favor, descreva o nicho do seu canal.");
-        return;
-    }
+**TAREFA PRINCIPAL:** Gerar 6 ideias de vídeo com POTENCIAL MÁXIMO de viralidade e relevância para o tema fornecido.
 
-    const selectedLangCode = document.getElementById('languageSelect').value;
-    const languageName = selectedLangCode === 'pt-br' ? 'Português do Brasil' : 'English';
-
-    const outputContainer = document.getElementById('ideasOutput');
-    outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
-
-    showButtonLoading(button);
-
-    const prompt = `Você é uma API de Estratégia de Conteúdo Viral. Sua função é gerar 6 ideias de vídeo e retornar sua resposta EXCLUSIVAMENTE como um array JSON sintaticamente perfeito.
-
-// --- INÍCIO DO CONTRATO TÉCNICO (REGRAS INEGOCIÁVEIS) ---
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (VIOLAÇÃO CAUSARÁ FALHA TOTAL):**
-1.  **JSON PURO, SEM INTERRUPÇÕES:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. É TERMINANTEMENTE PROIBIDO que sua resposta contenha qualquer texto, comentário, explicação, ou tokens de controle como '<|end_header_id|>' ou pedidos de desculpas. A tarefa deve ser completada em uma única e contínua geração de JSON.
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (ABSOLUTAMENTE INEGOCIÁVEIS):**
+1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, comentário ou explicação é permitido. Pense nisso como uma resposta de API pura e impecável.
 2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar obrigatoriamente aspas duplas (\`"\`).
-3.  **PROIBIÇÃO DE ASPAS INTERNAS:** Dentro dos valores de string (como em "videoDescription"), É ESTRITAMENTE PROIBIDO usar aspas duplas internas. Use aspas simples ('') se precisar de ênfase.
-4.  **ESTRUTURA DO OBJETO EXATA:** O array deve conter EXATAMENTE 6 objetos. Cada objeto DEVE conter EXATAMENTE estas cinco chaves: "title", "angle", "targetAudience", "viralityScore", e "videoDescription".
-// --- FIM DO CONTRATO TÉCNICO ---
+3.  **VÍRGULA FINAL OBRIGATÓRIA:** CADA objeto JSON dentro do array DEVE ser seguido por uma vírgula (\`,\`), EXCETO o último objeto.
+4.  **ESTRUTURA DO OBJETO EXATA:** Cada objeto no array DEVE conter EXATAMENTE estas cinco chaves: "title", "angle", "targetAudience", "viralityScore", e "videoDescription".
+5.  **TIPOS DE DADOS EXATOS:**
+    - "title": string.
+    - "angle": string.
+    - "targetAudience": string.
+    - "viralityScore": NÚMERO (inteiro ou decimal) entre 0 e 10.
+    - "videoDescription": string.
 
+6.  **IDIOMA:** Lembre-se, todos os valores de texto devem estar em **${languageName}**.
 
-// --- INÍCIO DO BRIEFING CRIATIVO (O CORAÇÃO DA TAREFA) ---
 **MANUAL DE CRIAÇÃO DE IDEIAS (SIGA ESTAS INSTRUÇÕES PARA CADA IDEIA):**
--   **"title" (Título Explosivo):** Deve ser HIPNÓTICO e provocar CURIOSIDADE INTENSA, use técnicas de "clickbait" inteligentes: promessas, números, urgência, contraste, perguntas retóricas, seja CONCISO e DIRETO. máximo de 70 caracteres.
--   **"angle" (Ângulo Único):** A essência da ideia, uma frase impactante que resume a ABORDAGEM DISTINTA do vídeo, foque em uma revelação, um insight contrário ao senso comum, ou uma conexão inesperada, deve soar intrigante e prometer valor único. Use linguagem forte e específica.
--   **"targetAudience" (Público-Alvo Específico):** Identifique um segmento CLARAMENTE definido. Seja específico (ex: "Jovens Profissionais com Ansiedade", "Pais de Crianças com TDAH").
--   **"viralityScore" (Nota de Viralidade):** Avalie honestamente o potencial de COMPARTILHAMENTO MASSIVO da ideia: (0-3) Baixo (nicho muito específico, pouca emoção), (4-6) Médio (interessante, mas convencional) e (7-10) Alto (choque, utilidade extrema, emoção forte, altamente compartilhável).
--   **"videoDescription" (Descrição Rica):** Uma sinopse detalhada de 8 a 10 frases substanciais, comece prometendo resolver um problema ou responder uma pergunta central, liste 2-3 pontos-chave que serão abordados, termine com o insight ou takeaway principal, escreva como se estivesse otimizando para SEO e curiosidade do espectador. Use palavras-chave naturalmente.
--   **IDIOMA:** Todos os valores de texto devem estar em **${languageName}**.
-// --- FIM DO BRIEFING CRIATIVO ---
+- **"title" (Título Explosivo):**
+    - Deve ser HIPNÓTICO e provocar CURIOSIDADE INTENSA.
+    - Use técnicas de "clickbait" inteligentes: promessas, números, urgência, contraste, perguntas retóricas.
+    - Máximo de 70 caracteres. Seja CONCISO e DIRETO.
+    - Ex: "99% dos Médicos IGNORAM Este Sinal... (E Pode Salvar Sua Vida)"
+- **"angle" (Ângulo Único):**
+    - Esta é a ESSENCIAL da ideia. Deve ser uma frase impactante que resume a ABORDAGEM DISTINTA do vídeo.
+    - Foque em uma revelação, um insight contrário ao senso comum, ou uma conexão inesperada.
+    - Deve soar intrigante e prometer valor único. Use linguagem forte e específica.
+    - Ex: "Este vídeo revela como a 'Lei da Atração' está fundamentada em princípios quânticos reais, não em misticismo."
+- **"targetAudience" (Público-Alvo Específico):**
+    - Identifique um segmento CLARAMENTE definido que se beneficiaria MÁXIMO dessa ideia.
+    - Evite generalidades como "todos" ou "pessoas". Seja específico (ex: "Jovens Profissionais com Ansiedade", "Pais de Crianças com TDAH", "Aposentados Interessados em Tecnologia").
+- **"viralityScore" (Nota de Viralidade):**
+    - Avalie honestamente o potencial de COMPARTILHAMENTO MASSIVO da ideia.
+    - 0-3: Baixo (nicho muito específico, pouca emoção).
+    - 4-6: Médio (interessante, mas convencional).
+    - 7-10: Alto (choque, utilidade extrema, emoção forte, altamente compartilhável).
+- **"videoDescription" (Descrição Rica):**
+    - Uma sinopse detalhada de **8 a 10 frases substanciais**.
+    - Comece prometendo resolver um problema ou responder uma pergunta central.
+    - Liste 2-3 pontos-chave que serão abordados.
+    - Termine com o insight ou takeaway principal.
+    - Escreva como se estivesse otimizando para SEO e curiosidade do espectador. Use palavras-chave naturalmente.
 
-**TEMA PARA TRANSFORMAR EM CONTEÚDO VIRAL:**
+**TEMA GENÉRICO PARA TRANSFORMAR EM CONTEÚDO VIRAL:**
 "${nicheDescription}"
 
-**AÇÃO FINAL:** Gere as 6 ideias de vídeo, seguindo à risca tanto o Contrato Técnico quanto o Briefing Criativo. Entregue um único e perfeito array JSON.`; // <<< AQUI ESTÁ O ACENTO GRAVE CORRIGIDO
+**AÇÃO FINAL:** Gere AGORA as 6 ideias de vídeo mais fortes, criativas e potencialmente virais possíveis, seguindo EXATAMENTE todas as regras, formatos e instruções acima. Responda APENAS com o array JSON perfeito.
+`;
 
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
         const ideas = cleanGeneratedText(rawResult, true);
 
-        if (!ideas || !Array.isArray(ideas) || ideas.length < 4) { 
-            throw new Error("A IA não retornou ideias suficientes ou em um formato válido.");
+        if (!ideas || !Array.isArray(ideas) || ideas.length === 0) {
+            throw new Error("A IA não retornou ideias no formato esperado.");
         }
 
-        outputContainer.innerHTML = ''; 
+        outputContainer.innerHTML = '';
 
         ideas.forEach((idea, index) => {
             const title = idea.title || "Ideia sem título";
             const displayDescription = idea.videoDescription || idea.angle || "Descrição não disponível.";
             const viralityScore = idea.viralityScore || "N/A";
+
             const card = document.createElement('div');
-            card.className = 'card bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-l-4 border-indigo-500 animate-fade-in flex flex-col justify-between min-h-[140px]';
+            card.className = 'card-background p-4 rounded-lg shadow-md border-l-4 border-indigo-500 animate-fade-in flex flex-col justify-between min-h-[140px]';
+            
             const escapedIdea = escapeIdeaForOnclick(idea);
             const cardContent = `
                 <div>
@@ -5396,12 +5390,20 @@ const generateVideoIdeas = async (button) => {
                     Potencial: ${DOMPurify.sanitize(String(viralityScore))} / 10
                 </span>
             `;
-            card.innerHTML = cardContent;
+            card.innerHTML = DOMPurify.sanitize(cardContent, { ADD_ATTR: ['data-action', 'data-idea'] });
             outputContainer.appendChild(card);
         });
+
     } catch (error) {
         console.error("Erro detalhado em generateVideoIdeas:", error);
-        outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-red-500 text-sm">Falha ao gerar ideias: ${error.message}</p>`);
+        if (error.message.includes("A IA não retornou um formato")) {
+            outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-yellow-500 text-sm p-4 bg-yellow-900/20 rounded-md border-l-4 border-yellow-400">
+                <strong>A IA se recusou a gerar conteúdo para este tema.</strong><br><br>
+                Isso geralmente acontece com tópicos considerados sensíveis ou controversos. Tente reformular sua descrição.
+            </p>`);
+        } else {
+            outputContainer.innerHTML = DOMPurify.sanitize(`<p class="md:col-span-2 text-red-500 text-sm">Falha ao gerar ideias: ${error.message}</p>`);
+        }
     } finally {
         hideButtonLoading(button);
     }
@@ -5410,9 +5412,8 @@ const generateVideoIdeas = async (button) => {
 
 
 // =========================================================================
-// >>>>> VERSÃO FINAL E CORRIGIDA DE 'unravelEnigmas' (v3) <<<<<
+// >>>>> VERSÃO BLINDADA DA FUNÇÃO 'unravelEnigmas' <<<<<
 // =========================================================================
-
 const unravelEnigmas = async (button) => {
     const nicheDescription = document.getElementById('nicheDescription').value.trim();
     if (!nicheDescription) {
@@ -5426,46 +5427,38 @@ const unravelEnigmas = async (button) => {
     outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
     showButtonLoading(button);
 
-    // <<< A CORREÇÃO ESTÁ NO BRIEFING CRIATIVO ABAIXO >>>
-    const prompt = `Você é um Teólogo Investigativo e sua única função é retornar um array JSON sintaticamente perfeito.
+// <<< PROMPT EVOLUÍDO PARA REFERÊNCIAS BÍBLICAS MAIS FORTES >>>
+const prompt = `Você é um Teólogo Investigativo e um Mestre em Hermenêutica Bíblica para o canal "The Biblical Unveiling". Sua especialidade é desvendar os tesouros escondidos nas Escrituras e fazer conexões impactantes com o mundo moderno, sempre fundamentado na Palavra.
 
-// --- INÍCIO DO CONTRATO TÉCNICO (INEGOCIÁVEL) ---
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (VIOLAÇÃO CAUSARÁ FALHA TOTAL):**
-1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, título, comentário ou explicação é permitido.
-2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar obrigatoriamente aspas duplas (\`"\`).
-3.  **PROIBIÇÃO DE ASPAS INTERNAS:** Dentro dos valores de string (como em "synopsis"), É ESTRITAMENTE PROIBIDO usar aspas duplas internas. Se precisar citar algo, USE OBRIGATORIAMENTE aspas simples (\`'\`).
-4.  **ESTRUTURA DO OBJETO EXATA:** Cada objeto no array deve conter EXATAMENTE estas cinco chaves: "title", "enigma", "synopsis", "investigative_method", "hook_question".
-// --- FIM DO CONTRATO TÉCNICO ---
-
-
-// --- INÍCIO DO BRIEFING CRIATIVO (O CORAÇÃO DA TAREFA) ---
-**SUA MISSÃO CRIATIVA (O QUE VOCÊ DEVE FAZER):**
-Sua missão é gerar 6 ideias de vídeos que conectem o TEMA FORNECIDO PELO USUÁRIO com enigmas, símbolos e histórias da Bíblia, usando REFERÊNCIAS BÍBLICAS EXPLÍCITAS E CENTRAIS.
+**Sua missão é gerar 6 ideias de vídeos que conectem o TEMA FORNECIDO PELO USUÁRIO com enigmas, símbolos e histórias da Bíblia, usando REFERÊNCIAS BÍBLICAS EXPLÍCITAS E CENTRAIS.**
 
 **DIRETIVA PRINCIPAL: ANCORE-SE NA BÍBLIA.**
--   Exigência de Citação Primária: Toda ideia DEVE partir de uma ou mais citações bíblicas diretas.
--   **REGRA DE OURO DA INTEGRAÇÃO (A MAIS IMPORTANTE):** A referência bíblica (ex: 'baseado em Gênesis 1:1' ou '(veja Hebreus 12:29)') DEVE estar **DENTRO** do texto das chaves "enigma" e/ou "synopsis". É TERMINANTEMENTE PROIBIDO colocar a referência bíblica como um texto solto fora das aspas de um valor.
-    -   **CORRETO:** \`"enigma": "Qual o significado do fogo consumidor (Hebreus 12:29)?"\`
-    -   **ERRADO E PROIBIDO:** \`"enigma": "Qual o significado do fogo consumidor?", baseado em Hebreus 12:29\`
+- **Exigência de Citação Primária:** Toda ideia DEVE iniciar com uma ou mais citações bíblicas diretas (livro, capítulo, versículo) que sejam o FUNDAMENTO da conexão. Ex: "João 3:16 não é apenas sobre salvação, mas também revela um princípio de 'investimento celestial'..."
+- **Conexão Baseada em Texto:** A conexão entre o tema moderno e o conceito bíblico NÃO deve ser superficial. A passagem bíblica citada deve ser o ponto de partida lógico e hermenêutico da investigação.
+- **Evite Generalizações:** Não diga apenas "a fé". Diga "a fé de Abraão em Gênesis 15" ou "a fé testada de Jó". Seja específico com o texto.
+- **Contexto é Chave:** Ao citar, forneça contexto suficiente da passagem bíblica para entender a conexão proposta.
 
-**TÉCNICAS INVESTIGATIVAS OBRIGATÓRIAS (USE UMA POR IDEIA):**
-1.  Fio Oculto (Cross-Referencing)
-2.  Lupa Lexical (Análise de Palavras)
-3.  O Espelho Tipológico (Tipologia)
-4.  Contexto Histórico Profundo
+Para fundamentar essas ideias, você DEVE usar uma das seguintes **Técnicas Investigativas**:
+1.  **Fio Oculto (Cross-Referencing)**: Conecte passagens aparentemente desconexas para revelar um tema unificador. (Ex: "O número 777 aparece em Gênesis, Êxodo e Apocalipse. O que isso diz sobre a perfeição do juízo divino?")
+2.  **Lupa Lexical (Análise de Palavras)**: Aprofunde-se no significado original de uma palavra-chave hebraica ou grega. (Ex: "O que o grego 'Logos' em João 1:1 revela sobre a natureza da informação divina?")
+3.  **O Espelho Tipológico (Tipologia)**: Mostre como uma pessoa, evento ou instituição do Antigo Testamento prefigura o Novo. (Ex: "Jonas é um 'tipo' de Cristo? Compare Jonas 1:17 com Mateus 12:40.")
+4.  **Contexto Histórico Profundo**: Conecte um evento bíblico a uma prática cultural ou política da época. (Ex: "Como o sistema de 'Tributos' romano ilumina a parábola do 'Denário' em Mateus 22:15-22?")
 
-**MANUAL DE CONTEÚDO PARA CADA CHAVE JSON:**
--   **"title"**: Curioso, específico e que prometa uma revelação.
--   **"enigma"**: O mistério central em uma única frase intrigante, com a referência bíblica INTEGRADA.
--   **"synopsis"**: Uma sinopse detalhada de 8 a 10 frases, com a referência bíblica INTEGRADA.
--   **"investigative_method"**: O nome exato da técnica usada.
--   **"hook_question"**: Uma pergunta provocativa para os primeiros 15 segundos.
--   **IDIOMA:** Todos os valores de texto DEVEM ser gerados em **${languageName}**.
-// --- FIM DO BRIEFING CRIATIVO ---
+**FORMATO DA RESPOSTA:**
+Sua resposta DEVE ser um array JSON válido. Cada ideia no array deve ser um objeto com as seguintes chaves:
+- "title": (String) Um título curioso, específico e cativante que prometa uma revelação baseada na Escritura.
+- "enigma": (String) O mistério central em uma única frase intrigante, fundamentado em uma passagem bíblica.
+- "synopsis": (String) Uma sinopse detalhada de **8 a 10 frases substanciais**. Esta sinopse DEVE incluir pelo menos UMA citação bíblica direta (ex: "(veja Gênesis 15:1)") e explicar como a passagem será usada para explorar o tema moderno.
+- "investigative_method": (String) O nome exato da técnica usada.
+- "hook_question": (String) Uma pergunta provocativa e intrigante para capturar a atenção nos primeiros 15 segundos, idealmente relacionada à passagem bíblica.
+
+**REGRA DE CITAÇÃO (A MAIS IMPORTANTE):** Se precisar citar algo dentro de uma string (como um versículo ou uma frase), você DEVE, OBRIGATORIAMENTE, usar **aspas simples (' ')**. É terminantemente PROIBIDO usar aspas duplas (" ") dentro de outra string.
+
+**REGRA CRÍTICA DE IDIOMA:** Todos os valores de texto (title, enigma, synopsis, hook_question) DEVEM ser gerados em **${languageName}**.
 
 **Tema fornecido pelo usuário (para conectar com a Bíblia):** "${nicheDescription}"
 
-**AÇÃO FINAL:** Agora, desvende conexões teológicas ousadas, ancoradas em passagens bíblicas explícitas, e gere as 6 ideias. Responda APENAS com o array JSON, seguindo à risca o Contrato Técnico e, especialmente, a Regra de Ouro da Integração.
+**AÇÃO:** Agora, desvende conexões teológicas ousadas, **ancoradas em passagens bíblicas explícitas**, e gere as 6 ideias.
 `;
     
     try {
@@ -5480,7 +5473,7 @@ Sua missão é gerar 6 ideias de vídeos que conectem o TEMA FORNECIDO PELO USU�
 
         ideas.forEach((idea, index) => {
             const card = document.createElement('div');
-            card.className = 'card bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-l-4 border-purple-500 animate-fade-in flex flex-col justify-between';
+            card.className = 'card-background p-4 rounded-lg shadow-md border-l-4 border-purple-500 animate-fade-in flex flex-col justify-between';
             
             const escapedIdea = escapeIdeaForOnclick(idea);
             const cardContent = `
@@ -5497,7 +5490,7 @@ Sua missão é gerar 6 ideias de vídeos que conectem o TEMA FORNECIDO PELO USU�
                     <p class="text-xs text-purple-600 dark:text-purple-400 font-semibold mt-3">Método: ${DOMPurify.sanitize(idea.investigative_method)}</p>
                 </div>
             `;
-            card.innerHTML = cardContent;
+            card.innerHTML = DOMPurify.sanitize(cardContent, { ADD_ATTR: ['data-action', 'data-idea'] });
             outputContainer.appendChild(card);
         });
 
@@ -5639,31 +5632,30 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
 // FUNÇÃO DE RE-GERAÇÃO CORRIGIDA
 // ==========================================================
 window.regenerateSection = (fullSectionId) => {
-    const sectionName = fullSectionId.replace('Section', '');
-    
-    const sectionMap = {
-        'intro': { title: 'Introdução', elementId: 'intro' },
-        'development': { title: 'Desenvolvimento', elementId: 'development' },
-        'climax': { title: 'Clímax', elementId: 'climax' },
-        'conclusion': { title: 'Conclusão', elementId: 'conclusion' },
-        'cta': { title: 'Call to Action (CTA)', elementId: 'cta' }
-    };
-
-    const sectionInfo = sectionMap[sectionName];
-    
-    if (sectionInfo) {
-        // CORREÇÃO: Usamos aspas duplas dentro dos acentos graves para um seletor CSS válido.
-        const button = document.querySelector(`[data-action="regenerate"][data-section-id="${fullSectionId}"]`);
-        
-        if (button) {
-             handleGenerateSection(button, sectionName, sectionInfo.title, sectionInfo.elementId);
-        } else {
-            console.error(`Botão de re-gerar não encontrado para a seção: ${fullSectionId}`);
-        }
-    } else {
-        console.error(`Informações da seção não encontradas para: ${sectionName}`);
-    }
+            const sectionName = fullSectionId.replace('Section', '');
+            
+            const sectionMap = {
+    'intro': { title: 'Introdução', elementId: 'intro' },
+    'development': { title: 'Desenvolvimento', elementId: 'development' },
+    'climax': { title: 'Clímax', elementId: 'climax' },
+    'conclusion': { title: 'Conclusão', elementId: 'conclusion' }, // Título corrigido
+    'cta': { title: 'Call to Action (CTA)', elementId: 'cta' } // <<< ADICIONADO
 };
+
+            const sectionInfo = sectionMap[sectionName];
+            
+            if (sectionInfo) {
+                // Encontra o botão de re-gerar que foi clicado, em vez de um botão antigo
+                const button = document.querySelector(`[data-action='regenerate'][data-section-id='${fullSectionId}']`);
+                if (button) {
+                     handleGenerateSection(button, sectionName, sectionInfo.title, sectionInfo.elementId);
+                } else {
+                    console.error(`Botão de re-gerar não encontrado para a seção: ${fullSectionId}`);
+                }
+            } else {
+                console.error(`Informações da seção não encontradas para: ${sectionName}`);
+            }
+        };
 
 
 
@@ -6748,11 +6740,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // =========================================================================
-// >>>>> SUBSTITUA SEU OBJETO 'actions' INTEIRO POR ESTA VERSÃO CORRIGIDA <<<<<
+// >>>>> PASSO 3: SUBSTITUA O OBJETO 'actions' INTEIRO POR ESTA VERSÃO <<<<<
 // =========================================================================
-
 const actions = {
-    'suggestStrategy': (btn) => suggestStrategy(btn),
+    'suggestStrategy': (btn) => suggestStrategy(btn, null),
+    'referenceStrategy': (btn) => getReferenceStrategy(btn),
     'startCrafting': (btn) => startCrafting(),
     'generateIdeas': (btn) => generateVideoIdeas(btn),
     'unravelEnigmas': (btn) => unravelEnigmas(btn),
@@ -6783,8 +6775,7 @@ const actions = {
         const ideaString = btn.dataset.idea;
         if (ideaString) {
             try {
-                // CORREÇÃO: Usamos replaceAll para garantir que todas as ocorrências de " sejam substituídas
-                const ideaObject = JSON.parse(ideaString.replaceAll('"', '"'));
+                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
                 document.getElementById('videoTheme').value = ideaObject.title || '';
                 document.getElementById('videoDescription').value = ideaObject.videoDescription || ideaObject.angle || '';
                 document.getElementById('targetAudience').value = ideaObject.targetAudience || '';
@@ -6797,8 +6788,7 @@ const actions = {
         const ideaString = btn.dataset.idea;
         if (ideaString) {
             try {
-                // CORREÇÃO: Usamos replaceAll para garantir que todas as ocorrências de " sejam substituídas
-                const ideaObject = JSON.parse(ideaString.replaceAll('"', '"'));
+                const ideaObject = JSON.parse(ideaString.replace(/"/g, '"'));
                 document.getElementById('videoTheme').value = ideaObject.title || '';
                 document.getElementById('videoDescription').value = ideaObject.synopsis || ideaObject.enigma || '';
                 document.getElementById('centralQuestion').value = ideaObject.hook_question || '';
@@ -6827,7 +6817,7 @@ const actions = {
     },
     'analyzeScript': (btn) => analyzeFullScript(btn),
     'analyzeHooks': (btn) => analyzeRetentionHooks(btn),
-    'suggestViralElements': (btn) => suggestViralElements(btn), // <<< A VÍRGULA CORRIGIDA ESTÁ AQUI
+    'suggestViralElements': (btn) => suggestViralElements(btn)
 };
 
     document.addEventListener('click', function(event) {
