@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Source+Serif+Pro:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -658,18 +661,34 @@
         top: 0;
         left: 0;
         width: 100%;
-        color: #000; /* Força texto preto para impressão */
-        background-color: #fff !important; /* Força fundo branco */
+        color: #000;
+        background-color: #fff !important;
     }
     
-    /* Estilos para o conteúdo dentro do container de impressão */
+    /* ESTILOS DE FONTE PARA O DOCUMENTO INTEIRO */
+    #print-container, .print-section-content {
+        font-family: 'Source Serif Pro', serif; /* Fonte padrão para o corpo */
+        font-size: 12pt;
+        line-height: 1.5;
+    }
+
+    h1, .print-section-title {
+        font-family: 'Roboto', sans-serif; /* Fonte para títulos */
+    }
+    
     .print-section {
         margin-bottom: 24px;
         padding-bottom: 16px;
         border-bottom: 1px solid #ccc;
-        page-break-inside: avoid; /* Tenta não quebrar uma seção no meio da página */
+        page-break-inside: avoid;
     }
     
+    h1 {
+        text-align: center;
+        font-size: 22pt;
+        margin-bottom: 24px;
+    }
+
     .print-section-title {
         font-size: 16pt;
         font-weight: bold;
@@ -677,22 +696,21 @@
         color: #333;
     }
     
-    .print-section-content {
-        font-size: 11pt;
-        line-height: 1.5;
-    }
-    
+    /* Configuração específica para o roteiro (corpo do texto) */
     .print-section-content pre {
-        white-space: pre-wrap; /* Quebra linhas longas no roteiro */
-        font-family: 'Times New Roman', serif;
+        white-space: pre-wrap;
+        font-family: 'Source Serif Pro', serif; /* Garante a fonte aqui também */
         font-size: 12pt;
+        margin: 0;
+        padding: 0;
     }
 
     .print-section-content ul {
         list-style-position: inside;
+        padding-left: 10px;
     }
 
-    /* Remove estilos de cor e fundo específicos que não queremos no PDF */
+    /* Remove estilos visuais que não queremos no PDF */
     .generated-output-box, .thumbnail-idea, .card {
         background: none !important;
         border: none !important;
@@ -700,12 +718,12 @@
         color: #000 !important;
     }
     
-    /* Garante que o texto dentro de elementos específicos seja preto */
-    .print-section-content p, .print-section-content li, .print-section-content h4 {
+    /* Força que o texto de todos os elementos seja preto */
+    .print-section-content p, .print-section-content li, .print-section-content h4, .print-section-content strong {
         color: #000 !important;
     }
 }
-    
+
 </style>
 
 
