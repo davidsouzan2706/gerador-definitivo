@@ -3923,7 +3923,7 @@ case 'intro':
     const shockingHook = document.getElementById('shockingEndingHook')?.value.trim();
     
     prompt += `\n\n**INSTRUÇÕES CRÍTICAS E ESTRATÉGICAS PARA A INTRODUÇÃO (ESTILO YOUTUBE VIRAL DE ALTO IMPACTO):**
-Sua tarefa é escrever a **Introdução** do vídeo com o ÚNICO objetivo de criar um "hook" MAGNÉTICO e IRRESISTÍVEL que prenda a atenção do espectador nos CRUCIAIS primeiros 15-30 segundos.`;
+Sua tarefa é escrever a **Introdução** do vídeo com o ÚNICO objetivo de criar um "hook" MAGNÉTICO e IRRESISTÍVEL que prenda a atenção do espectador nos CRUCIAIS primeiros 20-40 segundos.`;
 
     // <<< LÓGICA CONDICIONAL INTELIGENTE E BLINDADA >>>
     if (shockingHook) {
@@ -3957,101 +3957,95 @@ Sua tarefa é escrever a **Introdução** do vídeo com o ÚNICO objetivo de cri
 // >>>>> FIM DO BLOCO 'intro' EVOLUÍDO <<<<<
 // =========================================================================
 
-       case 'development':
-            prompt += `
+// =========================================================================
+// >>>>> BLOCO 'development' EVOLUÍDO E BLINDADO <<<<<
+// =========================================================================
+case 'development':
+    prompt += `\n\n**INSTRUÇÕES CRÍTICAS E ESTRATÉGICAS PARA O DESENVOLVIMENTO (ESTILO YOUTUBE VIRAL DE MÁXIMA RETENÇÃO):**
+Sua tarefa é escrever o **Desenvolvimento** do roteiro. Esta é a SEÇÃO MAIS LONGA E CRUCIAL, onde você aprofunda o tema com riqueza de detalhes. Seu OBJETIVO PRIMÁRIO e INQUESTIONÁVEL aqui é **manter a RETENÇÃO MÁXIMA** do espectador do início ao fim desta parte.
 
-**INSTRUÇÕES CRÍTICAS PARA O DESENVOLVIMENTO (ESTILO YOUTUBE VIRAL):**
-Sua tarefa é escrever o **Desenvolvimento** do roteiro. Esta é a seção mais longa, onde você aprofunda o tema. O objetivo principal aqui é **manter a RETENÇÃO** do espectador a todo custo.
+**REGRAS DE CONTEÚDO, RITMO E ESTRATÉGIA DE ENGAJAMENTO (SIGA EXATAMENTE):**
+1.  **ESTRUTURA EM BLOCOS TEMÁTICOS CLAROS:** Apresente as informações de forma organizada em blocos temáticos distintos e logicamente conectados. Cada bloco deve explorar um aspecto específico e essencial do tema, avançando a narrativa de forma coesa.
+2.  **INTEGRAÇÃO OBRIGATÓRIA DE GANCHOS DE RETENÇÃO:** Para evitar ABSOLUTAMENTE qualquer monotonia, densidade ou queda de atenção, você DEVE inserir, de forma ESTRATÉGICA, um "gancho de retenção" a cada 2 ou 3 parágrafos de informação pura. Estes ganchos são FUNDAMENTAIS para quebrar o padrão e re-engajar o espectador continuamente. Use uma das seguintes técnicas com maestria:
+    - **Teaser / Mini Loop Aberto:** Crie um pequeno mistério ou promessa que será resolvida/emphasized em breve, gerando antecipação. (Ex: "...mas eles não sabiam que a parte mais difícil ainda estava por vir.", "E a solução aparentemente simples que ele encontrou é a razão pela qual esta empresa vale bilhões hoje.").
+    - **Pergunta de Engajamento Direto:** Faça uma pergunta PESSOAL e RELEVANTE ao público, incentivando fortemente a participação ativa nos comentários. (Ex: "O que você teria feito nessa situação crítica? Deixa sua opinião aqui nos comentários.", "Você já se deparou com esse fato surpreendente? Conta aqui embaixo.").
+3.  **EQUILÍBRIO PERFEITO ENTRE INFORMAÇÃO E NARRATIVA:** Mantenha um equilíbrio IMPECAVEL entre fornecer conteúdo valioso e densidade informativa, e manter a narrativa fluida, envolvente e cativante. SEMPRE conecte os dados, fatos e argumentos de volta à história principal ou ao ganho emocional/curiosidade estabelecido no início.`;
 
-**REGRAS DE CONTEÚDO E RITMO (RETENÇÃO E ENGAJAMENTO):**
-1.  **ESTRUTURA EM BLOCOS:** Apresente as informações em blocos temáticos claros e lógicos. Cada bloco deve explorar um aspecto do tema.
-2.  **GANCHOS DE RETENÇÃO (A REGRA MAIS IMPORTANTE):** Para evitar que o texto fique monótono ou denso, você DEVE, a cada 2 ou 3 parágrafos de informação, inserir um "gancho de retenção". Este gancho serve para quebrar o padrão e re-engajar o espectador. Use uma das seguintes técnicas:
-    - **Teaser / Loop Aberto:** Crie um mini-mistério que será respondido em breve. (Ex: "...mas eles não sabiam que a parte mais difícil ainda estava por vir.", "E a solução que ele encontrou para isso é a razão pela qual esta empresa vale bilhões hoje.").
-    - **Pergunta de Engajamento:** Faça uma pergunta direta ao público relacionada ao conteúdo, incentivando a participação nos comentários. (Ex: "O que você teria feito nessa situação? Deixa sua opinião aqui nos comentários.", "Você já conhecia esse fato? Me conta aqui embaixo.").
-3.  **EQUILÍBRIO E CONTEXTO:** Mantenha o equilíbrio entre fornecer informações valiosas e manter a narrativa fluida. Sempre conecte os dados de volta à história principal ou ao gancho emocional (se houver).`;
-
-            if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
-                prompt += `\n**IMPORTANTE: Todo o texto DEVE ser em Português.**`;
-            }
-            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 1500;
-            break;
-
-        case 'climax':
-            prompt += `
-            The climax should be the most impactful part of the video, revealing key insights, surprising twists, or the most compelling evidence related to the video theme. It should be dramatic and leave the viewer with a sense of awe or profound understanding.
-            `;
-            if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
-                prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
-            }
-            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500;
-            break;
-
-        case 'conclusion':
-            prompt += `
-            The conclusion should summarize the main points, provide a final thought or reflection, and leave the viewer with a lasting impression. Ensure the conclusion is complete and well-rounded, providing a sense of closure.
-            `;
-            if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
-                prompt += `\n**IMPORTANT: The response for this section MUST be in Portuguese.**`;
-            }
-            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 500;
-            break;
-
-        case 'cta':
-            prompt += `
-            The Call to Action (CTA) should be clear and concise, encouraging viewers to subscribe, like, comment, or share. It should be compelling and feel like a natural conclusion to the video, **but ensure it is a complete and well-rounded paragraph.**
-            `;
-            maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 400;
-            break;
-
+    if (selectedLanguage === 'pt-br' || selectedLanguage === 'pt-pt') {
+        prompt += `\n\n**IMPORTANTE E INEGOCIÁVEL: Todo o texto do desenvolvimento DEVE ser escrito em Português do Brasil (pt-br).**`;
+    }
+    maxTokens = targetWords ? Math.ceil(targetWords * 1.8) : 1500;
+    break;
+// =========================================================================
+// >>>>> FIM DO BLOCO 'development' EVOLUÍDO <<<<<
+// =========================================================================
+// =========================================================================
+// >>>>> BLOCO 'titles_thumbnails' EVOLUÍDO E BLINDADO <<<<<
+// =========================================================================
 case 'titles_thumbnails':
-            prompt = `${baseContext}
-Você é uma API de geração de metadados que retorna APENAS um objeto JSON.
+    prompt = `${baseContext}
+**TAREFA ESTRATÉGICA CRÍTICA: GERAR METADADOS DE MÁXIMO IMPACTO PARA YOUTUBE**
+Você é uma API de geração de metadados de ALTO DESEMPENHO que retorna APENAS um objeto JSON, otimizado para cliques e engajamento máximo.
 
-**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (INEGOCIÁVEIS):**
-1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`{\` e terminando com \`}\`.
-2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar aspas duplas (\`"\`).
-3.  **ESTRUTURA OBRIGATÓRIA:** O objeto JSON DEVE conter EXATAMENTE duas chaves principais: "titles" e "thumbnails".
-    - O valor de "titles" DEVE ser um array de 5 strings.
-    - O valor de "thumbnails" DEVE ser um array de 3 objetos.
-    - Cada objeto em "thumbnails" DEVE ter exatamente duas chaves: "title" e "description".
-4.  **SEM ASPAS INTERNAS:** Dentro dos valores de string (como "description"), NÃO use aspas duplas. Use aspas simples (\`'\`) se precisar de ênfase.
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (ABSOLUTAMENTE INEGOCIÁVEIS):**
+1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um objeto JSON válido, começando com \`{\` e terminando com \`}\`. NENHUM outro texto, comentário ou metadado deve ser incluído. Pense nisso como uma resposta de API pura e impecável.
+2.  **ASPAS DUPLAS, SEMPRE E EXCLUSIVAMENTE:** TODAS as chaves e valores de texto DEVEM usar obrigatoriamente aspas duplas (\`"\`). É TERMINANTEMENTE PROIBIDO o uso de aspas simples (\`'\`) ou crases (\`\`) para delimitar QUALQUER string.
+3.  **ESTRUTURA OBRIGATÓRIA E EXATA:** O objeto JSON DEVE conter EXATAMENTE duas chaves principais: "titles" e "thumbnails".
+    - O valor de "titles" DEVE ser um array contendo EXATAMENTE 5 strings, cada uma sendo um título otimizado para CTR (Click-Through Rate).
+    - O valor de "thumbnails" DEVE ser um array contendo EXATAMENTE 3 objetos.
+    - CADA objeto dentro do array "thumbnails" DEVE ter EXATAMENTE duas chaves: "title" e "description".
+4.  **PROIBIÇÃO ABSOLUTA DE ASPAS INTERNAS DUPLAS:** Dentro dos valores de string, especialmente nas descrições ("description"), É ESTRITAMENTE PROIBIDO o uso de aspas duplas internas. Se precisar dar ênfase ou citar algo, USE OBRIGATORIAMENTE aspas simples (\`'\`).
 
-**EXEMPLO DE RESPOSTA PERFEITA:**
+**DIRETRIZES ESTRATÉGICAS PARA CONTEÚDO DE MÁXIMO IMPACTO:**
+- **Para "titles":** Gere títulos que sejam HIPNÓTICOS, provocando CURIOSIDADE INTENSA e prometendo valor único. Utilize técnicas comprovadas de otimização de títulos (números, urgência, benefício claro, perguntas retóricas, palavras-chave fortes). Cada título deve ser uma promessa específica e irresistível.
+- **Para "thumbnails":** As descrições devem guiar a criação de imagens VISUALMENTE IMPACTANTES e CLARAMENTE compreensíveis. Foque em contraste, emoção facial, elementos visuais fortes, textos sugestivos e clareza absoluta. Cada ideia de thumbnail deve ser única e complementar um dos títulos gerados.
+
+**EXEMPLO DE RESPOSTA PERFEITA E OBRIGATÓRIO (SIGA ESTE EXATO MODELO):**
 {
   "titles": [
-    "Título 1: Curto e impactante",
-    "Título 2: Com pergunta",
-    "Título 3: Com urgência",
-    "Título 4: Focado em benefício",
-    "Título 5: Controverso"
+    "Título 1: Curto, direto e com um gancho irresistível",
+    "Título 2: Com uma pergunta que o espectador precisa responder",
+    "Título 3: Criando urgência e uma sensação de 'não posso perder'",
+    "Título 4: Focado no benefício claro e transformador",
+    "Título 5: Um pouco controverso para gerar curiosidade"
   ],
   "thumbnails": [
-    { "title": "Ideia de Thumbnail 1", "description": "Close-up em um objeto misterioso com uma seta vermelha." },
-    { "title": "Ideia de Thumbnail 2", "description": "Foto de uma pessoa com expressão chocada e texto 'VOCÊ NÃO VAI ACREDITAR'." },
-    { "title": "Ideia de Thumbnail 3", "description": "Gráfico de 'Antes vs Depois' mostrando uma transformação." }
+    { "title": "Ideia de Thumbnail 1", "description": "Close-up em um objeto misterioso com uma seta vermelha chamando atenção." },
+    { "title": "Ideia de Thumbnail 2", "description": "Foto de uma pessoa com expressão de choque absoluto e texto em destaque: 'VOCÊ NÃO VAI ACREDITAR NO QUE ACONTECEU DEPOIS!'." },
+    { "title": "Ideia de Thumbnail 3", "description": "Gráfico de 'Antes vs Depois' mostrando uma transformação dramática e inacreditável." }
   ]
 }
 
-Analise o contexto do roteiro e gere o objeto JSON seguindo TODAS as regras.`;
-            maxTokens = 2000; // Aumentado para dar espaço para a IA
-            break;
+**AÇÃO FINAL E CRÍTICA:** Com base no contexto estratégico fornecido, analise profundamente e gere AGORA o objeto JSON completo e sintaticamente PERFEITO, seguindo EXATAMENTE todas as regras, diretrizes e o exemplo acima. Responda APENAS com o objeto JSON.
+`;
+    maxTokens = 2000;
+    break;
+// =========================================================================
+// >>>>> FIM DO BLOCO 'titles_thumbnails' EVOLUÍDO <<<<<
+// =========================================================================
+// =========================================================================
+// >>>>> BLOCO 'description' EVOLUÍDO E BLINDADO <<<<<
+// =========================================================================
+case 'description':
+    const languageName = new Intl.DisplayNames([selectedLanguage], { type: 'language' }).of(selectedLanguage);
+    prompt = `${baseContext}
+            
+**TAREFA ESTRATÉGICA CRÍTICA: GERAR DESCRIÇÃO OTIMIZADA DE MÁXIMO IMPACTO PARA YOUTUBE E HASHTAGS ALVADAS PELO SUCESSO**
+Sua tarefa é gerar uma descrição otimizada de ALTO IMPACTO para um vídeo do YouTube e um conjunto de hashtags RELEVANTES E ESTRATÉGICAS, no idioma ${languageName}.
 
-        case 'description':
-            const languageName = new Intl.DisplayNames([selectedLanguage], { type: 'language' }).of(selectedLanguage);
-            prompt = `${baseContext}
-            
-            Sua tarefa é gerar uma descrição otimizada para um vídeo do YouTube e um conjunto de hashtags relevantes, no idioma ${languageName}.
-            
-            **REGRAS DE FORMATAÇÃO (INEGOCIÁVEIS):**
-            1.  Comece com 2-3 frases que resumem o vídeo e incluem as palavras-chave principais do tema.
-            2.  Adicione um parágrafo que aprofunde o que o espectador aprenderá ou descobrirá.
-            3.  Finalize a descrição com uma chamada para ação (inscrever-se, comentar, etc.).
-            4.  Após a descrição, adicione uma linha em branco e depois a seção "Hashtags:".
-            5.  Liste 10 hashtags relevantes, começando com a mais ampla e terminando com as mais específicas.
-            
-            Responda APENAS com a descrição e as hashtags, nada mais.`;
-            maxTokens = 700;
-            break;
+**REGRAS DE FORMATAÇÃO E OTIMIZAÇÃO (ABSOLUTAMENTE INEGOCIÁVEIS):**
+1.  **INÍCIO MAGNÉTICO (2-3 Frases):** Comece IMEDIATAMENTE com 2 ou 3 frases CONCISAS e PODEROSAS que RESUMEM o ESSENCIAL do vídeo e INTEGREM as PALAVRAS-CHAVE PRINCIPAIS do tema de forma NATURAL e ESTRATÉGICA. Este início deve AGARRAR a atenção de quem lê a descrição.
+2.  **APROFUNDAMENTO VALIOSO (1 Parágrafo Rico):** Adicione UM ÚNICO parágrafo que APROFUNDE SIGNIFICATIVAMENTE o que o espectador APRENDERÁ, DESCobrirá ou GANHARÁ ao assistir o vídeo. Seja ESPECÍFICO sobre os insights, dicas ou revelações contidos no conteúdo.
+3.  **CHAMADA PARA AÇÃO IRRESISTÍVEL (CTA Final):** Finalize a descrição com uma CHAMADA PARA AÇÃO CLARA, CONVINCENTE e IRRESISTÍVEL, incentivando ações como se inscrever, curtir, comentar, compartilhar ou visitar um link. Torne o CTA uma extensão natural e desejada da experiência do vídeo.
+4.  **SEPARAÇÃO ESTRUTURAL OBRIGATÓRIA:** Após a descrição completa (incluindo o CTA), você DEVE adicionar uma LINHA EM BRANCO e então incluir EXATAMENTE a linha "Hashtags:".
+5.  **LISTA DE HASHTAGS ESTRATÉGICA (10 Hashtags):** Liste EXATAMENTE 10 hashtags RELEVANTES. Estruture-as com LÓGICA: comece com 2-3 hashtags MAIS AMPLAS e POPULARES, seguidas por 4-5 hashtags de MÉDIO ALCANCE, e finalize com 2-3 hashtags ALTAMENTE ESPECÍFICAS e NICHO. Cada hashtag DEVE ser precedida pelo símbolo # e separada das demais por um espaço.
+
+**AÇÃO FINAL E CRÍTICA:** Responda APENAS com a descrição otimizada (incluindo o CTA) e a lista de hashtags, conforme as regras acima. NENHUM outro texto, explicação ou metadado deve ser incluído na sua resposta.`;
+    maxTokens = 700;
+    break;
+// =========================================================================
+// >>>>> FIM DO BLOCO 'description' EVOLUÍDO <<<<<
+// =========================================================================
     }
     
     return { prompt, maxTokens };
