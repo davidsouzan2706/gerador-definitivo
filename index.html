@@ -5412,7 +5412,7 @@ const prompt = `Você é uma API de Estratégia de Conteúdo Viral altamente esp
 
 
 // =========================================================================
-// >>>>> VERSÃO HÍBRIDA E DEFINITIVA DE 'unravelEnigmas' (QUALIDADE + CONFIABILIDADE) <<<<<
+// >>>>> VERSÃO FINAL E CORRIGIDA DE 'unravelEnigmas' (v3) <<<<<
 // =========================================================================
 
 const unravelEnigmas = async (button) => {
@@ -5428,7 +5428,7 @@ const unravelEnigmas = async (button) => {
     outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
     showButtonLoading(button);
 
-    // <<< ESTE É O PROMPT HÍBRIDO. NOTE COMO AS SUAS INSTRUÇÕES CRIATIVAS ESTÃO INTACTAS >>>
+    // <<< A CORREÇÃO ESTÁ NO BRIEFING CRIATIVO ABAIXO >>>
     const prompt = `Você é um Teólogo Investigativo e sua única função é retornar um array JSON sintaticamente perfeito.
 
 // --- INÍCIO DO CONTRATO TÉCNICO (INEGOCIÁVEL) ---
@@ -5445,29 +5445,29 @@ const unravelEnigmas = async (button) => {
 Sua missão é gerar 6 ideias de vídeos que conectem o TEMA FORNECIDO PELO USUÁRIO com enigmas, símbolos e histórias da Bíblia, usando REFERÊNCIAS BÍBLICAS EXPLÍCITAS E CENTRAIS.
 
 **DIRETIVA PRINCIPAL: ANCORE-SE NA BÍBLIA.**
--   **Exigência de Citação Primária:** Toda ideia DEVE iniciar com uma ou mais citações bíblicas diretas (livro, capítulo, versículo) que sejam o FUNDAMENTO da conexão.
--   **Conexão Baseada em Texto:** A conexão entre o tema moderno e o conceito bíblico NÃO deve ser superficial. A passagem bíblica citada deve ser o ponto de partida lógico.
--   **Evite Generalizações:** Seja específico. Não diga 'a fé', diga 'a fé de Abraão em Gênesis 15'.
--   **Contexto é Chave:** Ao citar, forneça contexto suficiente da passagem bíblica.
+-   Exigência de Citação Primária: Toda ideia DEVE partir de uma ou mais citações bíblicas diretas.
+-   **REGRA DE OURO DA INTEGRAÇÃO (A MAIS IMPORTANTE):** A referência bíblica (ex: 'baseado em Gênesis 1:1' ou '(veja Hebreus 12:29)') DEVE estar **DENTRO** do texto das chaves "enigma" e/ou "synopsis". É TERMINANTEMENTE PROIBIDO colocar a referência bíblica como um texto solto fora das aspas de um valor.
+    -   **CORRETO:** \`"enigma": "Qual o significado do fogo consumidor (Hebreus 12:29)?"\`
+    -   **ERRADO E PROIBIDO:** \`"enigma": "Qual o significado do fogo consumidor?", baseado em Hebreus 12:29\`
 
 **TÉCNICAS INVESTIGATIVAS OBRIGATÓRIAS (USE UMA POR IDEIA):**
-1.  **Fio Oculto (Cross-Referencing)**: Conecte passagens aparentemente desconexas.
-2.  **Lupa Lexical (Análise de Palavras)**: Aprofunde-se no significado original de uma palavra-chave hebraica ou grega.
-3.  **O Espelho Tipológico (Tipologia)**: Mostre como o Antigo Testamento prefigura o Novo.
-4.  **Contexto Histórico Profundo**: Conecte um evento bíblico a uma prática cultural ou política da época.
+1.  Fio Oculto (Cross-Referencing)
+2.  Lupa Lexical (Análise de Palavras)
+3.  O Espelho Tipológico (Tipologia)
+4.  Contexto Histórico Profundo
 
 **MANUAL DE CONTEÚDO PARA CADA CHAVE JSON:**
--   **"title"**: Curioso, específico e que prometa uma revelação baseada na Escritura.
--   **"enigma"**: O mistério central em uma frase intrigante, fundamentado em uma passagem bíblica.
--   **"synopsis"**: Uma sinopse detalhada de 8 a 10 frases, incluindo pelo menos UMA citação bíblica direta.
+-   **"title"**: Curioso, específico e que prometa uma revelação.
+-   **"enigma"**: O mistério central em uma única frase intrigante, com a referência bíblica INTEGRADA.
+-   **"synopsis"**: Uma sinopse detalhada de 8 a 10 frases, com a referência bíblica INTEGRADA.
 -   **"investigative_method"**: O nome exato da técnica usada.
--   **"hook_question"**: Uma pergunta provocativa e intrigante para os primeiros 15 segundos.
+-   **"hook_question"**: Uma pergunta provocativa para os primeiros 15 segundos.
 -   **IDIOMA:** Todos os valores de texto DEVEM ser gerados em **${languageName}**.
 // --- FIM DO BRIEFING CRIATIVO ---
 
 **Tema fornecido pelo usuário (para conectar com a Bíblia):** "${nicheDescription}"
 
-**AÇÃO FINAL:** Agora, desvende conexões teológicas ousadas, ancoradas em passagens bíblicas explícitas, e gere as 6 ideias. Responda APENAS com o array JSON, seguindo à risca o Contrato Técnico e o Briefing Criativo.
+**AÇÃO FINAL:** Agora, desvende conexões teológicas ousadas, ancoradas em passagens bíblicas explícitas, e gere as 6 ideias. Responda APENAS com o array JSON, seguindo à risca o Contrato Técnico e, especialmente, a Regra de Ouro da Integração.
 `;
     
     try {
