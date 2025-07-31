@@ -3578,43 +3578,161 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
 };
 
     
+// =========================================================================
+// >>>>> VERSÃO FINAL E BLINDADA DE 'cleanGeneratedText' <<<<<
+// =========================================================================
+/**
+ * Tenta parsear e limpar o texto bruto retornado pela IA.
+ * Se expectJson for true, tenta extrair e parsear um objeto/array JSON válido.
+ * @param {string} text - O texto bruto da resposta da IA.
+ * @param {boolean} expectJson - Se true, força a tentativa de extrair e parsear um JSON.
+ * @returns {any|null} O JSON parseado, o texto limpo ou null.
+ */
 const cleanGeneratedText = (text, expectJson = false) => {
-    if (!text) return null;
-    if (!expectJson) return text.trim();
+    if (!text || typeof text !== 'string') {
+        console.warn("Entrada inválida fornecida para cleanGeneratedText:", { text, expectJson });
+        return null;
+    }
 
-    console.log("Iniciando limpeza de JSON. Texto bruto (início):", text.substring(0, 200) + '...');
+    if (!expectJson) {
+        // Se não esperamos JSON, apenas limpamos o texto e o retornamos.
+        return text.trim();
+    }
 
-    try {
-        // ETAPA 1: O "Detetive" - Encontra todos os fragmentos que parecem objetos JSON.
-        // A expressão regular /\{[\s\S]*?\}/g encontra tudo desde um '{' até o '}' correspondente.
-        const objectRegex = /\{[\s\S]*?\}/g;
-        const jsonObjects = text.match(objectRegex);
+    // >>>>> ETAPA 1: LOCALIZAÇÃO E ISOLAMENTO DO BLOCO JSON <<<<<
+    console.log("Iniciando parse de JSON. Texto bruto:", text.substring(0, 200) + (text.length > 200 ? "..." : ""));
+    
+    // Encontra o primeiro caractere de início de objeto ou array JSON
+    const startIndex = text.search(/[\{\[]/);
+    if (startIndex === -1) {
+        console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.", text);
+        throw new Error("A IA não retornou um formato JSON reconhecível.");
+    }
 
-        // Se o detetive não encontrou nenhum objeto, é um erro.
-        if (!jsonObjects || jsonObjects.length === 0) {
-            throw new Error("Nenhum fragmento de objeto JSON válido foi encontrado na resposta da IA.");
+    // Determina o caractere de fechamento correspondente
+    const firstChar = text[startIndex];
+    const matchingLastChar = firstChar === '{' ? '}' : ']';
+    
+    // Tenta encontrar o índice de fechamento balanceado
+    let level = 1;
+    let endIndex = -1;
+    for (let i = startIndex + 1; i < text.length; i++) {
+        if (text[i] === firstChar) level++;
+        if (text[i] === matchingLastChar) level--;
+        if (level === 0) {
+            endIndex = i;
+            break;
         }
+    }
+
+    // Se não encontrou um fechamento balanceado, assume o final do texto
+    if (endIndex === -1) {
+        console.warn("JSON não foi fechado corretamente, tentando encontrar o final de forma aproximada.");
+        endIndex = text.length - 1;
+    }
+    
+    // Extrai a substring que *deve* ser o JSON
+    let jsonString = text.substring(startIndex, endIndex + 1);
+    console.log("Substring JSON candidata extraída:", jsonString.substring(0, 100) + (jsonString.length > 100 ? "..." : ""));
+
+    // >>>>> ETAPA 2: SANITIZAÇÃO BÁSICA <<<<<
+    // Remove caracteres de controle e invisíveis que podem corromper o JSON
+    let sanitizedJsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
+    console.log("JSON após sanitização básica:", sanitizedJsonString.substring(0, 100) + (sanitizedJsonString.length > 100 ? "..." : ""));
+
+
+    // ...
+let repairedString = sanitizedJsonString; // Inicializa com o JSON sanitizado
+let finalParsed;
+// ...
+    
+
+    // >>>>> ETAPA 3: TENTATIVA INICIAL DE PARSE <<<<<
+    try {
+        console.log("Tentando parse inicial (sanitizado)...");
+        const parsed = JSON.parse(sanitizedJsonString);
+        console.log("Parse inicial bem-sucedido!");
+        return parsed;
+    } catch (initialError) {
+        console.warn("Parse inicial (sanitizado) falhou. Tentando reparos estruturais...", initialError.message);
         
-        console.log(`Detetive encontrou ${jsonObjects.length} fragmentos de objeto JSON.`);
+        // >>>>> ETAPA 4: CIRURGIAS INTELIGENTES ESTRATIFICADAS <<<<<
+        try {
+            let repairedString = sanitizedJsonString;
 
-        // ETAPA 2: O "Montador" - Junta todos os fragmentos limpos com vírgulas.
-        const jsonArrayString = `[${jsonObjects.join(',')}]`;
-        
-        console.log("Tentando fazer o parse do JSON montado...");
+            // --- CIRURGIA 1: Correção de Aspas em Chaves ---
+            console.log("Aplicando CIRURGIA 1: Correção de aspas em chaves...");
+            // 1a. Substitui chaves com aspas simples por aspas duplas: {'key': ...} -> {"key": ...}
+            repairedString = repairedString.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
+            // 1b. Adiciona aspas duplas a chaves sem aspas: {key: ...} -> {"key": ...}
+            repairedString = repairedString.replace(/([{,]\s*)([a-zA-Z0-9_\u00C0-\u00FF]+)(\s*:)/g, '$1"$2"$3');
 
-        // ETAPA 3: A "Verificação Final" - Tenta fazer o parse do resultado final.
-        const parsedJson = JSON.parse(jsonArrayString);
-        console.log("Sucesso! JSON montado e validado com sucesso.");
-        return parsedJson;
+            // --- CIRURGIA 2: Correção de Aspas em Valores String ---
+            console.log("Aplicando CIRURGIA 2: Correção de aspas em valores string...");
+            // 2a. Substitui valores com aspas simples por aspas duplas: "key": 'value' -> "key": "value"
+            //     Preserva aspas simples dentro das strings trocadas.
+            repairedString = repairedString.replace(/:\s*'((?:[^'\\]|\\.)*?)'(?=\s*[},\]])/g, ': "$1"');
 
-    } catch (error) {
-        // Se mesmo após a montagem o JSON ainda for inválido, reportamos o erro.
-        console.error("=== FALHA CRÍTICA NA MONTAGEM DO JSON ===");
-        console.error("Motivo:", error.message);
-        console.error("Texto original problemático (início):", text.substring(0, 1000));
-        throw new Error(`A IA retornou um JSON fragmentado que não pôde ser reparado. Motivo: ${error.message}`);
+            // --- CIRURGIA 3: Remoção de Vírgulas Fantasmas ---
+            console.log("Aplicando CIRURGIA 3: Remoção de vírgulas fantasmas...");
+            // Remove vírgulas antes de fechamentos de objetos ou arrays: {..., }, [..., ] -> {...}, [...]
+            repairedString = repairedString.replace(/,\s*([}\]])/g, '$1');
+
+            // --- CIRURGIA 4: Correção de Valores Booleanos/String Mal Formatados ---
+            console.log("Aplicando CIRURGIA 4: Correção de valores booleanos/string...");
+            // Corrige casos como: "key": true, -> "key": "true", (se for string) ou o oposto, dependendo do contexto.
+            // Este é um exemplo genérico, ajuste conforme a necessidade.
+            // repairedString = repairedString.replace(/:\s*(true|false)(?=\s*[},\]])/g, ': "$1"'); // Se precisar forçar string
+            
+            // --- CIRURGIA 5: Escape de Caracteres Especiais Dentro de Strings ---
+            console.log("Aplicando CIRURGIA 5: Escape de caracteres especiais...");
+            // Esta é uma cirurgia mais complexa e arriscada. Um approach mais seguro é tentar identificar
+            // strings mal formadas e corrigi-las.
+            // Por exemplo, aspas duplas não escapadas dentro de uma string: "He said "Hello""
+            // Isso requer um parser mais sofisticado. Vamos tentar uma abordagem simples primeiro.
+            
+            // Tentativa simples: encontrar strings que parecem ter aspas internas não escapadas
+            // e tentar corrigir. Esta é uma heurística e pode não funcionar em todos os casos.
+            // A lógica é: encontrar ": "..." e verificar se há " não escapadas dentro.
+            repairedString = repairedString.replace(/:\s*"((?:[^"\\]|\\.)*?)"/g, (match, p1) => {
+                // p1 é o conteúdo da string sem as aspas externas
+                if (p1.includes('"') && !p1.includes('\\"')) {
+                    // Parece haver aspas duplas não escapadas. Vamos tentar escapar todas.
+                    // Esta é uma suposição forte e pode falhar.
+                    console.warn("Tentativa de escape de aspas duplas em string:", match);
+                    const escaped = p1.replace(/"/g, '\\"');
+                    return `: "${escaped}"`;
+                }
+                return match; // Retorna inalterado se não parecer problemático ou já estiver escapado
+            });
+
+
+            console.log("String após todas as cirurgias:", repairedString.substring(0, 100) + (repairedString.length > 100 ? "..." : ""));
+            
+            // >>>>> ETAPA 5: TENTATIVA FINAL DE PARSE <<<<<
+            console.log("Tentando parse final após cirurgias...");
+            const finalParsed = JSON.parse(repairedString);
+            console.log("Parse final bem-sucedido após cirurgias!");
+            return finalParsed;
+
+        } catch (surgeryError) {
+            // >>>>> ETAPA 6: RELATÓRIO DE FALHA DETALHADO <<<<<
+            console.error("=== FALHA CRÍTICA NA LIMPEZA DE JSON ===");
+            console.error("Motivo:", surgeryError.message);
+            console.error("Texto original (primeiros 1000 chars):", text.substring(0, 1000));
+            console.error("Substring JSON candidata:", jsonString.substring(0, 500) + (jsonString.length > 500 ? "..." : ""));
+            console.error("JSON após sanitização:", sanitizedJsonString.substring(0, 500) + (sanitizedJsonString.length > 500 ? "..." : ""));
+            // Evitar logar o repairedString inteiro, pois pode ser muito grande e conter dados sensíveis
+            console.error("Fragmento do JSON após cirurgias (primeiros 500 chars):", repairedString ? repairedString.substring(0, 500) : "N/A");
+            console.error("========================================");
+            
+            throw new Error(`A IA retornou um JSON com sintaxe interna inválida que não pôde ser corrigido. Erro: ${surgeryError.message}`);
+        }
     }
 };
+// =========================================================================
+// >>>>> FIM DA VERSÃO BLINDADA DE 'cleanGeneratedText' <<<<<
+// =========================================================================
 
 
 // =========================================================================
