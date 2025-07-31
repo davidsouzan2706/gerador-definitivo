@@ -4,7 +4,7 @@
 const Groq = require('groq-sdk');
 
 // --- CONFIGURAÇÕES VIA VARIÁVEIS DE AMBIENTE (para maior flexibilidade) ---
-const MODEL_NAME = process.env.GROQ_MODEL_NAME || 'llama3-8b-8192'; // Padrão para o mais rápido
+const MODEL_NAME = process.env.GROQ_MODEL_NAME || 'gemma-7b-it'; // Padrão para o mais rápido
 const DEFAULT_TIMEOUT_MS = parseInt(process.env.GROQ_DEFAULT_TIMEOUT_MS, 10) || 9500; // Padrão 9.5s
 const MAX_RETRIES_BASE = parseInt(process.env.GROQ_MAX_RETRIES_BASE, 10) || 2; // Padrão 2
 const BACKOFF_BASE_DELAY_MS = parseInt(process.env.GROQ_BACKOFF_BASE_DELAY_MS, 10) || 1000; // Padrão 1s
