@@ -4347,36 +4347,47 @@ Sua tarefa é gerar uma descrição otimizada de ALTO IMPACTO para um vídeo do 
          * @returns {Promise<string>} A resposta bruta da IA.
          * @throws {Error} Se a chamada à API falhar.
          */
-        const callGroqAPI = async (prompt, maxTokens) => {
-            const proxyUrl = "/.netlify/functions/groq"; // Endpoint do proxy
 
-            const payload = {
-                prompt: prompt,
-                maxTokens: maxTokens
-            };
 
-            const request = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            };
+const callGroqAPI = async (prompt, maxTokens) => {
+    const proxyUrl = "/.netlify/functions/groq"; // Endpoint do proxy
 
-            try {
-                const response = await fetch(proxyUrl, request);
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: { message: 'Erro desconhecido do servidor proxy.' } }));
-                    throw new Error(`Erro na API via Proxy: ${errorData.error?.message || 'Erro do servidor'}`);
-                }
-                const result = await response.json();
-                const rawContent = result.choices?.[0]?.message?.content;
-                if (rawContent) { return rawContent; }
-                else { throw new Error("Resposta inesperada da API Groq."); }
-            } catch (error) {
-                console.error("Fetch da API via Netlify Function falhou:", error);
-                window.showToast(`Falha na API: ${error.message}`);
-                throw error;
-           }
-        };
+    const payload = {
+        prompt: prompt,
+        maxTokens: maxTokens
+    };
+
+    const request = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    };
+
+    try {
+        const response = await fetch(proxyUrl, request);
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: { message: 'Erro desconhecido do servidor proxy.' } }));
+            throw new Error(`Erro na API via Proxy: ${errorData.error?.message || 'Erro do servidor'}`);
+        }
+
+        const result = await response.json();
+        const rawContent = result.choices?.[0]?.message?.content;
+
+        if (rawContent) {
+            return rawContent;
+        } else {
+            throw new Error("Resposta inesperada da API Groq.");
+        }
+    } catch (error) { // A chave do 'try' foi fechada corretamente antes daqui
+        console.error("Fetch da API via Netlify Function falhou:", error);
+        window.showToast(`Falha na API: ${error.message}`);
+        throw error;
+    }
+};
+
+
+
 
         /**
          * Valida os inputs essenciais antes de gerar conteúdo.
