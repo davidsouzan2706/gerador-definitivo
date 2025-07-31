@@ -3600,20 +3600,22 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
     return accordionItem;
 };
 
-    
+
 // ==========================================================
-// >>>>> GARANTA QUE SUA 'cleanGeneratedText' SEJA ESTA VERSÃO <<<<<
+// >>>>> SUBSTITUA 'cleanGeneratedText' PELA VERSÃO ATUALIZADA <<<<<
 // ==========================================================
 
 const cleanGeneratedText = (text, expectJson = false) => {
     if (!text) return null;
 
-    // Filtro para remover os "turnos" da IA e qualquer texto que venha depois
-    const stopToken = "<|end_header_id|>";
+    // <<< NOVA CAMADA DE LIMPEZA: Remove os "turnos" da IA >>>
+    // Isso remove o token especial e qualquer texto que venha depois dele.
+    const stopToken = "assistant<|end_header_id|>";
     const stopTokenIndex = text.indexOf(stopToken);
     if (stopTokenIndex !== -1) {
         text = text.substring(0, stopTokenIndex);
     }
+    // <<< FIM DA NOVA CAMADA >>>
 
     if (!expectJson) return text.trim();
 
@@ -3622,15 +3624,11 @@ const cleanGeneratedText = (text, expectJson = false) => {
         console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.", text);
         throw new Error("A IA não retornou um formato JSON reconhecível.");
     }
-    
-    // Remove qualquer texto antes do primeiro colchete ou chave
-    text = text.substring(startIndex);
-    
-    const firstChar = text[0];
+    const firstChar = text[startIndex];
     const matchingLastChar = firstChar === '{' ? '}' : ']';
     let level = 1;
     let endIndex = -1;
-    for (let i = 1; i < text.length; i++) {
+    for (let i = startIndex + 1; i < text.length; i++) {
         if (text[i] === firstChar) level++;
         if (text[i] === matchingLastChar) level--;
         if (level === 0) {
@@ -3640,11 +3638,12 @@ const cleanGeneratedText = (text, expectJson = false) => {
     }
     if (endIndex === -1) {
         console.warn("JSON não foi fechado corretamente, tentando encontrar o final de forma aproximada.");
+        // Em vez de pegar até o fim, pega até o último caractere de fechamento encontrado
         const lastBracketIndex = text.lastIndexOf(matchingLastChar);
-        endIndex = lastBracketIndex > 0 ? lastBracketIndex : text.length;
+        endIndex = lastBracketIndex > startIndex ? lastBracketIndex : text.length;
     }
     
-    let jsonString = text.substring(0, endIndex + 1);
+    let jsonString = text.substring(startIndex, endIndex + 1);
     let sanitizedJsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
 
     try {
@@ -5307,6 +5306,10 @@ const generateVideoIdeas = async (button) => {
     outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
 
     showButtonLoading(button);
+
+// =========================================================================
+// >>>>> VERSÃO DEFINITIVA DE 'generateVideoIdeas' (QUALIDADE MÁXIMA + CONFIABILIDADE) <<<<<
+// =========================================================================
 
 // =========================================================================
 // >>>>> VERSÃO DEFINITIVA DE 'generateVideoIdeas' (QUALIDADE MÁXIMA + CONFIABILIDADE) <<<<<
