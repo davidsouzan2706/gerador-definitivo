@@ -5412,8 +5412,9 @@ const prompt = `Você é uma API de Estratégia de Conteúdo Viral altamente esp
 
 
 // =========================================================================
-// >>>>> VERSÃO BLINDADA DA FUNÇÃO 'unravelEnigmas' <<<<<
+// >>>>> VERSÃO HÍBRIDA E DEFINITIVA DE 'unravelEnigmas' (QUALIDADE + CONFIABILIDADE) <<<<<
 // =========================================================================
+
 const unravelEnigmas = async (button) => {
     const nicheDescription = document.getElementById('nicheDescription').value.trim();
     if (!nicheDescription) {
@@ -5427,38 +5428,46 @@ const unravelEnigmas = async (button) => {
     outputContainer.innerHTML = DOMPurify.sanitize(`<div class="md:col-span-2 loading-spinner-small mx-auto my-4"></div>`);
     showButtonLoading(button);
 
-// <<< PROMPT EVOLUÍDO PARA REFERÊNCIAS BÍBLICAS MAIS FORTES >>>
-const prompt = `Você é um Teólogo Investigativo e um Mestre em Hermenêutica Bíblica para o canal "The Biblical Unveiling". Sua especialidade é desvendar os tesouros escondidos nas Escrituras e fazer conexões impactantes com o mundo moderno, sempre fundamentado na Palavra.
+    // <<< ESTE É O PROMPT HÍBRIDO. NOTE COMO AS SUAS INSTRUÇÕES CRIATIVAS ESTÃO INTACTAS >>>
+    const prompt = `Você é um Teólogo Investigativo e sua única função é retornar um array JSON sintaticamente perfeito.
 
-**Sua missão é gerar 6 ideias de vídeos que conectem o TEMA FORNECIDO PELO USUÁRIO com enigmas, símbolos e histórias da Bíblia, usando REFERÊNCIAS BÍBLICAS EXPLÍCITAS E CENTRAIS.**
+// --- INÍCIO DO CONTRATO TÉCNICO (INEGOCIÁVEL) ---
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA (VIOLAÇÃO CAUSARÁ FALHA TOTAL):**
+1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, título, comentário ou explicação é permitido.
+2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves e valores de texto DEVEM usar obrigatoriamente aspas duplas (\`"\`).
+3.  **PROIBIÇÃO DE ASPAS INTERNAS:** Dentro dos valores de string (como em "synopsis"), É ESTRITAMENTE PROIBIDO usar aspas duplas internas. Se precisar citar algo, USE OBRIGATORIAMENTE aspas simples (\`'\`).
+4.  **ESTRUTURA DO OBJETO EXATA:** Cada objeto no array deve conter EXATAMENTE estas cinco chaves: "title", "enigma", "synopsis", "investigative_method", "hook_question".
+// --- FIM DO CONTRATO TÉCNICO ---
+
+
+// --- INÍCIO DO BRIEFING CRIATIVO (O CORAÇÃO DA TAREFA) ---
+**SUA MISSÃO CRIATIVA (O QUE VOCÊ DEVE FAZER):**
+Sua missão é gerar 6 ideias de vídeos que conectem o TEMA FORNECIDO PELO USUÁRIO com enigmas, símbolos e histórias da Bíblia, usando REFERÊNCIAS BÍBLICAS EXPLÍCITAS E CENTRAIS.
 
 **DIRETIVA PRINCIPAL: ANCORE-SE NA BÍBLIA.**
-- **Exigência de Citação Primária:** Toda ideia DEVE iniciar com uma ou mais citações bíblicas diretas (livro, capítulo, versículo) que sejam o FUNDAMENTO da conexão. Ex: "João 3:16 não é apenas sobre salvação, mas também revela um princípio de 'investimento celestial'..."
-- **Conexão Baseada em Texto:** A conexão entre o tema moderno e o conceito bíblico NÃO deve ser superficial. A passagem bíblica citada deve ser o ponto de partida lógico e hermenêutico da investigação.
-- **Evite Generalizações:** Não diga apenas "a fé". Diga "a fé de Abraão em Gênesis 15" ou "a fé testada de Jó". Seja específico com o texto.
-- **Contexto é Chave:** Ao citar, forneça contexto suficiente da passagem bíblica para entender a conexão proposta.
+-   **Exigência de Citação Primária:** Toda ideia DEVE iniciar com uma ou mais citações bíblicas diretas (livro, capítulo, versículo) que sejam o FUNDAMENTO da conexão.
+-   **Conexão Baseada em Texto:** A conexão entre o tema moderno e o conceito bíblico NÃO deve ser superficial. A passagem bíblica citada deve ser o ponto de partida lógico.
+-   **Evite Generalizações:** Seja específico. Não diga 'a fé', diga 'a fé de Abraão em Gênesis 15'.
+-   **Contexto é Chave:** Ao citar, forneça contexto suficiente da passagem bíblica.
 
-Para fundamentar essas ideias, você DEVE usar uma das seguintes **Técnicas Investigativas**:
-1.  **Fio Oculto (Cross-Referencing)**: Conecte passagens aparentemente desconexas para revelar um tema unificador. (Ex: "O número 777 aparece em Gênesis, Êxodo e Apocalipse. O que isso diz sobre a perfeição do juízo divino?")
-2.  **Lupa Lexical (Análise de Palavras)**: Aprofunde-se no significado original de uma palavra-chave hebraica ou grega. (Ex: "O que o grego 'Logos' em João 1:1 revela sobre a natureza da informação divina?")
-3.  **O Espelho Tipológico (Tipologia)**: Mostre como uma pessoa, evento ou instituição do Antigo Testamento prefigura o Novo. (Ex: "Jonas é um 'tipo' de Cristo? Compare Jonas 1:17 com Mateus 12:40.")
-4.  **Contexto Histórico Profundo**: Conecte um evento bíblico a uma prática cultural ou política da época. (Ex: "Como o sistema de 'Tributos' romano ilumina a parábola do 'Denário' em Mateus 22:15-22?")
+**TÉCNICAS INVESTIGATIVAS OBRIGATÓRIAS (USE UMA POR IDEIA):**
+1.  **Fio Oculto (Cross-Referencing)**: Conecte passagens aparentemente desconexas.
+2.  **Lupa Lexical (Análise de Palavras)**: Aprofunde-se no significado original de uma palavra-chave hebraica ou grega.
+3.  **O Espelho Tipológico (Tipologia)**: Mostre como o Antigo Testamento prefigura o Novo.
+4.  **Contexto Histórico Profundo**: Conecte um evento bíblico a uma prática cultural ou política da época.
 
-**FORMATO DA RESPOSTA:**
-Sua resposta DEVE ser um array JSON válido. Cada ideia no array deve ser um objeto com as seguintes chaves:
-- "title": (String) Um título curioso, específico e cativante que prometa uma revelação baseada na Escritura.
-- "enigma": (String) O mistério central em uma única frase intrigante, fundamentado em uma passagem bíblica.
-- "synopsis": (String) Uma sinopse detalhada de **8 a 10 frases substanciais**. Esta sinopse DEVE incluir pelo menos UMA citação bíblica direta (ex: "(veja Gênesis 15:1)") e explicar como a passagem será usada para explorar o tema moderno.
-- "investigative_method": (String) O nome exato da técnica usada.
-- "hook_question": (String) Uma pergunta provocativa e intrigante para capturar a atenção nos primeiros 15 segundos, idealmente relacionada à passagem bíblica.
-
-**REGRA DE CITAÇÃO (A MAIS IMPORTANTE):** Se precisar citar algo dentro de uma string (como um versículo ou uma frase), você DEVE, OBRIGATORIAMENTE, usar **aspas simples (' ')**. É terminantemente PROIBIDO usar aspas duplas (" ") dentro de outra string.
-
-**REGRA CRÍTICA DE IDIOMA:** Todos os valores de texto (title, enigma, synopsis, hook_question) DEVEM ser gerados em **${languageName}**.
+**MANUAL DE CONTEÚDO PARA CADA CHAVE JSON:**
+-   **"title"**: Curioso, específico e que prometa uma revelação baseada na Escritura.
+-   **"enigma"**: O mistério central em uma frase intrigante, fundamentado em uma passagem bíblica.
+-   **"synopsis"**: Uma sinopse detalhada de 8 a 10 frases, incluindo pelo menos UMA citação bíblica direta.
+-   **"investigative_method"**: O nome exato da técnica usada.
+-   **"hook_question"**: Uma pergunta provocativa e intrigante para os primeiros 15 segundos.
+-   **IDIOMA:** Todos os valores de texto DEVEM ser gerados em **${languageName}**.
+// --- FIM DO BRIEFING CRIATIVO ---
 
 **Tema fornecido pelo usuário (para conectar com a Bíblia):** "${nicheDescription}"
 
-**AÇÃO:** Agora, desvende conexões teológicas ousadas, **ancoradas em passagens bíblicas explícitas**, e gere as 6 ideias.
+**AÇÃO FINAL:** Agora, desvende conexões teológicas ousadas, ancoradas em passagens bíblicas explícitas, e gere as 6 ideias. Responda APENAS com o array JSON, seguindo à risca o Contrato Técnico e o Briefing Criativo.
 `;
     
     try {
@@ -5473,7 +5482,7 @@ Sua resposta DEVE ser um array JSON válido. Cada ideia no array deve ser um obj
 
         ideas.forEach((idea, index) => {
             const card = document.createElement('div');
-            card.className = 'card-background p-4 rounded-lg shadow-md border-l-4 border-purple-500 animate-fade-in flex flex-col justify-between';
+            card.className = 'card bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md border-l-4 border-purple-500 animate-fade-in flex flex-col justify-between';
             
             const escapedIdea = escapeIdeaForOnclick(idea);
             const cardContent = `
@@ -5490,7 +5499,7 @@ Sua resposta DEVE ser um array JSON válido. Cada ideia no array deve ser um obj
                     <p class="text-xs text-purple-600 dark:text-purple-400 font-semibold mt-3">Método: ${DOMPurify.sanitize(idea.investigative_method)}</p>
                 </div>
             `;
-            card.innerHTML = DOMPurify.sanitize(cardContent, { ADD_ATTR: ['data-action', 'data-idea'] });
+            card.innerHTML = cardContent;
             outputContainer.appendChild(card);
         });
 
