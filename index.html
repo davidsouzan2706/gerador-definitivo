@@ -4395,8 +4395,8 @@ window.analyzeSectionRetention = async (button, sectionId) => {
     try {
         const paragraphsWithIndexes = paragraphs.map((p, index) => ({ index: index, text: p.textContent.trim() }));
         
-        // >>>>> PROMPT FINAL E BLINDADO PARA 'analyzeSectionRetention' <<<<<
-const prompt = `Você é uma API ESPECIALISTA EM ANÁLISE DE RETENÇÃO DE ROTEIROS. Sua tarefa é analisar cuidadosamente o texto fornecido e identificar pontos específicos que possam causar perda de atenção ou engajamento fraco no espectador.
+        // >>> PROMPT BLINDADO COM A NOVA REGRA DE ASPAS INTERNAS <<<
+        const prompt = `Você é uma API ESPECIALISTA EM ANÁLISE DE RETENÇÃO DE ROTEIROS. Sua tarefa é analisar cuidadosamente o texto fornecido e identificar pontos específicos que possam causar perda de atenção ou engajamento fraco no espectador.
 
 **REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA JSON (SIGA EXATAMENTE):**
 1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, comentário ou metadado deve ser incluído. Pense nisso como uma resposta de API pura e impecável.
@@ -4431,7 +4431,8 @@ const prompt = `Você é uma API ESPECIALISTA EM ANÁLISE DE RETENÇÃO DE ROTEI
 ${JSON.stringify(paragraphsWithIndexes, null, 2)}
 ---
 
-**AÇÃO FINAL:** Analise AGORA o texto fornecido com base nas regras e no manual. Identifique os pontos problemáticos, atribua pontuações de retenção e gere as sugestões de melhoria. Responda APENAS com o array JSON perfeito, seguindo EXATAMENTE todas as regras de sintaxe e conteúdo definidas acima.`;
+**AÇÃO FINAL:** Analise AGORA o texto fornecido com base nas regras e no manual. Identifique os pontos problemáticos, atribua pontuações de retenção e gere as sugestões de melhoria. Responda APENAS com o array JSON perfeito, seguindo EXATAMENTE todas as regras de sintaxe e conteúdo definidas acima.
+`;
 
         const rawResult = await callGroqAPI(prompt, 4000);
         let analysis = cleanGeneratedText(rawResult, true);
