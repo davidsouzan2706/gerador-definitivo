@@ -3663,6 +3663,13 @@ const cleanGeneratedText = (text, expectJson = false) => {
     let sanitizedJsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
     console.log("JSON após sanitização básica:", sanitizedJsonString.substring(0, 100) + (sanitizedJsonString.length > 100 ? "..." : ""));
 
+
+// ...
+let repairedString = sanitizedJsonString; // Inicializa com o JSON sanitizado
+let finalParsed;
+// ...
+    
+
     // >>>>> ETAPA 3: TENTATIVA INICIAL DE PARSE <<<<<
     try {
         console.log("Tentando parse inicial (sanitizado)...");
