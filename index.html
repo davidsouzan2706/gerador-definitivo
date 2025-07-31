@@ -640,6 +640,72 @@
         background-color: var(--dark-border);
         color: var(--dark-text-header);
     }
+
+
+/* ========================================================== */
+/* =================== ESTILOS PARA IMPRESSÃO (PDF) =================== */
+/* ========================================================== */
+@media print {
+    /* Esconde tudo que não queremos no PDF */
+    body > *:not(#print-container) {
+        display: none !important;
+    }
+    
+    /* Garante que o container de impressão ocupe todo o espaço */
+    #print-container {
+        display: block !important;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        color: #000; /* Força texto preto para impressão */
+        background-color: #fff !important; /* Força fundo branco */
+    }
+    
+    /* Estilos para o conteúdo dentro do container de impressão */
+    .print-section {
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #ccc;
+        page-break-inside: avoid; /* Tenta não quebrar uma seção no meio da página */
+    }
+    
+    .print-section-title {
+        font-size: 16pt;
+        font-weight: bold;
+        margin-bottom: 12px;
+        color: #333;
+    }
+    
+    .print-section-content {
+        font-size: 11pt;
+        line-height: 1.5;
+    }
+    
+    .print-section-content pre {
+        white-space: pre-wrap; /* Quebra linhas longas no roteiro */
+        font-family: 'Times New Roman', serif;
+        font-size: 12pt;
+    }
+
+    .print-section-content ul {
+        list-style-position: inside;
+    }
+
+    /* Remove estilos de cor e fundo específicos que não queremos no PDF */
+    .generated-output-box, .thumbnail-idea, .card {
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: #000 !important;
+    }
+    
+    /* Garante que o texto dentro de elementos específicos seja preto */
+    .print-section-content p, .print-section-content li, .print-section-content h4 {
+        color: #000 !important;
+    }
+}
+    
 </style>
 
 
@@ -3526,7 +3592,7 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
          * @returns {string} O texto sem os comentários meta.
          */
 // =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO removeMetaComments INTEIRA POR ESTA <<<<<
+// >>>>> SUBSTITUA A FUNÇÃO removeMetaComments INTEIRA POR ESTA VERSÃO <<<<<
 // =========================================================================
 
 const removeMetaComments = (text) => {
@@ -3551,13 +3617,15 @@ const removeMetaComments = (text) => {
         /^\*\*Clímax:\*\*\s*\n?/im,
         /^\*\*Conclusão:\*\*\s*\n?/im,
         /^\*\*TEXTO REFINADO:\*\*\s*\n?/im,
-        
-        // "Caçador de Títulos" genérico
-        /^\s*\*\*[^*]+\*\*\s*$/gm,
+        /^\s*\*\*[^*]+\*\*\s*$/gm, // "Caçador de Títulos" genérico
 
-        // <<< NOSSO NOVO "CAÇADOR DE METADADOS" AQUI >>>
-        // Remove linhas que começam com "Word count:" e variações
-        /^\s*Word count:\s*\d+\s*$/gim
+        // >>>>> INÍCIO DA CORREÇÃO CIRÚRGICA <<<<<
+        // Padrão para caçar e remover anotações como (Pausa), (Teaser), (Corte para), etc., que estejam em sua própria linha.
+        /^\s*\((Pausa|Teaser|Corte para|Transição|Música sobe|Efeito sonoro)\)\s*$/gim,
+        
+        // Padrão para caçar e remover contagem de palavras como (Word count: 225) em sua própria linha.
+        /^\s*\(Word count:\s*\d+\)\s*$/gim
+        // >>>>> FIM DA CORREÇÃO CIRÚRGICA <<<<<
     ];
 
     patternsToRemove.forEach(pattern => {
@@ -3565,12 +3633,13 @@ const removeMetaComments = (text) => {
     });
     
     // CAMADA 3: Limpeza final
+    // Remove aspas duplas no início e no final, se houver
     if (cleanedText.startsWith('"') && cleanedText.endsWith('"')) {
         cleanedText = cleanedText.substring(1, cleanedText.length - 1);
     }
 
     // Remove quebras de linha extras no início ou no final do texto
-    return cleanedText.replace(/^\s*\n|\n\s*$/g, '');
+    return cleanedText.replace(/^\s*\n|\n\s*$/g, '').trim();
 };
 
 
