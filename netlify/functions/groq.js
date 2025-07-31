@@ -1,4 +1,4 @@
-// Arquivo: netlify/functions/groq.js - VERSÃO 9.0: Timeout Estendido e Retry Inteligente
+// Arquivo: netlify/functions/groq.js - VERSÃO 10.0 (FINAL): Configuração de Timeout Alinhada
 
 const Groq = require('groq-sdk');
 
@@ -35,10 +35,9 @@ exports.handler = async (event) => {
     
     try {
       const controller = new AbortController();
-      // ==========================================================
-      // >>>>> MUDANÇA 1: AUMENTANDO O TIMEOUT PARA 28 SEGUNDOS <<<<<
-      // ==========================================================
-      const timeoutId = setTimeout(() => controller.abort(), 28000); // Aumentado de 15s para 28s
+      // Ajustamos nosso timeout interno para 15s. É tempo suficiente para a IA
+      // e nos dá margem para uma segunda tentativa dentro do limite de 26s da Netlify.
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos
 
       const chatCompletion = await groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
@@ -57,31 +56,20 @@ exports.handler = async (event) => {
     } catch (error) {
       console.error(`Erro na tentativa ${attempt + 1} com a chave de índice ${keyToUseIndex}:`, error.message);
       
-      // ==========================================================
-      // >>>>> MUDANÇA 2: LÓGICA DE DETECÇÃO DE ERRO MELHORADA <<<<<
-      // ==========================================================
-      // Agora verificamos o nome do erro OU se a mensagem contém "aborted" ou "timed out".
       if (error.name === 'AbortError' || (error.message && error.message.toLowerCase().includes('aborted')) || (error.message && error.message.toLowerCase().includes('timed out'))) {
-        console.warn(`Timeout atingido. Tentando próxima chave...`);
-        // O loop continuará para a próxima tentativa
+        console.warn(`Timeout de 15s atingido. Tentando próxima chave...`);
       } else if (error.status === 429) {
         console.warn(`Limite da chave atingido. Tentando próxima chave...`);
-        // O loop continuará para a próxima tentativa
       } else {
-        // Para qualquer outro erro, falha imediatamente.
-        return {
-          statusCode: 500,
-          body: JSON.stringify({ error: { message: `Erro inesperado na API: ${error.message}` } }),
-        };
+        return { statusCode: 500, body: JSON.stringify({ error: { message: `Erro inesperado na API: ${error.message}` } }) };
       }
     }
   }
 
-  // Se todas as tentativas falharem, retorna um erro final claro.
   return {
     statusCode: 504,
     body: JSON.stringify({ 
-      error: { message: `A API da Groq falhou em responder após ${maxRetries} tentativas. O serviço pode estar sobrecarregado ou o prompt é muito complexo. Tente novamente mais tarde.` } 
+      error: { message: `A API da Groq falhou em responder após ${maxRetries} tentativas. O serviço pode estar sobrecarregado. Tente novamente.` } 
     }),
   };
 };
