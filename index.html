@@ -1057,19 +1057,42 @@
 
 
 <div id="conclusionStrategyModule" class="card mb-6 hidden">
-    <div class="text-center">
-        <h3 id="conclusionModuleTitle" class="text-lg font-bold mb-4">Finalize o seu Roteiro</h3>
-        <p id="conclusionModuleText" class="text-gray-600 dark:text-gray-400 mb-6">Gere a Conclusão para amarrar a história e, em seguida, crie um Call to Action (CTA) para engajar seu público.</p>
-        <div class="flex flex-wrap justify-center gap-4">
-            <!-- Botão para gerar a Conclusão -->
-            <button id="generateConclusionBtn" data-action="generateConclusion" class="btn btn-primary">
-                <i class="fas fa-pen-fancy mr-2"></i>Gerar Conclusão
-            </button>
-            <!-- Botão para gerar o CTA (inicialmente escondido) -->
-            <button id="generateCtaBtn" data-action="generateCta" class="btn btn-primary hidden">
-                <i class="fas fa-bullhorn mr-2"></i>Gerar CTA Estratégico
-            </button>
-        </div>
+    <div class="text-center mb-4">
+        <h3 class="text-lg font-bold">Qual é o objetivo final do seu vídeo?</h3>
+        <!-- <<< NOSSO NOVO BOTÃO DE AJUDA AQUI >>> -->
+        <button id="suggestFinalStrategyBtn" data-action="suggestFinalStrategy" class="btn btn-secondary btn-small mt-2">
+            <i class="fas fa-magic mr-2"></i> Sugerir Estratégia Final
+        </button>
+    </div>
+    <div class="flex justify-center flex-wrap gap-4 mb-6">
+        <label class="radio-label">
+            <input type="radio" name="conclusionType" value="lesson" checked>
+            <span><i class="fas fa-graduation-cap mr-2"></i>Deixar uma Lição / Reflexão</span>
+        </label>
+        <label class="radio-label">
+            <input type="radio" name="conclusionType" value="answer">
+            <span><i class="fas fa-question-circle mr-2"></i>Responder uma Pergunta Central</span>
+        </label>
+        <label class="radio-label">
+            <input type="radio" name="conclusionType" value="cliffhanger">
+            <span><i class="fas fa-bolt mr-2"></i>Criar um Gancho / Mistério Contínuo</span>
+        </label>
+    </div>
+    <div id="conclusionInputContainer" class="input-group">
+        <label for="conclusionSpecifics">Detalhes para a Conclusão:</label>
+        <textarea id="conclusionSpecifics" rows="3" placeholder="Qual sentimento ou ideia final você quer deixar com o espectador? Esperança? Indignação? Uma nova perspectiva?"></textarea>
+    </div>
+    <div class="input-group mt-4">
+        <label for="ctaSpecifics">Detalhes para o Call to Action (CTA) Específico (Opcional):</label>
+        <textarea id="ctaSpecifics" rows="2" placeholder="Qual ação específica você quer que o espectador tome? Ex: Visitar um site, apoiar uma causa, comprar um produto..."></textarea>
+    </div>
+    <div class="text-center mt-6">
+        <button id="generateConclusionBtn" data-action="generateConclusion" class="btn btn-primary">
+            <i class="fas fa-pen-fancy mr-2"></i>Gerar Conclusão
+        </button>
+        <button id="generateCtaBtn" data-action="generateCta" class="btn btn-primary hidden">
+            <i class="fas fa-bullhorn mr-2"></i>Gerar CTA Estratégico
+        </button>
     </div>
 </div>
 
@@ -3579,71 +3602,153 @@ const generateSectionHtmlContent = (sectionId, title, content) => {
 
     
 // =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA SUA FUNÇÃO cleanGeneratedText PELA VERSÃO FINAL <<<<<
+// >>>>> VERSÃO FINAL E BLINDADA DE 'cleanGeneratedText' <<<<<
 // =========================================================================
+/**
+ * Tenta parsear e limpar o texto bruto retornado pela IA.
+ * Se expectJson for true, tenta extrair e parsear um objeto/array JSON válido.
+ * @param {string} text - O texto bruto da resposta da IA.
+ * @param {boolean} expectJson - Se true, força a tentativa de extrair e parsear um JSON.
+ * @returns {any|null} O JSON parseado, o texto limpo ou null.
+ */
 const cleanGeneratedText = (text, expectJson = false) => {
-    if (!text) return null;
-    if (!expectJson) return text.trim();
-
-    console.log("Iniciando limpeza de JSON. Texto bruto (início):", text.substring(0, 200) + '...');
-    
-    // Encontra o primeiro caractere JSON, ignorando preâmbulos.
-    const firstJsonCharMatch = text.match(/[\{\[]/);
-    if (!firstJsonCharMatch) {
-        throw new Error("Nenhum caractere de início JSON ('{' ou '[') foi encontrado na resposta da IA.");
+    if (!text || typeof text !== 'string') {
+        console.warn("Entrada inválida fornecida para cleanGeneratedText:", { text, expectJson });
+        return null;
     }
-    const firstChar = firstJsonCharMatch[0];
-    const startIndex = firstJsonCharMatch.index;
 
-    try {
-        // LÓGICA DO "CIRURGIÃO": Decide se é um array ou um objeto.
-        if (firstChar === '[') {
-            // Se começa com '[', tratamos como um ARRAY de objetos.
-            console.log("Detectado formato de Array. Ativando modo 'Detetive'.");
-            const objectRegex = /\{[\s\S]*?\}/g;
-            const jsonObjects = text.match(objectRegex);
+    if (!expectJson) {
+        // Se não esperamos JSON, apenas limpamos o texto e o retornamos.
+        return text.trim();
+    }
 
-            if (!jsonObjects || jsonObjects.length === 0) {
-                throw new Error("Array JSON iniciado, mas nenhum objeto válido foi encontrado dentro dele.");
-            }
-            console.log(`Detetive encontrou ${jsonObjects.length} fragmentos de objeto JSON.`);
-            
-            const jsonArrayString = `[${jsonObjects.join(',')}]`;
-            const parsedJson = JSON.parse(jsonArrayString);
-            console.log("Sucesso! Array JSON montado e validado com sucesso.");
-            return parsedJson;
+    // >>>>> ETAPA 1: LOCALIZAÇÃO E ISOLAMENTO DO BLOCO JSON <<<<<
+    console.log("Iniciando parse de JSON. Texto bruto:", text.substring(0, 200) + (text.length > 200 ? "..." : ""));
+    
+    // Encontra o primeiro caractere de início de objeto ou array JSON
+    const startIndex = text.search(/[\{\[]/);
+    if (startIndex === -1) {
+        console.error("Nenhum caractere de início JSON ('{' ou '[') encontrado no texto da IA.", text);
+        throw new Error("A IA não retornou um formato JSON reconhecível.");
+    }
 
-        } else { // Se começa com '{', tratamos como um ÚNICO objeto.
-            console.log("Detectado formato de Objeto. Ativando modo 'Extrator'.");
-            const matchingLastChar = '}';
-            let level = 1;
-            let endIndex = -1;
-
-            for (let i = startIndex + 1; i < text.length; i++) {
-                if (text[i] === '{') level++;
-                if (text[i] === '}') level--;
-                if (level === 0) {
-                    endIndex = i;
-                    break;
-                }
-            }
-            if (endIndex === -1) {
-                throw new Error("Objeto JSON não foi fechado corretamente na resposta da IA.");
-            }
-            
-            const jsonObjectString = text.substring(startIndex, endIndex + 1);
-            const parsedJson = JSON.parse(jsonObjectString);
-            console.log("Sucesso! Objeto JSON extraído e validado com sucesso.");
-            return parsedJson;
+    // Determina o caractere de fechamento correspondente
+    const firstChar = text[startIndex];
+    const matchingLastChar = firstChar === '{' ? '}' : ']';
+    
+    // Tenta encontrar o índice de fechamento balanceado
+    let level = 1;
+    let endIndex = -1;
+    for (let i = startIndex + 1; i < text.length; i++) {
+        if (text[i] === firstChar) level++;
+        if (text[i] === matchingLastChar) level--;
+        if (level === 0) {
+            endIndex = i;
+            break;
         }
+    }
 
-    } catch (error) {
-        console.error("=== FALHA CRÍTICA NA LIMPEZA/EXTRAÇÃO DO JSON ===");
-        console.error("Motivo:", error.message);
-        console.error("Texto original problemático (início):", text.substring(0, 1000));
-        throw new Error(`A IA retornou um JSON inválido que não pôde ser reparado. Motivo: ${error.message}`);
+    // Se não encontrou um fechamento balanceado, assume o final do texto
+    if (endIndex === -1) {
+        console.warn("JSON não foi fechado corretamente, tentando encontrar o final de forma aproximada.");
+        endIndex = text.length - 1;
+    }
+    
+    // Extrai a substring que *deve* ser o JSON
+    let jsonString = text.substring(startIndex, endIndex + 1);
+    console.log("Substring JSON candidata extraída:", jsonString.substring(0, 100) + (jsonString.length > 100 ? "..." : ""));
+
+    // >>>>> ETAPA 2: SANITIZAÇÃO BÁSICA <<<<<
+    // Remove caracteres de controle e invisíveis que podem corromper o JSON
+    let sanitizedJsonString = jsonString.replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\uFEFF]/g, '');
+    console.log("JSON após sanitização básica:", sanitizedJsonString.substring(0, 100) + (sanitizedJsonString.length > 100 ? "..." : ""));
+
+    // >>>>> ETAPA 3: TENTATIVA INICIAL DE PARSE <<<<<
+    try {
+        console.log("Tentando parse inicial (sanitizado)...");
+        const parsed = JSON.parse(sanitizedJsonString);
+        console.log("Parse inicial bem-sucedido!");
+        return parsed;
+    } catch (initialError) {
+        console.warn("Parse inicial (sanitizado) falhou. Tentando reparos estruturais...", initialError.message);
+        
+        // >>>>> ETAPA 4: CIRURGIAS INTELIGENTES ESTRATIFICADAS <<<<<
+        try {
+            let repairedString = sanitizedJsonString;
+
+            // --- CIRURGIA 1: Correção de Aspas em Chaves ---
+            console.log("Aplicando CIRURGIA 1: Correção de aspas em chaves...");
+            // 1a. Substitui chaves com aspas simples por aspas duplas: {'key': ...} -> {"key": ...}
+            repairedString = repairedString.replace(/([{,]\s*)'([^']+)'(\s*:)/g, '$1"$2"$3');
+            // 1b. Adiciona aspas duplas a chaves sem aspas: {key: ...} -> {"key": ...}
+            repairedString = repairedString.replace(/([{,]\s*)([a-zA-Z0-9_\u00C0-\u00FF]+)(\s*:)/g, '$1"$2"$3');
+
+            // --- CIRURGIA 2: Correção de Aspas em Valores String ---
+            console.log("Aplicando CIRURGIA 2: Correção de aspas em valores string...");
+            // 2a. Substitui valores com aspas simples por aspas duplas: "key": 'value' -> "key": "value"
+            //     Preserva aspas simples dentro das strings trocadas.
+            repairedString = repairedString.replace(/:\s*'((?:[^'\\]|\\.)*?)'(?=\s*[},\]])/g, ': "$1"');
+
+            // --- CIRURGIA 3: Remoção de Vírgulas Fantasmas ---
+            console.log("Aplicando CIRURGIA 3: Remoção de vírgulas fantasmas...");
+            // Remove vírgulas antes de fechamentos de objetos ou arrays: {..., }, [..., ] -> {...}, [...]
+            repairedString = repairedString.replace(/,\s*([}\]])/g, '$1');
+
+            // --- CIRURGIA 4: Correção de Valores Booleanos/String Mal Formatados ---
+            console.log("Aplicando CIRURGIA 4: Correção de valores booleanos/string...");
+            // Corrige casos como: "key": true, -> "key": "true", (se for string) ou o oposto, dependendo do contexto.
+            // Este é um exemplo genérico, ajuste conforme a necessidade.
+            // repairedString = repairedString.replace(/:\s*(true|false)(?=\s*[},\]])/g, ': "$1"'); // Se precisar forçar string
+            
+            // --- CIRURGIA 5: Escape de Caracteres Especiais Dentro de Strings ---
+            console.log("Aplicando CIRURGIA 5: Escape de caracteres especiais...");
+            // Esta é uma cirurgia mais complexa e arriscada. Um approach mais seguro é tentar identificar
+            // strings mal formadas e corrigi-las.
+            // Por exemplo, aspas duplas não escapadas dentro de uma string: "He said "Hello""
+            // Isso requer um parser mais sofisticado. Vamos tentar uma abordagem simples primeiro.
+            
+            // Tentativa simples: encontrar strings que parecem ter aspas internas não escapadas
+            // e tentar corrigir. Esta é uma heurística e pode não funcionar em todos os casos.
+            // A lógica é: encontrar ": "..." e verificar se há " não escapadas dentro.
+            repairedString = repairedString.replace(/:\s*"((?:[^"\\]|\\.)*?)"/g, (match, p1) => {
+                // p1 é o conteúdo da string sem as aspas externas
+                if (p1.includes('"') && !p1.includes('\\"')) {
+                    // Parece haver aspas duplas não escapadas. Vamos tentar escapar todas.
+                    // Esta é uma suposição forte e pode falhar.
+                    console.warn("Tentativa de escape de aspas duplas em string:", match);
+                    const escaped = p1.replace(/"/g, '\\"');
+                    return `: "${escaped}"`;
+                }
+                return match; // Retorna inalterado se não parecer problemático ou já estiver escapado
+            });
+
+
+            console.log("String após todas as cirurgias:", repairedString.substring(0, 100) + (repairedString.length > 100 ? "..." : ""));
+            
+            // >>>>> ETAPA 5: TENTATIVA FINAL DE PARSE <<<<<
+            console.log("Tentando parse final após cirurgias...");
+            const finalParsed = JSON.parse(repairedString);
+            console.log("Parse final bem-sucedido após cirurgias!");
+            return finalParsed;
+
+        } catch (surgeryError) {
+            // >>>>> ETAPA 6: RELATÓRIO DE FALHA DETALHADO <<<<<
+            console.error("=== FALHA CRÍTICA NA LIMPEZA DE JSON ===");
+            console.error("Motivo:", surgeryError.message);
+            console.error("Texto original (primeiros 1000 chars):", text.substring(0, 1000));
+            console.error("Substring JSON candidata:", jsonString.substring(0, 500) + (jsonString.length > 500 ? "..." : ""));
+            console.error("JSON após sanitização:", sanitizedJsonString.substring(0, 500) + (sanitizedJsonString.length > 500 ? "..." : ""));
+            // Evitar logar o repairedString inteiro, pois pode ser muito grande e conter dados sensíveis
+            console.error("Fragmento do JSON após cirurgias (primeiros 500 chars):", repairedString ? repairedString.substring(0, 500) : "N/A");
+            console.error("========================================");
+            
+            throw new Error(`A IA retornou um JSON com sintaxe interna inválida que não pôde ser corrigido. Erro: ${surgeryError.message}`);
+        }
     }
 };
+// =========================================================================
+// >>>>> FIM DA VERSÃO BLINDADA DE 'cleanGeneratedText' <<<<<
+// =========================================================================
 
 
 // =========================================================================
@@ -3801,7 +3906,7 @@ const removeMetaComments = (text) => {
 const narrativeStructures = {
     storytelling: {
         documentary: "Documentário (Factual e Investigativo)",
-        heroes_journey: "Jornada do Herói (Estrutura Épica)",
+        heros_journey: "Jornada do Herói (Estrutura Épica)",
         pixar_spine: "Espinha Dorsal - Pixar (Estrutura Emocional)",
         mystery_loop: "Mistério (com Loop Aberto)",
         twist: "Narrativa com Virada (Twist)"
@@ -3820,7 +3925,7 @@ const narrativeStructures = {
 const narrativeTooltips = {
     // Storytelling
     documentary: "Constrói um argumento com fatos, evidências e uma narração autoritária. Perfeito para vídeos expositivos.",
-    heroes_journey: "Conta uma história de transformação e superação. Ótimo para narrativas inspiradoras.",
+    heros_journey: "Conta uma história de transformação e superação. Ótimo para narrativas inspiradoras.",
     pixar_spine: "Estrutura emocional de 8 passos (Era uma vez... todo dia... até que...). Perfeita para arcos de personagem rápidos.",
     mystery_loop: "Apresenta uma pergunta no início e a responde no final. Excelente para reter a atenção.",
     twist: "Constrói uma expectativa e a quebra com uma revelação surpreendente no final.",
@@ -4021,124 +4126,6 @@ ${researchData}
 };
 
 
-
-
-// =========================================================================
-// >>>>> PASSO 3.1: ADICIONE ESTAS 3 NOVAS FUNÇÕES AO SEU SCRIPT <<<<<
-// =========================================================================
-
-// Função para dirigir o CLÍMAX
-const directAndGenerateClimax = async (button) => {
-    showButtonLoading(button);
-    const scriptContext = getTranscriptOnly();
-    const suggestionPrompt = `Analise o roteiro a seguir e sugira 3 abordagens distintas para o CLÍMAX. Responda APENAS com um array JSON de 3 strings.\nRoteiro:\n${scriptContext}`;
-
-    try {
-        const rawSuggestions = await callGroqAPI(suggestionPrompt, 800);
-        const climaxSuggestions = cleanGeneratedText(rawSuggestions, true) || [];
-        hideButtonLoading(button);
-
-        const userDirective = await showInputDialog(
-            'Dirija a Cena do Clímax',
-            'Como você quer que o clímax se desenrole? Escolha uma sugestão ou escreva sua própria direção criativa.',
-            'Direção Personalizada:', 'Ex: Revelar que o vilão era o mentor o tempo todo.',
-            climaxSuggestions
-        );
-
-        if (!userDirective) return window.showToast("Geração do clímax cancelada.");
-        await handleGenerateSection(button, 'climax', 'Clímax', 'climax', userDirective);
-    } catch (error) {
-        hideButtonLoading(button);
-        window.showToast(`Falha ao preparar o clímax: ${error.message}`);
-    }
-};
-
-// Função para dirigir a CONCLUSÃO
-const directAndGenerateConclusion = async (button) => {
-    const scriptContainer = document.getElementById('scriptSectionsContainer');
-    if (scriptContainer && !document.getElementById('conclusionSection')) {
-        const conclusionDiv = document.createElement('div');
-        conclusionDiv.id = 'conclusionSection';
-        conclusionDiv.classList.add('script-section');
-        scriptContainer.appendChild(conclusionDiv);
-    }
-    
-    showButtonLoading(button);
-    const scriptContext = getTranscriptOnly();
-    const suggestionPrompt = `Analise o roteiro a seguir e sugira 3 mensagens ou lições finais para a CONCLUSÃO. Responda APENAS com um array JSON de 3 strings.\nRoteiro:\n${scriptContext}`;
-    
-    try {
-        const rawSuggestions = await callGroqAPI(suggestionPrompt, 800);
-        const conclusionSuggestions = cleanGeneratedText(rawSuggestions, true) || [];
-        hideButtonLoading(button);
-
-        const userDirective = await showInputDialog(
-            'Dirija a Conclusão',
-            'Qual é a mensagem final? O que o espectador deve levar consigo? Escolha ou crie.',
-            'Mensagem Personalizada:', 'Ex: A verdadeira lição é que o fracasso ensina mais que o sucesso.',
-            conclusionSuggestions
-        );
-
-        if (!userDirective) return window.showToast("Geração da conclusão cancelada.");
-        await handleGenerateSection(button, 'conclusion', 'Conclusão', 'conclusion', userDirective);
-        
-        // Transforma o card para a próxima etapa
-        document.getElementById('generateConclusionBtn').classList.add('hidden');
-        document.getElementById('generateCtaBtn').classList.remove('hidden');
-        document.getElementById('conclusionModuleTitle').textContent = "Passo Final: Crie o CTA";
-        document.getElementById('conclusionModuleText').textContent = "A conclusão foi adicionada. Agora, crie uma chamada para ação poderosa.";
-        window.showToast("Conclusão gerada! Agora, vamos para o CTA.");
-
-    } catch (error) {
-        hideButtonLoading(button);
-        window.showToast(`Falha ao gerar conclusão: ${error.message}`);
-    }
-};
-
-// Função para dirigir o CTA
-const directAndGenerateCta = async (button) => {
-    const scriptContainer = document.getElementById('scriptSectionsContainer');
-    if (scriptContainer && !document.getElementById('ctaSection')) {
-        const ctaDiv = document.createElement('div');
-        ctaDiv.id = 'ctaSection';
-        ctaDiv.classList.add('script-section');
-        scriptContainer.appendChild(ctaDiv);
-    }
-
-    showButtonLoading(button);
-    const scriptContext = getTranscriptOnly();
-    const suggestionPrompt = `Com base no roteiro, sugira 3 CTAs: um para engajamento, um para inscrição e um para um link. Responda APENAS com um array JSON de 3 strings.\nRoteiro:\n${scriptContext}`;
-
-    try {
-        const rawSuggestions = await callGroqAPI(suggestionPrompt, 800);
-        const ctaSuggestions = cleanGeneratedText(rawSuggestions, true) || [];
-        hideButtonLoading(button);
-        
-        const userDirective = await showInputDialog(
-            'Dirija o Call to Action (CTA)',
-            'Qual ação você quer que o espectador tome? Seja específico.',
-            'CTA Personalizado:', 'Ex: Peça para compartilharem uma história pessoal nos comentários.',
-            ctaSuggestions
-        );
-
-        if (!userDirective) return window.showToast("Geração do CTA cancelada.");
-        await handleGenerateSection(button, 'cta', 'Call to Action (CTA)', 'cta', userDirective);
-
-        button.closest('#conclusionStrategyModule').classList.add('hidden');
-        const analysisSection = document.getElementById('scriptAnalysisSection');
-        if (analysisSection) {
-            analysisSection.classList.remove('hidden');
-            analysisSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    } catch (error) {
-        hideButtonLoading(button);
-        window.showToast(`Falha ao gerar CTA: ${error.message}`);
-    }
-};
-
-
-
-
 // =========================================================================
 // >>>>> SUBSTITUA SUA FUNÇÃO constructScriptPrompt INTEIRA PELA VERSÃO FINAL E COMPLETA <<<<<
 // =========================================================================
@@ -4150,7 +4137,7 @@ const directAndGenerateCta = async (button) => {
          * @returns {{prompt: string, maxTokens: number}} O prompt e o limite de tokens.
          */
 
-const constructScriptPrompt = (sectionName, sectionTitle, outlineDirective = null, contextText = null, finalDirective = null) => {
+const constructScriptPrompt = (sectionName, sectionTitle, outlineDirective = null, contextText = null) => {
     const baseContext = getBasePromptContext();
     const videoDuration = document.getElementById('videoDuration').value;
     const selectedLanguage = document.getElementById('languageSelect').value;
@@ -4180,18 +4167,6 @@ A partir de agora, você deve agir como um "Maestro do Ritmo" e um "Engenheiro d
 
 **AÇÃO FINAL:** Com base no contexto fornecido, escreva AGORA a seção "${sectionTitle}" com o mais alto nível de qualidade narrativa, engajamento e conformidade com as regras acima.
 `;
-
-
-if (finalDirective) {
-        prompt += `
-
-**DIRETIVA FINAL DO DIRETOR (A REGRA MAIS IMPORTANTE):**
-Sua tarefa principal é executar esta seção seguindo EXATAMENTE a seguinte direção criativa fornecida pelo usuário. Esta é a "alma" da cena e deve ser seu foco total.
----
-**Instrução do Usuário:** "${finalDirective}"
----`;
-    }
-
 
 if (contextText) {
     prompt += `
@@ -4228,7 +4203,7 @@ ${contextText}
         case 'documentary':
             prompt += `\n\nNARRATIVE STYLE: As this is a 'Documentary', you MUST adhere to the highest standards of factual rigor and narrative clarity. Prioritize unimpeachable factual accuracy, a crystal-clear chronological timeline, and a tone of absolute authority and trustworthiness. Construct your entire argument progressively, building a solid case exclusively with verified evidence, concrete data, expert testimonials, and logical reasoning. Ensure seamless, logical progression between points, avoiding any speculative leaps. While maintaining factual integrity, actively engage the viewer's intellect by weaving suspense, intrigue, or profound curiosity directly from the historical facts and evidence presented.`;
             break;
-        case 'heroes_journey':
+        case 'heros_journey':
             prompt += `\n\nNARRATIVE STYLE: Following the 'Hero's Journey', you MUST structure this section with meticulous adherence to the classic archetypal beats. Center the narrative squarely on the hero's pivotal 'Call to Adventure', the crucible of 'Trials and Tribulations', or the profound moment of 'Transformation and Growth'. Your primary directive is to amplify the internal and external 'Conflict' driving the hero's journey and to vividly illustrate their 'Character Development and Metamorphosis'. Ensure every element serves to advance the hero's arc.`;
             break;
         case 'pixar_spine':
@@ -5643,70 +5618,77 @@ const selectIdea = (idea) => {
 
 
 // =========================================================================
-// >>>>> PASSO 1.1: SUBSTITUA A FUNÇÃO handleGenerateSection INTEIRA <<<<<
+// >>>>> AÇÃO 2: SUBSTITUA A FUNÇÃO handleGenerateSection COMPLETA <<<<<
 // =========================================================================
-const handleGenerateSection = async (button, sectionName, sectionTitle, elementId, finalDirective = null) => {
+const handleGenerateSection = async (button, sectionName, sectionTitle, elementId) => {
     if (!validateInputs()) return;
-
-    // Checagem de pré-requisitos mais inteligente
-    const requiredSectionsMap = {
-        'development': ['introSection'],
-        'climax': ['introSection', 'developmentSection'],
-        'conclusion': ['introSection', 'developmentSection', 'climaxSection'],
-        'cta': ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection']
-    };
-
-    if (requiredSectionsMap[sectionName]) {
-        for (const reqId of requiredSectionsMap[sectionName]) {
-            const requiredWrapper = document.querySelector(`#${reqId} .generated-content-wrapper`);
-            if (!requiredWrapper || !requiredWrapper.textContent.trim()) {
-                const reqTitle = document.querySelector(`#${reqId} h3`)?.textContent || reqId.replace('Section', '');
-                window.showToast(`Por favor, gere a seção "${reqTitle}" primeiro.`);
-                return;
-            }
-        }
+    if (!strategicOutline && sectionName !== 'intro') { // A intro pode ser gerada sem esboço se necessário
+        window.showToast("Crie o Esboço Estratégico primeiro!");
+        return;
     }
     
     showButtonLoading(button);
-    const targetSectionElement = document.getElementById(`${elementId}Section`);
     
+    const targetSectionElement = document.getElementById(`${elementId}Section`);
+    if (targetSectionElement) {
+        const analysisOutput = targetSectionElement.querySelector('.section-analysis-output');
+        const performanceOutput = targetSectionElement.querySelector('.section-performance-output');
+        if (analysisOutput) analysisOutput.innerHTML = '';
+        if (performanceOutput) performanceOutput.innerHTML = '';
+    }
+
     try {
         let contextText = null;
         const previousSectionsContent = [];
-        const sectionOrder = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection'];
-        const currentSectionIndex = sectionOrder.indexOf(`${sectionName}Section`);
+        const requiredSections = {
+            'development': ['introSection'],
+            'climax': ['introSection', 'developmentSection'],
+            'conclusion': ['introSection', 'developmentSection', 'climaxSection']
+        };
 
-        for (let i = 0; i < currentSectionIndex; i++) {
-            const prevSectionId = sectionOrder[i];
-            const contentWrapper = document.querySelector(`#${prevSectionId} .generated-content-wrapper`);
-            if(contentWrapper) previousSectionsContent.push(contentWrapper.textContent.trim());
+        if (requiredSections[sectionName]) {
+            for (const reqId of requiredSections[sectionName]) {
+                const requiredWrapper = document.querySelector(`#${reqId} .generated-content-wrapper`);
+                if (!requiredWrapper || !requiredWrapper.textContent.trim()) {
+                    const reqTitle = document.querySelector(`#${reqId} h3`)?.textContent || reqId.replace('Section', '');
+                    window.showToast(`Por favor, gere a seção "${reqTitle}" primeiro.`);
+                    hideButtonLoading(button);
+                    return;
+                }
+                previousSectionsContent.push(requiredWrapper.textContent.trim());
+            }
+            contextText = previousSectionsContent.join('\n\n---\n\n');
         }
 
-        if (previousSectionsContent.length > 0) {
-            const fullPreviousText = previousSectionsContent.join('\n\n');
-            const recentContext = fullPreviousText.slice(-3000); 
-            contextText = `... (início do roteiro omitido para brevidade) ...\n\n${recentContext}`;
-        }
-
-        const keyMap = { intro: 'introduction', development: 'development', climax: 'climax', conclusion: 'conclusion', cta: 'cta' };
+        const keyMap = { intro: 'introduction', development: 'development', climax: 'climax', conclusion: 'conclusion' };
         const outlineKey = keyMap[sectionName];
         const directive = strategicOutline ? strategicOutline[outlineKey] : null;
         
-        const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive, contextText, finalDirective);
+        const { prompt, maxTokens } = constructScriptPrompt(sectionName, sectionTitle, directive, contextText);
         
         let rawResult = await callGroqAPI(prompt, maxTokens);
         let cleanedResult = removeMetaComments(rawResult.trim());
 
         const paragraphs = cleanedResult.split('\n').filter(p => p.trim() !== '');
         const contentWithDivs = paragraphs.map((p, index) => 
-            `<div id="${elementId}-p-${index}">${DOMPurify.sanitize(p)}</div>`
+            `<div id="${elementId}-p-${index}">${p}</div>`
         ).join('');
         
-        const sectionElement = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
-        
-        targetSectionElement.innerHTML = ''; 
-        targetSectionElement.appendChild(sectionElement);
-        targetSectionElement.classList.remove('card', 'card-placeholder', 'flex', 'justify-between', 'items-center');
+        if (targetSectionElement) {
+            // <<< AQUI ESTÁ A CORREÇÃO CRÍTICA >>>
+            // Chamamos nossa função segura que retorna um ELEMENTO, não uma string.
+            const sectionElement = generateSectionHtmlContent(elementId, sectionTitle, contentWithDivs);
+            
+            // Limpamos o container e adicionamos o novo elemento usando appendChild.
+            targetSectionElement.innerHTML = ''; 
+            targetSectionElement.appendChild(sectionElement);
+            
+            targetSectionElement.classList.remove('card', 'card-placeholder', 'flex', 'justify-between', 'items-center');
+        } else {
+            console.error(`Elemento alvo com ID '${elementId}Section' não encontrado.`);
+            window.showToast("Erro interno: Seção do roteiro não encontrada.");
+            return;
+        }
         
         if (projectState.hasOwnProperty(sectionName)) {
             projectState[sectionName] = true;
@@ -5720,6 +5702,7 @@ const handleGenerateSection = async (button, sectionName, sectionTitle, elementI
         console.error(`Error generating ${sectionTitle}.`, error);
     } finally {
         hideButtonLoading(button);
+        updateButtonStates();
     }
 };
 
@@ -6705,7 +6688,7 @@ const prompt = `Você é uma API de Estratégia de Conteúdo Viral altamente esp
 -   **"target_audience" (Público-Alvo Específico):** Defina um segmento CLARAMENTE caracterizado que se beneficiará MÁXIMO deste vídeo. Evite generalidades. Seja demográfico, psicográfico ou comportamental. (Ex: "Jovens em transição de carreira buscando propósito", "Pais de adolescentes com dificuldades escolares")
 -   **"narrative_goal" (Objetivo Narrativo Central):** Escolha EXATAMENTE UM valor de: ${validOptions.narrative_goal}. Justifique sua escolha com base no tema.
 -   **"narrative_structure" (Estrutura Narrativa Ideal):** Com base no "narrative_goal" escolhido, selecione uma estrutura compatível:
-    -   Se 'storytelling', escolha de: ["documentary", "heroes_journey", "pixar_spine", "mystery_loop", "twist"].
+    -   Se 'storytelling', escolha de: ["documentary", "heros_journey", "pixar_spine", "mystery_loop", "twist"].
     -   Se 'storyselling', escolha de: ["underdog_victory", "discovery_mentor", "if_not_found_create", "pas", "bab"].
     Explique brevemente por que esta estrutura se encaixa.
 -   **"narrative_theme" (Tema Principal Profundo):** Defina o tema central de forma concisa, mas com profundidade. Vá além do tópico óbvio. (Ex: "Não é sobre 'produtividade', é sobre 'recuperar o controle do próprio tempo'")
@@ -6873,11 +6856,6 @@ const actions = {
     'generateSoundtrack': (btn) => generateSoundtrack(btn),
     'generateIntro': (btn) => handleGenerateSection(btn, 'intro', 'Introdução', 'intro'),
     'generateDevelopment': (btn) => handleGenerateSection(btn, 'development', 'Desenvolvimento', 'development'),
-
-    'generateClimax': (btn) => directAndGenerateClimax(btn),
-    'generateConclusion': (btn) => directAndGenerateConclusion(btn),
-    'generateCta': (btn) => directAndGenerateCta(btn),
-
     'generateClimax': (btn) => handleGenerateSection(btn, 'climax', 'Clímax', 'climax'),
     'generateConclusion': (btn) => generateConclusion(btn),
     'generateCta': (btn) => generateStrategicCta(btn),
