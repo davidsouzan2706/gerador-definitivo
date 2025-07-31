@@ -5308,11 +5308,7 @@ const generateVideoIdeas = async (button) => {
     showButtonLoading(button);
 
 // =========================================================================
-// >>>>> VERSÃO DEFINITIVA DE 'generateVideoIdeas' (QUALIDADE MÁXIMA + CONFIABILIDADE) <<<<<
-// =========================================================================
-
-// =========================================================================
-// >>>>> VERSÃO DEFINITIVA DE 'generateVideoIdeas' (QUALIDADE MÁXIMA + CONFIABILIDADE) <<<<<
+// >>>>> VERSÃO CORRIGIDA DE 'generateVideoIdeas' (COM A SINTAXE CERTA) <<<<<
 // =========================================================================
 
 const generateVideoIdeas = async (button) => {
@@ -5330,7 +5326,6 @@ const generateVideoIdeas = async (button) => {
 
     showButtonLoading(button);
 
-    // <<< ESTE É O PROMPT FINAL. NOTE COMO SUAS IDEIAS ESTÃO PRESERVADAS >>>
     const prompt = `Você é uma API de Estratégia de Conteúdo Viral. Sua função é gerar 6 ideias de vídeo e retornar sua resposta EXCLUSIVAMENTE como um array JSON sintaticamente perfeito.
 
 // --- INÍCIO DO CONTRATO TÉCNICO (REGRAS INEGOCIÁVEIS) ---
@@ -5344,26 +5339,24 @@ const generateVideoIdeas = async (button) => {
 
 // --- INÍCIO DO BRIEFING CRIATIVO (O CORAÇÃO DA TAREFA) ---
 **MANUAL DE CRIAÇÃO DE IDEIAS (SIGA ESTAS INSTRUÇÕES PARA CADA IDEIA):**
-
 -   **"title" (Título Explosivo):** Deve ser HIPNÓTICO e provocar CURIOSIDADE INTENSA, use técnicas de "clickbait" inteligentes: promessas, números, urgência, contraste, perguntas retóricas, seja CONCISO e DIRETO. máximo de 70 caracteres.
 -   **"angle" (Ângulo Único):** A essência da ideia, uma frase impactante que resume a ABORDAGEM DISTINTA do vídeo, foque em uma revelação, um insight contrário ao senso comum, ou uma conexão inesperada, deve soar intrigante e prometer valor único. Use linguagem forte e específica.
 -   **"targetAudience" (Público-Alvo Específico):** Identifique um segmento CLARAMENTE definido. Seja específico (ex: "Jovens Profissionais com Ansiedade", "Pais de Crianças com TDAH").
 -   **"viralityScore" (Nota de Viralidade):** Avalie honestamente o potencial de COMPARTILHAMENTO MASSIVO da ideia: (0-3) Baixo (nicho muito específico, pouca emoção), (4-6) Médio (interessante, mas convencional) e (7-10) Alto (choque, utilidade extrema, emoção forte, altamente compartilhável).
 -   **"videoDescription" (Descrição Rica):** Uma sinopse detalhada de 8 a 10 frases substanciais, comece prometendo resolver um problema ou responder uma pergunta central, liste 2-3 pontos-chave que serão abordados, termine com o insight ou takeaway principal, escreva como se estivesse otimizando para SEO e curiosidade do espectador. Use palavras-chave naturalmente.
-
 -   **IDIOMA:** Todos os valores de texto devem estar em **${languageName}**.
 // --- FIM DO BRIEFING CRIATIVO ---
 
 **TEMA PARA TRANSFORMAR EM CONTEÚDO VIRAL:**
 "${nicheDescription}"
 
-**AÇÃO FINAL:** Gere as 6 ideias de vídeo, seguindo à risca tanto o Contrato Técnico quanto o Briefing Criativo. Entregue um único e perfeito array JSON.`;
-    
+**AÇÃO FINAL:** Gere as 6 ideias de vídeo, seguindo à risca tanto o Contrato Técnico quanto o Briefing Criativo. Entregue um único e perfeito array JSON.`; // <<< AQUI ESTÁ O ACENTO GRAVE CORRIGIDO
+
     try {
         const rawResult = await callGroqAPI(prompt, 4000);
         const ideas = cleanGeneratedText(rawResult, true);
 
-        if (!ideas || !Array.isArray(ideas) || ideas.length < 4) { // Aceitamos se ela entregar um pouco menos, mas não se quebrar
+        if (!ideas || !Array.isArray(ideas) || ideas.length < 4) { 
             throw new Error("A IA não retornou ideias suficientes ou em um formato válido.");
         }
 
