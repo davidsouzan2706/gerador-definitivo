@@ -1259,9 +1259,10 @@ Ultra-realistic, high-resolution photographic image captured with masterfully re
 
 
 // =========================================================================
-// >>>>> PASSO ÚNICO: SUBSTITUA A FUNÇÃO 'window.optimizeGroup' INTEIRA <<<<<
+// >>>>> SUBSTITUA A FUNÇÃO 'window.optimizeGroup' INTEIRA <<<<<
 // =========================================================================
 window.optimizeGroup = async (button, suggestionText) => {
+    // <<< CORREÇÃO CRÍTICA: escapa as aspas para o seletor funcionar >>>
     const safeSelector = suggestionText.replace(/"/g, '\\"');
     const paragraphsToOptimize = document.querySelectorAll(`[data-suggestion-group="${safeSelector}"]`);
 
@@ -1279,7 +1280,7 @@ window.optimizeGroup = async (button, suggestionText) => {
         
         // <<< AQUI ESTÁ O ENRIQUECIMENTO DO PROMPT >>>
         const basePromptContext = getBasePromptContext(); // Pega o contexto estratégico
-        const fullScriptContext = getTranscriptOnly(); // Pega o roteiro completo
+        const fullScriptContext = getTranscriptOnly();   // Pega o roteiro completo
         
         const prompt = `Você é um Editor de Roteiro de elite e um especialista em reescrita (copywriter). Sua tarefa é reescrever um bloco de texto problemático, garantindo que a nova versão não apenas corrija o problema, mas também se alinhe perfeitamente ao tom e contexto geral do roteiro.
 
@@ -1312,19 +1313,23 @@ ${originalBlock}
         const newContent = removeMetaComments(rawResult.trim());
         const newParagraphs = newContent.split('\n').filter(p => p.trim() !== '');
 
+        if (newParagraphs.length === 0) {
+            throw new Error("A IA não retornou um conteúdo válido.");
+        }
+
         const firstParagraph = paragraphsToOptimize[0];
         const contentWrapper = firstParagraph.parentElement;
         
         // Substitui o primeiro parágrafo e o destaca
-        firstParagraph.textContent = newParagraphs[0] || '';
-        firstParagraph.className = 'highlight-change'; // Reutilizando nossa classe de animação!
+        firstParagraph.innerHTML = DOMPurify.sanitize(newParagraphs[0] || ''); // Usa innerHTML para poder adicionar o span
+        firstParagraph.classList.add('highlight-change'); // Reutilizando nossa classe de animação!
         firstParagraph.removeAttribute('data-suggestion-group');
 
         // Adiciona os novos parágrafos, se houver
         let lastElement = firstParagraph;
         for (let i = 1; i < newParagraphs.length; i++) {
             const newDiv = document.createElement('div');
-            newDiv.textContent = newParagraphs[i];
+            newDiv.innerHTML = DOMPurify.sanitize(newParagraphs[i]);
             newDiv.className = 'highlight-change'; // Animação em todos os novos parágrafos
             contentWrapper.insertBefore(newDiv, lastElement.nextSibling);
             lastElement = newDiv;
@@ -1347,7 +1352,6 @@ ${originalBlock}
         window.showToast(`Falha ao otimizar: ${error.message}`);
         console.error("Erro detalhado em optimizeGroup:", error);
     } finally {
-        // Restauramos o botão original, que será removido junto com o tooltip
         button.innerHTML = originalButtonText;
         button.disabled = false;
         
@@ -2047,7 +2051,8 @@ window.deleteParagraphGroup = async (button, suggestionText) => {
         return;
     }
 
-    // 3. O resto da lógica continua exatamente como antes.
+    // 3. O resto da lógica para encontrar e remover os parágrafos.
+    // <<< CORREÇÃO CRÍTICA: escapa as aspas para o seletor funcionar >>>
     const safeSelector = suggestionText.replace(/"/g, '\\"');
     const paragraphsToDelete = document.querySelectorAll(`[data-suggestion-group="${safeSelector}"]`);
 
@@ -2058,17 +2063,25 @@ window.deleteParagraphGroup = async (button, suggestionText) => {
 
     const sectionElement = paragraphsToDelete[0].closest('.script-section');
 
-    paragraphsToDelete.forEach(p => p.remove());
+    // Animação de "fade out" antes de remover
+    paragraphsToDelete.forEach(p => {
+        p.style.transition = 'opacity 0.3s ease-out';
+        p.style.opacity = '0';
+    });
+    
+    // Aguarda a animação terminar antes de remover
+    setTimeout(() => {
+        paragraphsToDelete.forEach(p => p.remove());
 
-    if (sectionElement) {
-        invalidateAndClearPerformance(sectionElement);
-        invalidateAndClearPrompts(sectionElement);
-        updateAllReadingTimes();
-    }
-
-    window.showToast("Bloco de parágrafos deletado com sucesso!");
+        if (sectionElement) {
+            invalidateAndClearPerformance(sectionElement);
+            invalidateAndClearPrompts(sectionElement);
+            updateAllReadingTimes();
+        }
+        
+        window.showToast("Bloco de parágrafos deletado com sucesso!");
+    }, 300);
 };
-
 
 
 // =========================================================================
