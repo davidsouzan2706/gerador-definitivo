@@ -5377,6 +5377,14 @@ window.regenerateSection = (fullSectionId) => {
 // =========================================================================
 // >>>>> SUBSTITUA A SUA FUNÇÃO generatePromptsForSection INTEIRA PELA VERSÃO BLINDADA <<<<<
 // =========================================================================
+// =========================================================================
+// >>>>> VERSÃO FINAL E BLINDADA DE 'generatePromptsForSection' <<<<<
+// =========================================================================
+/**
+ * Gera prompts de imagem cinematográficos para uma seção do roteiro, baseando-se no conteúdo, contexto emocional e ritmo.
+ * @param {HTMLElement} button - O botão que foi clicado.
+ * @param {string} sectionElementId - O ID do elemento HTML da seção.
+ */
 window.generatePromptsForSection = async (button, sectionElementId) => {
     const sectionElement = document.getElementById(sectionElementId);
     const contentWrapper = sectionElement?.querySelector('.generated-content-wrapper');
@@ -5395,6 +5403,7 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
     promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div>`;
 
     try {
+        // >>>>> PROCESSAMENTO ESTRUTURADO DO CONTEÚDO <<<<<
         const allChildren = Array.from(contentWrapper.children);
         const paragraphsWithContext = [];
         let currentChapterTitle = "Contexto Geral";
@@ -5414,9 +5423,10 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
 
         const baseIndexMatch = paragraphsWithContext[0]?.originalId.match(/-p-(\d+)$/);
         const baseIndex = baseIndexMatch ? parseInt(baseIndexMatch[1], 10) : 0;
-        const batchSize = 3;
+        const batchSize = 3; // Processa em lotes para não sobrecarregar a API
         const apiPromises = [];
 
+        // >>>>> DEFINIÇÃO DE PARÂMETROS DE ESTILO VISUAL <<<<<
         const visualPacing = document.getElementById('visualPacing').value;
         const durationMap = {
             'dinamico': '3 e 8',
@@ -5425,6 +5435,7 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
         };
         const durationRange = durationMap[visualPacing] || '3 e 8';
 
+        // >>>>> GERAÇÃO DOS PROMPTS PARA A IA (EM LOTES) <<<<<
         for (let i = 0; i < paragraphsWithContext.length; i += batchSize) {
             const batch = paragraphsWithContext.slice(i, i + batchSize);
             let promptContextForAI = '';
@@ -5435,28 +5446,45 @@ window.generatePromptsForSection = async (button, sectionElementId) => {
                 promptContextForAI += `\nParágrafo ${globalIndex}:\n- Título do Capítulo (Guia Temático): "${item.chapter}"\n- Texto do Parágrafo: "${item.text}"\n- Contexto Emocional: (Emoção: ${emotionalContext.emotion}, Ritmo: ${emotionalContext.pace})`;
             });
             
-            // >>> PROMPT BLINDADO COM REGRAS DE SINTAXE EXPLÍCITAS <<<
-            const prompt = `Você é uma API de geração de JSON. Sua resposta deve ser APENAS um array JSON.
+            // >>>>> PROMPT FINAL E BLINDADO PARA GERAÇÃO DE PROMPTS DE IMAGEM <<<<<
+            const prompt = `Você é uma API ESPECIALISTA em Criação de Prompts Visuais Cinematográficos para IAs de Geração de Imagem. Sua tarefa é analisar os parágrafos fornecidos e gerar prompts de imagem DESCritivos, RICOS EM DETALHES e TOTALMENTE ALINHADOS com o contexto narrativo e emocional.
 
-**REGRAS CRÍTICAS DE SINTAXE (INEGOCIÁVEIS):**
-1.  **JSON PURO:** Sua resposta inteira deve ser APENAS o código JSON, começando com \`[\` e terminando com \`]\`.
-2.  **ASPAS DUPLAS, SEMPRE:** TODAS as chaves (ex: "imageDescription") E todos os valores de texto (strings) DEVEM, OBRIGATORIAMENTE, usar aspas duplas (\`"\`). É estritamente proibido usar aspas simples (\`'\`) ou crases (\`\`) para delimitar as strings. A violação desta regra resultará em falha.
-3.  **SEM ASPAS INTERNAS:** Dentro dos valores de "imageDescription", NÃO use aspas duplas. Se precisar de ênfase, use aspas simples (\`'\`).
-4.  **REVISÃO FINAL:** Antes de responder, revise sua própria saída para garantir que cada string está corretamente aberta e fechada com aspas duplas (\`"\`) e que a sintaxe JSON está perfeita.
+**REGRAS CRÍTICAS DE SINTAXE E ESTRUTURA JSON (ABSOLUTAMENTE INEGOCIÁVEIS):**
+1.  **JSON PURO E PERFEITO:** Sua resposta inteira deve ser APENAS um array JSON válido, começando com \`[\` e terminando com \`]\`. NENHUM outro texto, comentário ou metadado deve ser incluído. Pense nisso como uma resposta de API pura e impecável.
+2.  **ASPAS DUPLAS, SEMPRE E EXCLUSIVAMENTE:** TODAS as chaves (ex: "imageDescription") E todos os valores de texto (strings) DEVEM usar obrigatoriamente aspas duplas (\`"\`). É TERMINANTEMENTE PROIBIDO o uso de aspas simples (\`'\`) ou crases (\`\`) para delimitar QUALQUER string.
+3.  **PROIBIÇÃO ABSOLUTA DE ASPAS INTERNAS DUPLAS:** Dentro dos valores de "imageDescription", É ESTRITAMENTE PROIBIDO o uso de aspas duplas internas. Se precisar dar ênfase ou citar algo visualmente, USE OBRIGATORIAMENTE aspas simples (\`'\`).
+4.  **REVISÃO FINAL OBRIGATÓRIA:** Antes de responder, revise sua própria saída com EXTREMA ATENÇÃO para garantir que cada string está corretamente aberta e fechada com aspas duplas (\`"\`) e que a sintaxe JSON está PERFEITA.
 
-**MANUAL DE CONTEÚDO (IGUALMENTE INEGOCIÁVEL):**
-1.  **UM OBJETO POR PARÁGRAFO:** Crie um objeto JSON para CADA parágrafo fornecido. O array final deve ter EXATAMENTE ${batch.length} objetos.
-2.  **DESCRIÇÃO RICA E DETALHADA:** Para a chave "imageDescription", você DEVE criar uma descrição VÍVIDA e CINEMATOGRÁFICA. É obrigatório incluir detalhes sobre Ângulo da Câmera, Iluminação, Foco e Composição.
-3.  **DURAÇÃO REALISTA:** O valor de "estimated_duration" DEVE ser um número entre **${durationRange}**.
+**MANUAL DE CONTEÚDO E CRIAÇÃO DE PROMPTS VISUAIS (SIGA EXATAMENTE):**
+1.  **UM OBJETO POR PARÁGRAFO (EXATIDÃO PERFEITA):** Crie um objeto JSON para CADA parágrafo fornecido. O array final deve ter EXATAMENTE ${batch.length} objetos. Nenhum a mais, nenhum a menos.
+2.  **DESCRIÇÃO VISUAL CINEMATOGRÁFICA E HIPERDETALHADA (O CORAÇÃO DA TAREFA):**
+    - Sua principal função é criar uma descrição visual INCRIVELMENTE RICA, VÍVIDA e CINEMATOGRÁFICA para cada parágrafo.
+    - **ELEMENTOS OBRIGATÓRIOS PARA CADA "imageDescription":**
+        - **Cenário e Ambiente:** Descreva o local, o cenário físico e o ambiente com riqueza sensorial (ex: "Uma sala de estar acolhedora, banhada por uma luz dourada do entardecer que filtra através de cortinas semi-transparentes.").
+        - **Composição Visual:** Defina os elementos principais da imagem e como eles são organizados (ex: "Um homem sentado sozinho em um sofá, com as mãos cobrindo o rosto, enquanto uma fotografia antiga cai lentamente em primeiro plano.").
+        - **Iluminação:** Especifique a qualidade, direção e tipo de luz (ex: "Luz dura e direcional criando sombras profundas, contrastando com uma luz suave e difusa no fundo.").
+        - **Paleta de Cores:** Indique as cores dominantes e o tom geral (ex: "Tons quentes de laranja e vermelho, com toques de azul escuro para criar tensão.").
+        - **Ângulo da Câmera e Perspectiva:** Defina claramente o ângulo e a perspectiva (ex: "Plano médio frontal, levemente abaixo do nível dos olhos, criando uma sensação de vulnerabilidade.").
+        - **Estilo Visual:** Sugira um estilo artístico ou fotográfico (ex: "Estilo cinematográfico de filme 35mm, com grãos leves e contraste elevado.").
+        - **Foco e Profundidade de Campo:** Indique o que está em foco e o efeito de desfoque (ex: "Fundo desfocado (bokeh suave), mantendo o rosto do sujeito em foco nítido.").
+        - **Elementos Emocionais Visuais:** Integre elementos visuais que reflitam a emoção do parágrafo (ex: "Gotas de chuva visíveis no ar, simbolizando a tristeza contida.").
+    - **OBJETIVO:** Cada descrição deve ser tão detalhada que uma IA de geração de imagem possa criar uma representação visual fiel e impactante.
+3.  **DURAÇÃO ESTIMADA REALISTA E CONTEXTUAL:**
+    - O valor de "estimated_duration" DEVE ser um NÚMERO INTEIRO entre **${durationRange}** segundos.
+    - Esta duração deve refletir a complexidade e o ritmo emocional do parágrafo. Cenas mais dinâmicas tendem a ter durações menores.
 
-**DADOS PARA ANÁLISE (LOTE ATUAL):**
+**DADOS PARA ANÁLISE E GERAÇÃO (LOTE ATUAL - ANALISE CADA PARÁGRAFO):**
 ---
 ${promptContextForAI}
----`;
+---
+
+**AÇÃO FINAL E CRÍTICA:** Com base nestas instruções rigorosas, analise AGORA cada parágrafo fornecido e gere AGORA o array JSON com os prompts visuais correspondentes, seguindo EXATAMENTE todas as regras, formatos e níveis de detalhe especificados. Responda APENAS com o array JSON perfeito.
+`;
 
             apiPromises.push(callGroqAPI(prompt, 4000).then(res => cleanGeneratedText(res, true)));
         }
 
+        // >>>>> PROCESSAMENTO DOS RESULTADOS <<<<<
         const allBatchResults = await Promise.all(apiPromises);
         let allGeneratedPrompts = allBatchResults.flat();
 
@@ -5472,6 +5500,7 @@ ${promptContextForAI}
             };
         });
 
+        // >>>>> ARMAZENAMENTO E RENDERIZAÇÃO <<<<<
         allImagePrompts[sectionElementId] = curatedPrompts.map((p) => ({ ...p, styleBlock: CINEMATIC_STYLE_BLOCK }));
         promptPaginationState[sectionElementId] = 0;
 
@@ -5485,11 +5514,14 @@ ${promptContextForAI}
 
     } catch (error) {
         promptContainer.innerHTML = `<p class="text-red-500 text-sm">Falha ao gerar prompts: ${error.message}</p>`;
-        console.error("Erro detalhado em curatedPrompts:", error);
+        console.error("Erro detalhado em generatePromptsForSection:", error);
     } finally {
         hideButtonLoading(button);
     }
 };
+// =========================================================================
+// >>>>> FIM DA VERSÃO BLINDADA DE 'generatePromptsForSection' <<<<<
+// =========================================================================
 
 
 
