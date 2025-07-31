@@ -1,9 +1,7 @@
-// Arquivo: netlify/functions/groq.js - VERSÃO 8.0: Rotação Sequencial com Retry
+// Arquivo: netlify/functions/groq.js - VERSÃO 9.0: Timeout Estendido e Retry Inteligente
 
 const Groq = require('groq-sdk');
 
-// Variável para manter o índice da última chave usada.
-// Fica fora do handler para persistir entre invocações "quentes" da função.
 let currentKeyIndex = 0;
 
 exports.handler = async (event) => {
@@ -11,58 +9,43 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  // --- Validação das Chaves de API (igual à versão anterior) ---
   if (!process.env.GROQ_API_KEYS) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: { message: 'A variável de ambiente GROQ_API_KEYS não está configurada no Netlify.' } }),
-    };
+    return { statusCode: 500, body: JSON.stringify({ error: { message: 'Variável de ambiente GROQ_API_KEYS não configurada.' } }) };
   }
   const apiKeys = process.env.GROQ_API_KEYS.split(',').map(key => key.trim()).filter(Boolean);
   if (apiKeys.length === 0) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: { message: 'Nenhuma chave de API válida encontrada na variável GROQ_API_KEYS.' } }),
-    };
+    return { statusCode: 500, body: JSON.stringify({ error: { message: 'Nenhuma chave de API válida encontrada.' } }) };
   }
 
-  // --- Lógica de Geração e Requisição com Retry ---
   const { prompt, maxTokens } = JSON.parse(event.body);
   if (!prompt) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Missing prompt in request body' }) };
   }
   
-  // Tenta fazer a requisição até 2 vezes com chaves diferentes
   const maxRetries = Math.min(apiKeys.length, 2); 
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    // ==========================================================
-    // LÓGICA DE ROTAÇÃO SEQUENCIAL
-    // ==========================================================
-    // 1. Usa o índice atual para pegar a chave.
     const keyToUseIndex = currentKeyIndex % apiKeys.length;
     const groqApiKey = apiKeys[keyToUseIndex];
     console.log(`Tentativa ${attempt + 1}/${maxRetries}. Usando chave de índice: ${keyToUseIndex}`);
     
-    // 2. Incrementa o índice para a PRÓXIMA requisição.
     currentKeyIndex++; 
-    // ==========================================================
     
     const groq = new Groq({ apiKey: groqApiKey });
     
     try {
-      // Cria a requisição com um timeout configurável (ex: 15 segundos)
-      // A AbortSignal é a forma moderna de cancelar uma requisição fetch.
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos
+      // ==========================================================
+      // >>>>> MUDANÇA 1: AUMENTANDO O TIMEOUT PARA 28 SEGUNDOS <<<<<
+      // ==========================================================
+      const timeoutId = setTimeout(() => controller.abort(), 28000); // Aumentado de 15s para 28s
 
       const chatCompletion = await groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
         model: 'llama3-70b-8192',
         max_tokens: maxTokens || 2048,
-      }, { signal: controller.signal }); // Passamos o sinal de abort para a SDK
+      }, { signal: controller.signal });
 
-      // Se a requisição foi bem-sucedida, limpamos o timeout e retornamos.
       clearTimeout(timeoutId);
 
       return {
@@ -74,14 +57,18 @@ exports.handler = async (event) => {
     } catch (error) {
       console.error(`Erro na tentativa ${attempt + 1} com a chave de índice ${keyToUseIndex}:`, error.message);
       
-      // Se o erro foi um timeout (AbortError) ou um erro de limite de requisições,
-      // o loop continua para tentar a próxima chave.
-      if (error.name === 'AbortError') {
-        console.warn(`Timeout de 15s atingido. Tentando próxima chave...`);
+      // ==========================================================
+      // >>>>> MUDANÇA 2: LÓGICA DE DETECÇÃO DE ERRO MELHORADA <<<<<
+      // ==========================================================
+      // Agora verificamos o nome do erro OU se a mensagem contém "aborted" ou "timed out".
+      if (error.name === 'AbortError' || (error.message && error.message.toLowerCase().includes('aborted')) || (error.message && error.message.toLowerCase().includes('timed out'))) {
+        console.warn(`Timeout atingido. Tentando próxima chave...`);
+        // O loop continuará para a próxima tentativa
       } else if (error.status === 429) {
         console.warn(`Limite da chave atingido. Tentando próxima chave...`);
+        // O loop continuará para a próxima tentativa
       } else {
-        // Se for outro tipo de erro (ex: chave inválida), retorna o erro imediatamente.
+        // Para qualquer outro erro, falha imediatamente.
         return {
           statusCode: 500,
           body: JSON.stringify({ error: { message: `Erro inesperado na API: ${error.message}` } }),
@@ -90,11 +77,11 @@ exports.handler = async (event) => {
     }
   }
 
-  // Se o loop terminar sem sucesso, significa que todas as tentativas falharam.
+  // Se todas as tentativas falharem, retorna um erro final claro.
   return {
     statusCode: 504,
     body: JSON.stringify({ 
-      error: { message: `A API da Groq falhou em responder após ${maxRetries} tentativas com chaves diferentes. Tente novamente mais tarde.` } 
+      error: { message: `A API da Groq falhou em responder após ${maxRetries} tentativas. O serviço pode estar sobrecarregado ou o prompt é muito complexo. Tente novamente mais tarde.` } 
     }),
   };
 };
