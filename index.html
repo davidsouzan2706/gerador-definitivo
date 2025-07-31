@@ -2619,16 +2619,12 @@ const isScriptComplete = () => {
 
 
 // =========================================================================
-// >>>>> AÇÃO 3: SUBSTITUA A FUNÇÃO updateButtonStates COMPLETA <<<<<
+// >>>>> SUBSTITUA A FUNÇÃO updateButtonStates PELA VERSÃO LIMPA <<<<<
 // =========================================================================
 const updateButtonStates = () => {
-    // Em vez de olhar para o HTML, lemos nosso "painel de controle" (`projectState`).
     const { intro, development, climax, conclusion } = projectState;
-    
-    // A condição principal agora é baseada em nosso objeto de estado. É 100% confiável.
     const allMainScriptGenerated = intro && development && climax;
 
-    // A lógica de metadados agora é mais robusta.
     const metadataButtons = ['generateTitlesAndThumbnailsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'];
     metadataButtons.forEach(id => {
         const btn = document.getElementById(id);
@@ -2641,28 +2637,24 @@ const updateButtonStates = () => {
         }
     });
 
-    // Lógica para exibir/esconder o Módulo da Conclusão.
     const conclusionModule = document.getElementById('conclusionStrategyModule');
     const climaxContainer = document.getElementById('climaxSection');
 
     if (conclusionModule && climaxContainer) {
+        // CONDIÇÃO CHAVE: Se as 3 seções principais estão prontas E o módulo ainda está escondido...
         if (allMainScriptGenerated && conclusionModule.classList.contains('hidden')) {
             climaxContainer.insertAdjacentElement('afterend', conclusionModule);
             conclusionModule.classList.remove('hidden');
             conclusionModule.scrollIntoView({ behavior: 'smooth', block: 'center' });
             window.showToast("Excelente! Agora, defina a estratégia para a sua conclusão.");
             
-            document.querySelectorAll('input[name="conclusionType"]').forEach(radio => {
-                radio.addEventListener('change', handleConclusionStrategyChange);
-            });
-            handleConclusionStrategyChange();
+            // <<< AS CHAMADAS PARA A FUNÇÃO ANTIGA FORAM REMOVIDAS DAQUI >>>
         } 
         else if (!allMainScriptGenerated && !conclusionModule.classList.contains('hidden')) {
             conclusionModule.classList.add('hidden');
         }
     }
 };
-
 
 
 
@@ -3150,44 +3142,7 @@ const generateStrategicCta = async (button) => {
             });
         };
 
-        const handleConclusionStrategyChange = () => {
-            const conclusionSpecificsContainer = document.getElementById('conclusionInputContainer');
-            const answerRadioButtonLabel = document.querySelector('input[value="answer"]').parentElement;
-            const answerRadioButton = document.querySelector('input[value="answer"]');
-
-            // 1. Lógica para desabilitar a opção "Responder Pergunta" se não houver pergunta
-            const centralQuestionText = document.getElementById('centralQuestion').value.trim();
-            if (!centralQuestionText) {
-                answerRadioButton.disabled = true;
-                answerRadioButtonLabel.classList.add('opacity-50', 'cursor-not-allowed');
-                answerRadioButtonLabel.title = "Defina a 'Pergunta Central' nos campos principais para usar esta opção.";
-                // Se a opção desabilitada estava selecionada, muda para a primeira
-                if(answerRadioButton.checked) {
-                    document.querySelector('input[value="lesson"]').checked = true;
-                }
-            } else {
-                answerRadioButton.disabled = false;
-                answerRadioButtonLabel.classList.remove('opacity-50', 'cursor-not-allowed');
-                answerRadioButtonLabel.title = "";
-            }
-            
-            const selectedValue = document.querySelector('input[name="conclusionType"]:checked').value;
-            
-            // 2. Lógica para mostrar/esconder o textarea e mudar o placeholder
-            if (conclusionSpecificsContainer) {
-                conclusionSpecificsContainer.classList.toggle('hidden', !['lesson', 'answer', 'cliffhanger'].includes(selectedValue));
-            }
-            
-            const textarea = document.getElementById('conclusionSpecifics');
-            if (textarea) {
-                const placeholders = {
-                    lesson: "Ex: A lição é que a resiliência é a nossa maior força...",
-                    answer: "Ex: A resposta é que a Arca foi levada para a Etiópia, mas o verdadeiro segredo é...",
-                    cliffhanger: "Ex: ...mas se a Arca foi encontrada, o que aconteceu com o que estava DENTRO dela?"
-                };
-                textarea.placeholder = placeholders[selectedValue] || "";
-            }
-        };
+  
 
         /**
          * Alterna a visibilidade de um corpo de acordeão e a rotação de sua seta. (VERSÃO CORRIGIDA E ROBUSTA)
