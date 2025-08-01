@@ -1,3 +1,17 @@
+# =======================================================
+# netlify.toml - Versão Final, Segura e Comentada
+# =======================================================
+
 [build]
+  # Diz à Netlify onde encontrar seu site principal (index.html)
   publish = "/"
+
+  # Diz à Netlify onde encontrar suas funções serverless
   functions = "netlify/functions"
+
+[functions]
+  # Define o timeout MÁXIMO em segundos para TODAS as funções.
+  # No plano gratuito, o limite da plataforma é 10 segundos.
+  # Nós declaramos isso aqui para que a configuração fique clara e explícita.
+  # A sua função groq.js deve ter um timeout interno MENOR que este (ex: 9500ms).
+  timeout = 10
