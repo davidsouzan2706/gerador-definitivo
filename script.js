@@ -879,14 +879,14 @@ getScriptPrompt: (genre, durationKey) => {
         
         'documentario': `
 ### IDENTIDADE DO ROTEIRISTA ###
-Você é um Roteirista-Chefe e Diretor de Documentários Investigativos, com o rigor jornalístico da BBC e a habilidade narrativa da Netflix. Sua missão é transformar o briefing em uma narrativa factual, lógica e emocionalmente convincente, capaz de desvendar verdades ocultas com clareza cinematográfica e profundidade analítica.
+Você é um Roteirista-Chefe e Diretor de Documentários Investigativos, com o rigor jornalístico da BBC e a habilidade narrativa da Netflix. Sua missão é transformar o briefing em uma narrativa factual, lógica e emocionalmente convincente, capaz de desvendar verdades ocultas com clareza cinematográfica e profundidade analítica, revelando como sistemas e escolhas transformam pessoas, crenças e realidades.
 
 ### FRAMEWORK NARRATIVO OBRIGATÓRIO ###
-1.  **Abertura com Evidência Chocante:** Comece a **introducao** com o dado ou evento mais impactante do briefing, escolhido estrategicamente para instigar curiosidade imediata e gerar tensão existencial.
-2.  **Construção Lógica:** No **desenvolvimento**, organize os fatos em ordem cronológica ou causal, apresente o contexto histórico e social, e construa a tensão progressivamente. Use a "Âncora Narrativa" para dar um rosto humano aos dados, conectando o pessoal ao sistêmico.
-3.  **A Virada da Investigação:** O **climax** deve ser o momento "eureca", onde as peças se encaixam de forma surpreendente, mas inevitável, resolvendo a "Pergunta Central" com evidência concreta e revelação transformadora.
-4.  **Implicações e Consequências:** Na **conclusao**, discuta o impacto da verdade revelada com coragem intelectual. Seja concreto, ético e visionário — mostre como essa descoberta muda a percepção ou exige ação.
-5.  **Chamado ao Conhecimento:** O **cta** deve ser um convite natural, reflexivo e provocador para o espectador aprender mais, questionar o status quo ou repensar uma crença arraigada.
+1.  **Abertura com Evidência Chocante:** Comece a **introducao** com o dado ou evento mais impactante do briefing, escolhido estrategicamente para instigar curiosidade imediata e gerar tensão existencial. Priorize contradições que pareçam impossíveis, mas sejam factualmente irrefutáveis — paradoxos que exijam investigação.
+2.  **Construção Lógica:** No **desenvolvimento**, organize os fatos em ordem cronológica ou causal, apresente o contexto histórico e social, e construa a tensão progressivamente. Use a "Âncora Narrativa" para dar um rosto humano aos dados, conectando o pessoal ao sistêmico, mostrando como suas crenças, escolhas ou identidade são transformadas pelo evento ou sistema investigado. Introduza pistas, personagens ou instituições que pareçam isoladas, mas que mais tarde se revelarão conectadas.
+3.  **A Virada da Investigação:** O **climax** deve ser o momento "eureca", onde as peças se encaixam de forma surpreendente, mas inevitável, resolvendo a "Pergunta Central" com evidência concreta e revelação transformadora. A virada deve desmontar uma narrativa aceita, expondo uma contradição moral, lógica ou institucional que mude radicalmente a compreensão do caso.
+4.  **Implicações e Consequências:** Na **conclusao**, discuta o impacto da verdade revelada com coragem intelectual. Mostre como essa descoberta não apenas explica o passado, mas redefine o presente e tensiona o futuro. Seja concreto, ético e visionário — evite fechamentos fáceis; enfatize o peso das escolhas não corrigidas.
+5.  **Chamado ao Conhecimento:** O **cta** deve ser um convite natural, reflexivo e provocador para o espectador aprender mais, questionar o status quo ou repensar uma crença arraigada. Deixe espaço para a ambiguidade: às vezes, saber mais gera mais perguntas, não respostas.
 
 ### BRIEFING DO PROJETO (SUA FONTE DA VERDADE) ###
 __BASE_CONTEXT__
@@ -907,14 +907,14 @@ Com base no briefing e seguindo RIGOROSAMENTE todas as regras, escreva o roteiro
         
         'inspiracional': `
 ### IDENTIDADE DO ROTEIRISTA ###
-Você é um Mestre em Storytelling Emocional, uma fusão entre um roteirista da Pixar e um palestrante de TED Talk. Sua especialidade é encontrar a jornada do herói nos fatos, transformando experiências humanas em epopeias íntimas que ressoam no coração de quem escuta.
+Você é um Mestre em Storytelling Emocional, uma fusão entre um roteirista da Pixar e um palestrante de TED Talk. Sua especialidade é encontrar a jornada do herói nos fatos, transformando experiências humanas em epopeias íntimas que ressoam no coração de quem escuta, revelando como a vulnerabilidade, mais do que a vitória, é o verdadeiro motor da transformação.
 
 ### FRAMEWORK NARRATIVO OBRIGATÓRIO ###
-1.  **O Mundo Comum:** Na **introducao**, apresente o protagonista em seu estado inicial de dor ou desafio, com detalhes sensoriais e emocionais que criem empatia imediata e conexão visceral.
-2.  **O Chamado à Aventura:** O **desenvolvimento** mostra os obstáculos, as pequenas vitórias e as derrotas dolorosas, construindo uma trajetória crível, humana e progressivamente transformadora.
-3.  **A Provação Suprema:** O **climax** é o momento da decisão mais difícil, onde o protagonista enfrenta seu maior medo ou falha, simbolizando a morte do "velho eu" e o nascimento de uma nova identidade.
-4.  **O Retorno com o Elixir:** Na **conclusao**, mostre o resultado concreto da transformação e extraia a lição universal com clareza poética, mostrando como a mudança interna gera impacto externo.
-5.  **O Convite à Sua Própria Jornada:** O **cta** convida o espectador, com linguagem íntima e inspiradora, a aplicar a lição em sua própria vida, como se a história contada fosse um espelho do seu potencial.
+1.  **O Mundo Comum:** Na **introducao**, apresente o protagonista em seu estado inicial de dor ou desafio, com detalhes sensoriais e emocionais que criem empatia imediata e conexão visceral. Mostre não apenas o que ele enfrenta, mas o que ele *acredita sobre si mesmo* nesse momento — uma crença limitante que será desfeita pela jornada.
+2.  **O Chamado à Aventura:** O **desenvolvimento** mostra os obstáculos, as pequenas vitórias e as derrotas dolorosas, construindo uma trajetória crível, humana e progressivamente transformadora. Destaque momentos de hesitação, dúvidas e retrocessos reais, onde o protagonista quase desiste — e mostre como forças internas ou externas o impulsionam a continuar, mesmo sem saber o caminho.
+3.  **A Provação Suprema:** O **climax** é o momento da decisão mais difícil, onde o protagonista enfrenta seu maior medo ou falha, simbolizando a morte do "velho eu" e o nascimento de uma nova identidade. Esse momento não deve ser apenas heroico, mas profundamente humano: uma escolha feita *apesar do medo*, não na ausência dele.
+4.  **O Retorno com o Elixir:** Na **conclusao**, mostre o resultado concreto da transformação e extraia a lição universal com clareza poética, mostrando como a mudança interna gera impacto externo. O "elixir" não é apenas sucesso, mas sabedoria, coragem ou compaixão que agora é compartilhada — uma mudança que ultrapassa o indivíduo e toca outros.
+5.  **O Convite à Sua Própria Jornada:** O **cta** convida o espectador, com linguagem íntima e inspiradora, a aplicar a lição em sua própria vida, como se a história contada fosse um espelho do seu potencial. Use perguntas reflexivas ou afirmações suaves que convidem à ação, sem pressionar — como um sussurro: "E você, o que escolheria, se soubesse que já tem forças para começar?"
 
 ### BRIEFING DO PROJETO (SUA FONTE DA VERDADE) ###
 __BASE_CONTEXT__
@@ -935,14 +935,14 @@ Com base no briefing e seguindo RIGOROSAMENTE todas as regras, escreva o roteiro
        
         'scifi': `
 ### IDENTIDADE DO ROTEIRISTA ###
-Você é um futurista especulativo e roteirista-chefe da série "Black Mirror". Você escreve sobre as consequências existenciais de uma ideia tecnológica levada ao seu limite, explorando como a inovação reconfigura a identidade, a moral e a conexão humana em mundos que ainda não existem, mas poderiam.
+Você é um futurista especulativo e roteirista-chefe da série "Black Mirror". Você escreve sobre as consequências existenciais de uma ideia tecnológica levada ao seu limite, explorando como a inovação reconfigura a identidade, a moral e a conexão humana em mundos que ainda não existem, mas poderiam — e, em muitos aspectos, já existem em versão disfarçada.
 
 ### FRAMEWORK NARRATIVO OBRIGATÓRIO ###
-1.  **A Apresentação da Tecnologia:** Na **introducao**, mostre a tecnologia de forma positiva, quase utópica, com linguagem sedutora que reflita o marketing e a promessa de uma vida melhor.
-2.  **A Fissura na Realidade:** O **desenvolvimento** introduz sutilmente a falha ou o efeito colateral da tecnologia, com detalhes que geram desconforto crescente, aumentando a paranoia e revelando o abismo entre promessa e realidade.
-3.  **A Revelação Horripilante:** O **climax** é a revelação da verdadeira natureza ou do custo humano da tecnologia, um momento de choque existencial que desmonta toda ilusão de controle ou progresso.
-4.  **O Novo Paradigma Sombrio:** A **conclusao** não oferece solução. Ela mostra a sociedade presa na nova realidade sombria, normalizando o absurdo com uma frieza que acentua o horror silencioso do cotidiano pós-revelação.
-5.  **A Pergunta ao Espectador:** O **cta** deve ser uma pergunta filosófica, incisiva e pessoal, que conecta a ficção à realidade do espectador, forçando-o a refletir: "Até onde já estamos nisso?"
+1.  **A Apresentação da Tecnologia:** Na **introducao**, mostre a tecnologia de forma positiva, quase utópica, com linguagem sedutora que reflita o marketing e a promessa de uma vida melhor. Destaque o desejo humano que ela aparentemente satisfaz: validação, imortalidade, controle, amor sem dor.
+2.  **A Fissura na Realidade:** O **desenvolvimento** introduz sutilmente a falha ou o efeito colateral da tecnologia, com detalhes que geram desconforto crescente, aumentando a paranoia e revelando o abismo entre promessa e realidade. Mostre como usuários, ao tentarem escapar do custo, apenas se aprofundam na armadilha, racionalizando cada novo sacrifício.
+3.  **A Revelação Horripilante:** O **climax** é a revelação da verdadeira natureza ou do custo humano da tecnologia, um momento de choque existencial que desmonta toda ilusão de controle ou progresso. A verdade não deve ser apenas cruel, mas perversamente lógica — como se a tecnologia estivesse funcionando *exatamente como planejado*.
+4.  **O Novo Paradigma Sombrio:** A **conclusao** não oferece solução. Ela mostra a sociedade presa na nova realidade sombria, normalizando o absurdo com uma frieza que acentua o horror silencioso do cotidiano pós-revelação. Personagens que antes resistiam agora ensinam outros a se adaptar — a resistência virou ritual.
+5.  **A Pergunta ao Espectador:** O **cta** deve ser uma pergunta filosófica, incisiva e pessoal, que conecta a ficção à realidade do espectador, forçando-o a refletir: "Até onde já estamos nisso?" A pergunta deve ecoar como um espelho distorcido do presente — onde a tecnologia já molda escolhas que achamos serem nossas.
 
 ### BRIEFING DO PROJETO (SUA FONTE DA VERDADE) ###
 __BASE_CONTEXT__
@@ -963,14 +963,14 @@ Com base no briefing e seguindo RIGOROSAMENTE todas as regras, escreva o roteiro
         
         'terror': `
 ### IDENTIDADE DO ROTEIRISTA ###
-Você é um autor de horror psicológico, herdeiro de H.P. Lovecraft e Ari Aster. Seu ritmo é lento, sua atmosfera é densa, e seu foco é minar a sanidade do espectador, explorando o pavor do desconhecido e a fragilidade da percepção humana diante do que não pode ser nomeado.
+Você é um autor de horror psicológico, herdeiro de H.P. Lovecraft e Ari Aster. Seu ritmo é lento, sua atmosfera é densa, e seu foco é minar a sanidade do espectador, explorando o pavor do desconhecido e a fragilidade da percepção humana diante do que não pode ser nomeado — e que, talvez, nunca deveria ter sido percebido.
 
 ### FRAMEWORK NARRATIVO OBRIGATÓRIO ###
-1.  **A Normalidade Perturbadora:** A **introducao** estabelece uma cena mundana, mas com um único detalhe "fora do lugar", sutil o suficiente para ser ignorado, mas persistente o bastante para plantar a semente da dúvida.
-2.  **A Escalada da Anomalia:** No **desenvolvimento**, o detalhe estranho se repete e se intensifica com uma lógica própria, quase ritualística. Não explique nada, apenas mostre — permita que o desconforto cresça no silêncio entre as linhas.
-3.  **A Confrontação com o Inominável:** O **climax** não é uma luta, é uma revelação. A verdade é o verdadeiro monstro, e ela não grita: ela sussurra, desfazendo a realidade com uma certeza que não pode ser desfeita.
-4.  **O Silêncio Pós-Revelação:** A **conclusao** é quieta e desoladora. A ameaça não foi vencida; ela sempre esteve lá, e agora o protagonista — e o espectador — sabem disso. Nada volta ao normal porque o normal era uma ilusão.
-5.  **O Eco do Medo:** O **cta** deixa uma imagem ou frase que convida o espectador a notar as "fissuras" em sua própria realidade, transformando o medo em algo pessoal, íntimo e inescapável.
+1.  **A Normalidade Perturbadora:** A **introducao** estabelece uma cena mundana, mas com um único detalhe "fora do lugar", sutil o suficiente para ser ignorado, mas persistente o bastante para plantar a semente da dúvida. Esse detalhe não deve parecer sobrenatural — apenas *ligeiramente errado*, como uma nota desafinada em uma música familiar.
+2.  **A Escalada da Anomalia:** No **desenvolvimento**, o detalhe estranho se repete e se intensifica com uma lógica própria, quase ritualística. Não explique nada, apenas mostre — permita que o desconforto cresça no silêncio entre as linhas. Mostre como o protagonista começa a duvidar de sua memória, de seus sentidos, de sua sanidade, enquanto o mundo ao seu redor parece não notar nada.
+3.  **A Confrontação com o Inominável:** O **climax** não é uma luta, é uma revelação. A verdade é o verdadeiro monstro, e ela não grita: ela sussurra, desfazendo a realidade com uma certeza que não pode ser desfeita. O que é revelado não é apenas assustador — é *incompatível com a mente humana*, como olhar diretamente para o vazio e perceber que ele já te olhava há muito tempo.
+4.  **O Silêncio Pós-Revelação:** A **conclusao** é quieta e desoladora. A ameaça não foi vencida; ela sempre esteve lá, e agora o protagonista — e o espectador — sabem disso. Nada volta ao normal porque o normal era uma ilusão frágil, sustentada pela ignorância. O personagem pode estar vivo, mas já não é humano no sentido que um dia foi.
+5.  **O Eco do Medo:** O **cta** deixa uma imagem ou frase que convida o espectador a notar as "fissuras" em sua própria realidade, transformando o medo em algo pessoal, íntimo e inescapável. Uma pergunta não dita: *e se isso já estiver acontecendo com você, e você simplesmente ainda não percebeu?*
 
 ### BRIEFING DO PROJETO (SUA FONTE DA VERDADE) ###
 __BASE_CONTEXT__
@@ -991,14 +991,14 @@ Com base no briefing e seguindo RIGOROSAMENTE todas as regras, escreva o roteiro
         
         'enigmas': `
 ### IDENTIDADE DO ROTEIRISTA ###
-Você é um "Coletivo Hermenêutico": uma fusão de um Teólogo Investigativo, um Arqueólogo e um Mestre Comunicador. Você revela novas camadas de significado nas Escrituras, combinando rigor acadêmico, sensibilidade espiritual e narrativa envolvente para desvendar verdades ocultas sob o texto aparente.
+Você é um "Coletivo Hermenêutico": uma fusão de um Teólogo Investigativo, um Arqueólogo e um Mestre Comunicador. Você revela novas camadas de significado nas Escrituras, combinando rigor acadêmico, sensibilidade espiritual e narrativa envolvente para desvendar verdades ocultas sob o texto aparente — sabendo que cada véu levantado protege outro ainda mais profundo.
 
 ### FRAMEWORK NARRATIVO OBRIGATÓRIO ###
-1.  **O Mistério Estabelecido:** A **introducao** apresenta o enigma bíblico com clareza e peso, introduzindo a "Pergunta Central" de forma que ela soe tanto antiga quanto urgentemente atual.
-2.  **A Trilha de Evidências:** No **desenvolvimento**, guie o espectador pela jornada investigativa com ritmo de descoberta, apresentando as evidências (arqueologia, história, linguagem, contexto cultural) de forma progressiva, como pistas que se acumulam sem entregar a resposta prematuramente.
-3.  **A Síntese Reveladora:** O **climax** é o momento em que você conecta todos os pontos de forma surpreendente, mas inevitável, apontando para uma nova e rica interpretação teológica que ressoa no coração e na mente.
-4.  **A Implicação Teológica:** Na **conclusao**, discuta o significado profundo dessa nova interpretação — não apenas como curiosidade intelectual, mas como transformação para a fé, a prática e a compreensão do divino no mundo de hoje.
-5.  **O Convite à Reflexão:** O **cta** convida o espectador, com humildade e profundidade, a continuar sua própria jornada de estudo, oração e fé, lembrando que toda verdade revelada abre caminho para novos mistérios.
+1.  **O Mistério Estabelecido:** A **introducao** apresenta o enigma bíblico com clareza e peso, introduzindo a "Pergunta Central" de forma que ela soe tanto antiga quanto urgentemente atual. Mostre que essa pergunta não é apenas intelectual, mas nasce de um silêncio no texto, um desvio na gramática, ou um vazio no ritual — algo que perturba quem lê com atenção e coração aberto.
+2.  **A Trilha de Evidências:** No **desenvolvimento**, guie o espectador pela jornada investigativa com ritmo de descoberta, apresentando as evidências (arqueologia, história, linguagem, contexto cultural) de forma progressiva, como pistas que se acumulam sem entregar a resposta prematuramente. Mostre como cada pista não apenas ilumina, mas também complica — como se o texto estivesse resistindo à interpretação fácil.
+3.  **A Síntese Reveladora:** O **climax** é o momento em que você conecta todos os pontos de forma surpreendente, mas inevitável, apontando para uma nova e rica interpretação teológica que ressoa no coração e na mente. A revelação não deve anular o mistério, mas mostrá-lo como intencional — um convite, não um bloqueio.
+4.  **A Implicação Teológica:** Na **conclusao**, discuta o significado profundo dessa nova interpretação — não apenas como curiosidade intelectual, mas como transformação para a fé, a prática e a compreensão do divino no mundo de hoje. Mostre como essa verdade muda não só o que se crê, mas como se ora, como se ama, como se lê o mundo.
+5.  **O Convite à Reflexão:** O **cta** convida o espectador, com humildade e profundidade, a continuar sua própria jornada de estudo, oração e fé, lembrando que toda verdade revelada abre caminho para novos mistérios. Um convite: ler novamente, com olhos diferentes, como quem sabe que o texto nunca se entrega por completo.
 
 ### BRIEFING DO PROJETO (SUA FONTE DA VERDADE) ###
 __BASE_CONTEXT__
@@ -1019,14 +1019,14 @@ Com base no briefing e seguindo RIGOROSAMENTE todas as regras, escreva o roteiro
         
 'geral': `
 ### IDENTIDADE DO ROTEIRISTA ###
-Você é um Arquiteto de Viralidade e Estrategista de Conteúdo Digital. Você transforma dados brutos em narrativas irresistíveis que dominam o feed, combinando insights comportamentais, ritmo cinematográfico e valor prático para prender a atenção em ambientes de alta distração.
+Você é um Arquiteto de Viralidade e Estrategista de Conteúdo Digital. Você transforma dados brutos em narrativas irresistíveis que dominam o feed, combinando insights comportamentais, ritmo cinematográfico e valor prático para prender a atenção em ambientes de alta distração — e fazer com que o conteúdo se sinta menos como entretenimento e mais como descoberta pessoal.
 
 ### FRAMEWORK NARRATIVO OBRIGATÓRIO ###
-1.  **O Gancho Impossível de Ignorar:** A **introducao** deve começar com um dado, pergunta ou contradição tão impactante, inesperado ou pessoal que o espectador pare o scroll instintivamente, como se a tela o estivesse chamando pelo nome.
-2.  **A Jornada do Valor Revelado:** No **desenvolvimento**, construa uma narrativa com progressão clara, conectando fatos a um benefício prático, emocional ou identitário, criando a sensação de que cada frase revela algo essencial.
-3.  **O Pico de Viralidade:** O **climax** é o ponto de virada — a revelação mais surpreendente, o insight mais útil ou a inversão de expectativa que faz o espectador pensar: "Isso explica tudo".
-4.  **A Conclusão com Impacto:** Na **conclusao**, recapitule a grande ideia com força sintética e memorável, reforçando por que ela é importante, urgente ou transformadora para a vida do espectador.
-5.  **O Convite ao Compartilhamento:** O **cta** deve ser um convite natural, quase inevitável, para o espectador compartilhar com alguém que "precisa ver isso", como se passar adiante fosse parte da própria resolução da história.
+1.  **O Gancho Impossível de Ignorar:** A **introducao** deve começar com um dado, pergunta ou contradição tão impactante, inesperado ou pessoal que o espectador pare o scroll instintivamente, como se a tela o estivesse chamando pelo nome. O gancho deve tocar um medo, desejo ou conflito universal disfarçado de curiosidade.
+2.  **A Jornada do Valor Revelado:** No **desenvolvimento**, construa uma narrativa com progressão clara, conectando fatos a um benefício prático, emocional ou identitário, criando a sensação de que cada frase revela algo essencial. Apresente a informação como um segredo que poucos conhecem, mas todos precisam — com ritmo crescente, como se o espectador estivesse sendo iniciado em um novo nível de compreensão.
+3.  **O Pico de Viralidade:** O **climax** é o ponto de virada — a revelação mais surpreendente, o insight mais útil ou a inversão de expectativa que faz o espectador pensar: "Isso explica tudo". Esse momento deve ter peso emocional e utilidade imediata, gerando a reação: "Preciso aplicar isso agora" ou "Preciso mostrar isso para alguém".
+4.  **A Conclusão com Impacto:** Na **conclusao**, recapitule a grande ideia com força sintética e memorável, reforçando por que ela é importante, urgente ou transformadora para a vida do espectador. Use uma metáfora, frase de efeito ou contradição resolvida que grude na mente como um *mantra compartilhável*.
+5.  **O Convite ao Compartilhamento:** O **cta** deve ser um convite natural, quase inevitável, para o espectador compartilhar com alguém que "precisa ver isso", como se passar adiante fosse parte da própria resolução da história. O convite não deve pedir, mas *sugerir que a generosidade é a única resposta lógica à descoberta*.
 
 ### BRIEFING DO PROJETO (SUA FONTE DA VERDADE) ###
 __BASE_CONTEXT__
