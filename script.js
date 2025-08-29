@@ -2085,7 +2085,7 @@ const generateIdeasFromReport = async (button) => {
 
 
 
-// VERSÃO FINAL E CORRIGIDA DO strategyMapper
+// VERSÃO FINAL E CORRIGIDA DO strategyMapper (COM TODAS AS CHAVES)
 
 const strategyMapper = {
     'documentario': {
@@ -2136,24 +2136,23 @@ const strategyMapper = {
         dropdowns: { narrativeGoal: 'storytelling', narrativeStructure: 'mystery_loop', narrativeTone: 'serio', videoObjective: 'informar', languageStyle: 'formal', speakingPace: 'moderate' },
         targetAudience: idea => idea.targetAudience || "Estudantes de teologia, líderes religiosos e leigos interessados em interpretações bíblicas aprofundadas.",
         
-        // ==========================================================
-        // >>>>> A CORREÇÃO ESTÁ AQUI <<<<<
-        // ==========================================================
+        narrativeTheme: idea => idea.angle, // <<<< CHAVE FALTANTE ADICIONADA AQUI
+
         centralQuestion: idea => {
             if (idea.discussionQuestions && idea.discussionQuestions.length > 0) {
                 const firstQuestionObject = idea.discussionQuestions[0];
-                // Retorna APENAS o valor (o texto da primeira pergunta) do objeto
                 return Object.values(firstQuestionObject)[0] || ''; 
             }
             return `Qual é a verdade teológica oculta por trás de "${idea.title}"?`;
         },
-        // ==========================================================
 
         emotionalHook: () => `Iniciar com a história de um personagem bíblico ou figura histórica que enfrentou o dilema central do tema, antes de expandir a análise.`,
         researchData: idea => `A investigação deve se basear nestas passagens bíblicas: ${(idea.scripturalFoundation || []).join('; ')}.`,
         narrativeVoice: () => "Acadêmico, reverente e investigativo.",
         shockingEndingHook: () => `...revelando que a resposta para o enigma não estava no que foi escrito, mas no silêncio entre as palavras.`,
-        dossier: idea => `- Tese Principal: ${idea.angle}\n- Fundamentação Bíblica: ${(idea.scripturalFoundation || []).join('; ')}\n- Questões para Diálogo:\n${(idea.discussionQuestions || []).map(q => { const key = Object.keys(q)[0]; return `  - ${key}: ${q[key]}`; }).join('\n')}`
+        
+        // Mantemos a versão simplificada do dossier para garantir que não há outros erros
+        dossier: idea => `- Tese Principal: ${idea.angle}\n- Fundamentação Bíblica: ${(idea.scripturalFoundation || []).join('; ')}`
     },
     'geral': {
         dropdowns: { narrativeGoal: 'storytelling', narrativeStructure: 'pixar_spine', narrativeTone: 'inspirador', videoObjective: 'informar', languageStyle: 'inspirador', speakingPace: 'moderate' },
