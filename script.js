@@ -3506,11 +3506,15 @@ const updateButtonStates = () => {
     
 const analysisSection = document.getElementById('scriptAnalysisSection');
 if (analysisSection) {
-    // Mostra a seção de análise assim que o núcleo do roteiro estiver pronto
-    analysisSection.style.display = allMainScriptGenerated ? 'block' : 'none';
+    // A condição para verificar se o roteiro completo foi gerado.
+    const isFullScriptGenerated = !!script.intro?.text &&
+                                  !!script.development?.text &&
+                                  !!script.climax?.text &&
+                                  !!script.conclusion?.text &&
+                                  !!script.cta?.text;
 
-    // Desabilita os botões individualmente se o roteiro completo ainda não estiver pronto
-    const isFullScriptGenerated = allMainScriptGenerated && !!script.conclusion?.text && !!script.cta?.text;
+    // A seção de análise aparece E os botões são habilitados ao mesmo tempo.
+    analysisSection.style.display = isFullScriptGenerated ? 'block' : 'none';
     document.getElementById('analyzeScriptBtn').disabled = !isFullScriptGenerated;
     document.getElementById('analyzeHooksBtn').disabled = !isFullScriptGenerated;
     document.getElementById('suggestViralBtn').disabled = !isFullScriptGenerated;
