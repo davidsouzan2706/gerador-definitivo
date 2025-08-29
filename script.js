@@ -5267,11 +5267,11 @@ const actions = {
 
 
 
-// ==========================================================
-// >>>>> COLE ESTA FUNÇÃO COMPLETA NO LUGAR DA ANTIGA <<<<<
-// ==========================================================
+// VERSÃO FINAL E ROBUSTA DA FUNÇÃO DE IMPORTAÇÃO DE ROTEIRO
+
 const processPastedScript = async (button) => {
-    document.getElementById('finalizeBtnContainer')?.remove();
+    const finalizeBtn = document.getElementById('finalizeBtnContainer');
+    if (finalizeBtn) finalizeBtn.remove();
 
     const scriptInputArea = document.getElementById('scriptInputArea');
     const pastedJson = scriptInputArea.value.trim();
@@ -5288,6 +5288,7 @@ const processPastedScript = async (button) => {
     try {
         const scriptObject = await getRobustJson(pastedJson);
 
+        // 1. Sua lógica inteligente de normalização de chaves (mantida)
         const normalizedScriptObject = {};
         const keyMap = {
             'introducao': ['introducao', 'introduction', 'intro'],
@@ -5300,51 +5301,51 @@ const processPastedScript = async (button) => {
             for (const possibleKey of keyMap[standardKey]) {
                 if (scriptObject[possibleKey] !== undefined) {
                     normalizedScriptObject[standardKey] = scriptObject[possibleKey];
-                    break; 
+                    break;
                 }
                 const lowerPossibleKey = possibleKey.toLowerCase();
-                 if (scriptObject[lowerPossibleKey] !== undefined) {
+                if (scriptObject[lowerPossibleKey] !== undefined) {
                     normalizedScriptObject[standardKey] = scriptObject[lowerPossibleKey];
                     break;
                 }
             }
         }
 
+        // 2. Checagem essencial (mantida)
         if (!normalizedScriptObject.introducao || !normalizedScriptObject.desenvolvimento || !normalizedScriptObject.climax) {
             throw new Error("O JSON colado não contém as chaves essenciais (introducao, desenvolvimento, climax). Verifique a resposta da IA.");
         }
 
+        // 3. NOVO LOOP DE PROCESSAMENTO E RENDERIZAÇÃO (mais robusto)
+        const sectionOrder = ['introducao', 'desenvolvimento', 'climax', 'conclusao', 'cta'];
         const sectionMap = { introducao: 'intro', desenvolvimento: 'development', climax: 'climax', conclusao: 'conclusion', cta: 'cta' };
         const titles = { intro: 'Introdução', development: 'Desenvolvimento', climax: 'Clímax', conclusion: 'Conclusão', cta: 'Call to Action (CTA)' };
 
-        scriptContainer.innerHTML = '';
+        scriptContainer.innerHTML = ''; // Limpa o contêiner antes de adicionar os elementos
 
-        for (const key in sectionMap) {
-            if (normalizedScriptObject[key]) {
-                const sectionName = sectionMap[key];
-                let rawText = normalizedScriptObject[key];
-                
+        sectionOrder.forEach(key => {
+            const sectionName = sectionMap[key];
+            const rawText = normalizedScriptObject[key] || ""; // Usa o texto ou uma string vazia se a chave não existir
+
+            // Mesmo que o texto seja vazio, garantimos que a propriedade exista no AppState
+            AppState.generated.script[sectionName] = { html: "", text: rawText };
+
+            if (rawText) {
                 const cleanedText = rawText.replace(/\[[\d, ]+\]/g, '').trim();
-
-                // ==========================================================
-                // >>>>> AQUI ESTÁ A CORREÇÃO MÁGICA <<<<<
-                // Substituímos .split(/\n\s*\n/) por .split(/\n+/)
-                // O \n+ divide o texto em QUALQUER quebra de linha (simples, dupla, tripla, etc.)
-                // Isso garante que cada linha retornada pela IA se torne um parágrafo.
                 const paragraphs = cleanedText.split(/\n+/).filter(p => p.trim() !== '');
-                // ==========================================================
-                
                 const htmlContent = paragraphs.map((p, index) => `<div id="${sectionName}-p-${index}">${DOMPurify.sanitize(p)}</div>`).join('');
-                
-                // Reconstrói o texto limpo a partir dos parágrafos agora corretamente divididos
                 const correctlySpacedText = paragraphs.join('\n\n');
+                
+                // Atualiza o AppState com o conteúdo real e formatado
                 AppState.generated.script[sectionName] = { html: htmlContent, text: correctlySpacedText };
 
+                // Renderiza o acordeão na tela
                 const sectionElement = generateSectionHtmlContent(sectionName, titles[sectionName], htmlContent);
                 scriptContainer.appendChild(sectionElement);
             }
-        }
-        
+        });
+
+        // 4. Finalização do fluxo (lógica movida para depois do loop)
         markStepCompleted('script', false);
         window.showToast("Roteiro importado e processado com sucesso!", "success");
         
@@ -5356,6 +5357,9 @@ const processPastedScript = async (button) => {
                 </button>
             </div>
         `);
+        
+        // Dispara a atualização dos estados dos botões DEPOIS de tudo processado
+        updateButtonStates();
 
     } catch (error) {
         console.error("Erro ao processar roteiro importado:", error);
