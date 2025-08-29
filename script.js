@@ -249,10 +249,9 @@ const showPane = (paneId) => {
     // >>>>> CORREÇÃO ADICIONADA AQUI <<<<<
     // Garante que a visibilidade dos módulos do roteiro seja
     // sempre atualizada quando este painel é exibido.
-    if (paneId === 'script') {
+    if (paneId === 'script' || paneId === 'finalize') {
         updateButtonStates();
     }
-    // ==========================================================
 };
 
 const markStepCompleted = (stepId, navigate = true) => {
@@ -3478,47 +3477,53 @@ ${fullTranscript.slice(0, 7500)}
 
 
 
-// ... Continuação do Bloco ETAPA 4 ...
-
 const updateButtonStates = () => {
-    const script = AppState.generated.script;
-    const allMainScriptGenerated = !!script.intro?.text && !!script.development?.text && !!script.climax?.text;
-    const isConclusionGenerated = !!script.conclusion?.text;
-    const isFullScriptGenerated = allMainScriptGenerated && isConclusionGenerated && !!script.cta?.text;
+    const { script } = AppState.generated;
 
-    // Habilita/desabilita botões de metadados
-    ['generateTitlesAndThumbnailsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.disabled = !allMainScriptGenerated;
-    });
+    // Bloco de depuração para vermos o estado real
+    console.log("--- Verificando Estado para Atualização da UI ---");
+    console.log("Intro:", !!script.intro?.text);
+    console.log("Development:", !!script.development?.text);
+    console.log("Climax:", !!script.climax?.text);
+    console.log("Conclusion:", !!script.conclusion?.text);
+    console.log("CTA:", !!script.cta?.text);
 
-    // Módulo de Conclusão no painel de roteiro
-    const conclusionModule = document.getElementById('conclusionStrategyModule');
-    if (conclusionModule) {
-        conclusionModule.classList.toggle('hidden', !allMainScriptGenerated);
-        const btnGenerateConclusion = document.getElementById('generateConclusionBtn');
-        const btnGenerateCta = document.getElementById('generateCtaBtn');
-        if (btnGenerateConclusion && btnGenerateCta) {
-            btnGenerateConclusion.classList.toggle('hidden', isConclusionGenerated);
-            btnGenerateCta.classList.toggle('hidden', !isConclusionGenerated);
-        }
-    }
-    
-const analysisSection = document.getElementById('scriptAnalysisSection');
-if (analysisSection) {
-    // A condição para verificar se o roteiro completo foi gerado.
-    const isFullScriptGenerated = !!script.intro?.text &&
-                                  !!script.development?.text &&
-                                  !!script.climax?.text &&
+    // --- LÓGICA SIMPLIFICADA ---
+
+    // Condição 1: O núcleo do roteiro está pronto? (Intro, Dev, Climax)
+    const allMainScriptGenerated = !!script.intro?.text &&
+                                   !!script.development?.text &&
+                                   !!script.climax?.text;
+
+    // Condição 2: O roteiro inteiro está pronto? (Todas as 5 seções)
+    const isFullScriptGenerated = allMainScriptGenerated &&
                                   !!script.conclusion?.text &&
                                   !!script.cta?.text;
 
-    // A seção de análise aparece E os botões são habilitados ao mesmo tempo.
-    analysisSection.style.display = isFullScriptGenerated ? 'block' : 'none';
-    document.getElementById('analyzeScriptBtn').disabled = !isFullScriptGenerated;
-    document.getElementById('analyzeHooksBtn').disabled = !isFullScriptGenerated;
-    document.getElementById('suggestViralBtn').disabled = !isFullScriptGenerated;
-}
+    // --- ATUALIZAÇÃO DA INTERFACE ---
+
+    // 1. Habilita/desabilita botões de metadados no painel "Finalizar"
+    ['generateTitlesAndThumbnailsBtn', 'generateDescriptionBtn', 'generateSoundtrackBtn', 'mapEmotionsBtn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = !allMainScriptGenerated; // Só precisa do núcleo do roteiro
+    });
+
+    // 2. Módulo de Conclusão no painel "Criar Roteiro" (Lógica antiga removida, pois não é mais necessária com a importação de JSON)
+    const conclusionModule = document.getElementById('conclusionStrategyModule');
+    if(conclusionModule) {
+        // Você pode decidir esconder esta seção se o fluxo mudou
+        // conclusionModule.classList.toggle('hidden', true); 
+    }
+    
+    // 3. Seção de Análise no painel "Finalizar"
+    const analysisSection = document.getElementById('scriptAnalysisSection');
+    if (analysisSection) {
+        // A seção aparece E os botões são habilitados APENAS se o roteiro for 100% completo.
+        analysisSection.style.display = isFullScriptGenerated ? 'block' : 'none';
+        document.getElementById('analyzeScriptBtn').disabled = !isFullScriptGenerated;
+        document.getElementById('analyzeHooksBtn').disabled = !isFullScriptGenerated;
+        document.getElementById('suggestViralBtn').disabled = !isFullScriptGenerated;
+    }
 };
 
 
