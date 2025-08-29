@@ -465,7 +465,10 @@ Sua missão é gerar um array JSON com 6 ideias de vídeos. Sua principal fonte 
   2. Use os fatos e argumentos do "Relatório da Investigação" para contextualizar o problema.
   3. Descreva como o vídeo irá conduzir o espectador na busca por uma resposta à "Pergunta Central".
   4. Termine com uma promessa de que a resposta revelará uma nova camada sobre a fé ou as Escrituras.
-- **"discussionQuestions" (Questões para Diálogo):** Formule 3 perguntas profundas que nasçam diretamente da "Pergunta Central" do dossiê, convidando à reflexão teológica, aplicação prática e introspecção espiritual.
+- "discussionQuestions" (Questões para Diálogo): Formule EXATAMENTE 3 perguntas que criem uma ponte entre a teologia e a vida moderna, seguindo este formato:
+    *   **Pergunta Teológica:** Uma pergunta que aprofunde o enigma bíblico. (Ex: "Como a reivindicação de Jesus como 'a' Estrela da Manhã em Apocalipse funciona como o clímax e a resolução da tensão simbólica iniciada em Isaías?")
+    *   **Pergunta Prática (Ponte):** Uma pergunta que conecte o princípio teológico a um desafio contemporâneo. (Ex: "Como a igreja pode ajudar os cristãos a discernir entre a 'luz' da sabedoria do mundo e a verdadeira Luz de Cristo, especialmente quando ambas parecem atraentes?")
+    *   **Pergunta Pessoal (Aplicação):** Uma pergunta que force o espectador a refletir sobre sua própria vida. (Ex: "Reflita: em que momento em sua vida você buscou ou reconheceu para si mesmo uma glória que não era sua? Como a compreensão de que a glória pertence a Cristo muda sua perspectiva sobre suas ambições?")
 
 **AÇÃO FINAL:** Como Coletivo Hermenêutico, trate o "Dossiê de Tensão Narrativa" como sua pauta de investigação. Transforme cada enigma em uma proposta de vídeo profunda e cativante. Responda APENAS com o array JSON perfeito.`,
 
