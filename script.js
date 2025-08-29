@@ -2085,10 +2085,8 @@ const generateIdeasFromReport = async (button) => {
 
 
 
-// =========================================================================
-// >>>>> VERSÃO FINAL DO 'strategyMapper' - COM SUGESTÕES DINÂMICAS <<<<<
-//       Substitua o seu objeto inteiro por este bloco de código.
-// =========================================================================
+// VERSÃO FINAL E CORRIGIDA DO strategyMapper
+
 const strategyMapper = {
     'documentario': {
         dropdowns: { narrativeGoal: 'storytelling', narrativeStructure: 'documentary', narrativeTone: 'serio', videoObjective: 'informar', languageStyle: 'formal', speakingPace: 'moderate' },
@@ -2137,17 +2135,28 @@ const strategyMapper = {
     'enigmas': {
         dropdowns: { narrativeGoal: 'storytelling', narrativeStructure: 'mystery_loop', narrativeTone: 'serio', videoObjective: 'informar', languageStyle: 'formal', speakingPace: 'moderate' },
         targetAudience: idea => idea.targetAudience || "Estudantes de teologia, líderes religiosos e leigos interessados em interpretações bíblicas aprofundadas.",
-        narrativeTheme: idea => idea.angle,
-        centralQuestion: idea => (idea.discussionQuestions && idea.discussionQuestions.length > 0) ? idea.discussionQuestions[0] : `Qual é a verdade teológica oculta por trás de "${idea.title}"?`,
+        
+        // ==========================================================
+        // >>>>> A CORREÇÃO ESTÁ AQUI <<<<<
+        // ==========================================================
+        centralQuestion: idea => {
+            if (idea.discussionQuestions && idea.discussionQuestions.length > 0) {
+                const firstQuestionObject = idea.discussionQuestions[0];
+                // Retorna APENAS o valor (o texto da primeira pergunta) do objeto
+                return Object.values(firstQuestionObject)[0] || ''; 
+            }
+            return `Qual é a verdade teológica oculta por trás de "${idea.title}"?`;
+        },
+        // ==========================================================
+
         emotionalHook: () => `Iniciar com a história de um personagem bíblico ou figura histórica que enfrentou o dilema central do tema, antes de expandir a análise.`,
         researchData: idea => `A investigação deve se basear nestas passagens bíblicas: ${(idea.scripturalFoundation || []).join('; ')}.`,
         narrativeVoice: () => "Acadêmico, reverente e investigativo.",
         shockingEndingHook: () => `...revelando que a resposta para o enigma não estava no que foi escrito, mas no silêncio entre as palavras.`,
-        dossier: idea => `- Tese Principal: ${idea.angle}\n- Fundamentação Bíblica: ${(idea.scripturalFoundation || []).join('; ')}\n- Questões para Diálogo:\n${(idea.discussionQuestions || []).map(q => `  - ${q}`).join('\n')}`
+        dossier: idea => `- Tese Principal: ${idea.angle}\n- Fundamentação Bíblica: ${(idea.scripturalFoundation || []).join('; ')}\n- Questões para Diálogo:\n${(idea.discussionQuestions || []).map(q => { const key = Object.keys(q)[0]; return `  - ${key}: ${q[key]}`; }).join('\n')}`
     },
     'geral': {
         dropdowns: { narrativeGoal: 'storytelling', narrativeStructure: 'pixar_spine', narrativeTone: 'inspirador', videoObjective: 'informar', languageStyle: 'inspirador', speakingPace: 'moderate' },
-        // >>>>> REGRA APRIMORADA AQUI <<<<<
         targetAudience: idea => idea.targetAudience || `Jovens de 18 a 30 anos, curiosos sobre tecnologia e história (público de canais como 'Manual do Mundo' ou 'Nerdologia'), que consomem conteúdo de curiosidades rápidas.`,
         narrativeTheme: idea => idea.angle,
         centralQuestion: idea => `Qual é a revelação surpreendente por trás do tema "${idea.title}"?`,
@@ -2399,7 +2408,7 @@ ${labels.coreDetails}
     if (includeHeavyContext) {
         const heavyInputs = {
             videoDescription: document.getElementById('videoDescription')?.value.trim() || "",
-            centralQuestion: document.getElementById('centralQuestion')?.value.trim() || "",
+            centralQuestion: (document.getElementById('centralQuestion')?.value || '').trim(),
             researchData: document.getElementById('researchData')?.value.trim() || "",
             emotionalHook: document.getElementById('emotionalHook')?.value.trim() || "",
         };
