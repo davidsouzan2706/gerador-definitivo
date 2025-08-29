@@ -5295,13 +5295,14 @@ const processPastedScript = async (button) => {
 
         // 1. Sua lógica inteligente de normalização de chaves (mantida)
         const normalizedScriptObject = {};
-        const keyMap = {
-            'introducao': ['introducao', 'introduction', 'intro'],
-            'desenvolvimento': ['desenvolvimento', 'development', 'dev'],
-            'climax': ['climax'],
-            'conclusao': ['conclusao', 'conclusion'],
-            'cta': ['cta', 'call_to_action']
-        };
+const keyMap = {
+    'introducao': ['introducao', 'introduction', 'intro'],
+    'desenvolvimento': ['desenvolvimento', 'development', 'dev'],
+    'climax': ['climax'],
+    // Adicionamos a variação em português sem acento
+    'conclusao': ['conclusao', 'conclusion', 'conclusão'], 
+    'cta': ['cta', 'call_to_action']
+};
         for (const standardKey in keyMap) {
             for (const possibleKey of keyMap[standardKey]) {
                 if (scriptObject[possibleKey] !== undefined) {
