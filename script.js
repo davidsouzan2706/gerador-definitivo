@@ -118,31 +118,31 @@ You are generating an image that must be **indistinguishable from a real photogr
         name: 'Realismo Épico e Natural',
         block: `
 
-#cinematic film still, shot on Panavision System 65, 70mm film, with a 40mm lens at f/2.8. Photography by Emmanuel Lubezki. Lit only by the raw, low sun of late afternoon, creating deep, soft shadows and preserving highlight detail. Tangible atmosphere, with visible breath in the cold air and dust motes in the light. Ultra-realistic, weathered skin with visible pores, and organic imperfections on all surfaces. A feeling of continuous, fluid movement, with subtle motion blur on the extremities.
+#cinematic film still, shot on Panavision System 65, 70mm film, with a 40mm Panavision Primo lens at f/2.8. Photography by Emmanuel Lubezki. Lit only by the raw, low sun of late afternoon, creating deep, soft-edged shadows and preserving immense highlight detail, with a color temperature around 3500K. Tangible atmosphere, with visible breath crystallizing in the cold air and backlit dust motes dancing in the light. Ultra-realistic, weathered skin with visible pores, fine lines, and subtle subcutaneous scattering. Organic, imperfect textures on all surfaces: a slight fraying on fabric, mud caked on boots, condensation on metal. A feeling of continuous, fluid movement captured with subtle motion blur on the extremities, as if from a handheld camera.
 
---no cgi, 3d render, video game, perfect skin, airbrushed, studio lighting, artificial, clean, polished, flawless, sharp focus everywhere, digital art, cartoon, oversaturated`
+--no cgi, 3d render, video game, perfect skin, airbrushed, studio lighting, artificial, clean, polished, flawless, sharp focus everywhere, digital art, cartoon, oversaturated, flat, static`
     },
     'suspense': {
         name: 'Suspense Sombrio e Controlado',
         block: `
 
-#cinematic film still, meticulously composed. Cinematography by Roger Deakins. Shot on ARRI Alexa LF with a 35mm Cooke S4 lens. A single, harsh key light source from the side or above carves subjects out of the darkness, creating sharp, dramatic shadows. Desaturated and controlled color palette, focusing on blacks, greys, and a single muted accent color. Immense depth and scale, with a clean, razor-sharp focus on the subject and heavy falloff into shadow.
+#cinematic film still, meticulously composed with negative space to create tension. Cinematography by Roger Deakins. Shot on ARRI Alexa LF with a 35mm Cooke S4 lens, known for its gentle focus falloff. A single, hard key light source from the side or above carves subjects out of darkness, creating sharp, dramatic shadows with deep, crushed blacks. A severely desaturated and controlled color palette, focusing on blacks, greys, and a single, isolated muted accent color (e.g., ochre, slate blue). Immense depth and scale, with a clean, razor-sharp focus on the subject and a heavy, rapid falloff into shadow. The air feels heavy and still.
 
---no flat lighting, soft shadows, multiple light sources, cluttered, messy composition, bright colors, oversaturated, friendly, warm, cgi, 3d render, video game, blurry, out of focus`
+--no flat lighting, soft shadows, multiple light sources, cluttered, messy composition, bright colors, oversaturated, friendly, warm, cgi, 3d render, video game, blurry, out of focus, happy`
     },
     'nostalgico': {
         name: 'Sonhador e Nostálgico',
         block: `
 
-#cinematic film still, shot on 35mm Kodak Vision3 500T film with a vintage anamorphic lens. Dreamy and nostalgic atmosphere. Soft, hazy light filtering through a window or trees, creating prominent, warm lens flare and creamy, oval-shaped bokeh. Extremely shallow depth of field (f/1.4) focusing only on a single emotional detail. Colors are warm, slightly faded, with a gentle, authentic film grain. Feels like a captured, imperfect memory.
+#cinematic film still, shot on overexposed 35mm Kodak Vision3 500T film with a vintage, uncoated anamorphic lens to maximize flare. Dreamy, hazy, and nostalgic atmosphere. Soft, blooming light filtering through a window or trees, creating prominent, warm, horizontal lens flare and creamy, oval-shaped bokeh. Extremely shallow depth of field (f/1.4), focusing only on a single emotional detail, letting the rest of the world melt away. Colors are warm, with milky blacks and slightly faded, pastel-like highlights, and a gentle, authentic film grain structure. Feels like a captured, imperfect, sun-bleached memory.
 
---no sharp, crisp, digital, modern, clean, perfect focus, deep depth of field, no grain, realistic, harsh lighting, bright, cgi, 3d render, video game, sterile, cold colors`
+--no sharp, crisp, digital, modern, clean, perfect focus, deep depth of field, no grain, realistic, harsh lighting, bright, cgi, 3d render, video game, sterile, cold colors, sad`
     },
     'urbano': {
         name: 'Realismo Urbano e Texturizado',
         block: `
 
-#cinematic film still, shot on a handheld ARRI Alexa Mini with a vintage anamorphic lens. Cinematography by Greig Fraser. Lit by practical, motivated light sources from the environment (neon signs, streetlights, headlights), casting realistic reflections on wet, gritty surfaces. Ultra-realistic textures showing wear, dust, and moisture. Shallow depth of field with distinct oval bokeh and subtle motion blur, giving a visceral, grounded feeling. Muted but rich color palette.
+#cinematic film still, shot on a handheld ARRI Alexa Mini with a vintage anamorphic lens to introduce edge distortion and unique flares. Cinematography by Greig Fraser. Lit entirely by practical, motivated light sources from the environment (flickering neon signs, sodium-vapor streetlights, passing headlights), casting realistic, complex reflections on wet, gritty asphalt and slick surfaces. Ultra-realistic, high-fidelity textures showing wear, dust, moisture, and grime. Shallow depth of field with distinct, stretched oval bokeh. A visceral, grounded feeling achieved through subtle camera shake and organic motion blur on fast-moving elements. A muted but rich color palette, with color contamination from the neon lights tinting the shadows.
 
 --no studio lighting, clean, polished, perfect, flawless, static, tripod shot, cgi, 3d render, video game, cartoon, bright, sunny day, sterile, smooth surfaces, no texture`
     },
@@ -150,56 +150,53 @@ You are generating an image that must be **indistinguishable from a real photogr
         name: 'Clássico e Elegante',
         block: `
 
-#cinematic film still, reminiscent of a Caravaggio painting. Cinematography by Gordon Willis. Shot on Kodak 5247 film stock from the 1970s. Lit by a single, hard top-light (a "godfather light") that leaves the eyes in deep shadow, creating mystery and power. Rich, dark tones and a warm, golden-brown color palette. Composition is formal, balanced, and heavy with meaning. Visible, pleasant film grain. Avoids any hint of modern digital sharpness.
+#cinematic film still, reminiscent of a Caravaggio or Rembrandt painting (chiaroscuro). Cinematography by Gordon Willis. Shot on vintage Kodak 5247 film stock from the 1970s, with its characteristic warm bias and tight grain. Lit by a single, hard top-light (a 'godfather light') that leaves the eyes in deep, impenetrable shadow, creating mystery and power. A rich, dark, almost monochromatic palette of golden-browns, deep umbers, and warm blacks. Composition is formal, balanced, almost theatrical, heavy with meaning. Visible, pleasant film grain that feels like part of the texture. Avoids any hint of modern digital sharpness, embracing the softness of vintage lenses.
 
---no bright, evenly lit, fill light, modern, digital, sharp, cgi, 3d render, video game, lens flare, clean, new, futuristic, blue tones, cool colors, happy, vibrant`
+--no bright, evenly lit, fill light, modern, digital, sharp, cgi, 3d render, video game, lens flare, clean, new, futuristic, blue tones, cool colors, happy, vibrant, action`
     },
-
-
-
     'pixar': {
         name: 'Animação 3D Emocional (Estilo "PIXAR")',
         block: `
 
-#Masterful 3D animated scene in the signature style of Pixar Animation Studios, art direction by Pete Docter. Characters have appealing, slightly exaggerated features with extremely expressive, soulful eyes and subtle, nuanced body language that tells a story. Textures are deeply tactile and detailed, but stylized for clarity and appeal: soft, fuzzy fabric on a sweater, a perfectly polished wooden floor reflecting warm light, fluffy, volumetric clouds. The lighting is painterly and sophisticated, using soft key lights, extensive bounce light, and colored rim lights to sculpt characters and create a deep sense of atmosphere. Composition follows classic cinematic principles, using depth of field to guide the eye and frame the emotional core of the scene. The world feels lived-in, charming, and meticulously designed down to the smallest prop.
+#Masterful 3D animated scene in the signature style of Pixar, art direction by Pete Docter. Characters have appealing, slightly exaggerated features with extremely expressive, soulful eyes that have complex shaders for realistic moisture and reflection. Subtle, nuanced body language tells a story. Textures are deeply tactile and detailed, but stylized for clarity: soft, fuzzy fabric with individual, visible fibers; a perfectly polished wooden floor with micro-scratches reflecting warm light; fluffy, volumetric clouds with soft, light-scattering edges. The lighting is painterly and sophisticated, using soft key lights, extensive global illumination for bounce light, and colored rim lights to sculpt characters and create a deep sense of atmosphere. Cinematic depth of field guides the eye. The world feels lived-in, charming, and meticulously designed down to the smallest prop, with subtle signs of wear and history.
 
---no photorealistic, realistic human, uncanny valley, creepy, horror, dark, gritty, low-poly, messy, chaotic, flat lighting, simple textures, video game render, cgi look`
+--no photorealistic, realistic human, uncanny valley, creepy, horror, dark, gritty, low-poly, messy, chaotic, flat lighting, simple textures, video game render, cgi look, sharp edges`
     },
 
     'disney': {
         name: 'Conto de Fadas Moderno (Estilo "Disney Animation / Tangled")',
         block: `
 
-#Lush, vibrant 3D animation in the style of modern Disney, reminiscent of 'Tangled' or 'Frozen', art direction by Glen Keane. Characters have large, impossibly expressive eyes that sparkle with life, and their movements are fluid, graceful, and almost balletic. Environments are rich and painterly, an idealized, romantic version of reality with glowing flora, sun-drenched forests, and towering, elegant architecture. The lighting is overtly magical and dramatic, featuring volumetric god rays, sparkling particle effects, and deep, saturated-colored shadows. Textures are detailed but immaculately clean and beautiful. The overall feeling is one of breathtaking wonder, epic romance, and high adventure, a perfect, storybook world.
+#Lush, vibrant 3D animation in the style of modern Disney, reminiscent of 'Tangled', art direction by Glen Keane. Characters have large, impossibly expressive eyes that sparkle with life, featuring complex iris detail and reflective highlights. Their movements are fluid, graceful, and almost balletic, with exaggerated arcs and follow-through. Environments are a rich, painterly, idealized version of reality with glowing, translucent flora, sun-drenched forests, and towering, elegant architecture with whimsical details. The lighting is overtly magical and dramatic, featuring volumetric god rays, sparkling, physics-based particle effects, and deep, saturated-colored shadows. Textures are detailed but immaculately clean and beautiful. A feeling of breathtaking wonder, epic romance, and high adventure.
 
---no photorealistic, gritty, dark, dull colors, mundane, ugly, horror, sci-fi, cyberpunk, realistic human proportions, messy, dirty, sad, depressing`
+--no photorealistic, gritty, dark, dull colors, mundane, ugly, horror, sci-fi, cyberpunk, realistic human proportions, messy, dirty, sad, depressing, boring`
     },
 
     'anime': {
         name: 'Anime Épico e Cinematográfico (Estilo "Studio Ghibli / Makoto Shinkai")',
         block: `
 
-#A breathtaking 2D anime scene, a cinematic masterpiece in the combined style of Studio Ghibli and Makoto Shinkai. Directed by Hayao Miyazaki. The aesthetic is proudly hand-drawn, with incredibly detailed, lush, watercolor-style backgrounds that feel like standalone paintings. Characters are simply designed but animated with subtle, realistic gestures that convey deep emotion. There is a meticulous, almost reverent, attention to the details of nature: individual leaves rustling in the wind, the shimmer of light on a river's surface, magnificent, towering cloud formations. Lighting is soft, natural, and deeply atmospheric, often featuring dramatic, volumetric 'god rays' breaking through clouds or trees. The food depicted looks impossibly delicious and comforting. A profound feeling of nostalgia, gentle melancholy, and a deep respect for the quiet moments of life.
+#A breathtaking 2D anime scene, a cinematic masterpiece in the combined style of Studio Ghibli and Makoto Shinkai. The aesthetic is proudly hand-drawn, with incredibly detailed, lush, watercolor-style backgrounds that feel like standalone paintings. Meticulous, almost reverent, attention to the details of nature: individual leaves rustling in the wind, the shimmer of light on a river's surface, magnificent, towering cloud formations with detailed, shadowed undersides. Lighting is soft, natural, and deeply atmospheric, often featuring dramatic, volumetric 'god rays' and intricate lens flares that interact with the 'camera'. The food depicted looks impossibly delicious, with steam rendered as soft, swirling plumes. A profound feeling of nostalgia ('mono no aware'), gentle melancholy, and a deep respect for the quiet moments of life.
 
---no 3d, cgi, realistic, photorealistic, ugly, dark, horror, violent, robotic, low quality, generic anime, moe, fan art, sharp digital lines`
+--no 3d, cgi, realistic, photorealistic, ugly, dark, horror, violent, robotic, low quality, generic anime, moe, fan art, sharp digital lines, simple backgrounds`
     },
 
     'comic': {
         name: 'Ação e Estilo "Comic Book" (Estilo "Spider-Man: Into the Spider-Verse")',
         block: `
 
-#Dynamic, groundbreaking stylized 3D animation in the revolutionary style of 'Spider-Man: Into the Spider-Verse'. A visual explosion of mixed media. Characters are cel-shaded with visible, expressive ink line work, misaligned CMYK color channels, and textured with halftone dots (Ben-Day dots). Onomatopoeia text effects and action lines are integrated diegetically into the scene. The animation deliberately uses a lowered frame rate ('on twos') to mimic the feel of 2D, creating a snappy, kinetic energy. Compositions are bold and graphic, using extreme angles and a vibrant, saturated, graffiti-inspired color palette. A masterful fusion of cinematic depth of field with the raw, tactile energy of a printed comic book, street art, and pop art.
+#Dynamic, groundbreaking stylized 3D animation in the revolutionary style of 'Spider-Man: Into the Spider-Verse'. A visual explosion of mixed media. Characters are cel-shaded with visible, expressive, hand-drawn ink line work of varying weight, misaligned CMYK color channels creating chromatic aberration, and textured with halftone dots (Ben-Day dots). Onomatopoeia text effects and Kirby Krackle energy patterns are integrated diegetically into the scene. The animation deliberately uses a lowered frame rate ('on twos') for characters to mimic 2D, while the camera moves with fluid, cinematic grace. Compositions are bold and graphic, using extreme angles and a vibrant, saturated, graffiti-inspired color palette. A masterful fusion of cinematic depth of field with the raw, tactile energy of a printed comic book.
 
---no photorealistic, realistic, smooth, fluid animation, high frame rate, conventional, boring, dull colors, simple, classic, disney, pixar, elegant, quiet, calm`
+--no photorealistic, realistic, smooth, fluid animation, high frame rate, conventional, boring, dull colors, simple, classic, disney, pixar, elegant, quiet, calm, subtle`
     },
 
     'laika': {
         name: 'Fantasia Sombria e Elegante (Estilo "Guillermo del Toro / Laika Studios")',
         block: `
 
-#A masterful stop-motion animation aesthetic in the combined style of Laika Studios and Guillermo del Toro. Characters are exquisitely detailed puppets with elongated, stylized features, soulful, glassy eyes, and a tangible, handmade quality. The world is a gothic fairytale, filled with twisted, organic architecture and a dark, deeply desaturated color palette, dramatically accented by a single, vibrant color (blood red, ethereal blue). Lighting is low-key, theatrical, and dramatic, using hard spotlights and deep shadows to create long, distorted, German Expressionist-style silhouettes. Textures are hyper-detailed and tactile: rough, splintered wood, decaying, moth-eaten fabric, cold, moss-covered stone. A beautiful, melancholic, and elegantly creepy atmosphere.
+#A masterful stop-motion animation aesthetic in the combined style of Laika Studios and Guillermo del Toro. Characters are exquisitely detailed physical puppets with visible armature seams, soulful, glassy eyes, and a tangible, handmade quality, showing fingerprints on the clay. The world is a gothic fairytale, filled with twisted, organic architecture and a dark, deeply desaturated color palette, dramatically accented by a single, vibrant color. Lighting is low-key, theatrical, and dramatic, using hard spotlights and deep shadows to create long, distorted, German Expressionist-style silhouettes. Textures are hyper-detailed and physically real: rough, splintered wood, decaying, moth-eaten fabric with loose threads, cold, moss-covered stone. A beautiful, melancholic, and elegantly creepy atmosphere.
 
---no bright, happy, colorful, cute, pixar, disney, realistic, photorealistic, cgi, smooth, clean, modern, minimalist, simple, funny`
+--no bright, happy, colorful, cute, pixar, disney, realistic, photorealistic, cgi, smooth, clean, modern, minimalist, simple, funny, perfect`
 
     }
 
