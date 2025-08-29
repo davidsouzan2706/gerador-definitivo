@@ -2193,8 +2193,9 @@ const getGenreFromIdea = (idea) => {
 //       Com aviso de inconsistência de especialista.
 // =========================================================================
 const selectIdea = async (idea) => { // A função agora é assíncrona para esperar o pop-up
-    // --- ETAPA 1: DETECÇÃO E VALIDAÇÃO ---
-    // 1a. Qual especialista o USUÁRIO selecionou na interface?
+
+console.log("Objeto 'idea' recebido pela função selectIdea:", JSON.stringify(idea, null, 2));
+
     const selectedGenre = document.querySelector('#genreTabs .tab-button.tab-active')?.dataset.genre || 'geral';
     
     // 1b. Qual especialista nossa ferramenta ACHA que a ideia é?
