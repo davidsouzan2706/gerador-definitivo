@@ -1130,9 +1130,10 @@ console.log("RESPOSTA COMPLETA DA API:", JSON.stringify(result, null, 2));
 
 const rawContent = result.choices?.[0]?.message?.content;
 if (rawContent) {
-        } else {
-            throw new Error("Resposta inesperada da API.");
-        }
+    return rawContent; // <<<<<< ADICIONE ESTA LINHA
+} else {
+    throw new Error("Resposta inesperada da API.");
+}
     } catch (error) {
         console.error("Falha na chamada à API via Worker:", error);
         // --- LÓGICA INTELIGENTE AQUI ---
@@ -3298,9 +3299,8 @@ ${fullTranscript.slice(0, 7500)}
 
 **AÇÃO FINAL:** Analise o roteiro. Responda APENAS com o array JSON perfeito.`;
     try {
-        const brokenJson = await callGroqAPI(forceLanguageOnPrompt(prompt), 4000);
-        const perfectJson = await fixJsonWithAI(brokenJson);
-        const hooks = await getRobustJson(brokenJson);
+        const rawResponseText = await callGroqAPI(forceLanguageOnPrompt(prompt), 4000);
+        const hooks = await getRobustJson(rawResponseText);
 
         if (!hooks || !Array.isArray(hooks) || hooks.length === 0) throw new Error("A IA não encontrou ganchos ou retornou um formato inválido.");
         
