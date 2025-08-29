@@ -1125,8 +1125,7 @@ const callGroqAPI = async (prompt, maxTokens, promptTokenCount = 0) => {
         }
 const result = await response.json();
 
-// >>>>> LINHA DE DEPURAÇÃO ADICIONADA <<<<<
-console.log("RESPOSTA COMPLETA DA API:", JSON.stringify(result, null, 2));
+
 
 const rawContent = result.choices?.[0]?.message?.content;
 if (rawContent) {
