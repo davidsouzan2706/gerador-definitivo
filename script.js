@@ -695,6 +695,37 @@ ${fullTranscript}
 
 
 
+getImageStoryboardPrompt: (sectionText, durationRange = '8 a 15') => {
+    // Aqui usamos o seu prompt detalhado e o "envelopamos" em uma tarefa maior.
+    const fullPrompt = `
+# TAREFA: DIRETOR DE FOTOGRAFIA DE IA
+Sua única função é converter o texto de um roteiro em um array JSON de descrições visuais cinematográficas, seguindo um manual de estilo rigoroso.
+
+## ROTEIRO PARA ANÁLISE:
+---
+${sectionText}
+---
+
+## REGRAS DE SAÍDA (JSON ESTRITO - INEGOCIÁVEL):
+1.  **RESPONDA APENAS COM UM ÚNICO ARRAY JSON VÁLIDO.** Não inclua nenhum texto, explicação ou comentário fora do array.
+2.  **ESTRUTURA POR OBJETO:** Cada objeto no array DEVE ter 3 chaves: "original_phrase", "imageDescription", e "estimated_duration".
+3.  **SINTAXE:** Use aspas duplas ("") para todas as chaves e valores. Aspas duplas dentro de uma string DEVEM ser escapadas (ex: \\"exemplo\\").
+
+---
+## MANUAL DE ESTILO PARA "imageDescription" (A ALMA DA FERRAMENTA)
+### Para CADA "imageDescription" que você gerar, você DEVE seguir este manifesto criativo à risca:
+
+${imageStyleLibrary.cinematic.block} 
+// Acima, estamos inserindo diretamente o seu prompt de estilo cinematográfico.
+---
+
+**AÇÃO FINAL:** Analise o roteiro fornecido. Para cada momento visual chave, crie um objeto JSON correspondente, aplicando o manual de estilo na "imageDescription". Agrupe todos os objetos em um único array JSON e retorne APENAS esse array.
+`;
+    return fullPrompt;
+},
+
+
+
 
 
 // Adicione esta nova função dentro do objeto PromptManager em script.js
@@ -1417,6 +1448,62 @@ const showIdeaPromptDialog = (prompt) => {
         btnCancel.onclick = () => closeDialog(null);
     });
 };
+
+
+
+
+
+const showStoryboardPromptDialog = (prompt) => {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('storyboardPromptDialogOverlay');
+        const promptOutput = document.getElementById('storyboardMasterPromptOutput');
+        const storyboardInput = document.getElementById('storyboardInputArea');
+        const btnProcess = document.getElementById('storyboardBtnProcess');
+        const btnCancel = document.getElementById('storyboardBtnCancel');
+        const btnCopy = overlay.querySelector('[data-action="copyStoryboardPrompt"]');
+
+        if (!overlay || !promptOutput || !storyboardInput || !btnProcess || !btnCancel || !btnCopy) {
+            console.error("Elementos do modal de storyboard não encontrados no DOM.");
+            resolve(null);
+            return;
+        }
+
+        promptOutput.value = prompt;
+        storyboardInput.value = '';
+        overlay.style.display = 'flex';
+
+        const closeDialog = (result) => {
+            overlay.style.display = 'none';
+            // Limpa os event listeners para evitar duplicação
+            btnProcess.onclick = null;
+            btnCancel.onclick = null;
+            btnCopy.onclick = null;
+            resolve(result);
+        };
+
+        btnCopy.onclick = () => {
+            window.copyTextToClipboard(promptOutput.value);
+            btnCopy.innerHTML = '<i class="fas fa-check mr-2"></i> Copiado!';
+            setTimeout(() => { btnCopy.innerHTML = '<i class="fas fa-copy mr-2"></i> Copiar Prompt'; }, 2000);
+        };
+
+        btnProcess.onclick = () => {
+            const pastedJson = storyboardInput.value.trim();
+            if (!pastedJson) {
+                window.showToast("Cole o array JSON do storyboard antes de processar.", "error");
+                return;
+            }
+            closeDialog(pastedJson);
+        };
+
+        btnCancel.onclick = () => closeDialog(null);
+    });
+};
+
+
+
+
+
 
 /**
  * Nova função orquestradora para o fluxo de geração de ideias v7.0.
@@ -4433,8 +4520,6 @@ ${originalParagraphs.map(p => `Parágrafo ${p.index}: "${p.text}"`).join('\n\n')
 
 
 
-// VERSÃO FINAL DE SEGURANÇA MÁXIMA
-
 window.generatePromptsForSection = async (button) => {
     const sectionId = button.dataset.sectionId;
     const sectionElement = document.getElementById(sectionId);
@@ -4447,75 +4532,58 @@ window.generatePromptsForSection = async (button) => {
     }
 
     showButtonLoading(button);
-    promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div> <p class="text-center text-sm">Preparando lotes de texto seguros...</p>`;
-
+    
     try {
         const fullText = contentWrapper.textContent.trim();
         const visualPacing = document.getElementById('visualPacing').value;
         const durationRange = { 'dinamico': '3 a 8', 'normal': '8 a 15', 'contemplativo': '15 a 25' }[visualPacing] || '8 a 15';
 
-        // --- LÓGICA DE LOTE FIXO E SEGURO ---
-        // Este valor é baixo o suficiente para garantir que o prompt + roteiro nunca estourem o limite.
-        const MAX_CHARS_PER_BATCH = 700; 
+        // 1. Constrói o Prompt Mestre de Storyboard
+        const masterPrompt = PromptManager.getImageStoryboardPrompt(fullText, durationRange);
+        
+        hideButtonLoading(button); // Para o loading antes de mostrar o modal
 
-        const batches = [];
-        let remainingText = fullText;
-        while (remainingText.length > 0) {
-            let chunk = remainingText.substring(0, MAX_CHARS_PER_BATCH);
-            remainingText = remainingText.substring(MAX_CHARS_PER_BATCH);
-            if (remainingText.length > 0) {
-                const lastSpace = chunk.lastIndexOf(' ');
-                if (lastSpace !== -1) {
-                    remainingText = chunk.substring(lastSpace + 1) + remainingText;
-                    chunk = chunk.substring(0, lastSpace);
-                }
-            }
-            batches.push(chunk);
-        }
-        
-        console.log(`Roteiro dividido em ${batches.length} lotes de segurança.`);
-        
-        let allGeneratedPrompts = [];
-        
-        for (let i = 0; i < batches.length; i++) {
-            // Pausa de 5 segundos para garantir que não haja Rate Limit
-            if (i > 0) {
-                await new Promise(resolve => setTimeout(resolve, 5000)); 
-            }
+        // 2. Mostra o novo modal e espera o usuário colar o JSON
+        const pastedJson = await showStoryboardPromptDialog(masterPrompt);
 
-            const batchText = batches[i];
-            promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div> <p class="text-center text-sm">Processando lote ${i + 1} de ${batches.length}...</p>`;
-            
-            const prompt = PromptManager.getImageStoryboardPrompt(batchText, durationRange);
-            
-            // O Worker usará o max_tokens de 4096, que é mais que suficiente para estes lotes pequenos
-            const rawResponseText = await callGroqAPI(prompt); 
-            const batchResult = await getRobustJson(rawResponseText);
-            
-            if (Array.isArray(batchResult)) {
-                allGeneratedPrompts = allGeneratedPrompts.concat(batchResult);
-            } else {
-                console.warn(`Lote ${i + 1} retornou formato inválido.`);
-            }
+        if (!pastedJson) {
+            window.showToast("Geração de storyboard cancelada.", 'info');
+            return;
         }
 
-        if (allGeneratedPrompts.length === 0) throw new Error("A IA não conseguiu gerar prompts válidos.");
-        
-        const curatedPrompts = allGeneratedPrompts.filter(p => p && p.original_phrase && p.imageDescription).map(p => ({ scriptPhrase: p.original_phrase, imageDescription: p.imageDescription, estimated_duration: p.estimated_duration || 5 }));
-        
-        if (curatedPrompts.length === 0) throw new Error("A IA retornou respostas sem o formato correto.");
-        
+        // 3. Processa o JSON colado
+        promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div> <p class="text-center text-sm">Processando e renderizando o storyboard...</p>`;
+        const allGeneratedPrompts = await getRobustJson(pastedJson);
+
+        if (!allGeneratedPrompts || !Array.isArray(allGeneratedPrompts)) {
+            throw new Error("O texto colado não é um array JSON de cenas válido.");
+        }
+
+        // 4. Renderiza os cards (lógica que já tínhamos)
+        const curatedPrompts = allGeneratedPrompts
+            .filter(p => p && p.original_phrase && p.imageDescription)
+            .map(p => ({
+                scriptPhrase: p.original_phrase,
+                imageDescription: p.imageDescription,
+                estimated_duration: p.estimated_duration || 5
+            }));
+
+        if (curatedPrompts.length === 0) {
+            throw new Error("O JSON colado não continha nenhuma cena no formato correto.");
+        }
+
         const defaultStyleKey = 'cinematic';
         AppState.generated.imagePrompts[sectionId] = curatedPrompts.map(p => ({ ...p, selectedStyle: defaultStyleKey }));
         AppState.ui.promptPaginationState[sectionId] = 0;
         promptContainer.innerHTML = `<div class="prompt-pagination-wrapper space-y-4"><div class="prompt-nav-container flex items-center justify-center gap-4"></div><div class="prompt-items-container space-y-4"></div></div>`;
         renderPaginatedPrompts(sectionId);
+        
+        window.showToast("Storyboard importado com sucesso!", "success");
 
     } catch (error) {
-        console.error("Erro na geração de prompts:", error);
+        console.error("Erro na geração de prompts (via Modal):", error);
         promptContainer.innerHTML = `<p class="text-sm text-danger">${error.message}</p>`;
-    } finally {
-        hideButtonLoading(button);
+        hideButtonLoading(button); // Garante que o botão seja liberado em caso de erro
     }
 };
 

@@ -416,6 +416,37 @@
 
 
 
+<div id="storyboardPromptDialogOverlay" class="dialog-overlay">
+    <div class="card dialog-card" style="max-width: 800px;">
+        <h3 class="text-xl font-bold mb-4">Gerador de Prompts para Storyboard</h3>
+        
+        <!-- ETAPA 1: COPIAR O PROMPT MESTRE DE STORYBOARD -->
+        <div class="mb-4">
+            <label for="storyboardMasterPromptOutput" class="font-semibold block mb-2">1. Copie este Prompt de Storyboard:</label>
+            <p class="small-muted mb-2">Este prompt foi criado com base no roteiro da seção. Leve-o para sua IA de preferência para gerar o array JSON de cenas.</p>
+            <textarea id="storyboardMasterPromptOutput" class="input" rows="12" readonly></textarea>
+            <button class="btn btn-secondary mt-2 w-full" data-action="copyStoryboardPrompt">
+                <i class="fas fa-copy mr-2"></i> Copiar Prompt
+            </button>
+        </div>
+
+        <!-- ETAPA 2: COLAR O RESULTADO JSON -->
+        <div class="mt-6">
+            <label for="storyboardInputArea" class="font-semibold block mb-2">2. Cole a resposta (array JSON) da IA aqui:</label>
+            <p class="small-muted mb-2">Cole a resposta completa da IA abaixo. A ferramenta irá processar e organizar as cenas.</p>
+            <textarea id="storyboardInputArea" class="input" rows="10" placeholder="Cole o array JSON gerado pela IA aqui..."></textarea>
+        </div>
+        
+        <div class="flex justify-end gap-4 mt-6">
+            <button class="btn btn-ghost" id="storyboardBtnCancel">Cancelar</button>
+            <button class="btn btn-primary" id="storyboardBtnProcess">
+                <i class="fas fa-cogs mr-2"></i> Processar Storyboard
+            </button>
+        </div>
+    </div>
+</div>
+
+
     <script type="module" src="script.js"></script>
 </body>
 </html>
