@@ -1949,10 +1949,6 @@ const ideaCardConfig = {
 const renderUniversalIdeaCard = (idea, index, genre) => {
     const config = ideaCardConfig[genre] || ideaCardConfig['geral'];
 
-        if (genre === 'enigmas') {
-        console.log("Dados recebidos para o Card 'Enigmas':", JSON.stringify(idea.discussionQuestions, null, 2));
-    }
-
     const escapedIdea = escapeIdeaForOnclick(idea);
 
     const renderDetails = () => {
