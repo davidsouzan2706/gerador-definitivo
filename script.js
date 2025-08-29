@@ -3480,15 +3480,7 @@ ${fullTranscript.slice(0, 7500)}
 const updateButtonStates = () => {
     const { script } = AppState.generated;
 
-    // Bloco de depuração para vermos o estado real
-    console.log("--- Verificando Estado para Atualização da UI ---");
-    console.log("Intro:", !!script.intro?.text);
-    console.log("Development:", !!script.development?.text);
-    console.log("Climax:", !!script.climax?.text);
-    console.log("Conclusion:", !!script.conclusion?.text);
-    console.log("CTA:", !!script.cta?.text);
 
-    // --- LÓGICA SIMPLIFICADA ---
 
     // Condição 1: O núcleo do roteiro está pronto? (Intro, Dev, Climax)
     const allMainScriptGenerated = !!script.intro?.text &&
