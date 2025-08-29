@@ -3504,11 +3504,17 @@ const updateButtonStates = () => {
         }
     }
     
-    // Seção de Análise no painel de finalização
-    const analysisSection = document.getElementById('scriptAnalysisSection');
-    if (analysisSection) {
-        analysisSection.style.display = isFullScriptGenerated ? 'block' : 'none';
-    }
+const analysisSection = document.getElementById('scriptAnalysisSection');
+if (analysisSection) {
+    // Mostra a seção de análise assim que o núcleo do roteiro estiver pronto
+    analysisSection.style.display = allMainScriptGenerated ? 'block' : 'none';
+
+    // Desabilita os botões individualmente se o roteiro completo ainda não estiver pronto
+    const isFullScriptGenerated = allMainScriptGenerated && !!script.conclusion?.text && !!script.cta?.text;
+    document.getElementById('analyzeScriptBtn').disabled = !isFullScriptGenerated;
+    document.getElementById('analyzeHooksBtn').disabled = !isFullScriptGenerated;
+    document.getElementById('suggestViralBtn').disabled = !isFullScriptGenerated;
+}
 };
 
 
