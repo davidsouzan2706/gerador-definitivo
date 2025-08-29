@@ -5471,31 +5471,19 @@ if (button && actions[button.dataset.action]) {
     // ==========================================================
     // ===== INICIALIZAÇÃO FINAL (ORDEM CORRIGIDA) =================
     // ==========================================================
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-const storedTheme = localStorage.getItem('theme');
-setDarkMode(storedTheme === 'dark' || (!storedTheme && prefersDark));
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const storedTheme = localStorage.getItem('theme');
+    setDarkMode(storedTheme === 'dark' || (!storedTheme && prefersDark));
 
-setupInputTabs();
+    setupInputTabs();
 
-// 1. TENTA CARREGAR um projeto salvo.
-const savedStateString = localStorage.getItem('viralScriptGeneratorProject_v6');
-if (savedStateString) {
-    const userWantsToLoad = confirm("Encontramos um projeto salvo. Deseja continuar de onde parou?");
+    // 1. CARREGA TUDO da memória e RECONSTRÓI a UI silenciosamente
+    loadStateFromLocalStorage();
+
+    // 2. MARCA os steps concluídos com base no estado já carregado
+    AppState.ui.completedSteps.forEach(stepId => markStepCompleted(stepId, false));
+    updateProgressBar();
     
-    if (userWantsToLoad) {
-        // O usuário quer continuar, então carregamos e reconstruímos TUDO.
-        loadStateFromLocalStorage(); // Esta função já faz o parse e o sync
-        AppState.ui.completedSteps.forEach(stepId => markStepCompleted(stepId, false));
-        updateProgressBar();
-        showPane(AppState.ui.currentPane || 'investigate');
-        window.showToast("Projeto anterior carregado com sucesso!", "success");
-    } else {
-        // O usuário quer um projeto novo, então limpamos TUDO.
-        localStorage.removeItem('viralScriptGeneratorProject_v6');
-        resetApplicationState(); // Usamos a sua função de reset, que já é perfeita
-    }
-} else {
-    // Não há nenhum projeto salvo, então apenas mostramos o painel inicial.
-    showPane('investigate');
-}
+    // 3. SÓ AGORA, mostra o painel correto, que já foi preenchido
+    showPane(AppState.ui.currentPane || 'investigate');
 });
