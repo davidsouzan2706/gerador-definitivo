@@ -2158,7 +2158,7 @@ const strategyMapper = {
     'geral': {
         dropdowns: { narrativeGoal: 'storytelling', narrativeStructure: 'pixar_spine', narrativeTone: 'inspirador', videoObjective: 'informar', languageStyle: 'inspirador', speakingPace: 'moderate' },
         targetAudience: idea => idea.targetAudience || `Jovens de 18 a 30 anos, curiosos sobre tecnologia e história (público de canais como 'Manual do Mundo' ou 'Nerdologia'), que consomem conteúdo de curiosidades rápidas.`,
-        narrativeTheme: idea => idea.angle,
+        narrativeTheme: idea => idea.title,
         centralQuestion: idea => `Qual é a revelação surpreendente por trás do tema "${idea.title}"?`,
         emotionalHook: () => `Conectar uma das curiosidades a uma pequena história humana ou uma anedota surpreendente de seu impacto inicial.`,
         researchData: () => `Buscar 1-2 estatísticas ou datas-chave que reforcem o 'momento uau' do vídeo (ex: o custo original da tecnologia, o número de usuários hoje).`,
