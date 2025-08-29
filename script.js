@@ -1956,7 +1956,17 @@ const renderUniversalIdeaCard = (idea, index, genre) => {
                 ${config.details.map(detail => `
                     <div>
                         <strong class="text-${config.color}-500 flex items-center gap-2"><i class="fas ${detail.icon} fa-fw"></i>${detail.label}:</strong>
-                        <ul class="list-disc list-inside mt-1">${(idea[detail.key] || []).map(item => `<li>${DOMPurify.sanitize(item)}</li>`).join('')}</ul>
+                        <ul class="list-disc list-inside mt-1">
+    ${(idea[detail.key] || []).map(item => {
+        // Verifica se o item é um objeto com a chave "pergunta"
+        if (typeof item === 'object' && item !== null && item.pergunta) {
+            // Se for, exibe a pergunta com seu tipo em negrito
+            return `<li><strong>${DOMPurify.sanitize(item.tipo || 'Pergunta')}:</strong> ${DOMPurify.sanitize(item.pergunta)}</li>`;
+        }
+        // Se for uma string simples (para manter a compatibilidade com a "Fundamentação Bíblica")
+        return `<li>${DOMPurify.sanitize(item)}</li>`;
+    }).join('')}
+</ul>
                     </div>
                 `).join('')}
             </div>`;
