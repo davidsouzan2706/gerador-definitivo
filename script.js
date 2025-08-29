@@ -197,9 +197,15 @@ You are generating an image that must be **indistinguishable from a real photogr
 #A masterful stop-motion animation aesthetic in the combined style of Laika Studios and Guillermo del Toro. Characters are exquisitely detailed physical puppets with visible armature seams, soulful, glassy eyes, and a tangible, handmade quality, showing fingerprints on the clay. The world is a gothic fairytale, filled with twisted, organic architecture and a dark, deeply desaturated color palette, dramatically accented by a single, vibrant color. Lighting is low-key, theatrical, and dramatic, using hard spotlights and deep shadows to create long, distorted, German Expressionist-style silhouettes. Textures are hyper-detailed and physically real: rough, splintered wood, decaying, moth-eaten fabric with loose threads, cold, moss-covered stone. A beautiful, melancholic, and elegantly creepy atmosphere.
 
 --no bright, happy, colorful, cute, pixar, disney, realistic, photorealistic, cgi, smooth, clean, modern, minimalist, simple, funny, perfect`
+    },
+    'gacha': {
+        name: 'Gacha / Alice',
+        block: `
 
+#A masterful stop-motion animation aesthetic in the combined style of Laika Studios and Guillermo del Toro. Characters are exquisitely detailed physical puppets with visible armature seams, soulful, glassy eyes, and a tangible, handmade quality, showing fingerprints on the clay. The world is a gothic fairytale, filled with twisted, organic architecture and a dark, deeply desaturated color palette, dramatically accented by a single, vibrant color. Lighting is low-key, theatrical, and dramatic, using hard spotlights and deep shadows to create long, distorted, German Expressionist-style silhouettes. Textures are hyper-detailed and physically real: rough, splintered wood, decaying, moth-eaten fabric with loose threads, cold, moss-covered stone. A beautiful, melancholic, and elegantly creepy atmosphere.
+
+--no bright, happy, colorful, cute, pixar, disney, realistic, photorealistic, cgi, smooth, clean, modern, minimalist, simple, funny, perfect`
     }
-
 
 
 
