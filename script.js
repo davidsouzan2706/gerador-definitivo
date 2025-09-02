@@ -1203,8 +1203,7 @@ const getRobustJson = async (text) => {
         // A IA foi perfeita e seguiu as regras.
         return JSON.parse(jsonString);
     } catch (e) {
-        // Não faz nada, apenas continua para a próxima etapa.
-        console.warn("Tentativa 1 (Parse Direto) falhou. O texto não é um JSON puro. Prosseguindo para a extração.");
+                
     }
 
     // TENTATIVA 2: EXTRAÇÃO E PARSE
@@ -2193,7 +2192,7 @@ const getGenreFromIdea = (idea) => {
 // =========================================================================
 const selectIdea = async (idea) => { // A função agora é assíncrona para esperar o pop-up
 
-console.log("Objeto 'idea' recebido pela função selectIdea:", JSON.stringify(idea, null, 2));
+
 
     const selectedGenre = document.querySelector('#genreTabs .tab-button.tab-active')?.dataset.genre || 'geral';
     
