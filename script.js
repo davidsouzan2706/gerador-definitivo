@@ -677,10 +677,6 @@ Nunca comece duas "imageDescription" com o mesmo tipo de abertura. Evite estrutu
 O texto de entrada pode conter múltiplas frases ou parágrafos. É **essencial e obrigatório** que você gere uma **descrição visual ÚNICA e DISTINTA para CADA UM**.
 
 ---
-## REGRA DE VARIEDADE DE ABERTURA (CRÍTICA)
-Nunca comece duas "imageDescription" com o mesmo tipo de abertura. Evite estruturas previsíveis ou fórmulas repetidas. Em vez disso, inicie cada descrição por um ponto único: uma emoção, um detalhe sensorial, um comportamento da luz, um som significativo ou um movimento simbólico. Todos os elementos técnicos (plano, movimento de câmera, foco, estilo visual, detalhe ativo) devem estar presentes ao longo da descrição, mas integrados organicamente — nunca como fórmula de abertura. A primeira frase deve instigar, não catalogar.
-
----
 ## EXEMPLOS DE FORMATOS DE SAÍDA CORRETO
 
 [
