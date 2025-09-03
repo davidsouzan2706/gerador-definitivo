@@ -4443,8 +4443,6 @@ ${originalParagraphs.map(p => `Parágrafo ${p.index}: "${p.text}"`).join('\n\n')
 
 
 
-// VERSÃO FINAL DE SEGURANÇA MÁXIMA
-
 window.generatePromptsForSection = async (button) => {
     const sectionId = button.dataset.sectionId;
     const sectionElement = document.getElementById(sectionId);
@@ -4457,73 +4455,58 @@ window.generatePromptsForSection = async (button) => {
     }
 
     showButtonLoading(button);
-    promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div> <p class="text-center text-sm">Preparando lotes de texto seguros...</p>`;
-
+    
     try {
         const fullText = contentWrapper.textContent.trim();
         const visualPacing = document.getElementById('visualPacing').value;
         const durationRange = { 'dinamico': '3 a 8', 'normal': '8 a 15', 'contemplativo': '15 a 25' }[visualPacing] || '8 a 15';
 
-        // --- LÓGICA DE LOTE FIXO E SEGURO ---
-        const MAX_CHARS_PER_BATCH = 750; // Valor ultra conservador para garantir o sucesso
+        // 1. Constrói o Prompt Mestre de Storyboard
+        const masterPrompt = PromptManager.getImageStoryboardPrompt(fullText, durationRange);
+        
+        hideButtonLoading(button); // Para o loading antes de mostrar o modal
 
-        const batches = [];
-        let remainingText = fullText;
-        while (remainingText.length > 0) {
-            let chunk = remainingText.substring(0, MAX_CHARS_PER_BATCH);
-            remainingText = remainingText.substring(MAX_CHARS_PER_BATCH);
-            if (remainingText.length > 0) {
-                const lastSpace = chunk.lastIndexOf(' ');
-                if (lastSpace !== -1) {
-                    remainingText = chunk.substring(lastSpace + 1) + remainingText;
-                    chunk = chunk.substring(0, lastSpace);
-                }
-            }
-            batches.push(chunk);
-        }
-        
-        console.log(`Roteiro dividido em ${batches.length} lotes de segurança.`);
-        
-        let allGeneratedPrompts = [];
-        
-        for (let i = 0; i < batches.length; i++) {
-            if (i > 0) {
-                await new Promise(resolve => setTimeout(resolve, 5000)); 
-            }
+        // 2. Mostra o novo modal e espera o usuário colar o JSON
+        const pastedJson = await showStoryboardPromptDialog(masterPrompt);
 
-            const batchText = batches[i];
-            promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div> <p class="text-center text-sm">Processando lote ${i + 1} de ${batches.length}...</p>`;
-            
-            const prompt = PromptManager.getImageStoryboardPrompt(batchText, durationRange);
-            
-            // O Worker usará o max_tokens de 4096, que é mais que suficiente para estes lotes pequenos
-            const rawResponseText = await callGroqAPI(prompt); 
-            const batchResult = await getRobustJson(rawResponseText);
-            
-            if (Array.isArray(batchResult)) {
-                allGeneratedPrompts = allGeneratedPrompts.concat(batchResult);
-            } else {
-                console.warn(`Lote ${i + 1} retornou formato inválido.`);
-            }
+        if (!pastedJson) {
+            window.showToast("Geração de storyboard cancelada.", 'info');
+            return;
         }
 
-        if (allGeneratedPrompts.length === 0) throw new Error("A IA não conseguiu gerar prompts válidos.");
-        
-        const curatedPrompts = allGeneratedPrompts.filter(p => p && p.original_phrase && p.imageDescription).map(p => ({ scriptPhrase: p.original_phrase, imageDescription: p.imageDescription, estimated_duration: p.estimated_duration || 5 }));
-        
-        if (curatedPrompts.length === 0) throw new Error("A IA retornou respostas sem o formato correto.");
-        
+        // 3. Processa o JSON colado
+        promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div> <p class="text-center text-sm">Processando e renderizando o storyboard...</p>`;
+        const allGeneratedPrompts = await getRobustJson(pastedJson);
+
+        if (!allGeneratedPrompts || !Array.isArray(allGeneratedPrompts)) {
+            throw new Error("O texto colado não é um array JSON de cenas válido.");
+        }
+
+        // 4. Renderiza os cards (lógica que já tínhamos)
+        const curatedPrompts = allGeneratedPrompts
+            .filter(p => p && p.original_phrase && p.imageDescription)
+            .map(p => ({
+                scriptPhrase: p.original_phrase,
+                imageDescription: p.imageDescription,
+                estimated_duration: p.estimated_duration || 5
+            }));
+
+        if (curatedPrompts.length === 0) {
+            throw new Error("O JSON colado não continha nenhuma cena no formato correto.");
+        }
+
         const defaultStyleKey = 'cinematic';
         AppState.generated.imagePrompts[sectionId] = curatedPrompts.map(p => ({ ...p, selectedStyle: defaultStyleKey }));
         AppState.ui.promptPaginationState[sectionId] = 0;
         promptContainer.innerHTML = `<div class="prompt-pagination-wrapper space-y-4"><div class="prompt-nav-container flex items-center justify-center gap-4"></div><div class="prompt-items-container space-y-4"></div></div>`;
         renderPaginatedPrompts(sectionId);
+        
+        window.showToast("Storyboard importado com sucesso!", "success");
 
     } catch (error) {
-        console.error("Erro na geração de prompts:", error);
+        console.error("Erro na geração de prompts (via Modal):", error);
         promptContainer.innerHTML = `<p class="text-sm text-danger">${error.message}</p>`;
-    } finally {
-        hideButtonLoading(button);
+        hideButtonLoading(button); // Garante que o botão seja liberado em caso de erro
     }
 };
 
