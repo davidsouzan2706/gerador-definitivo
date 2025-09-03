@@ -910,11 +910,7 @@ Com base no briefing e seguindo RIGOROSAMENTE todas as regras, escreva o roteiro
         .replace(/__CLIMAX_WORDS__/g, counts.climax || 200)
         .replace(/__CONCLUSION_WORDS__/g, counts.conclusion || 150);
 },
-
-
 };
-
-
 
 
 
@@ -1187,61 +1183,77 @@ const fixJsonWithAI = async (brokenJsonText) => {
 
 
 // =========================================================================
-// >>>>> FILTRO JSON <<<<<
+// >>>>> FILTRO JSON ROBUSTO (VERSÃO FINAL SEM CHAMADA DE API) <<<<<
 // =========================================================================
+/**
+ * Tenta analisar uma string de texto para extrair um objeto ou array JSON válido.
+ * Esta versão é "blindada" e NÃO faz chamadas de API para reparo.
+ * Ela foca em limpar e extrair o JSON, lançando um erro claro para o usuário se o parse falhar.
+ *
+ * @param {string} text O texto bruto que o usuário colou, que pode conter um JSON.
+ * @returns {Promise<object|Array>} O objeto ou array JSON parseado.
+ * @throws {Error} Lança um erro detalhado e amigável se o JSON não puder ser processado.
+ */
 const getRobustJson = async (text) => {
+    // Passo 1: Validação inicial para garantir que a entrada não está vazia.
     if (!text || text.trim() === '') {
-        throw new Error("A IA retornou uma resposta vazia.");
+        throw new Error("A resposta da IA está vazia. Por favor, verifique e cole o resultado completo.");
     }
 
-    let jsonString = text;
-
-    // TENTATIVA 1: PARSE DIRETO (O cenário ideal)
+    // TENTATIVA 1: PARSE DIRETO
+    // O cenário ideal, onde a IA retorna um JSON puro e perfeito, sem texto extra.
     try {
-        // A IA foi perfeita e seguiu as regras.
-        return JSON.parse(jsonString);
+        return JSON.parse(text);
     } catch (e) {
-                
+        // Se falhar, não é um problema. Apenas significa que o texto não é um JSON puro.
+        // Isso é esperado se o usuário copiou texto extra. Prosseguimos para a próxima etapa.
+        console.warn("Tentativa 1 (Parse Direto) falhou. O texto não é um JSON puro. Prosseguindo para a extração inteligente.");
     }
 
-    // TENTATIVA 2: EXTRAÇÃO E PARSE
-    // A IA incluiu texto extra antes ou depois do JSON.
+    // TENTATIVA 2: EXTRAÇÃO INTELIGENTE E PARSE
+    // Lida com casos comuns onde o JSON está envolto em texto ou marcadores de código.
     try {
-        // Limpa o máximo de lixo possível.
-        let cleanedText = text.replace(/```json\n|```/g, '').replace(/assistant<\|end_header_id\|>|Aqui está a resposta em JSON:|Here is the corrected JSON:/gi, '').trim();
+        // Limpa marcadores de bloco de código (```json) e espaços em branco desnecessários.
+        let cleanedText = text.replace(/```json\n?|```/g, '').trim();
 
+        // Encontra o primeiro caractere que indica o início de um JSON ('{' para objeto, '[' para array).
         const firstBrace = cleanedText.indexOf('{');
         const firstBracket = cleanedText.indexOf('[');
         
+        // Se não encontrar nenhum dos dois, o texto colado provavelmente não contém um JSON.
         if (firstBrace === -1 && firstBracket === -1) {
-            // Se mesmo após a limpeza não há JSON, pulamos para o reparo.
-            throw new Error("Nenhum JSON encontrado para extração.");
+            throw new Error("O texto colado não parece conter um JSON. Verifique se a resposta da IA está no formato correto.");
         }
         
+        // Define o índice exato onde o JSON começa.
         const startIndex = (firstBrace === -1) ? firstBracket : (firstBracket === -1) ? firstBrace : Math.min(firstBrace, firstBracket);
+        
+        // Define o índice final procurando pelo ÚLTIMO caractere de fechamento correspondente.
+        // Isso ajuda a capturar o JSON inteiro, mesmo que haja JSONs aninhados.
         const endIndex = (cleanedText[startIndex] === '[') ? cleanedText.lastIndexOf(']') : cleanedText.lastIndexOf('}');
 
-        if (endIndex > startIndex) {
-            const extractedJson = cleanedText.substring(startIndex, endIndex + 1);
-            return JSON.parse(extractedJson);
-        } else {
-            throw new Error("Extração de JSON falhou.");
+        // Se o caractere final não for encontrado ou estiver antes do inicial, o JSON está incompleto.
+        // Este é o erro que você viu no log (JSON truncado).
+        if (endIndex <= startIndex) {
+            throw new Error("O JSON parece estar incompleto ou cortado (não foi encontrado um fechamento '}' ou ']'). Tente gerar novamente na IA externa, garantindo que o limite de tokens/comprimento da resposta seja alto o suficiente.");
         }
-    } catch (error) {
-        console.warn(`Tentativa 2 (Extração) falhou: ${error.message}. Prosseguindo para o reparo com IA.`);
-    }
 
-    // TENTATIVA 3: REPARO COMPLETO COM IA (A REDE DE SEGURANÇA FINAL)
-    // A IA falhou em seguir o formato, gerou sintaxe inválida ou respondeu em modo chat.
-    try {
-        console.log("Acionando Agente de Reparo (fixJsonWithAI)...");
-        const fixedJson = await fixJsonWithAI(text); // Passamos o texto original e bruto para o reparador.
-        return JSON.parse(fixedJson);
+        // Extrai a fatia de texto que acreditamos ser o JSON válido.
+        const extractedJson = cleanedText.substring(startIndex, endIndex + 1);
+        
+        // Tenta o parse final na string limpa e extraída.
+        return JSON.parse(extractedJson);
+
     } catch (finalError) {
-        console.error("Falha final: O Agente de Reparo não conseguiu consertar o JSON.", finalError);
-        console.error("Texto problemático original:", text);
-        throw new Error(`A IA retornou um formato completamente inválido que não pôde ser reparado.`);
+        // Se mesmo após a limpeza o parse falhar, significa que a sintaxe DENTRO do JSON está errada.
+        console.error("Falha final ao processar o JSON:", finalError);
+        console.error("Texto problemático original que causou o erro:", text);
+        // Lança um erro final para o usuário, encapsulando a mensagem de erro original para depuração.
+        throw new Error(`Não foi possível processar o JSON colado. Detalhe do erro: ${finalError.message}`);
     }
+    
+    // A TENTATIVA 3 (Reparo com IA via 'fixJsonWithAI') foi intencionalmente removida
+    // para evitar chamadas de API desnecessárias e resolver o problema de sobrecarga.
 };
 
 
