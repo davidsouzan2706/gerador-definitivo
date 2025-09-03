@@ -698,7 +698,6 @@ O texto de entrada pode conter múltiplas frases ou parágrafos. É **essencial 
 ]
 
 ---
-
 ## REGRA FINAL ANTI-PLÁGIO (INEGOCIÁVEL)
 Os exemplos na seção "EXEMPLOS DE FORMATOS DE SAÍDA CORRETO" são **APENAS para referência de estilo e formato**. É **ESTRITAMENTE PROIBIDO** copiar o conteúdo desses exemplos. Sua resposta DEVE se basear **única e exclusivamente** no texto da "ENTRADA DE DADOS".
 
