@@ -553,37 +553,6 @@ ${fullTranscript}
 
 
 
-getImageStoryboardPrompt: (sectionText, durationRange = '8 a 15') => {
-    // Aqui usamos o seu prompt detalhado e o "envelopamos" em uma tarefa maior.
-    const fullPrompt = `
-# TAREFA: DIRETOR DE FOTOGRAFIA DE IA
-Sua única função é converter o texto de um roteiro em um array JSON de descrições visuais cinematográficas, seguindo um manual de estilo rigoroso.
-
-## ROTEIRO PARA ANÁLISE:
----
-${sectionText}
----
-
-## REGRAS DE SAÍDA (JSON ESTRITO - INEGOCIÁVEL):
-1.  **RESPONDA APENAS COM UM ÚNICO ARRAY JSON VÁLIDO.** Não inclua nenhum texto, explicação ou comentário fora do array.
-2.  **ESTRUTURA POR OBJETO:** Cada objeto no array DEVE ter 3 chaves: "original_phrase", "imageDescription", e "estimated_duration".
-3.  **SINTAXE:** Use aspas duplas ("") para todas as chaves e valores. Aspas duplas dentro de uma string DEVEM ser escapadas (ex: \\"exemplo\\").
-
----
-## MANUAL DE ESTILO PARA "imageDescription" (A ALMA DA FERRAMENTA)
-### Para CADA "imageDescription" que você gerar, você DEVE seguir este manifesto criativo à risca:
-
-${imageStyleLibrary.cinematic.block} 
-// Acima, estamos inserindo diretamente o seu prompt de estilo cinematográfico.
----
-
-**AÇÃO FINAL:** Analise o roteiro fornecido. Para cada momento visual chave, crie um objeto JSON correspondente, aplicando o manual de estilo na "imageDescription". Agrupe todos os objetos em um único array JSON e retorne APENAS esse array.
-`;
-    return fullPrompt;
-},
-
-
-
 
 
 // Adicione esta nova função dentro do objeto PromptManager em script.js
@@ -669,16 +638,22 @@ Para cada parágrafo, construa a "imageDescription" como uma prosa cinematográf
 - **Em caso de ambiguidade, escolha sempre o detalhe que evoca a sensação mais forte e o significado mais profundo**. Não escolha o óbvio — escolha o **inevitável**.
 
 ---
-## REGRA DE VARIEDADE DE ABERTURA (CRÍTICA)
-Nunca comece duas "imageDescription" com o mesmo tipo de abertura. Evite estruturas previsíveis ou fórmulas repetidas. Em vez disso, inicie cada descrição por um ponto único: uma emoção, um detalhe sensorial, um comportamento da luz, um som significativo ou um movimento simbólico. Todos os elementos técnicos (plano, movimento de câmera, foco, estilo visual, detalhe ativo) devem estar presentes ao longo da descrição, mas integrados organicamente — nunca como fórmula de abertura. A primeira frase deve instigar, não catalogar.
+## REGRA DE VARIEDADE DE ABERTURA (A MAIS IMPORTANTE DE TODAS)
+É **TERMINANTEMENTE PROIBIDO** que duas ou mais "imageDescription" comecem com uma estrutura de frase similar, especialmente fórmulas como "A câmera começa...", "Close-up em...", "Plano aberto...", ou qualquer variação que descreva uma ação de câmera. 
+**PENALIDADE POR FALHA:** Se você repetir uma estrutura de abertura, a tarefa inteira será considerada uma falha.
+**DIRETRIZ OBRIGATÓRIA:** Você DEVE iniciar cada "imageDescription" com um elemento narrativo diferente. Varie entre começar com:
+-   **Um Som:** "O zumbido de uma lâmpada fluorescente é o único som no corredor vazio..."
+-   **Um Cheiro:** "O cheiro de papel velho e poeira impregna o ar..."
+-   **Uma Sensação Tátil:** "O frio do metal atravessa a luva quando ele toca a maçaneta..."
+-   **Um Detalhe Físico:** "Uma veia pulsa na têmpora dele, um relógio descontrolado..."
+-   **Um Comportamento da Luz:** "A luz da tarde entra pela janela em um ângulo baixo, projetando sombras longas que se esticam como dedos..."
+-   **Uma Emoção Interna:** "A ansiedade se manifesta como um nó frio no estômago..."
+Todos os elementos técnicos (plano, câmera) devem ser descritos **organicamente no meio do texto**, nunca como a frase de abertura. A primeira frase deve imergir o leitor diretamente na experiência sensorial ou psicológica da cena.
+
 
 ---
 ## DIRETRIZ DE VARIEDADE E CONTEXTO (REGRA CRÍTICA ANTI-REPETIÇÃO)
 O texto de entrada pode conter múltiplas frases ou parágrafos. É **essencial e obrigatório** que você gere uma **descrição visual ÚNICA e DISTINTA para CADA UM**.
-
----
-## REGRA DE VARIEDADE DE ABERTURA (CRÍTICA)
-Nunca comece duas "imageDescription" com o mesmo tipo de abertura. Evite estruturas previsíveis ou fórmulas repetidas. Em vez disso, inicie cada descrição por um ponto único: uma emoção, um detalhe sensorial, um comportamento da luz, um som significativo ou um movimento simbólico. Todos os elementos técnicos (plano, movimento de câmera, foco, estilo visual, detalhe ativo) devem estar presentes ao longo da descrição, mas integrados organicamente — nunca como fórmula de abertura. A primeira frase deve instigar, não catalogar.
 
 ---
 ## EXEMPLOS DE FORMATOS DE SAÍDA CORRETO
