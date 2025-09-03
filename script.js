@@ -600,7 +600,7 @@ ${sectionText}
 ---
 
 ## TAREFA PRINCIPAL:
-Analise o roteiro acima. Identifique as frases ou pequenos grupos de frases que representam uma cena ou um "momento visual" distinto. Para CADA um desses momentos, crie um objeto JSON correspondente e adicione-o ao array final.
+Sua missão é analisar o roteiro acima frase por frase. Crie um objeto JSON separado para CADA frase que descreva uma ação, imagem ou sentimento distinto. Agrupe apenas frases muito curtas e diretamente conectadas. O objetivo é aumentar o número de cenas geradas, detalhando mais o storyboard. Para CADA um desses momentos visuais, crie um objeto JSON correspondente.
 
 ---
 ## MANUAL DE ESTILO OBRIGATÓRIO (A ALMA DA FERRAMENTA)
