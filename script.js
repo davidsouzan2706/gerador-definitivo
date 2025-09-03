@@ -2028,7 +2028,6 @@ const renderUniversalIdeaCard = (idea, index, genre) => {
 
 
 
-// SUBSTITUA A SUA FUNÇÃO generateIdeasFromReport POR ESTA VERSÃO COMPLETA E CORRIGIDA
 const generateIdeasFromReport = async (button) => {
     const factCheckOutput = document.getElementById('factCheckOutput');
     const { originalQuery, rawReport } = factCheckOutput.dataset;
@@ -2045,15 +2044,10 @@ const generateIdeasFromReport = async (button) => {
     outputContainer.innerHTML = '';
 
     try {
-        // PASSO 1: Construir o prompt
-        
-        // >>>>> A CORREÇÃO ESTÁ AQUI <<<<<
-        // Limpamos o relatório de todas as citações numéricas como [11] ou [16, 25]
-        const cleanedReport = rawReport.replace(/\[[\d, ]+\]/g, ''); 
-        
-        // Agora, usamos o `cleanedReport` para criar o contexto para a IA.
-        // O prompt que o usuário irá copiar já estará limpo.
-        const promptContext = { originalQuery, rawReport: cleanedReport, languageName };
+        // PASSO 1: Construir o prompt (Limpando o relatório ANTES de enviar)
+        // Esta parte você já tinha e está correta.
+        const cleanedReportForPrompt = rawReport.replace(/\[[\d, ]+\]/g, ''); 
+        const promptContext = { originalQuery, rawReport: cleanedReportForPrompt, languageName };
         const creativePrompt = PromptManager.getIdeasPrompt(genre, promptContext);
         
         hideButtonLoading(button);
@@ -2074,9 +2068,21 @@ const generateIdeasFromReport = async (button) => {
             throw new Error("O texto colado não é um array JSON de ideias válido.");
         }
         
-        // PASSO 4: Renderizar os cards
-        AppState.generated.ideas = ideas;
-        const allCardsHtml = ideas.map((idea, index) => renderUniversalIdeaCard(idea, index, genre)).join('');
+        // =========================================================================
+        // >>>>> A CORREÇÃO DEFINITIVA ESTÁ AQUI <<<<<
+        // Limpamos as citações que a IA externa pode ter adicionado de volta ao texto.
+        // =========================================================================
+        const cleanedIdeas = ideas.map(idea => {
+            if (idea.videoDescription) {
+                // Remove qualquer coisa no formato [1], [3, 5] ou [9, 17]
+                idea.videoDescription = idea.videoDescription.replace(/\[[\d, ]+\]/g, ' ').replace(/\s+/g, ' ').trim();
+            }
+            return idea;
+        });
+        
+        // PASSO 4: Renderizar os cards (usando a versão limpa)
+        AppState.generated.ideas = cleanedIdeas; // Salva a versão limpa no estado
+        const allCardsHtml = cleanedIdeas.map((idea, index) => renderUniversalIdeaCard(idea, index, genre)).join('');
         outputContainer.innerHTML = allCardsHtml;
         
         markStepCompleted('investigate', false);
@@ -2089,7 +2095,6 @@ const generateIdeasFromReport = async (button) => {
         hideButtonLoading(button);
     }
 };
-
 
 
 
