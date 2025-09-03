@@ -697,11 +697,6 @@ O texto de entrada pode conter múltiplas frases ou parágrafos. É **essencial 
   }
 ]
 
-
-## ENTRADA DE DADOS
-
----
-${sectionText}
 ---
 
 ## REGRA FINAL ANTI-PLÁGIO (INEGOCIÁVEL)
