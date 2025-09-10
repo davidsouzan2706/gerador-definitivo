@@ -54,18 +54,18 @@ Ultra-realistic, high-resolution photographic image captured with masterfully re
 
 ## CARACTERÍSTICAS VISUAIS ESSENCIAIS
 
-### Qualidade Técnica
+## Qualidade Técnica
 - **Rich & Organic Textures:** Surfaces must display tactile authenticity — visible skin pores, individual fabric threads, weathered materials (wood, metal, stone), realistic reflections, and organic imperfections that add depth and believability. Skin should show subtle blemishes, fine lines, and natural texture, not perfectly smooth.
 - **Focus & Depth of Field:** Employ selective sharp focus with subtle depth of field (slightly blurred background or foreground) to guide the viewer's attention and create a sense of three-d. Avoid perfect clarity across the entire frame.
 - **Color Palette & Contrast:** Colors should be "true-to-life" but with a refined, cinematical range. Avoid super-saturated or artificially vibrant hues. Favor contrasts that create visual drama and natural modeling, typical of good cinematography.
 - **Lighting & Atmosphere:** Lighting must be complex and naturalistic, with multiple light sources creating soft shadows, half-tones, and highlights. Include subtle atmospheric elements like dust, mist, or light rays (god rays) when appropriate to enhance the sense of a living environment. Shadows should have soft edges and fall naturally based on geometry.
 
-### Composição Visual
+## Composição Visual
 - **Visual Composition:** Apply classic cinematic composition principles (rules of thirds, leading lines, broken symmetry, depth) to create visually appealing frames that tell a story.
 - **Camera Perspective:** Use appropriate focal lengths and camera angles that enhance the emotional impact of the scene (wide shots for epic scale, close-ups for intimate moments). Simulate lens characteristics: slight vignettinging, chromatic aberration in corners, shallow depth of field.
 - **Movement Sensation:** Even in still images, create a sense of potential movement or captured moment that suggests cinematic timing. Capture motion blur on hands or clothing if applicable.
 
-### Estilo Geral
+## Estilo Geral
 - **Overall Style:** The final result must be indistinguishable from a high-quality photograph taken with professional equipment, intended to illustrate a film scene. Nothing should look artificial, "3D rendered," or overly polished. The goal is physical and emotional authenticity.
 - **Post-Production Elements:** Include subtle film grain appropriate to the style (ISO 800–1600), natural lens characteristics (slight vignetting, chromatic aberration when appropriate), and color grading that enhances the mood without appearing artificial. Add minor sensor noise or dust spots in corners if it fits the realism.
 
@@ -77,21 +77,7 @@ Para diferentes gêneros e atmosferas, considere estas referências:
 - **Épico/histórico:** Estilo de Rodrigo Prieto em "The Irishman" - paleta de cores específicaa do período, iluminação naturalista, detalhes autênticos
 - **Contemporâneo/Realista:** Estilo de Greig Fraser em "The Mandalorian" - iluminação prática, texturas realistas, composição dinâmica
 
-## RESTRIÇÕES DE ESTILO (O QUE EVITAR)
-
-- **NO** exaggerated or distorted features (facial features, proportions).
-- **NO** artificial "glow" or excessive smoothing (airbrushing).
-- **NO** visible 3D render or CGI look.
-- **NO** super-saturated colors or unreal hues.
-- **NO** element that breaks the illusion of a photorealistic capture.
-- **NO** inconsistent lighting that doesn't match the described environment.
-- **NO** modern digital artifacts that break the cinematic immersion.
-- **NO** perfect symmetry in faces, hands, or objects — allow natural asymmetry.
-- **NO** unnaturally clean surfaces — include dust, scratches, fingerprints, wear.
-- **NO** idealized human features — accept wrinkles, pores, scars, uneven skin tone.
-- **NO** hyper-sharpness across the entire image — simulate lens limitations.
-
-## TERMOS CHAVE PARA FOR FOR REALISMO fOTOGRAfico (ADICIONAR AO PROMPTFINAL)
+## TERMOS CHAVE PARA FOR FOR REALISMO FOTOGRAFICO (ADICIONAR AO PROMPT FINAL)
 
 Use os seguintes termos como **prefixos ou sufixos** no promptfinal:
 - "photographed by a cinematographer"
@@ -106,11 +92,26 @@ Use os seguintes termos como **prefixos ou sufixos** no promptfinal:
 
 You are generating an image that must be **indistinguishable from a real photograph taken during filming**. It should not look like a 3D render, digital painting, or concept art. Every surface, shadow, and face must reflect the complexity and imperfection of reality. If you see anything that looks too clean, symmetric, or artificial, reject it and re-generate with more physical authenticity.
 
-### ✅ ADICIONAL AO PROMPTINICIAL:
+## ✅ ADICIONAL AO PROMPT INICIAL:
 **"with signs of physical labor, dust on clothes, sweat on faces, imperfective stonework, and natural variations in material texts. Show fatigue, exhaustion, and the weight of time. This is not a model—this is a real construction site."**
 
-### ✅ NOVA ADICIONAL (CRUCIAL):
-**"Add micro-details: dust particles in air, tiny insects, tool marks on wood, small cracks in stones, and subtle variations in skin texture. The scene must feel lived, not constructed."**`
+## ✅ NOVA ADICIONAL (CRUCIAL):
+**"Add micro-details: dust particles in air, tiny insects, tool marks on wood, small cracks in stones, and subtle variations in skin texture. The scene must feel lived, not constructed."**
+
+## RESTRIÇÕES DE ESTILO (O QUE EVITAR)
+
+- **NO** exaggerated or distorted features (facial features, proportions).
+- **NO** artificial "glow" or excessive smoothing (airbrushing).
+- **NO** visible 3D render or CGI look.
+- **NO** super-saturated colors or unreal hues.
+- **NO** element that breaks the illusion of a photorealistic capture.
+- **NO** inconsistent lighting that doesn't match the described environment.
+- **NO** modern digital artifacts that break the cinematic immersion.
+- **NO** perfect symmetry in faces, hands, or objects — allow natural asymmetry.
+- **NO** unnaturally clean surfaces — include dust, scratches, fingerprints, wear.
+- **NO** idealized human features — accept wrinkles, pores, scars, uneven skin tone.
+- **NO** hyper-sharpness across the entire image — simulate lens limitations.`
+
 
 
     },
