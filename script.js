@@ -4700,12 +4700,12 @@ window.generatePromptsForSection = async (button) => {
         const visualPacing = document.getElementById('visualPacing').value;
         const durationRange = { 'dinamico': '3 a 8', 'normal': '8 a 15', 'contemplativo': '15 a 25' }[visualPacing] || '8 a 15';
 
-        // 1. Constrói o Prompt Mestre de Storyboard
+        // 1. Constrói o Prompt Mestre de Storyboard (já com a lógica da Evolução 2 e 3)
         const masterPrompt = PromptManager.getImageStoryboardPrompt(fullText, durationRange);
         
         hideButtonLoading(button); // Para o loading antes de mostrar o modal
 
-        // 2. Mostra o novo modal e espera o usuário colar o JSON
+        // 2. Mostra o modal e espera o usuário colar o JSON
         const pastedJson = await showStoryboardPromptDialog(masterPrompt);
 
         if (!pastedJson) {
@@ -4714,20 +4714,21 @@ window.generatePromptsForSection = async (button) => {
         }
 
         // 3. Processa o JSON colado
-        promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div> <p class="text-center text-sm">Processando e renderizando o storyboard...</p>`;
+        promptContainer.innerHTML = `<div class="loading-spinner-small mx-auto my-4"></div> <p class="text-center text-sm">Processando e renderizando o storyboard interativo...</p>`;
         const allGeneratedPrompts = await getRobustJson(pastedJson);
 
         if (!allGeneratedPrompts || !Array.isArray(allGeneratedPrompts)) {
             throw new Error("O texto colado não é um array JSON de cenas válido.");
         }
 
-        // 4. Renderiza os cards (lógica que já tínhamos)
+        // 4. Curadoria e preparação dos dados para o estado da aplicação
         const curatedPrompts = allGeneratedPrompts
             .filter(p => p && p.original_phrase && p.imageDescription)
             .map(p => ({
                 scriptPhrase: p.original_phrase,
                 imageDescription: p.imageDescription,
-                estimated_duration: p.estimated_duration || 5
+                estimated_duration: p.estimated_duration || 5,
+                camera_options: p.camera_options || [] // Garante que a propriedade exista
             }));
 
         if (curatedPrompts.length === 0) {
@@ -4735,14 +4736,22 @@ window.generatePromptsForSection = async (button) => {
         }
 
         const defaultStyleKey = 'cinematic';
-        AppState.generated.imagePrompts[sectionId] = curatedPrompts.map(p => ({ ...p, selectedStyle: defaultStyleKey }));
+        
+        // Salva os dados curados no estado global da aplicação
+        AppState.generated.imagePrompts[sectionId] = curatedPrompts.map(p => ({
+             ...p,
+             selectedStyle: defaultStyleKey
+        }));
+        
+        // 5. Renderização da interface final
+        // Prepara o contêiner e o estado de paginação
         AppState.ui.promptPaginationState[sectionId] = 0;
         promptContainer.innerHTML = `<div class="prompt-pagination-wrapper space-y-4"><div class="prompt-nav-container flex items-center justify-center gap-4"></div><div class="prompt-items-container space-y-4"></div></div>`;
-        // AppState.ui.promptPaginationState[sectionId] = 0; // Não precisamos mais de paginação
-promptContainer.innerHTML = `<div class="prompt-pagination-wrapper space-y-4"><div class="prompt-items-container space-y-4"></div></div>`;
-renderInteractivePrompts(sectionId); // Chamando a nova função
         
-        window.showToast("Storyboard importado com sucesso!", "success");
+        // Chama a função de renderização final que agora contém tudo (paginação, estilos, botões interativos, etc.)
+        renderPaginatedPrompts(sectionId); 
+        
+        window.showToast("Storyboard interativo importado com sucesso!", "success");
 
     } catch (error) {
         console.error("Erro na geração de prompts (via Modal):", error);
@@ -4761,6 +4770,7 @@ const renderPaginatedPrompts = (sectionElementId) => {
     const sectionElement = document.getElementById(sectionElementId);
     if (!sectionElement) return;
 
+    // Lógica de paginação que já tínhamos (e não deveríamos ter removido)
     const itemsPerPage = 4;
     const prompts = AppState.generated.imagePrompts[sectionElementId] || [];
     if (prompts.length === 0) return;
@@ -4773,6 +4783,7 @@ const renderPaginatedPrompts = (sectionElementId) => {
     if (!promptItemsContainer || !navContainer) return;
     promptItemsContainer.innerHTML = '';
     
+    // Lógica de cálculo de tempo e cena que já tínhamos
     let cumulativeSeconds = 0;
     let globalSceneCounter = 1;
     const sectionOrder = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection', 'ctaSection'];
@@ -4781,10 +4792,7 @@ const renderPaginatedPrompts = (sectionElementId) => {
     for (let i = 0; i < currentSectionIndex; i++) {
         const previousSectionId = sectionOrder[i];
         const prevPrompts = AppState.generated.imagePrompts[previousSectionId] || [];
-        
-        prevPrompts.forEach(p => {
-            cumulativeSeconds += parseInt(p.estimated_duration, 10) || 0;
-        });
+        prevPrompts.forEach(p => { cumulativeSeconds += parseInt(p.estimated_duration, 10) || 0; });
         globalSceneCounter += prevPrompts.length;
     }
     
@@ -4794,39 +4802,66 @@ const renderPaginatedPrompts = (sectionElementId) => {
 
     const promptsToShow = prompts.slice(startIndex, startIndex + itemsPerPage);
     
+    // Loop para renderizar cada prompt
     promptsToShow.forEach((promptData, index) => {
         const sceneNumber = globalSceneCounter + index;
+        const sceneId = `${sectionElementId}-scene-${sceneNumber}`;
         const minutes = Math.floor(cumulativeSeconds / 60);
         const seconds = cumulativeSeconds % 60;
         const timestamp = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         const sanitizedDescription = DOMPurify.sanitize(promptData.imageDescription);
-
+        
+        // Dropdown de estilos (que havíamos perdido)
         let styleOptionsHtml = '';
         for (const key in imageStyleLibrary) {
             const isSelected = key === promptData.selectedStyle ? 'selected' : '';
             styleOptionsHtml += `<option value="${key}" ${isSelected}>${imageStyleLibrary[key].name}</option>`;
         }
         
-        // >>>>> AQUI ESTÁ A CORREÇÃO <<<<<
-        // A linha que limitava a 100 caracteres foi removida.
-        // Agora, usamos a 'scriptPhrase' completa.
-        const fullScriptPhraseHtml = `<p class="paragraph-preview" style="font-size: 0.85rem; font-style: italic; color: var(--text-muted); margin-bottom: 0.5rem;">"${DOMPurify.sanitize(promptData.scriptPhrase)}"</p>`;
-        
+        // NOVA LÓGICA: Botões interativos para os ângulos de câmera
+        let cameraButtonsHtml = (promptData.camera_options || []).map((option) => {
+            const angle = DOMPurify.sanitize(option.angle);
+            const justification = DOMPurify.sanitize(option.justification);
+            const descriptionArg = `\`${sanitizedDescription.replace(/`/g, '\\`')}\``;
+            const angleArg = `\`${angle.replace(/`/g, '\\`')}\``;
+
+            return `
+                <div class="tooltip-container">
+                    <button class="btn btn-secondary btn-small w-full text-left justify-start" 
+                            onclick="window.buildFinalPrompt('${sceneId}', ${descriptionArg}, ${angleArg})">
+                        ${angle}
+                    </button>
+                    <span class="tooltip-text">${justification}</span>
+                </div>`;
+        }).join('');
+
         const promptHtml = `
-            <div class="card !p-3 animate-fade-in" style="background: var(--bg);">
+            <div class="card !p-3 animate-fade-in" style="background: var(--bg);" id="${sceneId}">
                 <div class="prompt-header" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                     <span class="tag tag-scene"><i class="fas fa-film mr-2"></i>Cena ${String(sceneNumber).padStart(2, '0')}</span>
                     <span class="tag tag-time"><i class="fas fa-clock mr-2"></i>${timestamp}</span>
-                    <button class="btn btn-ghost btn-small ml-auto" 
-                            onclick="window.copyPromptWithStyle(${sceneNumber}, \`${sanitizedDescription.replace(/`/g, '\\`')}\`)" 
-                            title="Copiar Prompt Completo com Estilo">
-                        <i class="fas fa-copy"></i>
+                </div>
+
+                <p class="paragraph-preview" style="font-size: 0.85rem; font-style: italic; color: var(--text-muted); margin-bottom: 0.5rem;">
+                    "${DOMPurify.sanitize(promptData.scriptPhrase)}"
+                </p>
+                <p>${sanitizedDescription}</p>
+
+                <div class="mt-4 space-y-2">
+                    <h5 class="text-xs font-bold uppercase text-muted">Escolha o Ângulo da Câmera:</h5>
+                    ${cameraButtonsHtml}
+                </div>
+                
+                <div class="mt-3 hidden" data-container="final-prompt">
+                    <h5 class="text-xs font-bold uppercase text-muted mb-2">Prompt Final com Estilo:</h5>
+                    <textarea class="input input-small" rows="4" readonly></textarea>
+                    <button class="btn btn-ghost btn-small w-full mt-2" onclick="window.copyTextFromTextarea(this)">
+                        <i class="fas fa-copy"></i> Copiar Prompt Final
                     </button>
                 </div>
-                ${fullScriptPhraseHtml}
-                <p>${sanitizedDescription}</p>
-                <div class="mt-3">
-                    <select id="style-select-${sceneNumber}" class="input input-small w-full">
+
+                <div class="mt-3 border-t pt-3" style="border-color: var(--border);">
+                     <select id="style-select-${sceneNumber}" class="input input-small w-full" onchange="window.updateFinalPromptStyle('${sceneId}')">
                         ${styleOptionsHtml}
                     </select>
                 </div>
@@ -4836,6 +4871,7 @@ const renderPaginatedPrompts = (sectionElementId) => {
         cumulativeSeconds += parseInt(promptData.estimated_duration, 10) || 0;
     });
     
+    // Lógica de navegação da paginação (que havíamos perdido)
     if (totalPages > 1) {
         navContainer.innerHTML = `
             <button class="btn btn-secondary btn-small" onclick="window.navigatePrompts('${sectionElementId}', -1)" ${currentPage === 0 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>
@@ -4847,6 +4883,48 @@ const renderPaginatedPrompts = (sectionElementId) => {
     }
 };
 
+// B. SUBSTITUA a função 'buildFinalPrompt' por esta que integra o estilo.
+window.buildFinalPrompt = (sceneId, description, angle) => {
+    const sceneElement = document.getElementById(sceneId);
+    if (!sceneElement) return;
+
+    sceneElement.querySelectorAll('button[onclick*="buildFinalPrompt"]').forEach(btn => btn.classList.remove('btn-primary', 'btn-secondary'));
+    event.target.closest('button').classList.add('btn-primary');
+    
+    const outputContainer = sceneElement.querySelector('[data-container="final-prompt"]');
+    const textarea = outputContainer.querySelector('textarea');
+    
+    // Agora, também pegamos o estilo selecionado no dropdown
+    const sceneNumber = sceneId.split('-').pop();
+    const styleSelect = document.getElementById(`style-select-${sceneNumber}`);
+    const selectedStyleKey = styleSelect.value;
+    const styleBlock = imageStyleLibrary[selectedStyleKey]?.block || '';
+
+    const finalPromptText = `${angle}, ${description}${styleBlock}`;
+    
+    textarea.value = finalPromptText;
+    outputContainer.classList.remove('hidden');
+    textarea.style.height = 'auto';
+    textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+};
+
+// C. ADICIONE esta nova função para atualizar o prompt quando o estilo mudar.
+window.updateFinalPromptStyle = (sceneId) => {
+    const sceneElement = document.getElementById(sceneId);
+    const outputContainer = sceneElement.querySelector('[data-container="final-prompt"]');
+    
+    // Se nenhum ângulo de câmera foi escolhido ainda, não faz nada.
+    if (outputContainer.classList.contains('hidden')) {
+        return;
+    }
+
+    // Pega o botão do ângulo que já foi selecionado
+    const selectedAngleButton = sceneElement.querySelector('button[onclick*="buildFinalPrompt"].btn-primary');
+    if (selectedAngleButton) {
+        // "Clica" no botão de novo para forçar a reconstrução do prompt com o novo estilo
+        selectedAngleButton.click();
+    }
+};
 
 
 
