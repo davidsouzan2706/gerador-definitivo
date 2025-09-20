@@ -2255,12 +2255,21 @@ const strategyMapper = {
         narrativeTheme: idea => idea.angle || idea.title, // <<<< CHAVE FALTANTE ADICIONADA AQUI
 
         centralQuestion: idea => {
-            if (idea.discussionQuestions && idea.discussionQuestions.length > 0) {
-                const firstQuestionObject = idea.discussionQuestions[0];
-                return Object.values(firstQuestionObject)[0] || ''; 
-            }
-            return `Qual é a verdade teológica oculta por trás de "${idea.title}"?`;
-        },
+    if (idea.discussionQuestions && idea.discussionQuestions.length > 0) {
+        const firstItem = idea.discussionQuestions[0];
+        // LÓGICA DE DEFESA: Verifica o tipo do primeiro item
+        if (typeof firstItem === 'object' && firstItem !== null) {
+            // Caso 1: A IA obedeceu e mandou um objeto { "Pergunta...": "..." }
+            return Object.values(firstItem)[0] || '';
+        }
+        if (typeof firstItem === 'string') {
+            // Caso 2: A IA simplificou e mandou uma string "Pergunta...: ..."
+            return firstItem; 
+        }
+    }
+    // Fallback: Se tudo falhar, usa o título.
+    return `Qual é a verdade teológica oculta por trás de "${idea.title}"?`;
+},
 
         emotionalHook: () => `Iniciar com a história de um personagem bíblico ou figura histórica que enfrentou o dilema central do tema, antes de expandir a análise.`,
         researchData: idea => `A investigação deve se basear nestas passagens bíblicas: ${(idea.scripturalFoundation || []).join('; ')}.`,
