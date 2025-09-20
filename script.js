@@ -4770,7 +4770,7 @@ const renderPaginatedPrompts = (sectionElementId) => {
     const sectionElement = document.getElementById(sectionElementId);
     if (!sectionElement) return;
 
-    // Lógica de paginação que já tínhamos (e não deveríamos ter removido)
+    // Lógica de paginação (Restaurada e funcionando)
     const itemsPerPage = 4;
     const prompts = AppState.generated.imagePrompts[sectionElementId] || [];
     if (prompts.length === 0) return;
@@ -4783,7 +4783,7 @@ const renderPaginatedPrompts = (sectionElementId) => {
     if (!promptItemsContainer || !navContainer) return;
     promptItemsContainer.innerHTML = '';
     
-    // Lógica de cálculo de tempo e cena que já tínhamos
+    // Lógica de cálculo de tempo e cena (Restaurada e funcionando)
     let cumulativeSeconds = 0;
     let globalSceneCounter = 1;
     const sectionOrder = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection', 'ctaSection'];
@@ -4802,7 +4802,6 @@ const renderPaginatedPrompts = (sectionElementId) => {
 
     const promptsToShow = prompts.slice(startIndex, startIndex + itemsPerPage);
     
-    // Loop para renderizar cada prompt
     promptsToShow.forEach((promptData, index) => {
         const sceneNumber = globalSceneCounter + index;
         const sceneId = `${sectionElementId}-scene-${sceneNumber}`;
@@ -4811,14 +4810,14 @@ const renderPaginatedPrompts = (sectionElementId) => {
         const timestamp = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         const sanitizedDescription = DOMPurify.sanitize(promptData.imageDescription);
         
-        // Dropdown de estilos (que havíamos perdido)
+        // Dropdown de estilos (Restaurado e funcionando)
         let styleOptionsHtml = '';
         for (const key in imageStyleLibrary) {
             const isSelected = key === promptData.selectedStyle ? 'selected' : '';
             styleOptionsHtml += `<option value="${key}" ${isSelected}>${imageStyleLibrary[key].name}</option>`;
         }
         
-        // NOVA LÓGICA: Botões interativos para os ângulos de câmera
+        // CORREÇÃO: Lógica dos botões de câmera
         let cameraButtonsHtml = (promptData.camera_options || []).map((option) => {
             const angle = DOMPurify.sanitize(option.angle);
             const justification = DOMPurify.sanitize(option.justification);
@@ -4834,12 +4833,22 @@ const renderPaginatedPrompts = (sectionElementId) => {
                     <span class="tooltip-text">${justification}</span>
                 </div>`;
         }).join('');
+        
+        // CORREÇÃO: Lógica do botão de cópia principal
+        // A função agora é 'copyInitialPrompt' e chama a lógica de construção completa
+        const copyButtonHtml = `
+            <button class="btn btn-ghost btn-small ml-auto" 
+                    onclick="window.copyInitialPrompt('${sceneId}', ${`\`${sanitizedDescription.replace(/`/g, '\\`')}\``})" 
+                    title="Copiar Prompt com Estilo Padrão">
+                <i class="fas fa-copy"></i>
+            </button>`;
 
         const promptHtml = `
             <div class="card !p-3 animate-fade-in" style="background: var(--bg);" id="${sceneId}">
                 <div class="prompt-header" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                     <span class="tag tag-scene"><i class="fas fa-film mr-2"></i>Cena ${String(sceneNumber).padStart(2, '0')}</span>
                     <span class="tag tag-time"><i class="fas fa-clock mr-2"></i>${timestamp}</span>
+                    ${copyButtonHtml}
                 </div>
 
                 <p class="paragraph-preview" style="font-size: 0.85rem; font-style: italic; color: var(--text-muted); margin-bottom: 0.5rem;">
@@ -4847,10 +4856,13 @@ const renderPaginatedPrompts = (sectionElementId) => {
                 </p>
                 <p>${sanitizedDescription}</p>
 
-                <div class="mt-4 space-y-2">
-                    <h5 class="text-xs font-bold uppercase text-muted">Escolha o Ângulo da Câmera:</h5>
-                    ${cameraButtonsHtml}
-                </div>
+                <!-- CORREÇÃO: Estrutura completa da interatividade -->
+                ${cameraButtonsHtml ? `
+                    <div class="mt-4 space-y-2">
+                        <h5 class="text-xs font-bold uppercase text-muted">Escolha o Ângulo da Câmera:</h5>
+                        ${cameraButtonsHtml}
+                    </div>` : ''
+                }
                 
                 <div class="mt-3 hidden" data-container="final-prompt">
                     <h5 class="text-xs font-bold uppercase text-muted mb-2">Prompt Final com Estilo:</h5>
@@ -4871,7 +4883,7 @@ const renderPaginatedPrompts = (sectionElementId) => {
         cumulativeSeconds += parseInt(promptData.estimated_duration, 10) || 0;
     });
     
-    // Lógica de navegação da paginação (que havíamos perdido)
+    // Lógica da paginação (Restaurada e funcionando)
     if (totalPages > 1) {
         navContainer.innerHTML = `
             <button class="btn btn-secondary btn-small" onclick="window.navigatePrompts('${sectionElementId}', -1)" ${currentPage === 0 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>
@@ -4882,6 +4894,27 @@ const renderPaginatedPrompts = (sectionElementId) => {
         navContainer.innerHTML = '';
     }
 };
+
+// ADICIONE esta nova função de cópia inicial
+window.copyInitialPrompt = (sceneId, description) => {
+    const sceneElement = document.getElementById(sceneId);
+    if (!sceneElement) return;
+
+    const sceneNumber = sceneId.split('-').pop();
+    const styleSelect = document.getElementById(`style-select-${sceneNumber}`);
+    const selectedStyleKey = styleSelect.value;
+    const styleBlock = imageStyleLibrary[selectedStyleKey]?.block || '';
+    
+    const fullPromptText = `${description}${styleBlock}`;
+    
+    window.copyTextToClipboard(fullPromptText);
+    const button = event.target.closest('button');
+    if(button) window.showCopyFeedback(button);
+};
+
+
+
+
 
 // B. SUBSTITUA a função 'buildFinalPrompt' por esta que integra o estilo.
 window.buildFinalPrompt = (sceneId, description, angle) => {
