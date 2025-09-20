@@ -716,6 +716,8 @@ Analise **CADA FRASE** contida na **"ENTRADA DE DADOS"**. Para cada uma, gere um
 
 **AÇÃO FINAL:** Processe o roteiro inteiro, aplicando o manual de estilo a cada cena, e retorne APENAS o array JSON completo.
 `;
+
+
     return fullPrompt;
 },
 
@@ -2250,7 +2252,7 @@ const strategyMapper = {
         dropdowns: { narrativeGoal: 'storytelling', narrativeStructure: 'mystery_loop', narrativeTone: 'serio', videoObjective: 'informar', languageStyle: 'formal', speakingPace: 'moderate' },
         targetAudience: idea => idea.targetAudience || "Estudantes de teologia, líderes religiosos e leigos interessados em interpretações bíblicas aprofundadas.",
         
-        narrativeTheme: idea => idea.angle, // <<<< CHAVE FALTANTE ADICIONADA AQUI
+        narrativeTheme: idea => idea.angle || idea.title, // <<<< CHAVE FALTANTE ADICIONADA AQUI
 
         centralQuestion: idea => {
             if (idea.discussionQuestions && idea.discussionQuestions.length > 0) {
