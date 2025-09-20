@@ -555,30 +555,56 @@ ${fullTranscript}
 
 
 getImageStoryboardPrompt: (sectionText, durationRange = '8 a 15') => {
-    // Aqui usamos o seu prompt detalhado e o "envelopamos" em uma tarefa maior.
-    const fullPrompt = `
-# TAREFA: DIRETOR DE FOTOGRAFIA DE IA
-Sua única função é converter o texto de um roteiro em um array JSON de descrições visuais cinematográficas, seguindo um manual de estilo rigoroso.
+    
+    // Pega as descrições dos personagens que o usuário digitou
+    const characterDescriptions = document.getElementById('characterDescriptions')?.value.trim() || "";
+    
+    // Monta a seção de personagens apenas se o usuário tiver preenchido algo
+    const characterDossierSection = characterDescriptions ? `
+---
+### DOSSIÊ DE PERSONAGENS (PARA REFERÊNCIA VISUAL)
 
-## ROTEIRO PARA ANÁLISE:
+Este é o guia de referência para os personagens abaixo. Use estes detalhes como inspiração, mas **NÃO os repita literalmente em cada cena**. Em vez disso, selecione 1 ou 2 detalhes que sejam mais relevantes para a emoção da cena específica. Varie os detalhes para enriquecer a narrativa visual.
+
+**PERSONAGENS:**
+${characterDescriptions}
+---
+` : ''; // Se não houver descrição, esta parte fica vazia
+
+const fullPrompt = `
+# TAREFA: DIRETOR DE FOTOGRAFIA DE IA (VERSÃO AVANÇADA)
+
+Você é um Diretor de Fotografia e Roteirista Visual. Sua função é converter o texto de um roteiro em um array JSON de cenas cinematográficas, sugerindo opções de câmera para cada uma.
+
+## ROTEIRO DA SEÇÃO PARA ANÁLISE:
 ---
 ${sectionText}
 ---
-
-## REGRAS DE SAÍDA (JSON ESTRITO - INEGOCIÁVEL):
-1.  **RESPONDA APENAS COM UM ÚNICO ARRAY JSON VÁLIDO.** Não inclua nenhum texto, explicação ou comentário fora do array.
-2.  **ESTRUTURA POR OBJETO:** Cada objeto no array DEVE ter 3 chaves: "original_phrase", "imageDescription", e "estimated_duration".
-3.  **SINTAXE:** Use aspas duplas ("") para todas as chaves e valores. Aspas duplas dentro de uma string DEVEM ser escapadas (ex: \\"exemplo\\").
+${characterDossierSection} 
+## MANUAL DE ESTILO OBRIGATÓRIO (A ALMA DA FERRAMENTA)
+Para CADA "imageDescription" que você gerar, você DEVE seguir o manifesto criativo do prompt original, focando em detalhes sensoriais, atmosfera, psicologia, e a física da luz e da sombra para criar uma prosa cinematográfica imersiva.
 
 ---
-## MANUAL DE ESTILO PARA "imageDescription" (A ALMA DA FERRAMENTA)
-### Para CADA "imageDescription" que você gerar, você DEVE seguir este manifesto criativo à risca:
+## REGRAS DE SAÍDA JSON (ESTRUTURA AVANÇADA - INEGOCIÁVEL)
 
-${imageStyleLibrary.cinematic.block} 
-// Acima, estamos inserindo diretamente o seu prompt de estilo cinematográfico.
+Sua resposta DEVE ser um array JSON válido. Cada objeto no array deve ter a seguinte estrutura exata:
+
+{
+  "original_phrase": "a frase exata do roteiro que você está descrevendo",
+  "imageDescription": "a descrição visual completa e rica da cena, seguindo o manual de estilo",
+  "estimated_duration": um número inteiro entre ${durationRange},
+  "camera_options": [
+    { "angle": "Plano Médio (Medium Shot)", "justification": "Cria uma conexão neutra e permite focar na expressão do personagem." },
+    { "angle": "Contra-plongée (Low-angle shot)", "justification": "Enfatiza o poder ou a ameaça do personagem na cena." },
+    { "angle": "Plongée (High-angle shot)", "justification": "Mostra a vulnerabilidade ou isolamento do personagem." }
+  ]
+}
+
+- **camera_options:** Sugira TRÊS (3) ângulos de câmera distintos e cinematográficos que poderiam ser usados para filmar a cena. Para cada um, forneça uma justificativa curta explicando o impacto emocional ou narrativo daquela escolha de câmera.
+
 ---
-
-**AÇÃO FINAL:** Analise o roteiro fornecido. Para cada momento visual chave, crie um objeto JSON correspondente, aplicando o manual de estilo na "imageDescription". Agrupe todos os objetos em um único array JSON e retorne APENAS esse array.
+## AÇÃO FINAL:
+Analise o roteiro e o dossiê de personagens. Para cada momento visual chave, crie um objeto JSON completo com a estrutura avançada solicitada. Retorne APENAS o array JSON.
 `;
     return fullPrompt;
 },
@@ -1222,6 +1248,95 @@ const resetApplicationState = () => {
     console.log("Estado da aplicação foi resetado com sucesso.");
 };
 
+
+
+
+
+const renderInteractivePrompts = (sectionElementId) => {
+    const sectionElement = document.getElementById(sectionElementId);
+    if (!sectionElement) return;
+
+    const prompts = AppState.generated.imagePrompts[sectionElementId] || [];
+    if (prompts.length === 0) return;
+    
+    const promptItemsContainer = sectionElement.querySelector('.prompt-items-container');
+    if (!promptItemsContainer) return;
+
+    promptItemsContainer.innerHTML = '';
+    
+    prompts.forEach((promptData, index) => {
+        const sceneId = `${sectionElementId}-scene-${index}`;
+        const sanitizedDescription = DOMPurify.sanitize(promptData.imageDescription);
+
+        let cameraButtonsHtml = (promptData.camera_options || []).map((option, btnIndex) => {
+            const angle = DOMPurify.sanitize(option.angle);
+            const justification = DOMPurify.sanitize(option.justification);
+            // Prepara os argumentos para a função onclick
+            const descriptionArg = `\`${sanitizedDescription.replace(/`/g, '\\`')}\``;
+            const angleArg = `\`${angle.replace(/`/g, '\\`')}\``;
+
+            return `
+                <div class="tooltip-container">
+                    <button class="btn btn-secondary btn-small w-full text-left justify-start" 
+                            onclick="window.buildFinalPrompt('${sceneId}', ${descriptionArg}, ${angleArg})">
+                        ${angle}
+                    </button>
+                    <span class="tooltip-text">${justification}</span>
+                </div>`;
+        }).join('');
+
+        const promptHtml = `
+            <div class="card !p-3 animate-fade-in" style="background: var(--bg);" id="${sceneId}">
+                <p class="paragraph-preview" style="font-size: 0.85rem; font-style: italic; color: var(--text-muted); margin-bottom: 0.5rem;">
+                    "${DOMPurify.sanitize(promptData.scriptPhrase)}"
+                </p>
+                <p>${sanitizedDescription}</p>
+                
+                <div class="mt-4 space-y-2">
+                    <h5 class="text-xs font-bold uppercase text-muted">Escolha o Ângulo da Câmera:</h5>
+                    ${cameraButtonsHtml}
+                </div>
+
+                <div class="mt-3 hidden" data-container="final-prompt">
+                    <textarea class="input input-small" rows="4" readonly></textarea>
+                    <button class="btn btn-ghost btn-small w-full mt-2" onclick="window.copyTextFromTextarea(this)">
+                        <i class="fas fa-copy"></i> Copiar Prompt Final
+                    </button>
+                </div>
+            </div>
+        `;
+        promptItemsContainer.innerHTML += promptHtml;
+    });
+};
+
+// NOVA FUNÇÃO PARA CONSTRUIR E EXIBIR O PROMPT FINAL
+window.buildFinalPrompt = (sceneId, description, angle) => {
+    const sceneElement = document.getElementById(sceneId);
+    if (!sceneElement) return;
+
+    // Desativa todos os outros botões na mesma cena
+    sceneElement.querySelectorAll('button').forEach(btn => btn.classList.remove('btn-primary'));
+    
+    // Ativa o botão clicado
+    const clickedButton = event.target;
+    clickedButton.classList.add('btn-primary');
+
+    const finalPromptText = `${angle}, ${description}`;
+    const outputContainer = sceneElement.querySelector('[data-container="final-prompt"]');
+    const textarea = outputContainer.querySelector('textarea');
+    
+    textarea.value = finalPromptText;
+    outputContainer.classList.remove('hidden');
+    textarea.style.height = 'auto';
+    textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+};
+
+// NOVA FUNÇÃO PARA COPIAR O TEXTO FINAL
+window.copyTextFromTextarea = (button) => {
+    const textarea = button.previousElementSibling;
+    window.copyTextToClipboard(textarea.value);
+    window.showCopyFeedback(button);
+};
 
 
 
@@ -2494,6 +2609,7 @@ const getBasePromptContext = (options = {}) => {
         narrativeTone: document.getElementById('narrativeTone')?.value || "",
         narrativeVoice: document.getElementById('narrativeVoice')?.value.trim() || "",
         shockingEndingHook: document.getElementById('shockingEndingHook')?.value.trim() || "",
+        characterDescriptions: document.getElementById('characterDescriptions')?.value.trim() || "",
     };
 
     let context = `${labels.role} ${labels.channel} "${inputs.channelName}".
@@ -2551,6 +2667,11 @@ ${labels.coreDetails}
             context += `\n\n${labels.research}\n${heavyInputs.researchData}`;
         }
     }
+
+    if (inputs.characterDescriptions) {
+    const charLabel = lang === 'pt-br' ? '**DOSSIÊ DE PERSONAGENS (para Storyboard):**' : '**CHARACTER DOSSIER (for Storyboard):**';
+    context += `\n\n${charLabel}\n${inputs.characterDescriptions}`;
+}
     
     return context;
 };
@@ -4617,7 +4738,9 @@ window.generatePromptsForSection = async (button) => {
         AppState.generated.imagePrompts[sectionId] = curatedPrompts.map(p => ({ ...p, selectedStyle: defaultStyleKey }));
         AppState.ui.promptPaginationState[sectionId] = 0;
         promptContainer.innerHTML = `<div class="prompt-pagination-wrapper space-y-4"><div class="prompt-nav-container flex items-center justify-center gap-4"></div><div class="prompt-items-container space-y-4"></div></div>`;
-        renderPaginatedPrompts(sectionId);
+        // AppState.ui.promptPaginationState[sectionId] = 0; // Não precisamos mais de paginação
+promptContainer.innerHTML = `<div class="prompt-pagination-wrapper space-y-4"><div class="prompt-items-container space-y-4"></div></div>`;
+renderInteractivePrompts(sectionId); // Chamando a nova função
         
         window.showToast("Storyboard importado com sucesso!", "success");
 
@@ -4631,115 +4754,12 @@ window.generatePromptsForSection = async (button) => {
 
 
 
-// =========================================================================
-// >>>>> COLE ESTA FUNÇÃO COMPLETA NO LUGAR DA ANTIGA <<<<<
-// =========================================================================
-const renderPaginatedPrompts = (sectionElementId) => {
-    const sectionElement = document.getElementById(sectionElementId);
-    if (!sectionElement) return;
-
-    const itemsPerPage = 4;
-    const prompts = AppState.generated.imagePrompts[sectionElementId] || [];
-    if (prompts.length === 0) return;
-    
-    const currentPage = AppState.ui.promptPaginationState[sectionElementId] || 0;
-    const totalPages = Math.ceil(prompts.length / itemsPerPage);
-    const promptItemsContainer = sectionElement.querySelector('.prompt-items-container');
-    const navContainer = sectionElement.querySelector('.prompt-nav-container');
-
-    if (!promptItemsContainer || !navContainer) return;
-    promptItemsContainer.innerHTML = '';
-    
-    let cumulativeSeconds = 0;
-    let globalSceneCounter = 1;
-    const sectionOrder = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection', 'ctaSection'];
-    const currentSectionIndex = sectionOrder.indexOf(sectionElementId);
-
-    for (let i = 0; i < currentSectionIndex; i++) {
-        const previousSectionId = sectionOrder[i];
-        const prevPrompts = AppState.generated.imagePrompts[previousSectionId] || [];
-        
-        prevPrompts.forEach(p => {
-            cumulativeSeconds += parseInt(p.estimated_duration, 10) || 0;
-        });
-        globalSceneCounter += prevPrompts.length;
-    }
-    
-    const startIndex = currentPage * itemsPerPage;
-    prompts.slice(0, startIndex).forEach(p => { cumulativeSeconds += parseInt(p.estimated_duration, 10) || 0; });
-    globalSceneCounter += startIndex;
-
-    const promptsToShow = prompts.slice(startIndex, startIndex + itemsPerPage);
-    
-    promptsToShow.forEach((promptData, index) => {
-        const sceneNumber = globalSceneCounter + index;
-        const minutes = Math.floor(cumulativeSeconds / 60);
-        const seconds = cumulativeSeconds % 60;
-        const timestamp = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        const sanitizedDescription = DOMPurify.sanitize(promptData.imageDescription);
-
-        let styleOptionsHtml = '';
-        for (const key in imageStyleLibrary) {
-            const isSelected = key === promptData.selectedStyle ? 'selected' : '';
-            styleOptionsHtml += `<option value="${key}" ${isSelected}>${imageStyleLibrary[key].name}</option>`;
-        }
-        
-        // >>>>> AQUI ESTÁ A CORREÇÃO <<<<<
-        // A linha que limitava a 100 caracteres foi removida.
-        // Agora, usamos a 'scriptPhrase' completa.
-        const fullScriptPhraseHtml = `<p class="paragraph-preview" style="font-size: 0.85rem; font-style: italic; color: var(--text-muted); margin-bottom: 0.5rem;">"${DOMPurify.sanitize(promptData.scriptPhrase)}"</p>`;
-        
-        const promptHtml = `
-            <div class="card !p-3 animate-fade-in" style="background: var(--bg);">
-                <div class="prompt-header" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                    <span class="tag tag-scene"><i class="fas fa-film mr-2"></i>Cena ${String(sceneNumber).padStart(2, '0')}</span>
-                    <span class="tag tag-time"><i class="fas fa-clock mr-2"></i>${timestamp}</span>
-                    <button class="btn btn-ghost btn-small ml-auto" 
-                            onclick="window.copyPromptWithStyle(${sceneNumber}, \`${sanitizedDescription.replace(/`/g, '\\`')}\`)" 
-                            title="Copiar Prompt Completo com Estilo">
-                        <i class="fas fa-copy"></i>
-                    </button>
-                </div>
-                ${fullScriptPhraseHtml}
-                <p>${sanitizedDescription}</p>
-                <div class="mt-3">
-                    <select id="style-select-${sceneNumber}" class="input input-small w-full">
-                        ${styleOptionsHtml}
-                    </select>
-                </div>
-            </div>
-        `;
-        promptItemsContainer.innerHTML += promptHtml;
-        cumulativeSeconds += parseInt(promptData.estimated_duration, 10) || 0;
-    });
-    
-    if (totalPages > 1) {
-        navContainer.innerHTML = `
-            <button class="btn btn-secondary btn-small" onclick="window.navigatePrompts('${sectionElementId}', -1)" ${currentPage === 0 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>
-            <span class="text-sm font-medium">Página ${currentPage + 1} de ${totalPages}</span>
-            <button class="btn btn-secondary btn-small" onclick="window.navigatePrompts('${sectionElementId}', 1)" ${currentPage + 1 >= totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>
-        `;
-    } else {
-        navContainer.innerHTML = '';
-    }
-};
 
 
 
 
 
 
-window.navigatePrompts = (sectionElementId, direction) => {
-    const prompts = AppState.generated.imagePrompts[sectionElementId] || [];
-    const itemsPerPage = 4;
-    const totalPages = Math.ceil(prompts.length / itemsPerPage);
-    let currentPage = AppState.ui.promptPaginationState[sectionElementId] || 0;
-    const newPage = currentPage + direction;
-    if (newPage >= 0 && newPage < totalPages) {
-        AppState.ui.promptPaginationState[sectionElementId] = newPage;
-        renderPaginatedPrompts(sectionElementId);
-    }
-};
 
 
 // =========================================================================
