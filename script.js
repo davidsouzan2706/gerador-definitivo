@@ -4754,12 +4754,115 @@ renderInteractivePrompts(sectionId); // Chamando a nova função
 
 
 
+// =========================================================================
+// >>>>> COLE ESTA FUNÇÃO COMPLETA NO LUGAR DA ANTIGA <<<<<
+// =========================================================================
+const renderPaginatedPrompts = (sectionElementId) => {
+    const sectionElement = document.getElementById(sectionElementId);
+    if (!sectionElement) return;
+
+    const itemsPerPage = 4;
+    const prompts = AppState.generated.imagePrompts[sectionElementId] || [];
+    if (prompts.length === 0) return;
+    
+    const currentPage = AppState.ui.promptPaginationState[sectionElementId] || 0;
+    const totalPages = Math.ceil(prompts.length / itemsPerPage);
+    const promptItemsContainer = sectionElement.querySelector('.prompt-items-container');
+    const navContainer = sectionElement.querySelector('.prompt-nav-container');
+
+    if (!promptItemsContainer || !navContainer) return;
+    promptItemsContainer.innerHTML = '';
+    
+    let cumulativeSeconds = 0;
+    let globalSceneCounter = 1;
+    const sectionOrder = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection', 'ctaSection'];
+    const currentSectionIndex = sectionOrder.indexOf(sectionElementId);
+
+    for (let i = 0; i < currentSectionIndex; i++) {
+        const previousSectionId = sectionOrder[i];
+        const prevPrompts = AppState.generated.imagePrompts[previousSectionId] || [];
+        
+        prevPrompts.forEach(p => {
+            cumulativeSeconds += parseInt(p.estimated_duration, 10) || 0;
+        });
+        globalSceneCounter += prevPrompts.length;
+    }
+    
+    const startIndex = currentPage * itemsPerPage;
+    prompts.slice(0, startIndex).forEach(p => { cumulativeSeconds += parseInt(p.estimated_duration, 10) || 0; });
+    globalSceneCounter += startIndex;
+
+    const promptsToShow = prompts.slice(startIndex, startIndex + itemsPerPage);
+    
+    promptsToShow.forEach((promptData, index) => {
+        const sceneNumber = globalSceneCounter + index;
+        const minutes = Math.floor(cumulativeSeconds / 60);
+        const seconds = cumulativeSeconds % 60;
+        const timestamp = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        const sanitizedDescription = DOMPurify.sanitize(promptData.imageDescription);
+
+        let styleOptionsHtml = '';
+        for (const key in imageStyleLibrary) {
+            const isSelected = key === promptData.selectedStyle ? 'selected' : '';
+            styleOptionsHtml += `<option value="${key}" ${isSelected}>${imageStyleLibrary[key].name}</option>`;
+        }
+        
+        // >>>>> AQUI ESTÁ A CORREÇÃO <<<<<
+        // A linha que limitava a 100 caracteres foi removida.
+        // Agora, usamos a 'scriptPhrase' completa.
+        const fullScriptPhraseHtml = `<p class="paragraph-preview" style="font-size: 0.85rem; font-style: italic; color: var(--text-muted); margin-bottom: 0.5rem;">"${DOMPurify.sanitize(promptData.scriptPhrase)}"</p>`;
+        
+        const promptHtml = `
+            <div class="card !p-3 animate-fade-in" style="background: var(--bg);">
+                <div class="prompt-header" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <span class="tag tag-scene"><i class="fas fa-film mr-2"></i>Cena ${String(sceneNumber).padStart(2, '0')}</span>
+                    <span class="tag tag-time"><i class="fas fa-clock mr-2"></i>${timestamp}</span>
+                    <button class="btn btn-ghost btn-small ml-auto" 
+                            onclick="window.copyPromptWithStyle(${sceneNumber}, \`${sanitizedDescription.replace(/`/g, '\\`')}\`)" 
+                            title="Copiar Prompt Completo com Estilo">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                ${fullScriptPhraseHtml}
+                <p>${sanitizedDescription}</p>
+                <div class="mt-3">
+                    <select id="style-select-${sceneNumber}" class="input input-small w-full">
+                        ${styleOptionsHtml}
+                    </select>
+                </div>
+            </div>
+        `;
+        promptItemsContainer.innerHTML += promptHtml;
+        cumulativeSeconds += parseInt(promptData.estimated_duration, 10) || 0;
+    });
+    
+    if (totalPages > 1) {
+        navContainer.innerHTML = `
+            <button class="btn btn-secondary btn-small" onclick="window.navigatePrompts('${sectionElementId}', -1)" ${currentPage === 0 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>
+            <span class="text-sm font-medium">Página ${currentPage + 1} de ${totalPages}</span>
+            <button class="btn btn-secondary btn-small" onclick="window.navigatePrompts('${sectionElementId}', 1)" ${currentPage + 1 >= totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>
+        `;
+    } else {
+        navContainer.innerHTML = '';
+    }
+};
 
 
 
 
 
 
+window.navigatePrompts = (sectionElementId, direction) => {
+    const prompts = AppState.generated.imagePrompts[sectionElementId] || [];
+    const itemsPerPage = 4;
+    const totalPages = Math.ceil(prompts.length / itemsPerPage);
+    let currentPage = AppState.ui.promptPaginationState[sectionElementId] || 0;
+    const newPage = currentPage + direction;
+    if (newPage >= 0 && newPage < totalPages) {
+        AppState.ui.promptPaginationState[sectionElementId] = newPage;
+        renderPaginatedPrompts(sectionElementId);
+    }
+};
 
 
 // =========================================================================
