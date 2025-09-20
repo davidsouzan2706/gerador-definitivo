@@ -4770,7 +4770,7 @@ const renderPaginatedPrompts = (sectionElementId) => {
     const sectionElement = document.getElementById(sectionElementId);
     if (!sectionElement) return;
 
-    // Lógica de paginação (Restaurada e funcionando)
+    // --- SEÇÃO 1: LÓGICA DE PAGINAÇÃO E CÁLCULOS (JÁ FUNCIONANDO) ---
     const itemsPerPage = 4;
     const prompts = AppState.generated.imagePrompts[sectionElementId] || [];
     if (prompts.length === 0) return;
@@ -4783,7 +4783,6 @@ const renderPaginatedPrompts = (sectionElementId) => {
     if (!promptItemsContainer || !navContainer) return;
     promptItemsContainer.innerHTML = '';
     
-    // Lógica de cálculo de tempo e cena (Restaurada e funcionando)
     let cumulativeSeconds = 0;
     let globalSceneCounter = 1;
     const sectionOrder = ['introSection', 'developmentSection', 'climaxSection', 'conclusionSection', 'ctaSection'];
@@ -4802,6 +4801,7 @@ const renderPaginatedPrompts = (sectionElementId) => {
 
     const promptsToShow = prompts.slice(startIndex, startIndex + itemsPerPage);
     
+    // --- SEÇÃO 2: RENDERIZAÇÃO DE CADA CARD DE PROMPT (COM TUDO INTEGRADO) ---
     promptsToShow.forEach((promptData, index) => {
         const sceneNumber = globalSceneCounter + index;
         const sceneId = `${sectionElementId}-scene-${sceneNumber}`;
@@ -4817,31 +4817,39 @@ const renderPaginatedPrompts = (sectionElementId) => {
             styleOptionsHtml += `<option value="${key}" ${isSelected}>${imageStyleLibrary[key].name}</option>`;
         }
         
-        // CORREÇÃO: Lógica dos botões de câmera
-        let cameraButtonsHtml = (promptData.camera_options || []).map((option) => {
-            const angle = DOMPurify.sanitize(option.angle);
-            const justification = DOMPurify.sanitize(option.justification);
-            const descriptionArg = `\`${sanitizedDescription.replace(/`/g, '\\`')}\``;
-            const angleArg = `\`${angle.replace(/`/g, '\\`')}\``;
-
-            return `
-                <div class="tooltip-container">
-                    <button class="btn btn-secondary btn-small w-full text-left justify-start" 
-                            onclick="window.buildFinalPrompt('${sceneId}', ${descriptionArg}, ${angleArg})">
-                        ${angle}
-                    </button>
-                    <span class="tooltip-text">${justification}</span>
-                </div>`;
-        }).join('');
-        
-        // CORREÇÃO: Lógica do botão de cópia principal
-        // A função agora é 'copyInitialPrompt' e chama a lógica de construção completa
+        // Botão de Cópia (Restaurado e funcionando)
         const copyButtonHtml = `
             <button class="btn btn-ghost btn-small ml-auto" 
-                    onclick="window.copyInitialPrompt('${sceneId}', ${`\`${sanitizedDescription.replace(/`/g, '\\`')}\``})" 
-                    title="Copiar Prompt com Estilo Padrão">
+                    onclick="window.copyInitialPrompt('${sceneId}', \`${sanitizedDescription.replace(/`/g, '\\`')}\`)" 
+                    title="Copiar Prompt com Estilo Selecionado">
                 <i class="fas fa-copy"></i>
             </button>`;
+
+        // LÓGICA INTEGRADA: Botões interativos para os ângulos de câmera
+        let cameraSectionHtml = '';
+        if (promptData.camera_options && promptData.camera_options.length > 0) {
+            const cameraButtonsHtml = (promptData.camera_options).map((option) => {
+                const angle = DOMPurify.sanitize(option.angle);
+                const justification = DOMPurify.sanitize(option.justification);
+                const descriptionArg = `\`${sanitizedDescription.replace(/`/g, '\\`')}\``;
+                const angleArg = `\`${angle.replace(/`/g, '\\`')}\``;
+
+                return `
+                    <div class="tooltip-container">
+                        <button class="btn btn-secondary btn-small w-full text-left justify-start" 
+                                onclick="window.buildFinalPrompt('${sceneId}', ${descriptionArg}, ${angleArg})">
+                            ${angle}
+                        </button>
+                        <span class="tooltip-text">${justification}</span>
+                    </div>`;
+            }).join('');
+            
+            cameraSectionHtml = `
+                <div class="mt-4 space-y-2">
+                    <h5 class="text-xs font-bold uppercase text-muted">Escolha o Ângulo da Câmera:</h5>
+                    ${cameraButtonsHtml}
+                </div>`;
+        }
 
         const promptHtml = `
             <div class="card !p-3 animate-fade-in" style="background: var(--bg);" id="${sceneId}">
@@ -4856,16 +4864,10 @@ const renderPaginatedPrompts = (sectionElementId) => {
                 </p>
                 <p>${sanitizedDescription}</p>
 
-                <!-- CORREÇÃO: Estrutura completa da interatividade -->
-                ${cameraButtonsHtml ? `
-                    <div class="mt-4 space-y-2">
-                        <h5 class="text-xs font-bold uppercase text-muted">Escolha o Ângulo da Câmera:</h5>
-                        ${cameraButtonsHtml}
-                    </div>` : ''
-                }
+                ${cameraSectionHtml}
                 
                 <div class="mt-3 hidden" data-container="final-prompt">
-                    <h5 class="text-xs font-bold uppercase text-muted mb-2">Prompt Final com Estilo:</h5>
+                    <h5 class="text-xs font-bold uppercase text-muted mb-2">Prompt Final com Ângulo e Estilo:</h5>
                     <textarea class="input input-small" rows="4" readonly></textarea>
                     <button class="btn btn-ghost btn-small w-full mt-2" onclick="window.copyTextFromTextarea(this)">
                         <i class="fas fa-copy"></i> Copiar Prompt Final
@@ -4883,7 +4885,7 @@ const renderPaginatedPrompts = (sectionElementId) => {
         cumulativeSeconds += parseInt(promptData.estimated_duration, 10) || 0;
     });
     
-    // Lógica da paginação (Restaurada e funcionando)
+    // --- SEÇÃO 3: NAVEGAÇÃO DA PAGINAÇÃO (JÁ FUNCIONANDO) ---
     if (totalPages > 1) {
         navContainer.innerHTML = `
             <button class="btn btn-secondary btn-small" onclick="window.navigatePrompts('${sectionElementId}', -1)" ${currentPage === 0 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>
